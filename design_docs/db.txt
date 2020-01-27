@@ -1,12 +1,11 @@
 
 users
- - id tinyint(11) K
+ - id int(11) K
  - email varchar(191)
  - password varchar(191)
  - authkey varchar(40)
- - role_id tinyint(11) FK
- - org_id tinyint(11) FK
- - individual_id tinying(11) FK
+ - role_id int(11) FK
+ - individual_id int(11) FK
 
 individuals
  - id tinyint(11) K
@@ -15,9 +14,18 @@ individuals
  - email varchar(191)
  - position text
 
+alignments
+ - id int(11) K
+ - individual_id int(11) FK
+ - organisation_id int(11) FK
+ - type varchar(191) DEFAULT 'member'
+
+alignment_tags
+ - id int(11) K
+ - alignment_id int(11) FK
 
 organisations
- - id tinyint(11) K
+ - id int(11) K
  - uuid varchar(40)
  - name varchar(191)
  - url varchar(191)
@@ -27,36 +35,36 @@ organisations
  - contacts text
 
 keys
- - id tinyint(11) K
+ - id int(11) K
  - uuid varchar(40)
  - type varchar(191)
  - key text
- - revoked tinyint(1)
+ - revoked int(1)
  - expires datetime
 
 user_keys
- - id tinyint(11) K
- - user_id tinying(11) FK
- - key_id tinying(11) FK
+ - id int(11) K
+ - user_id int(11) FK
+ - key_id int(11) FK
 
 organisation_keys
- - id tinyint(11) K
- - org_id tinying(11) FK
- - key_id tinying(11) FK
+ - id int(11) K
+ - org_id ing(11) FK
+ - key_id ing(11) FK
 
 broods
- - id tinyint(11) K
+ - id int(11) K
  - uuid  varchar(40)
  - url text
- - org_id tinying(11) FK
+ - org_id int(11) FK
  - name varchar(191)
  - description text
  - trusted tinyint(1)
- - pull tinying(1)
+ - pull in(1)
  - apikey varchar(40)
 
 roles
- - id tinying(11) K
+ - id int(11) K
  - name varchar(191)
  - default tinyint(1)
  - perm_... tinyint(1)
