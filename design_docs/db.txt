@@ -1,0 +1,64 @@
+
+users
+ - id tinyint(11) K
+ - email varchar(191)
+ - password varchar(191)
+ - authkey varchar(40)
+ - role_id tinyint(11) FK
+ - org_id tinyint(11) FK
+ - individual_id tinying(11) FK
+
+individuals
+ - id tinyint(11) K
+ - first_name varchar(191)
+ - last_name varchar(191)
+ - email varchar(191)
+ - position text
+
+
+organisations
+ - id tinyint(11) K
+ - uuid varchar(40)
+ - name varchar(191)
+ - url varchar(191)
+ - nationality varchar(191)
+ - sector varchar(191)
+ - type varchar(191)
+ - contacts text
+
+keys
+ - id tinyint(11) K
+ - uuid varchar(40)
+ - type varchar(191)
+ - key text
+ - revoked tinyint(1)
+ - expires datetime
+
+user_keys
+ - id tinyint(11) K
+ - user_id tinying(11) FK
+ - key_id tinying(11) FK
+
+organisation_keys
+ - id tinyint(11) K
+ - org_id tinying(11) FK
+ - key_id tinying(11) FK
+
+broods
+ - id tinyint(11) K
+ - uuid  varchar(40)
+ - url text
+ - org_id tinying(11) FK
+ - name varchar(191)
+ - description text
+ - trusted tinyint(1)
+ - pull tinying(1)
+ - apikey varchar(40)
+
+roles
+ - id tinying(11) K
+ - name varchar(191)
+ - default tinyint(1)
+ - perm_... tinyint(1)
+ - perm_... tinyint(1)
+
