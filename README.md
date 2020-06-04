@@ -25,4 +25,4 @@ Everything is available via the API, here an example of a search query for all i
 
 Managing public keys and assigning them to users both for communication and validating signed information shared in the community
 
-![Encryption key management](add_encryption_key.png)
+![Encryption key management](/documentation/images/add_encryption_key.png)
