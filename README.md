@@ -9,7 +9,7 @@ Currently it maintains a repository of organisations and individuals along with 
 
 The platform is built on CakePHP 4 along with Bootstrap 4 and shares parts of the code-base with MISP.
 
-#### Screnshots
+#### Screenshots
 
 List of individuals along with their affiliations
 
