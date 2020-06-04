@@ -25,6 +25,7 @@ class EncryptionKeysTable extends AppTable
                 'conditions' => ['owner_type' => 'organisation']
             ]
         );
+        $this->setDisplayField('encryption_key');
     }
 
     public function validationDefault(Validator $validator): Validator

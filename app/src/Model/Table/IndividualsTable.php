@@ -11,7 +11,13 @@ class IndividualsTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
-        $this->hasMany('Alignments');
+        $this->hasMany(
+            'Alignments',
+            [
+                'dependent' => true,
+                'cascadeCallbacks' => true
+            ]
+        );
         $this->hasMany(
             'EncryptionKeys',
             [
@@ -19,6 +25,7 @@ class IndividualsTable extends AppTable
                 'conditions' => ['owner_type' => 'individual']
             ]
         );
+        $this->setDisplayField('email');
     }
 
     public function validationDefault(Validator $validator): Validator

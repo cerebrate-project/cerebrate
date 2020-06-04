@@ -68,10 +68,12 @@
             $dbclickAction = sprintf("changeLocationFromIndexDblclick(%s)", $k);
         }
         $rows .= sprintf(
-            '<tr data-row-id="%s" %s %s>%s</tr>',
+            '<tr data-row-id="%s" %s %s class="%s %s">%s</tr>',
             h($k),
             empty($dbclickAction) ? '' : 'ondblclick="' . $dbclickAction . '"',
             empty($primary) ? '' : 'data-primary-id="' . $primary . '"',
+            empty($data['row_modifier']) ? '' : h($data['row_modifier']($data_row)),
+            empty($data['class']) ? '' : h($data['row_class']),
             $this->element(
                 '/genericElements/IndexTable/' . $row_element,
                 array(

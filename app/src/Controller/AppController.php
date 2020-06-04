@@ -24,6 +24,7 @@ use Cake\Utility\Text;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\ForbiddenException;
+use Cake\Error\Debugger;
 
 /**
  * Application Controller
@@ -100,5 +101,31 @@ class AppController extends Controller
     {
         $uuid = Text::uuid();
         return $this->RestResponse->viewData(['uuid' => $uuid], 'json');
+    }
+
+    /*
+     *  Harvest parameters form a request
+     *
+     *  Requires the request object and a list of keys to filter as input
+     *  Order of precedence:
+     *  ordered uri components (/foo/bar/baz) > query strings (?foo=bar) > posted data (json body {"foo": "bar"})
+     */
+    protected function _harvestParams(\Cake\Http\ServerRequest $request, array $filterList): array
+    {
+        $parsedParams = array();
+        foreach ($filterList as $k => $filter) {
+            if (isset($request->getAttribute('params')['pass'][$k])) {
+                $parsedParams[$filter] = $request->getAttribute('params')['pass'][$k];
+                continue;
+            }
+            if (($request->getQuery($filter)) !== null) {
+                $parsedParams[$filter] = $request->getQuery($filter);
+                continue;
+            }
+            if (($this->request->is('post') || $this->request->is('put')) && $this->request->getData($filter) !== null) {
+                $parsedParams[$filter] = $this->request->getData($filter);
+            }
+        }
+        return $parsedParams;
     }
 }

@@ -1,6 +1,12 @@
 <?php
     if (!isset($data['requirement']) || $data['requirement']) {
-        if (!empty($data['onClick']) || empty($data['url'])) {
+        if (!empty($data['popover_url'])) {
+            $onClick = sprintf(
+                'onClick="populateAndLoadModal(%s)"',
+                sprintf("'%s'", h($data['popover_url']))
+            );
+        }
+        if (empty($onClick) && (!empty($data['onClick']) || empty($data['url']))) {
             $onClickParams = array();
             if (!empty($data['onClickParams'])) {
                 foreach ($data['onClickParams'] as $param) {
@@ -34,7 +40,7 @@
         }
         $dataFields = implode(' ', $dataFields);
         echo sprintf(
-            '<a class="btn btn-small %s %s" %s href="%s" %s %s %s %s %s>%s%s%s</a>',
+            '<button class="btn btn-small %s %s" %s href="%s" %s %s %s %s %s>%s%s%s</button>',
             empty($data['class']) ? '' : h($data['class']),
             empty($data['active']) ? 'btn-inverse' : 'btn-primary',   // Change the default class for highlighted/active toggles here
             empty($data['id']) ? '' : 'id="' . h($data['id']) . '"',

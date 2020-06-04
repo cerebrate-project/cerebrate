@@ -43,7 +43,7 @@ $cakeDescription = 'Cerebrate';
         <?= $this->element('genericElements/header') ?>
     </header>
     <main role="main" class="container-fluid">
-        <div class="container-fluid" style="padding:0px;padding-top:70px;">
+        <div class="container-fluid">
             <div class="row">
                 <div class="col-md-2 d-none d-md-block col-lg-1 bg-light sidebar" style="padding:0px;margin:0px;">
                     <?= $this->element('/genericElements/SideMenu/side_menu') ?>

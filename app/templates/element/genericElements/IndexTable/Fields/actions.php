@@ -82,7 +82,7 @@
 
             }
             echo sprintf(
-                '<a href="%s" title="%s" aria-label="%s" %s %s><i class="black %s"></i></a> ',
+                '<a href="%s" title="%s" aria-label="%s" %s %s class="link-unstyled"><i class="%s"></i></a> ',
                 $url,
                 empty($action['title']) ? '' : h($action['title']),
                 empty($action['title']) ? '' : h($action['title']),

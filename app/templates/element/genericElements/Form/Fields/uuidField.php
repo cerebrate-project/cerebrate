@@ -7,6 +7,7 @@
         'formGroup' => '{{input}}',
     ]);
     $label = $fieldData['label'];
+    $formElement = $this->FormFieldMassage->prepareFormElement($this->Form, $params, $fieldData);
     $temp = sprintf(
         '<div class="form-group row ">
             <div class="col-sm-2 col-form-label">%s</div>
@@ -17,7 +18,7 @@
             </div>
         </div>',
         h($label),
-        $form->control($fieldData['field'], $params),
+        $formElement,
         sprintf(
             '<span id="uuid-gen-%s" class="btn btn-secondary">%s</span>',
             $random,
@@ -31,7 +32,7 @@
         $('#uuid-gen-<?= h($random) ?>').on('click', function() {
             $.ajax({
                 success:function (data, textStatus) {
-                    $('#uuid').val(data["uuid"]);
+                    $('#uuid-field').val(data["uuid"]);
                 },
                 type: "get",
                 cache: false,
