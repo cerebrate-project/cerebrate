@@ -17,7 +17,7 @@
         h($data['model']);
     $fieldsString = '';
     $simpleFieldWhitelist = array(
-        'default', 'type', 'options', 'placeholder', 'label', 'empty', 'rows', 'div', 'required'
+        'default', 'type', 'placeholder', 'label', 'empty', 'rows', 'div', 'required'
     );
     $fieldsArrayForPersistence = array();
     if (empty($data['url'])) {
@@ -34,7 +34,7 @@
         'select' => '<select name="{{name}}" {{attrs}}>{{content}}</select>',
         'checkbox' => '<input type="checkbox" name="{{name}}" value="{{value}}"{{attrs}}>',
         'checkboxFormGroup' => '{{label}}',
-        'checkboxWrapper' => '<div class="checkbox">{{label}}</div>',
+        'select' => '<select name="{{name}}" {{attrs}}>{{content}}</select>',
         'formGroup' => '<div class="col-sm-2 col-form-label" {{attrs}}>{{label}}</div><div class="col-sm-10">{{input}}</div>',
         'nestingLabel' => '{{hidden}}<div class="col-sm-2 col-form-label">{{text}}</div><div class="col-sm-10">{{input}}</div>',
     ];
@@ -80,15 +80,14 @@
                     $params['class'] .= ' form-control';
                 }
                 //$params['class'] = sprintf('form-control %s', $params['class']);
-                foreach ($simpleFieldWhitelist as $f) {
-                    if (!empty($fieldData[$f])) {
-                        $params[$f] = $fieldData[$f];
+                foreach ($fieldData as $k => $fd) {
+                    if (in_array($k, $simpleFieldWhitelist) || strpos($k, 'data-') === 0) {
+                        $params[$k] = $fd;
                     }
                 }
                 $temp = $this->element('genericElements/Form/Fields/' . $fieldTemplate, array(
                     'fieldData' => $fieldData,
-                    'params' => $params,
-                    'form' => $this->Form
+                    'params' => $params
                 ));
                 if (!empty($fieldData['hidden'])) {
                     $temp = '<span class="hidden">' . $temp . '</span>';
@@ -158,3 +157,11 @@
         );
     }
 ?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        executeStateDependencyChecks();
+        $('.formDropdown').on('change', function() {
+            executeStateDependencyChecks('#' + this.id);
+        })
+    });
+</script>

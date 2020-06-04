@@ -21,3 +21,19 @@ function executePagination(randomValue, url) {
         url:url,
     });
 }
+
+function executeStateDependencyChecks(dependenceSourceSelector) {
+    if (dependenceSourceSelector === undefined) {
+        var tempSelector = "[data-dependence-source]";
+    } else {
+        var tempSelector = '*[data-dependence-source="' + dependenceSourceSelector + '"]';
+    }
+    $(tempSelector).each(function(index, dependent) {
+        var dependenceSource = $(dependent).data('dependence-source');
+        if ($(dependent).data('dependence-option') === $(dependenceSource).val()) {
+            $(dependent).parent().parent().removeClass('d-none');
+        } else {
+            $(dependent).parent().parent().addClass('d-none');
+        }
+    });
+}

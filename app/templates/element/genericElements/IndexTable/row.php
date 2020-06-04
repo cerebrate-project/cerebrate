@@ -25,7 +25,8 @@
                         'data_path' => empty($field['data_path']) ? '' : $field['data_path'],
                         'k' => $k,
                         'primary' => $primary,
-                        'tableRandomValue' => $tableRandomValue
+                        'tableRandomValue' => $tableRandomValue,
+                        'stateDependence' => isset($field['stateDependence']) ? $field['stateDependence'] : []
                     )
                 );
             }
