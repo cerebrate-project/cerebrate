@@ -17,7 +17,7 @@ List of individuals along with their affiliations
 
 Adding organisations
 
-![Adding an organisation](/documentation/images/orgs_api.png)
+![Adding an organisation](/documentation/images/add_org.png)
 
 Everything is available via the API, here an example of a search query for all international organisations in the DB.
 
