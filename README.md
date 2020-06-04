@@ -1,15 +1,16 @@
 # cerebrate
-The Cerebrate Sync Platform core software
 
-Cerebrate is an open-source platform meant to act as a trusted contact information provider and interconnection orchestrator for other security tools.
+The Cerebrate Sync Platform core software.  Cerebrate is an open-source platform meant to act as a trusted contact information provider and interconnection orchestrator for other security tools.
 
-It is currently being built under the Melicertes v2 project and is heavily work in progress.
+It is currently being built under the MeliCERTes v2 project and is heavily work in progress.
 
-Currently it maintains a repository of organisations and individuals along with signing keys and their affiliations.
+# Current features
 
-The platform is built on CakePHP 4 along with Bootstrap 4 and shares parts of the code-base with MISP.
+- Repository of organisations and individuals
+- Maintain signing and encryption keys
+- Maintain affiliations between organisations and individuals
 
-#### Screnshots
+## Screenshots
 
 List of individuals along with their affiliations
 
@@ -26,3 +27,16 @@ Everything is available via the API, here an example of a search query for all i
 Managing public keys and assigning them to users both for communication and validating signed information shared in the community
 
 ![Encryption key management](/documentation/images/add_encryption_key.png)
+
+# Requirements
+
+The platform is built on CakePHP 4 along with Bootstrap 4 and shares parts of the code-base with [MISP](https://www.github.com/MISP).
+
+# License
+
+~~~~
+    The software is released under the AGPLv3.
+
+    Copyright (C) 2019, 2020  Andras Iklody
+    Copyright (C) CIRCL - Computer Incident Response Center Luxembourg
+~~~~
