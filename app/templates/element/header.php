@@ -89,4 +89,4 @@
             )
         )
     );
-    echo $this->element('header', ['menu' => $menu]);
+    echo $this->element('genericElements/header_scaffold', ['menu' => $menu]);
