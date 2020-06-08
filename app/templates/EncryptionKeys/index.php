@@ -85,5 +85,3 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ]
     ]
 ]);
-echo '</div>';
-?>
