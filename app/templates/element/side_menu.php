@@ -60,7 +60,85 @@ $menu = [
                 ]
             ]
         ]
+    ],
+    'Administration' => [
+        'Roles' => [
+            'label' => __('Roles'),
+            'url' => '/roles/index',
+            'children' => [
+                'index' => [
+                    'url' => '/roles/index',
+                    'label' => __('List roles')
+                ],
+                'add' => [
+                    'url' => '/roles/add',
+                    'label' => __('Add role')
+                ],
+                'view' => [
+                    'url' => '/roles/view/{{id}}',
+                    'label' => __('View role'),
+                    'actions' => ['delete', 'edit', 'view']
+                ],
+                'edit' => [
+                    'url' => '/roles/edit/{{id}}',
+                    'label' => __('Edit role'),
+                    'actions' => ['edit', 'delete', 'view']
+                ],
+                'delete' => [
+                    'url' => '/roles/delete/{{id}}',
+                    'label' => __('Delete role'),
+                    'actions' => ['delete', 'edit', 'view']
+                ]
+            ]
+        ],
+        'Users' => [
+            'label' => __('Users'),
+            'url' => '/users/index',
+            'children' => [
+                'index' => [
+                    'url' => '/users/index',
+                    'label' => __('List users')
+                ],
+                'add' => [
+                    'url' => '/users/add',
+                    'label' => __('Add user')
+                ],
+                'view' => [
+                    'url' => '/users/view/{{id}}',
+                    'label' => __('View user'),
+                    'actions' => ['delete', 'edit', 'view']
+                ],
+                'edit' => [
+                    'url' => '/users/edit/{{id}}',
+                    'label' => __('Edit user'),
+                    'actions' => ['edit', 'delete', 'view']
+                ],
+                'delete' => [
+                    'url' => '/users/delete/{{id}}',
+                    'label' => __('Delete user'),
+                    'actions' => ['delete', 'edit', 'view']
+                ]
+            ]
+        ]
+    ],
+    'Cerebrate' => [
+        'Roles' => [
+            'label' => __('Roles'),
+            'url' => '/roles/index',
+            'children' => [
+                'index' => [
+                    'url' => '/roles/index',
+                    'label' => __('List roles')
+                ],
+                'view' => [
+                    'url' => '/roles/view/{{id}}',
+                    'label' => __('View role'),
+                    'actions' => ['delete', 'edit', 'view']
+                ]
+            ]
+        ]
     ]
+
 ];
 $children = '';
 if (isset($menu[$metaGroup])) {

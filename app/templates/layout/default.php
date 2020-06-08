@@ -40,13 +40,13 @@ $cakeDescription = 'Cerebrate';
 </head>
 <body>
     <header>
-        <?= $this->element('genericElements/header') ?>
+        <?= $this->element('header') ?>
     </header>
     <main role="main" class="container-fluid">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-2 d-none d-md-block col-lg-1 bg-light sidebar" style="padding:0px;margin:0px;">
-                    <?= $this->element('/genericElements/SideMenu/side_menu') ?>
+                    <?= $this->element('side_menu') ?>
                 </div>
                 <div role="main" class="col-md-10 ml-sm-auto col-lg-11 pt-3 px-4">
                     <?= $this->Flash->render() ?>
@@ -56,7 +56,7 @@ $cakeDescription = 'Cerebrate';
         </div>
     </main>
     <footer class="footer">
-        <?= $this->element('genericElements/footer') ?>
+        <?= $this->element('footer') ?>
     </footer>
     <div id="mainModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel" aria-hidden="true"></div>
 </body>
