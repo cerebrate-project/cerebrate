@@ -38,6 +38,7 @@ class AppController extends Controller
 {
 
     public $isRest = null;
+    public $restResponsePayload = null;
 
     /**
      * Initialization hook method.
@@ -56,6 +57,13 @@ class AppController extends Controller
         $this->loadComponent('Flash');
         $this->loadComponent('RestResponse');
         $this->loadComponent('ACL');
+        $this->loadComponent('ParamHandler', [
+            'request' => $this->request
+        ]);
+        $this->loadComponent('CRUD', [
+            'request' => $this->request,
+            'table' => $this->{$this->modelClass}
+        ]);
 
         if (Configure::read('debug')) {
             Configure::write('DebugKit.panels', ['DebugKit.Packages' => true]);
@@ -71,30 +79,9 @@ class AppController extends Controller
 
     public function beforeFilter(EventInterface $event)
     {
+        $this->isAdmin = true;
+        $this->set('menu', $this->{$this->modelClass}->getMenu());
         $this->set('ajax', $this->request->is('ajax'));
-    }
-
-    protected function _isRest()
-    {
-        // This method is surprisingly slow and called many times for one request, so it make sense to cache the result.
-        if ($this->isRest !== null) {
-            return $this->isRest;
-        }
-        if ($this->request->is('json')) {
-            if (!empty($this->request->input()) && empty($this->request->input('json_decode'))) {
-                throw new MethodNotAllowedException('Invalid JSON input. Make sure that the JSON input is a correctly formatted JSON string. This request has been blocked to avoid an unfiltered request.');
-            }
-            $this->isRest = true;
-            return true;
-        } else {
-            $this->isRest = false;
-            return false;
-        }
-    }
-
-    protected function _isJson($data)
-    {
-        return (json_decode($data) != null) ? true : false;
     }
 
     public function generateUUID()
@@ -103,29 +90,8 @@ class AppController extends Controller
         return $this->RestResponse->viewData(['uuid' => $uuid], 'json');
     }
 
-    /*
-     *  Harvest parameters form a request
-     *
-     *  Requires the request object and a list of keys to filter as input
-     *  Order of precedence:
-     *  ordered uri components (/foo/bar/baz) > query strings (?foo=bar) > posted data (json body {"foo": "bar"})
-     */
-    protected function _harvestParams(\Cake\Http\ServerRequest $request, array $filterList): array
+    public function checkPermission($perm_flag)
     {
-        $parsedParams = array();
-        foreach ($filterList as $k => $filter) {
-            if (isset($request->getAttribute('params')['pass'][$k])) {
-                $parsedParams[$filter] = $request->getAttribute('params')['pass'][$k];
-                continue;
-            }
-            if (($request->getQuery($filter)) !== null) {
-                $parsedParams[$filter] = $request->getQuery($filter);
-                continue;
-            }
-            if (($this->request->is('post') || $this->request->is('put')) && $this->request->getData($filter) !== null) {
-                $parsedParams[$filter] = $this->request->getData($filter);
-            }
-        }
-        return $parsedParams;
+        return true;
     }
 }

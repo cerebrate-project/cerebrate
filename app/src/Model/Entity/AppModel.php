@@ -6,5 +6,5 @@ use Cake\ORM\Entity;
 
 class AppModel extends Entity
 {
-
+    
 }
