@@ -3,7 +3,7 @@ echo $this->element(
     '/genericElements/SingleViews/single_view',
     [
         'title' => __('Individual View'),
-        'data' => $individual,
+        'data' => $entity,
         'fields' => [
             [
                 'key' => __('ID'),

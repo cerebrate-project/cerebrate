@@ -1,10 +1,6 @@
 <?php
-    $modelForForm = 'Organisations';
     echo $this->element('genericElements/Form/genericForm', array(
-        'form' => $this->Form,
         'data' => array(
-            'entity' => $organisation,
-            'title' => __('Add new organisation'),
             'description' => __('Organisations can be equivalent to legal entities or specific individual teams within such entities. Their purpose is to relate individuals to their affiliations and for release control of information using the Trust Circles.'),
             'model' => 'Organisations',
             'fields' => array(

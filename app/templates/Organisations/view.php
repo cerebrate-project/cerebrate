@@ -1,10 +1,10 @@
 <?php
 echo $this->element(
     '/genericElements/SingleViews/single_view',
-    array(
+    [
         'title' => __('Organisation View'),
-        'data' => $organisation,
-        'fields' => array(
+        'data' => $entity,
+        'fields' => [
             [
                 'key' => __('ID'),
                 'path' => 'id'
@@ -43,7 +43,7 @@ echo $this->element(
                 'path' => 'alignments',
                 'scope' => 'organisations'
             ]
-        ),
+        ],
         'children' => []
-    )
+    ]
 );

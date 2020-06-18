@@ -36,7 +36,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => __('Members'),
                 'data_path' => 'alignments',
                 'element' =>  'count_summary',
-                'url' => '/individuals/index/?organisation_id={{url_data}}',
+                'url' => '/individuals/index/?Organisations.id={{url_data}}',
                 'url_data_path' => 'id'
             ],
             [
