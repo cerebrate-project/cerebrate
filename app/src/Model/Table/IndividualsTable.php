@@ -11,6 +11,7 @@ class IndividualsTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('UUID');
         $this->hasMany(
             'Alignments',
             [
@@ -25,6 +26,12 @@ class IndividualsTable extends AppTable
                 'conditions' => ['owner_type' => 'individual']
             ]
         );
+        $this->hasOne(
+            'Users'
+        );
+        $this->belongsToMany('Organisations', [
+            'through' => 'Alignments',
+        ]);
         $this->setDisplayField('email');
     }
 
@@ -32,8 +39,7 @@ class IndividualsTable extends AppTable
     {
         $validator
             ->notEmptyString('email')
-            ->notEmptyString('uuid')
-            ->requirePresence(['email', 'uuid'], 'create');
+            ->requirePresence(['email'], 'create');
         return $validator;
     }
 }
