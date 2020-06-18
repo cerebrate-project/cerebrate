@@ -54,9 +54,12 @@
             );
         }
     }
+    $title = empty($title) ?
+        __('{0} view', \Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::humanize($this->request->getParam('controller')))) :
+        $title;
     echo sprintf(
         '<div><h2>%s</h2>%s%s<table class="table table-striped col-sm-8">%s</table><div id="accordion">%s</div></div>',
-        empty($title) ? __('%s View', h(\Cake\Utility\Inflector::humanize($this->request->getParam('controller')))) : h($title),
+        h($title),
         empty($description) ? '' : sprintf('<p>%s</p>', h($description)),
         empty($description_html) ? '' : sprintf('<p>%s</p>', $description_html),
         $listElements,

@@ -24,7 +24,11 @@ if (isset($menu[$metaGroup])) {
             if (!empty($matches[0])) {
                 $mainEntity = \Cake\Utility\Inflector::underscore(\Cake\Utility\Inflector::singularize($scope));
                 foreach ($matches as $match) {
-                    $data['url'] = str_replace($match[0], ${$mainEntity}[substr($match[0], 2, 2)], $data['url']);
+                    $data['url'] = str_replace(
+                        $match[0],
+                        Cake\Utility\Hash::extract($entity, trim($match[0], '{}'))[0],
+                        $data['url']
+                    );
                 }
             }
             $children .= sprintf(

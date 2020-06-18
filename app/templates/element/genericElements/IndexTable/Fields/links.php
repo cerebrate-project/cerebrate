@@ -1,47 +1,20 @@
 <?php
 /**
- *    - url: url to reference. Can have `%s` in it to be replaced by `data_path` extracted value.
- *    - url_params_data_paths: add dynamic URL elements such as an id to the URL. Can be an array with each value added in a separate param. Used if `url` does not have a `%s` marker
+ *    - url: A url to link to. Can include placeholders for variables using the {{0}} notation
+ *    - url_vars: ordered list of parameters, to be used as replacements in the url (first parameter would replace {{0}} for example)
  */
-    $data_elements = $this->Hash->extract($row, $field['data_path']);
-    $url_param_data_paths = '';
-    $urlWithData = empty($field['url']) ? '#' : h($field['url']);
-    if (!empty($field['url_params_data_paths'])) {
-        if (is_array($field['url_params_data_paths'])) {
-            $temp = array();
-            foreach ($field['url_params_data_paths'] as $path) {
-                $temp[] = h($this->Hash->extract($row, $path)[0]);
-            }
-            $url_param_data_paths = implode('/', $temp);
-        } else {
-            $url_param_data_paths = h($this->Hash->extract($row, $field['url_params_data_paths'])[0]);
+    if (!empty($field['url_vars']) && !empty($field['url'])) {
+        if (!is_array($field['url_vars'])) {
+            $field['url_vars'] = [$field['url_vars']];
         }
-        $urlWithData .= '/' . $url_param_data_paths;
+        foreach ($field['url_vars'] as $k => $path) {
+            $field['url'] = str_replace('{{' . $k . '}}', $this->Hash->extract($row, $path)[0], $field['url']);
+        }
     }
-    $links = array();
-    foreach ($data_elements as $data) {
-        if (!empty($data['name'])) {
-            $field['title'] = $data['name'];
-        }
-        if (!empty($data['url'])) {
-            $data = $data['url'];
-        }
-        if (isset($field['url']) && strpos($field['url'], '%s') !== false) {
-            $url = sprintf(
-                $field['url'],
-                $data
-            );
-        } elseif (!empty($field['url_params_data_paths'])) {
-            $url = $urlWithData;
-        } else {
-            $url = $data;
-        }
-        $links[] = sprintf(
-            '<a href="%s" title="%s">%s</a>',
-            h($url),
-            empty($field['title']) ? h($data) : h($field['title']),
-            empty($field['title']) ? h($data) : h($field['title'])
-        );
-    }
-    echo implode('<br />', $links);
+    echo sprintf(
+        '<a href="%s" title="%s">%s</a>',
+        empty($field['name']) ? h($field['url']) : h($field['name']),
+        empty($field['name']) ? h($field['url']) : h($field['name']),
+        h($field['url'])
+    );
 ?>

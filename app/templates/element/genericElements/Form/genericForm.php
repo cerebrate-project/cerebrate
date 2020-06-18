@@ -24,7 +24,7 @@
         $data['url'] = ["controller" => $this->request->getParam('controller'), "action" => $this->request->getParam('url')];
     }
     $formRandomValue = Cake\Utility\Security::randomString(8);
-    $formCreate = $this->Form->create($data['entity'], ['id' => 'form-' . $formRandomValue]);
+    $formCreate = $this->Form->create($entity, ['id' => 'form-' . $formRandomValue]);
     $default_template = [
         'inputContainer' => '<div class="form-group row">{{content}}</div>',
         'inputContainerError' => '<div class="form-group row has-error">{{content}}</div>',
@@ -34,9 +34,11 @@
         'select' => '<select name="{{name}}" {{attrs}}>{{content}}</select>',
         'checkbox' => '<input type="checkbox" name="{{name}}" value="{{value}}"{{attrs}}>',
         'checkboxFormGroup' => '{{label}}',
-        'select' => '<select name="{{name}}" {{attrs}}>{{content}}</select>',
         'formGroup' => '<div class="col-sm-2 col-form-label" {{attrs}}>{{label}}</div><div class="col-sm-10">{{input}}</div>',
         'nestingLabel' => '{{hidden}}<div class="col-sm-2 col-form-label">{{text}}</div><div class="col-sm-10">{{input}}</div>',
+        'option' => '<option value="{{value}}"{{attrs}}>{{text}}</option>',
+        'optgroup' => '<optgroup label="{{label}}"{{attrs}}>{{content}}</optgroup>',
+        'select' => '<select name="{{name}}"{{attrs}}>{{content}}</select>'
     ];
     if (!empty($data['fields'])) {
         foreach ($data['fields'] as $fieldData) {
@@ -120,9 +122,11 @@
         );
     }
     $formEnd = $this->Form->end();
+    $actionName = h(\Cake\Utility\Inflector::humanize($this->request->getParam('action')));
+    $modelName = h(\Cake\Utility\Inflector::humanize(\Cake\Utility\Inflector::singularize($this->request->getParam('controller'))));
     if (!empty($ajax)) {
         echo $this->element('genericElements/genericModal', array(
-            'title' => empty($data['title']) ? h(\Cake\Utility\Inflector::humanize($this->request->params['action'])) . ' ' . $modelForForm : h($data['title']),
+            'title' => empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
             'body' => sprintf(
                 '%s%s%s%s%s%s',
                 empty($data['description']) ? '' : sprintf(
@@ -142,7 +146,7 @@
         echo sprintf(
             '%s<h2>%s</h2>%s%s%s%s%s%s%s%s',
             empty($ajax) ? '<div class="col-8">' : '',
-            empty($data['title']) ? h(\Cake\Utility\Inflector::humanize($this->request->params['action'])) . ' ' . $modelForForm : h($data['title']),
+            empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
             $formCreate,
             $ajaxFlashMessage,
             empty($data['description']) ? '' : sprintf(

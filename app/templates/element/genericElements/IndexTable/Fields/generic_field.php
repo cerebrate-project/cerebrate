@@ -26,6 +26,21 @@
             );
         }
     }
+    if (!empty($field['url'])) {
+        if (!empty($field['url_vars'])) {
+            if (!is_array($field['url_vars'])) {
+                $field['url_vars'] = [$field['url_vars']];
+            }
+            foreach ($field['url_vars'] as $k => $path) {
+                $field['url'] = str_replace('{{' . $k . '}}', $this->Hash->extract($row, $path)[0], $field['url']);
+            }
+        }
+        $data = sprintf(
+            '<a href="%s">%s</a>',
+            h($field['url']),
+            $data
+        );
+    }
     if (!empty($field['onClick'])) {
         $data = sprintf(
             '<span onClick="%s">%s</span>',

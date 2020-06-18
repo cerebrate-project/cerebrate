@@ -1,7 +1,15 @@
 <?php
 $alignments = '';
+$extracted = $data;
+if (!empty($field['path'])) {
+    if (strpos('.', $field['path']) !== false) {
+        $extracted = Cake\Utility\Hash::extract($data, empty($field['path']) ? 'individual' : $field['path']);
+    } else {
+        $extracted = $data[$field['path']];
+    }
+}
 if ($field['scope'] === 'individuals') {
-    foreach ($data['alignments'] as $alignment) {
+    foreach ($extracted['alignments'] as $alignment) {
         $alignments .= sprintf(
             '<div><span class="font-weight-bold">%s</span> @ %s <a href="#" class="fas fa-trash text-black" onClick="%s"></a></div>',
             h($alignment['type']),
@@ -20,7 +28,7 @@ if ($field['scope'] === 'individuals') {
         );
     }
 } else if ($field['scope'] === 'organisations') {
-    foreach ($data['alignments'] as $alignment) {
+    foreach ($extracted['alignments'] as $alignment) {
         $alignments .= sprintf(
             '<div>[<span class="font-weight-bold">%s</span>] %s <a href="#" class="fas fa-trash text-black" onClick="%s"></a></div>',
             h($alignment['type']),
@@ -45,7 +53,7 @@ echo sprintf(
     sprintf(
         "populateAndLoadModal('/alignments/add/%s/%s');",
         h($field['scope']),
-        h($data['id'])
+        h($extracted['id'])
     ),
     $field['scope'] === 'individuals' ? __('Add organisation') : __('Add individual')
 );
