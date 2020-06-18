@@ -19,7 +19,7 @@ class AlignmentsController extends AppController
         if (!empty($organisation_id)) {
             $query->where(['organisation_id' => $organisation_id]);
         }
-        if ($this->_isRest()) {
+        if ($this->ParamHandler->isRest()) {
             $alignments = $query->all();
             return $this->RestResponse->viewData($alignments, 'json');
         } else {
@@ -36,7 +36,7 @@ class AlignmentsController extends AppController
             throw new NotFoundException(__('Invalid alignment.'));
         }
         $individual = $this->Alignments->get($id);
-        if ($this->_isRest()) {
+        if ($this->ParamHandler->isRest()) {
             return $this->RestResponse->viewData($individual, 'json');
         } else {
 
@@ -54,7 +54,7 @@ class AlignmentsController extends AppController
         if ($this->request->is('post') || $this->request->is('delete')) {
             if ($this->Alignments->delete($individual)) {
                 $message = __('Individual deleted.');
-                if ($this->_isRest()) {
+                if ($this->ParamHandler->isRest()) {
                     $individual = $this->Alignments->get($id);
                     return $this->RestResponse->saveSuccessResponse('Alignments', 'delete', $id, 'json', $message);
                 } else {
@@ -88,7 +88,7 @@ class AlignmentsController extends AppController
             }
             if ($this->Alignments->save($alignment)) {
                 $message = __('Alignment added.');
-                if ($this->_isRest()) {
+                if ($this->ParamHandler->isRest()) {
                     $alignment = $this->Alignments->get($this->Alignments->id);
                     return $this->RestResponse->viewData($alignment, 'json');
                 } else {
@@ -97,7 +97,7 @@ class AlignmentsController extends AppController
                 }
             } else {
                 $message = __('Alignment could not be added.');
-                if ($this->_isRest()) {
+                if ($this->ParamHandler->isRest()) {
                     return $this->RestResponse->saveFailResponse('Individuals', 'addAlignment', false, $message);
                 } else {
                     $this->Flash->error($message);
