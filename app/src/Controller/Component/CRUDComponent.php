@@ -18,12 +18,21 @@ class CRUDComponent extends Component
         $this->ObjectAlias = \Cake\Utility\Inflector::singularize($this->TableAlias);
     }
 
-    public function index(array $filters = [], array $quickFilterFields = [])
+    public function index(array $options): void
     {
-        $params = $this->Controller->ParamHandler->harvestParams($filters);
+        if (!empty($options['quickFilters'])) {
+            if (empty($options['filters'])) {
+                $options['filters'] = [];
+            }
+            $options['filters'][] = 'quickFilter';
+        }
+        $params = $this->Controller->ParamHandler->harvestParams(empty($options['filters']) ? [] : $options['filters']);
         $query = $this->Table->find();
         $query = $this->setFilters($params, $query);
-        $query = $this->setQuickFilters($params, $query, $quickFilterFields);
+        $query = $this->setQuickFilters($params, $query, empty($options['quickFilters']) ? [] : $options['quickFilters']);
+        if (!empty($options['contain'])) {
+            $query->contain($options['contain']);
+        }
         if (!empty($conditions)) {
             $query->where([
                 'OR' => $conditions
@@ -45,8 +54,8 @@ class CRUDComponent extends Component
         if ($this->request->is('post')) {
             $data = $this->Table->patchEntity($data, $this->request->getData());
             if ($this->Table->save($data)) {
-                $message = __('%s added.', $this->ObjectAlias);
-                if ($this->ParamHandler->isRest()) {
+                $message = __('{0} added.', $this->ObjectAlias);
+                if ($this->Controller->ParamHandler->isRest()) {
                     $data = $this->Table->get($id);
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
                 } else {
@@ -54,27 +63,28 @@ class CRUDComponent extends Component
                     $this->Controller->redirect(['action' => 'index']);
                 }
             } else {
-                $message = __('%s could not be added.', $this->ObjectAlias);
-                if ($this->Controller->_isRest()) {
+                $message = __('{0} could not be added.', $this->ObjectAlias);
+                if ($this->Controller->ParamHandler->isRest()) {
 
                 } else {
                     $this->Controller->Flash->error($message);
                 }
             }
         }
+        $this->Controller->set('entity', $data);
     }
 
-    public function edit($id): void
+    public function edit(int $id): void
     {
         if (empty($id)) {
-            throw new NotFoundException(__('Invalid %s.', $this->ObjectAlias));
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
         $data = $this->Table->get($id);
         if ($this->request->is(['post', 'put'])) {
             $this->Table->patchEntity($data, $this->request->getData());
             if ($this->Table->save($data)) {
-                $message = __('%s updated.', $this->ObjectAlias);
-                if ($this->ParamHandler->isRest()) {
+                $message = __('{0} updated.', $this->ObjectAlias);
+                if ($this->Controller->ParamHandler->isRest()) {
                     $data = $this->Table->get($id);
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
                 } else {
@@ -82,42 +92,42 @@ class CRUDComponent extends Component
                     $this->Controller->redirect(['action' => 'index']);
                 }
             } else {
-                if ($this->ParamHandler->isRest()) {
+                if ($this->Controller->ParamHandler->isRest()) {
 
                 }
             }
         }
-        $this->Controller->set('data', $data);
+        $this->Controller->set('entity', $data);
     }
 
-    public function view($id, $params): void
+    public function view(int $id, array $params = []): void
     {
         if (empty($id)) {
-            throw new NotFoundException(__('Invalid %s.', $this->ObjectAlias));
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
 
         $data = $this->Table->get($id, $params);
         if ($this->Controller->ParamHandler->isRest()) {
             $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData($data, 'json');
         }
-        $this->Controller->set('data', $data);
+        $this->Controller->set('entity', $data);
     }
 
-    public function delete($id): void
+    public function delete(int $id): void
     {
         if (empty($id)) {
-            throw new NotFoundException(__('Invalid %s.', $this->ObjectAlias));
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
         $data = $this->Table->get($id);
         if ($this->request->is('post') || $this->request->is('delete')) {
             if ($this->Table->delete($data)) {
-                $message = __('%s deleted.', $this->ObjectAlias);
+                $message = __('{0} deleted.', $this->ObjectAlias);
                 if ($this->Controller->ParamHandler->isRest()) {
                     $data = $this->Table->get($id);
                     $this->Controller->restResponsePayload = $this->RestResponse->saveSuccessResponse($this->TableAlias, 'delete', $id, 'json', $message);
                 } else {
                     $this->Controller->Flash->success($message);
-                    $this->redirect($this->referer());
+                    $this->Controller->redirect($this->Controller->referer());
                 }
             }
         }
@@ -137,12 +147,12 @@ class CRUDComponent extends Component
         ];
         if (!empty($params)) {
             foreach ($params as $param => $paramValue) {
-                if (strpos($params, '.') !== null) {
-                    $params = explode('.', $params);
-                    if ($param[0] === $this->Table->alias) {
+                if (strpos($param, '.') !== null) {
+                    $param = explode('.', $param);
+                    if ($param[0] === $this->Table->getAlias()) {
                         $massagedFilters['simpleFilters'][implode('.', $param)] = $paramValue;
                     } else {
-                        $massagedFilters['relatedFilters'][implode('.', $param)] = $paramsValue;
+                        $massagedFilters['relatedFilters'][implode('.', $param)] = $paramValue;
                     }
                 } else {
                     $massagedFilters['simpleFilters'][] = $params;
@@ -180,7 +190,7 @@ class CRUDComponent extends Component
         if (!empty($params['relatedFilters'])) {
             foreach ($params['relatedFilters'] as $filter => $filterValue) {
                 $filterParts = explode('.', $filter);
-                $query->matching($filterParts[0], function(\Cake\ORM\Query $q){
+                $query->matching($filterParts[0], function(\Cake\ORM\Query $q) use ($filterValue, $filter) {
                     if (strlen(trim($filterValue, '%')) === strlen($filterValue)) {
                         return $q->where([$filter => $filterValue]);
                     } else {
