@@ -1,9 +1,6 @@
 <?php
-$primaryIdentifiers = ['individual' => 'email', 'organisation' => 'name'];
 echo $this->element('genericElements/Form/genericForm', array(
-    'form' => $this->Form,
     'data' => array(
-        'entity' => $encryptionKey,
         'title' => __('Add new encryption key'),
         'description' => __('Alignments indicate that an individual belongs to an organisation in one way or another. The type of relationship is defined by the type field.'),
         'model' => 'Organisations',
