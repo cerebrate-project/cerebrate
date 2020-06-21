@@ -74,12 +74,12 @@ class CRUDComponent extends Component
         $this->Controller->set('entity', $data);
     }
 
-    public function edit(int $id): void
+    public function edit(int $id, array $params = []): void
     {
         if (empty($id)) {
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
-        $data = $this->Table->get($id);
+        $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : []);
         if ($this->request->is(['post', 'put'])) {
             $this->Table->patchEntity($data, $this->request->getData());
             if ($this->Table->save($data)) {
@@ -147,7 +147,7 @@ class CRUDComponent extends Component
         ];
         if (!empty($params)) {
             foreach ($params as $param => $paramValue) {
-                if (strpos($param, '.') !== null) {
+                if (strpos($param, '.') !== false) {
                     $param = explode('.', $param);
                     if ($param[0] === $this->Table->getAlias()) {
                         $massagedFilters['simpleFilters'][implode('.', $param)] = $paramValue;
@@ -155,7 +155,7 @@ class CRUDComponent extends Component
                         $massagedFilters['relatedFilters'][implode('.', $param)] = $paramValue;
                     }
                 } else {
-                    $massagedFilters['simpleFilters'][] = $params;
+                    $massagedFilters['simpleFilters'][$param] = $paramValue;
                 }
             }
         }
@@ -180,6 +180,9 @@ class CRUDComponent extends Component
         $conditions = array();
         if (!empty($params['simpleFilters'])) {
             foreach ($params['simpleFilters'] as $filter => $filterValue) {
+                if ($filter === 'quickFilter') {
+                    continue;
+                }
                 if (strlen(trim($filterValue, '%')) === strlen($filterValue)) {
                     $query->where([$filter => $filterValue]);
                 } else {
