@@ -13,6 +13,10 @@ echo $this->element(
                 'path' => 'uuid'
             ],
             [
+                'key' => __('Username'),
+                'path' => 'username'
+            ],
+            [
                 'key' => __('Email'),
                 'path' => 'individual.email'
             ],
@@ -37,6 +41,17 @@ echo $this->element(
                 'scope' => 'individuals'
             ]
         ],
-        'children' => []
+        'children' => [
+            [
+                'url' => '/AuthKeys/index?users_id={{0}}',
+                'url_params' => ['id'],
+                'title' => __('Authentication keys')
+            ],
+            [
+                'url' => '/EncryptionKeys/index?users_id={{0}}',
+                'url_params' => ['id'],
+                'title' => __('Encryption keys')
+            ]
+        ]
     ]
 );

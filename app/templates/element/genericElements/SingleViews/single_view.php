@@ -46,10 +46,11 @@
     $ajaxLists = '';
     if (!empty($children)) {
         foreach ($children as $child) {
-            $listElements .= $this->element(
+            $ajaxLists .= $this->element(
                 '/genericElements/SingleViews/child',
                 array(
-                    'value' => $child
+                    'child' => $child,
+                    'data' => $data
                 )
             );
         }
@@ -58,10 +59,11 @@
         __('{0} view', \Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::humanize($this->request->getParam('controller')))) :
         $title;
     echo sprintf(
-        '<div><h2>%s</h2>%s%s<table class="table table-striped col-sm-8">%s</table><div id="accordion">%s</div></div>',
+        '<div><h2>%s</h2>%s%s<div class="px-3"><table class="table table-striped col-sm-8">%s</table></div><div id="accordion">%s</div></div>',
         h($title),
         empty($description) ? '' : sprintf('<p>%s</p>', h($description)),
         empty($description_html) ? '' : sprintf('<p>%s</p>', $description_html),
         $listElements,
         $ajaxLists
     );
+?>
