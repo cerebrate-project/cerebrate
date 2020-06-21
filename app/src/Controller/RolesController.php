@@ -6,6 +6,9 @@ use App\Controller\AppController;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\Http\Exception\ForbiddenException;
 
 class RolesController extends AppController
 {
@@ -13,9 +16,11 @@ class RolesController extends AppController
     {
         $this->CRUD->index([
             'filters' => ['name', 'uuid', 'perm_admin'],
-            'quickFilters' => ['name'],
-            'contain' => $this->checkPermission('admin') ? ['Users'] : []
+            'quickFilters' => ['name']
         ]);
+        if ($this->ParamHandler->isRest()) {
+            return $this->restResponsePayload;
+        }
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 
