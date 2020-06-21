@@ -5,6 +5,7 @@ namespace App\Model\Table;
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\ORM\RulesChecker;
 
 class UsersTable extends AppTable
 {
@@ -26,7 +27,7 @@ class UsersTable extends AppTable
                 'cascadeCallbacks' => false
             ]
         );
-        $this->setDisplayField('id');
+        $this->setDisplayField('username');
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -34,5 +35,10 @@ class UsersTable extends AppTable
         $validator
             ->requirePresence(['password'], 'create');
         return $validator;
+    }
+
+    public function buildRules(RulesChecker $rules): RulesChecker
+    {
+        return $rules;
     }
 }

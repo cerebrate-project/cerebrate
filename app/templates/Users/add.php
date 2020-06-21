@@ -11,10 +11,7 @@
                     'options' => $dropdownData['individual']
                 ],
                 [
-                    'field' => 'role_id',
-                    'type' => 'dropdown',
-                    'label' => __('Role'),
-                    'options' => $dropdownData['role']
+                    'field' => 'username'
                 ],
                 [
                     'field' => 'password',
@@ -23,6 +20,12 @@
                 [
                     'field' => 'confirm_password',
                     'label' => __('Confirm Password')
+                ],
+                [
+                    'field' => 'role_id',
+                    'type' => 'dropdown',
+                    'label' => __('Role'),
+                    'options' => $dropdownData['role']
                 ],
                 [
                     'field' => 'disabled',

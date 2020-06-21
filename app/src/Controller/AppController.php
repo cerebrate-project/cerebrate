@@ -39,6 +39,7 @@ class AppController extends Controller
 
     public $isRest = null;
     public $restResponsePayload = null;
+    public $user = null;
 
     /**
      * Initialization hook method.
@@ -56,7 +57,7 @@ class AppController extends Controller
         $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
         $this->loadComponent('RestResponse');
-        $this->loadComponent('ACL');
+        $this->loadComponent('Security');
         $this->loadComponent('ParamHandler', [
             'request' => $this->request
         ]);
@@ -64,7 +65,11 @@ class AppController extends Controller
             'request' => $this->request,
             'table' => $this->{$this->modelClass}
         ]);
-
+        $this->loadComponent('Authentication.Authentication');
+        $this->loadComponent('ACL', [
+            'request' => $this->request,
+            'Authentication' => $this->Authentication
+        ]);
         if (Configure::read('debug')) {
             Configure::write('DebugKit.panels', ['DebugKit.Packages' => true]);
             Configure::write('DebugKit.forceEnable', true);
@@ -80,6 +85,21 @@ class AppController extends Controller
     public function beforeFilter(EventInterface $event)
     {
         $this->isAdmin = true;
+        $this->ACL->setPublicInterfaces();
+        if (!empty($this->request->getAttribute('identity'))) {
+            $this->loadModel('Users');
+            $user = $this->Users->get($this->request->getAttribute('identity')->getIdentifier(), [
+                'contain' => ['Roles', 'Individuals' => 'Organisations']
+            ]);
+            if (!empty($user['disabled'])) {
+                $this->Authentication->logout();
+                $this->Flash->error(__('The user account is disabled.'));
+                return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+            }
+            unset($user['password']);
+            $this->ACL->setUser($user);
+        }
+        $this->ACL->checkAccess();
         $this->set('menu', $this->{$this->modelClass}->getMenu());
         $this->set('ajax', $this->request->is('ajax'));
     }
@@ -93,5 +113,10 @@ class AppController extends Controller
     public function checkPermission($perm_flag)
     {
         return true;
+    }
+
+    public function queryACL()
+    {
+        $this->ACL->findMissingFunctionNames();
     }
 }

@@ -38,8 +38,11 @@ class UsersController extends AppController
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 
-    public function view($id)
+    public function view($id = false)
     {
+        if (empty($id) || empty($this->ACL->getUser()['role']['perm_admin'])) {
+            $id = $this->ACL->getUser()['id'];
+        }
         $this->CRUD->view($id, [
             'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles']
         ]);
@@ -49,9 +52,16 @@ class UsersController extends AppController
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 
-    public function edit($id)
+    public function edit($id = false)
     {
-        $this->CRUD->edit($id);
+        if (empty($id) || empty($this->ACL->getUser()['role']['perm_admin'])) {
+            $id = $this->ACL->getUser()['id'];
+        }
+        $this->CRUD->edit($id, [
+            'get' => [
+                'fields' => ['id', 'individual_id', 'role_id', 'username', 'disabled']
+            ]
+        ]);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }
@@ -75,5 +85,29 @@ class UsersController extends AppController
             return $this->restResponsePayload;
         }
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+    }
+
+    public function login()
+    {
+        $result = $this->Authentication->getResult();
+        // If the user is logged in send them away.
+        if ($result->isValid()) {
+            $target = $this->Authentication->getLoginRedirect() ?? '/instance/home';
+            return $this->redirect($target);
+        }
+        if ($this->request->is('post') && !$result->isValid()) {
+            $this->Flash->error(__('Invalid username or password'));
+        }
+        $this->viewBuilder()->setLayout('login');
+    }
+
+    public function logout()
+    {
+        $result = $this->Authentication->getResult();
+        if ($result->isValid()) {
+            $this->Authentication->logout();
+            $this->Flash->success(__('Goodbye.'));
+            return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+        }
     }
 }

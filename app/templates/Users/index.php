@@ -6,6 +6,17 @@ echo $this->element('genericElements/IndexTable/index_table', [
             'pull' => 'right',
             'children' => [
                 [
+                    'type' => 'simple',
+                    'children' => [
+                        'data' => [
+                            'type' => 'simple',
+                            'text' => __('Add User'),
+                            'class' => 'btn btn-primary',
+                            'popover_url' => '/users/add'
+                        ]
+                    ]
+                ],
+                [
                     'type' => 'search',
                     'button' => __('Filter'),
                     'placeholder' => __('Enter value to search'),
@@ -19,6 +30,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => '#',
                 'sort' => 'id',
                 'data_path' => 'id',
+            ],
+            [
+                'name' => __('Username'),
+                'sort' => 'username',
+                'data_path' => 'username',
             ],
             [
                 'name' => __('Email'),
@@ -55,8 +71,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'url' => '/users/edit',
-                'url_params_data_paths' => ['id'],
+                'onclick' => 'populateAndLoadModal(\'/users/edit/[onclick_params_data_path]\');',
+                'onclick_params_data_path' => 'id',
                 'icon' => 'edit'
             ],
             [
