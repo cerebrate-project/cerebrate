@@ -78,6 +78,26 @@ class AppTable extends Table
                             'skipTopMenu' => 1
                         ]
                     ]
+                ],
+                'EncryptionKeys' => [
+                    'label' => __('Encryption keys'),
+                    'url' => '/encryptionKeys/index',
+                    'children' => [
+                        'index' => [
+                            'url' => '/encryptionKeys/index',
+                            'label' => __('List encryption keys')
+                        ],
+                        'add' => [
+                            'url' => '/encryptionKeys/add',
+                            'label' => __('Add encryption key')
+                        ],
+                        'edit' => [
+                            'url' => '/encryptionKeys/edit/{{id}}',
+                            'label' => __('Edit organisation'),
+                            'actions' => ['edit'],
+                            'skipTopMenu' => 1
+                        ]
+                    ]
                 ]
             ],
             'Administration' => [
@@ -162,9 +182,18 @@ class AppTable extends Table
                             'skipTopMenu' => 1
                         ]
                     ]
+                ],
+                'Instance' => [
+                    __('Instance'),
+                    'url' => '/instance/home',
+                    'children' => [
+                        'home' => [
+                            'url' => '/instance/home',
+                            'label' => __('Home')
+                        ]
+                    ]
                 ]
             ]
-
         ];
     }
 }
