@@ -44,26 +44,27 @@ use Cake\Routing\RouteBuilder;
  */
 /** @var \Cake\Routing\RouteBuilder $routes */
 $routes->setRouteClass(DashedRoute::class);
-
 $routes->scope('/', function (RouteBuilder $builder) {
     $builder->setExtensions(['json']);
     // Register scoped middleware for in scopes.
     $builder->registerMiddleware('csrf', new CsrfProtectionMiddleware([
         'httpOnly' => true,
     ]));
-
     /*
      * Apply a middleware to the current route scope.
      * Requires middleware to be registered through `Application::routes()` with `registerMiddleware()`
+     * Dirty way of disabling the middleware if the AUTHORIZATION header is set
      */
-    $builder->applyMiddleware('csrf');
+     if (empty($_SERVER['HTTP_AUTHORIZATION'])) {
+         $builder->applyMiddleware('csrf');
+     }
 
     /*
      * Here, we are connecting '/' (base path) to a controller called 'Pages',
      * its action called 'display', and we pass a param to select the view file
      * to use (in this case, templates/Pages/home.php)...
      */
-    $builder->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
+    $builder->connect('/', ['controller' => 'Instance', 'action' => 'home']);
 
     /*
      * ...and connect the rest of 'Pages' controller's URLs.
