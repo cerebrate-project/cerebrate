@@ -6,6 +6,17 @@ echo $this->element('genericElements/IndexTable/index_table', [
             'pull' => 'right',
             'children' => [
                 [
+                    'type' => 'simple',
+                    'children' => [
+                        'data' => [
+                            'type' => 'simple',
+                            'text' => __('Add organisation'),
+                            'class' => 'btn btn-primary',
+                            'popover_url' => '/organisations/add'
+                        ]
+                    ]
+                ],
+                [
                     'type' => 'search',
                     'button' => __('Filter'),
                     'placeholder' => __('Enter value to search'),
@@ -68,8 +79,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'url' => '/organisations/edit',
-                'url_params_data_paths' => ['id'],
+                'onclick' => 'populateAndLoadModal(\'/organisations/edit/[onclick_params_data_path]\');',
+                'onclick_params_data_path' => 'id',
                 'icon' => 'edit'
             ],
             [

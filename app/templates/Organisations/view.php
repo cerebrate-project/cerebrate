@@ -40,7 +40,7 @@ echo $this->element(
             [
                 'key' => __('Alignments'),
                 'type' => 'alignment',
-                'path' => 'alignments',
+                'path' => '',
                 'scope' => 'organisations'
             ]
         ],

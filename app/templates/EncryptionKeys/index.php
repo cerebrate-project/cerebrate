@@ -73,8 +73,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'pull' => 'right',
         'actions' => [
             [
-                'url' => '/endcrpyionKeys/view',
-                'url_params_data_paths' => ['id'],
+                'onclick' => 'populateAndLoadModal(\'/encryptionKeys/edit/[onclick_params_data_path]\');',
+                'onclick_params_data_path' => 'id',
                 'icon' => 'eye'
             ],
             [

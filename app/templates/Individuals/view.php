@@ -2,7 +2,6 @@
 echo $this->element(
     '/genericElements/SingleViews/single_view',
     [
-        'title' => __('Individual View'),
         'data' => $entity,
         'fields' => [
             [
@@ -32,7 +31,7 @@ echo $this->element(
             [
                 'key' => __('Alignments'),
                 'type' => 'alignment',
-                'path' => 'alignments',
+                'path' => '',
                 'scope' => 'individuals'
             ]
         ],
