@@ -84,7 +84,7 @@ class AppController extends Controller
 
     public function beforeFilter(EventInterface $event)
     {
-        $this->isAdmin = true;
+        $this->authApiUser();
         $this->ACL->setPublicInterfaces();
         if (!empty($this->request->getAttribute('identity'))) {
             $this->loadModel('Users');
@@ -98,10 +98,34 @@ class AppController extends Controller
             }
             unset($user['password']);
             $this->ACL->setUser($user);
+            $this->isAdmin = $user['role']['perm_admin'];
+        } else if ($this->ParamHandler->isRest()) {
+            throw new MethodNotAllowedException(__('Invalid user credentials.'));
         }
         $this->ACL->checkAccess();
         $this->set('menu', $this->{$this->modelClass}->getMenu());
         $this->set('ajax', $this->request->is('ajax'));
+    }
+
+    private function authApiUser(): void
+    {
+        if (!empty($_SERVER['HTTP_AUTHORIZATION']) && strlen($_SERVER['HTTP_AUTHORIZATION'])) {
+            $this->loadModel('AuthKeys');
+            $authKey = $this->AuthKeys->find()->where([
+                'authkey' => $_SERVER['HTTP_AUTHORIZATION'],
+                'OR' => [
+                    'valid_until' => 0,
+                    'valid_until >' => time()
+                ]
+            ])->first();
+            if (!empty($authKey)) {
+                $this->loadModel('Users');
+                $user = $this->Users->get($authKey['user_id']);
+                if (!empty($user)) {
+                    $this->Authentication->setIdentity($user);
+                }
+            }
+        }
     }
 
     public function generateUUID()
