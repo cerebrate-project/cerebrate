@@ -50,16 +50,20 @@ foreach ($data['menu'] as $name => $menuElement) {
         );
     }
 }
+$logoutButton = sprintf(
+    '<span class="nav-item"><a href="/users/logout" class="nav-link">%s</a></span>',
+    __('Logout')
+);
 $navdata = sprintf(
-    '<div class="collapse navbar-collapse" id="navbarCollapse"><ul class="navbar-nav mr-auto">%s</ul></div>',
-    $navdata
+    '<div class="collapse navbar-collapse" id="navbarCollapse"><ul class="navbar-nav mr-auto">%s%s</ul></div>',
+    $navdata,
+    $logoutButton
 );
 $homeButton = sprintf(
     '<a class="navbar-brand %s" href="%s">%s</a>',
     empty($data['home']['class']) ? '' : h($data['home']['class']),
     empty($data['home']['url']) ? '' : h($data['home']['url']),
     empty($data['home']['text']) ? '' : h($data['home']['text'])
-
 );
 echo sprintf(
     '<nav class="navbar navbar-expand-lg navbar-dark bg-dark">%s%s%s</nav>',
