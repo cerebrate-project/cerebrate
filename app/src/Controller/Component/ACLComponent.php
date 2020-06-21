@@ -8,6 +8,8 @@ use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\ORM\TableRegistry;
+use Cake\Core\Configure;
+use Cake\Core\Configure\Engine\PhpConfig;
 
 class ACLComponent extends Component
 {

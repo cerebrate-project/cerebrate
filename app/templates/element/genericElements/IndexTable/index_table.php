@@ -1,13 +1,13 @@
 <?php
     /*
-     *  echo $this->element('/genericElements/IndexTable/index_table', array(
+     *  echo $this->element('/genericElements/IndexTable/index_table', [
      *      'top_bar' => (
      *          // search/filter bar information compliant with ListTopBar
      *      ),
-     *      'data' => array(
+     *      'data' => [
                 // the actual data to be used
      *      ),
-     *      'fields' => array(
+     *      'fields' => [
      *          // field list with information for the paginator, the elements used for the individual cells, etc
      *      ),
      *      'title' => optional title,
@@ -32,13 +32,13 @@
     }
     $skipPagination = isset($data['skip_pagination']) ? $data['skip_pagination'] : 0;
     if (!$skipPagination) {
-        $paginationData = !empty($data['paginatorOptions']) ? $data['paginatorOptions'] : array();
+        $paginationData = !empty($data['paginatorOptions']) ? $data['paginatorOptions'] : [];
         echo $this->element(
             '/genericElements/IndexTable/pagination',
-            array(
+            [
                 'paginationOptions' => $paginationData,
                 'tableRandomValue' => $tableRandomValue
-            )
+            ]
         );
         if (!$ajax) {
             echo $this->element(
@@ -49,17 +49,20 @@
     if (!empty($data['top_bar'])) {
         echo $this->element(
             '/genericElements/ListTopBar/scaffold',
-            array(
+            [
                 'data' => $data['top_bar'],
                 'tableRandomValue' => $tableRandomValue
-            )
+            ]
         );
     }
     $rows = '';
     $row_element = isset($data['row_element']) ? $data['row_element'] : 'row';
-    $options = isset($data['options']) ? $data['options'] : array();
-    $actions = isset($data['actions']) ? $data['actions'] : array();
-    $dblclickActionArray = isset($data['actions']) ? $this->Hash->extract($data['actions'], '{n}[dbclickAction]') : array();
+    $options = isset($data['options']) ? $data['options'] : [];
+    $actions = isset($data['actions']) ? $data['actions'] : [];
+    if ($this->request->getParam('prefix') === 'Open') {
+        $actions = [];
+    }
+    $dblclickActionArray = !empty($actions) ? $this->Hash->extract($actions, '{n}[dbclickAction]') : [];
     $dbclickAction = '';
     foreach ($data['data'] as $k => $data_row) {
         $primary = null;
@@ -78,7 +81,7 @@
             empty($data['class']) ? '' : h($data['row_class']),
             $this->element(
                 '/genericElements/IndexTable/' . $row_element,
-                array(
+                [
                     'k' => $k,
                     'row' => $data_row,
                     'fields' => $data['fields'],
@@ -86,7 +89,7 @@
                     'actions' => $actions,
                     'primary' => $primary,
                     'tableRandomValue' => $tableRandomValue
-                )
+                ]
             )
         );
     }
@@ -96,12 +99,12 @@
         $tableRandomValue,
         $this->element(
             '/genericElements/IndexTable/headers',
-            array(
+            [
                 'fields' => $data['fields'],
                 'paginator' => $this->Paginator,
-                'actions' => (empty($data['actions']) ? false : true),
+                'actions' => (empty($actions) ? false : true),
                 'tableRandomValue' => $tableRandomValue
-            )
+            ]
         ),
         $tbody
     );

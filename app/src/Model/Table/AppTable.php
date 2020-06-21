@@ -4,6 +4,8 @@ namespace App\Model\Table;
 
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Core\Configure;
+use Cake\Core\Configure\Engine\PhpConfig;
 
 class AppTable extends Table
 {
@@ -13,6 +15,7 @@ class AppTable extends Table
 
     public function getMenu()
     {
+        $open = Configure::read('Cerebrate.open');
         return [
             'ContactDB' => [
                 'Individuals' => [
@@ -192,6 +195,30 @@ class AppTable extends Table
                             'label' => __('Home')
                         ]
                     ]
+                ]
+            ],
+            'Open' => [
+                'Organisations' => [
+                    'label' => __('Organisations'),
+                    'url' => '/open/organisations/index',
+                    'children' => [
+                        'index' => [
+                            'url' => '/open/organisations/index',
+                            'label' => __('List organisations')
+                        ],
+                    ],
+                    'open' => in_array('organisations', Configure::read('Cerebrate.open'))
+                ],
+                'Individuals' => [
+                    'label' => __('Individuals'),
+                    'url' => '/open/individuals/index',
+                    'children' => [
+                        'index' => [
+                            'url' => '/open/individuals/index',
+                            'label' => __('List individuals')
+                        ],
+                    ],
+                    'open' => in_array('individuals', Configure::read('Cerebrate.open'))
                 ]
             ]
         ];

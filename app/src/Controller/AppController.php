@@ -105,6 +105,7 @@ class AppController extends Controller
         $this->ACL->checkAccess();
         $this->set('menu', $this->{$this->modelClass}->getMenu());
         $this->set('ajax', $this->request->is('ajax'));
+        $this->request->getParam('prefix');
     }
 
     private function authApiUser(): void
