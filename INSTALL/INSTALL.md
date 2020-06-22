@@ -19,10 +19,10 @@ Create a database for cerebrate
 ```
 mysql
 CREATE DATABASE cerebrate;
-CREATE USER 'cerebrate'@'localhost' IDENTIFIED BY 'YOUR_PASSWORD'
+CREATE USER 'cerebrate'@'localhost' IDENTIFIED BY 'YOUR_PASSWORD';
 GRANT USAGE ON *.* to cerebrate@localhost;
 GRANT ALL PRIVILEGES ON cerebrate.* to cerebrate@localhost;
-FLUSH ALL PRIVILEGES;
+FLUSH PRIVILEGES;
 ```
 
 Load the default table structure into the database
