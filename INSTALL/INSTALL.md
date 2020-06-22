@@ -28,7 +28,7 @@ FLUSH PRIVILEGES;
 Load the default table structure into the database
 
 ```
-mysql -u cerebrate -p cerebrate < /var/www/cerebrate/INSTALL/MYSQL.sql
+mysql -u cerebrate -p cerebrate < /var/www/cerebrate/INSTALL/mysql.sql
 ```
 
 create your local configuration and set the db credentials
