@@ -88,6 +88,7 @@ $routes->scope('/', function (RouteBuilder $builder) {
 });
 
 $routes->prefix('Open', function (RouteBuilder $routes) {
+    $routes->setExtensions(['json']);
     $routes->fallbacks(DashedRoute::class);
 });
 
