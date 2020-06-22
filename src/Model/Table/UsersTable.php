@@ -53,7 +53,7 @@ class UsersTable extends AppTable
             ]);
             $this->Roles->save($role);
             $this->Individuals = TableRegistry::get('Individuals');
-            $individual = $this->Individual->newEntity([
+            $individual = $this->Individuals->newEntity([
                 'email' => 'admin@admin.test'
             ]);
             $this->Individuals->save($individual);
