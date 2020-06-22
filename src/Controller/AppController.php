@@ -84,10 +84,11 @@ class AppController extends Controller
 
     public function beforeFilter(EventInterface $event)
     {
+        $this->loadModel('Users');
+        $this->Users->checkForNewInstance();
         $this->authApiUser();
         $this->ACL->setPublicInterfaces();
         if (!empty($this->request->getAttribute('identity'))) {
-            $this->loadModel('Users');
             $user = $this->Users->get($this->request->getAttribute('identity')->getIdentifier(), [
                 'contain' => ['Roles', 'Individuals' => 'Organisations']
             ]);
