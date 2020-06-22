@@ -6,6 +6,7 @@ use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\ORM\RulesChecker;
+use Cake\ORM\TableRegistry;
 
 class UsersTable extends AppTable
 {
