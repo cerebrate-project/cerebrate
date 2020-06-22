@@ -18,10 +18,10 @@
      */
     $tableRandomValue = Cake\Utility\Security::randomString(8);
     echo '<div id="table-container-' . h($tableRandomValue) . '">';
-    if (!$ajax && !empty($data['title'])) {
+    if (!empty($data['title'])) {
         echo sprintf('<h2>%s</h2>', h($data['title']));
     }
-    if (!$ajax && !empty($data['description'])) {
+    if (!empty($data['description'])) {
         echo sprintf(
             '<div>%s</div>',
             empty($data['description']) ? '' : h($data['description'])
@@ -40,11 +40,9 @@
                 'tableRandomValue' => $tableRandomValue
             ]
         );
-        if (!$ajax) {
-            echo $this->element(
-                '/genericElements/IndexTable/pagination_links'
-            );
-        }
+        echo $this->element(
+            '/genericElements/IndexTable/pagination_links'
+        );
     }
     if (!empty($data['top_bar'])) {
         echo $this->element(
