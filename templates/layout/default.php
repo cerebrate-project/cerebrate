@@ -42,7 +42,7 @@ $cakeDescription = 'Cerebrate';
     <header>
         <?= $this->element('header') ?>
     </header>
-    <main role="main" class="container-fluid">
+    <main role="main">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-1 d-none d-xl-block bg-light sidebar" style="padding:0px;margin:0px;">
