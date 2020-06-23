@@ -45,10 +45,11 @@ $cakeDescription = 'Cerebrate';
     <main role="main" class="container-fluid">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-2 d-none d-md-block col-lg-1 bg-light sidebar" style="padding:0px;margin:0px;">
+                <div class="col-1 d-none d-xl-block bg-light sidebar" style="padding:0px;margin:0px;">
                     <?= $this->element('side_menu') ?>
                 </div>
-                <div role="main" class="col-md-10 ml-sm-auto col-lg-11 pt-3 px-4">
+                <div role="main" class="col-xl-11 col-lg-12 ml-sm-auto pt-3 px-4">
+                    <div class="col-12 d-xl-none px-0"><?= $this->element('side_menu', ['minimal' => 1]) ?></div>
                     <?= $this->Flash->render() ?>
                     <?= $this->fetch('content') ?>
                 </div>
