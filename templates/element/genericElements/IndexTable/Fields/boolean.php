@@ -44,7 +44,7 @@
         $rules_raw = implode('<br />', $rules_raw);
     }
     echo sprintf(
-        '<i class="black fa fa-%s"></i>%s',
+        '<i class="fa fa-%s"></i>%s',
         (!empty($this->Hash->extract($row, $field['data_path'])[0])) ? 'check' : 'times',
         empty($rules_raw) ? '' :
         sprintf(

@@ -26,7 +26,13 @@ $cakeDescription = 'Cerebrate';
         <?= $this->fetch('title') ?>
     </title>
     <?= $this->Html->meta('icon') ?>
-    <?= $this->Html->css('bootstrap.css') ?>
+    <?php
+        if (empty($darkMode)) {
+            echo $this->Html->css('bootstrap.css');
+        } else {
+            echo $this->Html->css('darkly-bootstrap.css');
+        }
+    ?>
     <?= $this->Html->css('main.css') ?>
     <?= $this->Html->css('font-awesome') ?>
     <?= $this->Html->script('jquery-3.5.1.min.js') ?>
@@ -45,7 +51,7 @@ $cakeDescription = 'Cerebrate';
     <main role="main">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-1 d-none d-xl-block bg-light sidebar" style="padding:0px;margin:0px;">
+                <div class="col-1 d-none d-xl-block sidebar p-0">
                     <?= $this->element('side_menu') ?>
                 </div>
                 <div role="main" class="col-xl-11 col-lg-12 ml-sm-auto pt-3 px-4">
@@ -56,9 +62,6 @@ $cakeDescription = 'Cerebrate';
             </div>
         </div>
     </main>
-    <footer class="footer">
-        <?= $this->element('footer') ?>
-    </footer>
     <div id="mainModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel" aria-hidden="true"></div>
 </body>
 </html>

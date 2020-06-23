@@ -90,6 +90,7 @@ return [
         ],
     ],
     'Cerebrate' => [
-	'open' => []
+	'open' => [],
+    'dark' => 0
     ]
 ];

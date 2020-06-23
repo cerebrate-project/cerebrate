@@ -1,11 +1,13 @@
 <?php
 $children = '';
+$backgroundColour = $darkMode ? 'bg-dark' : 'bg-light';
 if (isset($menu[$metaGroup])) {
     foreach ($menu[$metaGroup] as $scope => $scopeData) {
         $children .= sprintf(
-            '<li class="sidebar-header"><a href="%s" class="%s">%s</a></li>',
+            '<a href="%s" class="font-weight-bold list-group-item list-group-item-action %s %s pl-1 border-0">%s</a>',
             empty($scopeData['url']) ? '#' : h($scopeData['url']),
             empty($scopeData['class']) ? '' : h($scopeData['class']),
+            $backgroundColour,
             empty($scopeData['label']) ? h($scope) : $scopeData['label']
         );
         foreach ($scopeData['children'] as $action => $data) {
@@ -31,17 +33,20 @@ if (isset($menu[$metaGroup])) {
                     );
                 }
             }
+            $active = ($scope === $this->request->getParam('controller') && $action === $this->request->getParam('action'));
             $children .= sprintf(
-                '<li class="sidebar-element %s"><a href="%s" class="%s">%s</a></li>',
-                ($scope === $this->request->getParam('controller') && $action === $this->request->getParam('action')) ? 'active' : '',
+                '<a href="%s" class="list-group-item list-group-item-action %s %s pl-3 border-0 %s">%s</a>',
                 empty($data['url']) ? '#' : h($data['url']),
                 empty($data['class']) ? '' : h($data['class']),
+                $active ? 'active' : '',
+                $active ? '' : $backgroundColour,
                 empty($data['label']) ? h($action) : $data['label']
             );
         }
     }
 }
 echo sprintf(
-    '<div class="side-menu-div" id="side-menu-div"><ul class="side-bar-ul" style="width:100%%;">%s</ul></div>',
+    '<div class="list-group %s h-100" id="side-menu-div">%s</div>',
+    $backgroundColour,
     $children
 );

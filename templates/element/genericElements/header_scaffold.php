@@ -66,7 +66,8 @@ $homeButton = sprintf(
     empty($data['home']['text']) ? '' : h($data['home']['text'])
 );
 echo sprintf(
-    '<nav class="navbar navbar-expand-lg navbar-dark bg-dark">%s%s%s</nav>',
+    '<nav class="navbar navbar-expand-lg navbar-dark %s">%s%s%s</nav>',
+    $darkMode ? 'bg-primary' : 'bg-dark',
     $homeButton,
     '<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>',
     $navdata
