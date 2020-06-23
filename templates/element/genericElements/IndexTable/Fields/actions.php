@@ -66,7 +66,7 @@
                 '',
                 $url,
                 array(
-                    'class' => $this->FontAwesome->getClass($action['icon']) . ' black ' . (empty($action['class']) ? '' : h($action['class'])),
+                    'class' => $this->FontAwesome->getClass($action['icon']) . (empty($action['class']) ? '' : h($action['class'])),
                     'title' => empty($action['title']) ? '' : h($action['title']),
                     'aria-label' => empty($action['aria-label']) ? '' : h($action['aria-label']),
                 ),

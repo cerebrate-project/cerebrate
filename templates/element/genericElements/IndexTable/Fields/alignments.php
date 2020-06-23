@@ -4,7 +4,7 @@ $alignments = '';
 if ($field['scope'] === 'individuals') {
     foreach ($raw_alignments as $alignment) {
         $alignments .= sprintf(
-            '<div><span class="font-weight-bold">%s</span> @ %s <a href="#" class="fas fa-trash text-black" onClick="%s"></a></div>',
+            '<div><span class="font-weight-bold">%s</span> @ %s <a href="#" class="fas fa-trash .text-reset .text-decoration-none" onClick="%s"></a></div>',
             h($alignment['type']),
             sprintf(
                 '<a href="/organisations/view/%s">%s</a>',
@@ -23,7 +23,7 @@ if ($field['scope'] === 'individuals') {
 } else if ($field['scope'] === 'organisations') {
     foreach ($raw_alignments as $alignment) {
         $alignments .= sprintf(
-            '<div>[<span class="font-weight-bold">%s</span>] %s <a href="#" class="fas fa-trash text-black" onClick="%s"></a></div>',
+            '<div>[<span class="font-weight-bold">%s</span>] %s <a href="#" class="fas fa-trash .text-reset .text-decoration-none" onClick="%s"></a></div>',
             h($alignment['type']),
             sprintf(
                 '<a href="/individuals/view/%s">%s</a>',

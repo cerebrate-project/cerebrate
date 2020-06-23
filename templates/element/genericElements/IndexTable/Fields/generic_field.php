@@ -13,7 +13,7 @@
     }
     if (is_bool($data)) {
         $data = sprintf(
-            '<i class="black fa fa-%s"></i>',
+            '<i class="fa fa-%s"></i>',
             $data ? 'check' : 'times'
         );
         $data = '';
