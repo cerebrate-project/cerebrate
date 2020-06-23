@@ -5,6 +5,8 @@ namespace App\Model\Table;
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Event\EventInterface;
+use ArrayObject;
 
 class EncryptionKeysTable extends AppTable
 {
@@ -31,11 +33,14 @@ class EncryptionKeysTable extends AppTable
 
     public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options)
     {
-        if (isset($data['owner_id'])) {
-            if (empty($data['owner_type']) || !in_array(['individual', 'organisation'], $data['owner_type'])) {
+        if (empty($data['owner_id'])) {
+            if (empty($data['owner_type'])) {
                 return false;
             }
-            $data[$data['owner_type'] . '_id'] = $data['owner_id'];
+            if (empty($data[$data['owner_type'] . '_id'])) {
+                return false;
+            }
+            $data['owner_id'] = $data[$data['owner_type'] . '_id'];
         }
     }
 
