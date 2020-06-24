@@ -28,9 +28,11 @@ Managing public keys and assigning them to users both for communication and vali
 
 ![Encryption key management](/documentation/images/add_encryption_key.png)
 
-# Requirements
+# Requirements and installation
 
 The platform is built on CakePHP 4 along with Bootstrap 4 and shares parts of the code-base with [MISP](https://www.github.com/MISP).
+
+The installation is documented at the following location [INSTALL/INSTALL.md](INSTALL/INSTALL.md)
 
 # License
 
