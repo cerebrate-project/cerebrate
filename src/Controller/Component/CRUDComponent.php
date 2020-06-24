@@ -48,11 +48,17 @@ class CRUDComponent extends Component
         }
     }
 
-    public function add(): void
+    public function add(array $params = []): void
     {
         $data = $this->Table->newEmptyEntity();
         if ($this->request->is('post')) {
-            $data = $this->Table->patchEntity($data, $this->request->getData());
+            $input = $this->request->getData();
+            if (!empty($params['override'])) {
+                foreach ($params['override'] as $field => $value) {
+                    $input[$field] = $value;
+                }
+            }
+            $data = $this->Table->patchEntity($data, $input);
             if ($this->Table->save($data)) {
                 $message = __('{0} added.', $this->ObjectAlias);
                 if ($this->Controller->ParamHandler->isRest()) {
@@ -81,6 +87,12 @@ class CRUDComponent extends Component
         }
         $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : []);
         if ($this->request->is(['post', 'put'])) {
+            $input = $this->request->getData();
+            if (!empty($params['override'])) {
+                foreach ($params['override'] as $field => $value) {
+                    $input[$field] = $value;
+                }
+            }
             $this->Table->patchEntity($data, $this->request->getData());
             if ($this->Table->save($data)) {
                 $message = __('{0} updated.', $this->ObjectAlias);
