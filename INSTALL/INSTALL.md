@@ -2,7 +2,7 @@
 
 An Ubuntu server (18.04/20.04 should both work fine) - though other linux installations should work too.
 - apache2, mysql/mariadb, sqlite need to be installed and running
-- php extensions for mysql, sqlite need to be installed and running
+- php extensions for intl, mysql, sqlite need to be installed and running
 
 
 ## Cerebrate installation instructions
@@ -49,4 +49,8 @@ Simply modify the Datasource -> default array's username, password, database fie
 
 Create an apache config file for cerebrate / ssh key and point the document root to /var/www/cerebrate/webroot/index.php and you're good to go
 
+To log in use the default credentials below:
+
+username: admin
+Password: Password1234
 
