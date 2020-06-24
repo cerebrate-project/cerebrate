@@ -286,9 +286,37 @@ CREATE TABLE `users` (
   KEY `individual_id` (`individual_id`),
   CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`),
   CONSTRAINT `users_ibfk_2` FOREIGN KEY (`individual_id`) REFERENCES `individuals` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+CREATE TABLE `sharing_groups` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(40) CHARACTER SET ascii DEFAULT NULL,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `releasability` text DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `organisation_id` int(10) unsigned NOT NULL,
+  `user_id` int(10) unsigned NOT NULL,
+  `active` tinyint(1) DEFAULT '1',
+  `local` tinyint(1) DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `uuid` (`uuid`),
+  KEY `user_id` (`user_id`),
+  KEY `organisation_id` (`organisation_id`),
+  KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `sharing_group_orgs` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT, 
+  `sharing_group_id` int(10) unsigned NOT NULL,
+  `organisation_id` int(10) unsigned NOT NULL,
+  `deleted` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `sharing_group_id` (`sharing_group_id`),
+  KEY `organisation_id` (`organisation_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
