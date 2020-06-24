@@ -103,6 +103,28 @@ class AppTable extends Table
                     ]
                 ]
             ],
+            'Trust Circles' => [
+                'SharingGroups' => [
+                    'label' => __('Sharing Groups'),
+                    'url' => '/sharingGroups/index',
+                    'children' => [
+                        'index' => [
+                            'url' => '/sharingGroups/index',
+                            'label' => __('List sharing groups')
+                        ],
+                        'add' => [
+                            'url' => '/SharingGroups/add',
+                            'label' => __('Add sharing group')
+                        ],
+                        'edit' => [
+                            'url' => '/SharingGroups/edit/{{id}}',
+                            'label' => __('Edit sharing group'),
+                            'actions' => ['edit'],
+                            'skipTopMenu' => 1
+                        ]
+                    ]
+                ]
+            ],
             'Administration' => [
                 'Roles' => [
                     'label' => __('Roles'),
