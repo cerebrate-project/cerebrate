@@ -12,7 +12,7 @@ class SharingGroupsController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'contain' => ['SharingGroupOrgs', 'Organisations', 'Users'],
+            'contain' => ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]],
             'filters' => ['uuid', 'description', 'releasability', 'Organisations.name', 'Organisations.uuid']
         ]);
         if ($this->ParamHandler->isRest()) {
@@ -46,7 +46,7 @@ class SharingGroupsController extends AppController
     public function view($id)
     {
         $this->CRUD->view($id, [
-            'contain' => ['SharingGroupOrgs', 'Organisations', 'Users']
+            'contain' => ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]]
         ]);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
