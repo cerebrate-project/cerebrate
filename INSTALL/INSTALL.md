@@ -13,7 +13,7 @@ Install dependencies
 sudo apt install composer apache2 libapache2-mod-php php php-intl php-mysql php-mbstring php-sqlite3 php-xml unzip mariadb-server
 ```
 
-Simply clone this repository (for example into /var/www/cerebrate)
+Clone this repository (for example into /var/www/cerebrate)
 
 ```
 sudo mkdir /var/www/cerebrate
@@ -40,9 +40,8 @@ FLUSH PRIVILEGES;
 ```
 
 ```
-mysql
 sudo mysql -e "CREATE DATABASE cerebrate;"
-sudo mysql -e "CREATE USER 'cerebrate'@'localhost' IDENTIFIED BY 'YOUR_PASSWORD';"
+sudo mysql -e "CREATE USER 'cerebrate'@'localhost' IDENTIFIED BY 'YOuR_Pa$$WORD!';"
 sudo mysql -e "GRANT USAGE ON *.* to cerebrate@localhost;"
 sudo mysql -e "GRANT ALL PRIVILEGES ON cerebrate.* to cerebrate@localhost;"
 sudo mysql -e "FLUSH PRIVILEGES;"
@@ -64,6 +63,12 @@ sudo -u www-data vim /var/www/cerebrate/config/app_local.php
 Modify the Datasource -> default array's username, password, database fields
 
 Create an apache config file for cerebrate / ssh key and point the document root to /var/www/cerebrate/webroot/index.php and you're good to go.
+
+mod_rewrite needs to be enabled:
+
+```
+sudo a2enmod rewrite
+```
 
 For development installs the following can be done:
 
