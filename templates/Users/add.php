@@ -15,11 +15,13 @@
                 ],
                 [
                     'field' => 'password',
-                    'label' => __('Password')
+                    'label' => __('Password'),
+                    'type' => 'password'
                 ],
                 [
                     'field' => 'confirm_password',
-                    'label' => __('Confirm Password')
+                    'label' => __('Confirm Password'),
+                    'type' => 'password'
                 ],
                 [
                     'field' => 'role_id',
