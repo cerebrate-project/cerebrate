@@ -1,9 +1,10 @@
 ## Requirements
 
-An Ubuntu server (18.04/20.04 should both work fine) - though other Linux installations should work too.
-- sqlite, apache2, mysql/mariadb need to be installed and running
+An Ubuntu server (18.04/20.04 should both work fine) - though other linux installations should work too.
+- apache2, mysql/mariadb, sqlite need to be installed and running
 - php extensions for intl, mysql, sqlite3, mbstring, xml need to be installed and running
 - composer
+sudo apt install apache2 mariadb-server git composer php-intl php-mbstring php-dom php-ldap php-sqlite3 sqlite libapache2-mod-php php-mysql
 
 
 ## Cerebrate installation instructions
@@ -69,6 +70,19 @@ mod_rewrite needs to be enabled:
 ```
 sudo a2enmod rewrite
 ```
+
+Simply modify the Datasource -> default array's username, password, database fields
+This would be, when following the steps above:
+
+```
+    'Datasources' => [
+        'default' => [
+            'host' => 'localhost',
+            'username' => 'cerebrate',
+            'password' => 'YOUR_PASSWORD',
+            'database' => 'cerebrate',
+```
+Create an apache config file for cerebrate / ssh key and point the document root to /var/www/cerebrate/webroot/index.php and you're good to go
 
 For development installs the following can be done:
 
