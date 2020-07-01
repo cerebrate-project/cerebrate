@@ -4,14 +4,13 @@ An Ubuntu server (18.04/20.04 should both work fine) - though other linux instal
 - apache2, mysql/mariadb, sqlite need to be installed and running
 - php extensions for intl, mysql, sqlite3, mbstring, xml need to be installed and running
 - composer
-sudo apt install apache2 mariadb-server git composer php-intl php-mbstring php-dom php-ldap php-sqlite3 sqlite libapache2-mod-php php-mysql
 
 
 ## Cerebrate installation instructions
 
-Install dependencies
+It should be sufficient to issue the following command to install the dependencies:
 ```
-sudo apt install composer apache2 libapache2-mod-php php php-intl php-mysql php-mbstring php-sqlite3 php-xml unzip mariadb-server
+sudo apt install apache2 mariadb-server git composer php-intl php-mbstring php-dom php-xml unzip php-ldap php-sqlite3 sqlite libapache2-mod-php php-mysql
 ```
 
 Clone this repository (for example into /var/www/cerebrate)
@@ -31,6 +30,7 @@ sudo -u www-data composer install
 
 Create a database for cerebrate
 
+From SQL shell:
 ```
 mysql
 CREATE DATABASE cerebrate;
@@ -40,9 +40,10 @@ GRANT ALL PRIVILEGES ON cerebrate.* to cerebrate@localhost;
 FLUSH PRIVILEGES;
 ```
 
+Or from Bash:
 ```
 sudo mysql -e "CREATE DATABASE cerebrate;"
-sudo mysql -e "CREATE USER 'cerebrate'@'localhost' IDENTIFIED BY 'YOuR_Pa$$WORD!';"
+sudo mysql -e "CREATE USER 'cerebrate'@'localhost' IDENTIFIED BY 'YOUR_PASSWORD';"
 sudo mysql -e "GRANT USAGE ON *.* to cerebrate@localhost;"
 sudo mysql -e "GRANT ALL PRIVILEGES ON cerebrate.* to cerebrate@localhost;"
 sudo mysql -e "FLUSH PRIVILEGES;"
