@@ -3,7 +3,7 @@
         echo sprintf(
             '%s',
             sprintf(
-                '<button id="submitButton" class="btn btn-primary" onClick="%s">%s</button>',
+                '<button id="submitButton" class="btn btn-primary" onClick="%s" autofocus>%s</button>',
                 "$('#form-" . h($formRandomValue) . "').submit()",
                 __('Submit')
             )

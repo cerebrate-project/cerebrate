@@ -8,4 +8,5 @@ use Cake\ORM\Entity;
 class AuthKey extends AppModel
 {
 
+    protected $_hidden = ['authkey'];
 }

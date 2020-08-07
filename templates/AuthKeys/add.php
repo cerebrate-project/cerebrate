@@ -13,8 +13,8 @@ echo $this->element('genericElements/Form/genericForm', array(
                 'field' => 'comment'
             ),
             array(
-                'field' => 'valid_until',
-                'label' => 'Validity'
+                'field' => 'expiration',
+                'label' => 'Expiration'
             )
         ),
         'submit' => array(

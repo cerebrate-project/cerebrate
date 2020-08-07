@@ -14,9 +14,13 @@
     $data = h($data);
     if (is_numeric($data)) {
         if ($data == 0) {
-            __('N/A');
+            $data = '<span class="text-primary font-weight-bold">' . __('Indefinite') . '</span>';
         } else {
-            $data = date('Y-m-d H:i:s', $data);
+            if ($data <= time()) {
+                $data = '<span class="text-danger font-weight-bold">' . __('Expired') . '</span>';
+            } else {
+                $data = '<span class="text-success font-weight-bold">' . date('Y-m-d H:i:s', $data) . '</span>';
+            }
         }
     }
     if (!empty($field['onClick'])) {

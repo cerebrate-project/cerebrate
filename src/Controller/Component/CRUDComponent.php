@@ -4,6 +4,7 @@ namespace App\Controller\Component;
 
 use Cake\Controller\Component;
 use Cake\Error\Debugger;
+use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 
 class CRUDComponent extends Component
@@ -62,10 +63,15 @@ class CRUDComponent extends Component
             if ($this->Table->save($data)) {
                 $message = __('{0} added.', $this->ObjectAlias);
                 if ($this->Controller->ParamHandler->isRest()) {
-                    $data = $this->Table->get($id);
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
                 } else {
                     $this->Controller->Flash->success($message);
+                    if (!empty($params['displayOnSuccess'])) {
+                        $this->Controller->set('entity', $data);
+                        $this->Controller->set('referer', $this->Controller->referer());
+                        $this->Controller->render($params['displayOnSuccess']);
+                        return;
+                    }
                     $this->Controller->redirect(['action' => 'index']);
                 }
             } else {
@@ -97,7 +103,6 @@ class CRUDComponent extends Component
             if ($this->Table->save($data)) {
                 $message = __('{0} updated.', $this->ObjectAlias);
                 if ($this->Controller->ParamHandler->isRest()) {
-                    $data = $this->Table->get($id);
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
                 } else {
                     $this->Controller->Flash->success($message);

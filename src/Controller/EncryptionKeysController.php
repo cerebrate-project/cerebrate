@@ -37,7 +37,7 @@ class EncryptionKeysController extends AppController
 
     public function add()
     {
-        $this->CRUD->add();
+        $this->CRUD->add(['displayOnSuccess' => 'add_success']);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }

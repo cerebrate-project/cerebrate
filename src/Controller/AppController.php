@@ -114,13 +114,7 @@ class AppController extends Controller
     {
         if (!empty($_SERVER['HTTP_AUTHORIZATION']) && strlen($_SERVER['HTTP_AUTHORIZATION'])) {
             $this->loadModel('AuthKeys');
-            $authKey = $this->AuthKeys->find()->where([
-                'authkey' => $_SERVER['HTTP_AUTHORIZATION'],
-                'OR' => [
-                    'valid_until' => 0,
-                    'valid_until >' => time()
-                ]
-            ])->first();
+            $authKey = $this->AuthKeys->checkKey($_SERVER['HTTP_AUTHORIZATION']);
             if (!empty($authKey)) {
                 $this->loadModel('Users');
                 $user = $this->Users->get($authKey['user_id']);

@@ -39,16 +39,33 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'name' => __('Auth key'),
                 'sort' => 'authkey',
-                'data_path' => 'authkey',
+                'element' => 'authkey',
                 'privacy' => 1
-            ]
+            ],
+            [
+                'name' => __('Expiration'),
+                'sort' => 'expiration',
+                'data_path' => 'expiration',
+                'element' => 'expiration'
+            ],
+            [
+                'name' => __('Disabled'),
+                'sort' => 'disabled',
+                'data_path' => 'disabled',
+                'element' => 'boolean'
+            ],
+            [
+                'name' => __('Comment'),
+                'sort' => 'comment',
+                'data_path' => 'comment',
+            ],
         ],
         'title' => __('Authentication key Index'),
         'description' => __('A list of API keys bound to a user.'),
         'pull' => 'right',
         'actions' => [
             [
-                'onclick' => 'populateAndLoadModal(\'/encryptionKeys/delete/[onclick_params_data_path]\');',
+                'onclick' => 'populateAndLoadModal(\'/authKeys/delete/[onclick_params_data_path]\');',
                 'onclick_params_data_path' => 'id',
                 'icon' => 'trash'
             ]

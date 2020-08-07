@@ -19,12 +19,13 @@ class AuthKeysController extends AppController
         $this->CRUD->index([
             'filters' => ['users.username', 'authkey', 'comment', 'users.id'],
             'quickFilters' => ['authkey', 'comment'],
-            'contain' => ['Users']
+            'contain' => ['Users'],
+            'exclude_fields' => ['authkey']
         ]);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
+        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 
     public function delete($id)
@@ -33,12 +34,15 @@ class AuthKeysController extends AppController
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
+        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 
     public function add()
     {
-        $this->CRUD->add();
+        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $this->CRUD->add([
+            'displayOnSuccess' => 'authkey_display'
+        ]);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }
@@ -49,6 +53,5 @@ class AuthKeysController extends AppController
             ])
         ];
         $this->set(compact('dropdownData'));
-        $this->set('metaGroup', 'ContactDB');
     }
 }
