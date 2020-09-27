@@ -29,6 +29,7 @@
                     'field' => 'type'
                 )
             ),
+            'metaFields' => empty($metaFields) ? [] : $metaFields,
             'submit' => array(
                 'action' => $this->request->getParam('action')
             )

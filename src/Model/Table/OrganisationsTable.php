@@ -8,6 +8,8 @@ use Cake\Validation\Validator;
 
 class OrganisationsTable extends AppTable
 {
+    public $metaFields = 'organisation';
+
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -23,6 +25,13 @@ class OrganisationsTable extends AppTable
             [
                 'foreignKey' => 'owner_id',
                 'conditions' => ['owner_type' => 'organisation']
+            ]
+        );
+        $this->hasMany(
+            'MetaFields',
+            [
+                'foreignKey' => 'parent_id',
+                'conditions' => ['scope' => 'organisation']
             ]
         );
         $this->setDisplayField('name');

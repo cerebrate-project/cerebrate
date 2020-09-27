@@ -61,9 +61,13 @@ class AppController extends Controller
         $this->loadComponent('ParamHandler', [
             'request' => $this->request
         ]);
+        $this->loadModel('MetaFields');
+        $this->loadModel('MetaTemplates');
         $this->loadComponent('CRUD', [
             'request' => $this->request,
-            'table' => $this->{$this->modelClass}
+            'table' => $this->{$this->modelClass},
+            'MetaFields' => $this->MetaFields,
+            'MetaTemplates' => $this->MetaTemplates
         ]);
         $this->loadComponent('Authentication.Authentication');
         $this->loadComponent('ACL', [

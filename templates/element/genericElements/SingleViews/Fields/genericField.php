@@ -1,6 +1,10 @@
 <?php
-$value = Cake\Utility\Hash::extract($data, $field['path']);
-$string = empty($value[0]) ? '' : $value[0];
+if (!empty($field['raw'])) {
+    $string = $field['raw'];
+} else {
+    $value = Cake\Utility\Hash::extract($data, $field['path']);
+    $string = empty($value[0]) ? '' : $value[0];
+}
 if (!empty($field['url'])) {
     if (!empty($field['url_vars'])) {
         if (!is_array($field['url_vars'])) {

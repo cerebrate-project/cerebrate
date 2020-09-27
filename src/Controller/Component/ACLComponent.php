@@ -31,6 +31,17 @@ class ACLComponent extends Component
     // $action == array('AND' => []) -  roles with all permissions in the array have access
     // If we add any new functionality to MISP and we don't add it to this list, it will only be visible to site admins.
     private $aclList = array(
+        'Broods' => [
+            'add' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'edit' => ['perm_admin'],
+            'index' => ['perm_admin'],
+            'view' => ['perm_admin']
+        ],
+        'Instance' => [
+            'home' => ['*'],
+            'status' => ['*']
+        ],
         'Pages' => [
             'display' => ['*']
         ],
@@ -42,7 +53,13 @@ class ACLComponent extends Component
             'login' => ['*'],
             'logout' => ['*'],
             'view' => ['*']
-        ]
+        ],
+        'MetaTemplates' => [
+            'view' => ['perm_admin'],
+            'enable' => ['perm_admin'],
+            'disable' => ['perm_admin'],
+            'update' => ['perm_admin'],
+            ]
     );
 
     private function __checkLoggedActions($user, $controller, $action)

@@ -1,4 +1,8 @@
 <?php
+debug($row);
+debug($row['organisation']);
+debug($this->Hash->extract($row, 'organisation'));
+debug($field['data_path']);
     $orgs = $this->Hash->extract($row, $field['data_path']);
     if (!isset($field['fields']['allow_picture'])) {
         $field['fields']['allow_picture'] = true;
@@ -16,7 +20,7 @@
             $i++;
             if (!empty($org['id']) || !empty($org['name'])) {
                 if ($field['fields']['allow_picture'] && !empty($org['id'])) {
-                    echo $this->OrgImg->getOrgImg(array('name' => $org['name'], 'id' => $org['id'], 'size' => 24));
+                    //echo $this->OrgImg->getOrgImg(array('name' => $org['name'], 'id' => $org['id'], 'size' => 24));
                 } else {
                     echo sprintf(
                         '<a href="%s/organisations/view/%s">%s</a>',
@@ -30,7 +34,7 @@
                 }
             } else {
                 if ($field['fields']['allow_picture']) {
-                    echo $this->OrgImg->getOrgImg(array('name' =>  $field['fields']['default_org'], 'size' => 24));
+                    //echo $this->OrgImg->getOrgImg(array('name' =>  $field['fields']['default_org'], 'size' => 24));
                 }
             }
         }

@@ -43,6 +43,23 @@
             );
         }
     }
+    if (!empty($data['metaFields'])) {
+        foreach ($data['metaFields'] as $metaField => $value) {
+            $listElements .= sprintf(
+                '<tr class="row"><td class="col-sm-2 font-weight-bold">%s</td><td class="col-sm-10">%s</td></tr>',
+                h($metaField),
+                $this->element(
+                    '/genericElements/SingleViews/Fields/genericField',
+                    [
+                        'data' => $value,
+                        'field' => [
+                        	'raw' => $value
+                        ]
+                    ]
+                )
+            );
+        }
+    }
     $ajaxLists = '';
     if (!empty($children)) {
         foreach ($children as $child) {

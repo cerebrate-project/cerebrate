@@ -61,7 +61,7 @@ CREATE TABLE `alignments` (
   KEY `organisation_id` (`organisation_id`),
   CONSTRAINT `alignments_ibfk_1` FOREIGN KEY (`individual_id`) REFERENCES `individuals` (`id`),
   CONSTRAINT `alignments_ibfk_2` FOREIGN KEY (`organisation_id`) REFERENCES `organisations` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -74,18 +74,20 @@ DROP TABLE IF EXISTS `auth_keys`;
 CREATE TABLE `auth_keys` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `authkey` varchar(40) CHARACTER SET ascii DEFAULT NULL,
+  `authkey` varchar(72) CHARACTER SET ascii DEFAULT NULL,
+  `authkey_start` varchar(4) CHARACTER SET ascii DEFAULT NULL,
+  `authkey_end` varchar(4) CHARACTER SET ascii DEFAULT NULL,
   `created` int(10) unsigned NOT NULL,
-  `valid_until` int(10) unsigned NOT NULL,
+  `expiration` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
   `comment` text COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`),
-  KEY `authkey` (`authkey`),
+  KEY `authkey_start` (`authkey_start`),
+  KEY `authkey_end` (`authkey_end`),
   KEY `created` (`created`),
-  KEY `valid_until` (`valid_until`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `auth_keys_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `expiration` (`expiration`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -102,17 +104,17 @@ CREATE TABLE `broods` (
   `url` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
   `organisation_id` int(10) unsigned NOT NULL,
-  `alignment_id` int(10) unsigned NOT NULL,
   `trusted` tinyint(1) DEFAULT NULL,
   `pull` tinyint(1) DEFAULT NULL,
+  `skip_proxy` tinyint(1) DEFAULT NULL,
   `authkey` varchar(40) CHARACTER SET ascii DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `uuid` (`uuid`),
   KEY `name` (`name`),
   KEY `url` (`url`),
   KEY `authkey` (`authkey`),
-  KEY `alignment_id` (`alignment_id`),
-  CONSTRAINT `broods_ibfk_1` FOREIGN KEY (`alignment_id`) REFERENCES `alignments` (`id`)
+  KEY `organisation_id` (`organisation_id`),
+  FOREIGN KEY (`organisation_id`) REFERENCES `organisations` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -136,7 +138,7 @@ CREATE TABLE `encryption_keys` (
   KEY `uuid` (`uuid`),
   KEY `type` (`type`),
   KEY `expires` (`expires`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -181,7 +183,7 @@ CREATE TABLE `individuals` (
   KEY `email` (`email`),
   KEY `first_name` (`first_name`),
   KEY `last_name` (`last_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -226,7 +228,7 @@ CREATE TABLE `organisations` (
   KEY `nationality` (`nationality`),
   KEY `sector` (`sector`),
   KEY `type` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -245,7 +247,7 @@ CREATE TABLE `roles` (
   PRIMARY KEY (`id`),
   KEY `name` (`name`),
   KEY `uuid` (`uuid`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -308,13 +310,61 @@ CREATE TABLE `sharing_groups` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `sharing_group_orgs` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT, 
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `sharing_group_id` int(10) unsigned NOT NULL,
   `organisation_id` int(10) unsigned NOT NULL,
   `deleted` tinyint(1) DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `sharing_group_id` (`sharing_group_id`),
   KEY `organisation_id` (`organisation_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `meta_fields` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `scope` varchar(191) NOT NULL,
+  `parent_id` int(10) unsigned NOT NULL,
+  `field` varchar(191) NOT NULL,
+  `value` varchar(191) NOT NULL,
+  `uuid` varchar(40) CHARACTER SET ascii DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `scope` (`scope`),
+  KEY `uuid` (`uuid`),
+  KEY `parent_id` (`parent_id`),
+  KEY `field` (`field`),
+  KEY `value` (`value`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `meta_templates` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `scope` varchar(191) NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `namespace` varchar(191) NOT NULL,
+  `description` text,
+  `version` varchar(191) NOT NULL,
+  `uuid` varchar(40) CHARACTER SET ascii,
+  `source` varchar(191),
+  `enabled` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `scope` (`scope`),
+  KEY `source` (`source`),
+  KEY `name` (`name`),
+  KEY `namespace` (`namespace`),
+  KEY `version` (`version`),
+  KEY `uuid` (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `meta_template_fields` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `field` varchar(191) NOT NULL,
+  `type` varchar(191) NOT NULL,
+  `meta_template_id` int(10) unsigned NOT NULL,
+  `regex` text,
+  `multiple` tinyint(1) DEFAULT 0,
+  `enabled` tinyint(1) DEFAULT 0,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `meta_template_id` FOREIGN KEY (`meta_template_id`) REFERENCES `meta_templates` (`id`),
+  KEY `field` (`field`),
+  KEY `type` (`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

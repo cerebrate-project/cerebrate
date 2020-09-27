@@ -17,6 +17,8 @@ class CRUDComponent extends Component
         $this->request = $config['request'];
         $this->TableAlias = $this->Table->getAlias();
         $this->ObjectAlias = \Cake\Utility\Inflector::singularize($this->TableAlias);
+        $this->MetaFields = $config['MetaFields'];
+        $this->MetaTemplates = $config['MetaTemplates'];
     }
 
     public function index(array $options): void
@@ -34,11 +36,6 @@ class CRUDComponent extends Component
         if (!empty($options['contain'])) {
             $query->contain($options['contain']);
         }
-        if (!empty($conditions)) {
-            $query->where([
-                'OR' => $conditions
-            ]);
-        }
         if ($this->Controller->ParamHandler->isRest()) {
             $data = $query->all();
             $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData($data, 'json');
@@ -49,8 +46,30 @@ class CRUDComponent extends Component
         }
     }
 
+    private function getMetaTemplates()
+    {
+        $metaFields = [];
+        if (!empty($this->Table->metaFields)) {
+            $metaQuery = $this->MetaTemplates->find();
+            $metaQuery->where([
+                'scope' => $this->Table->metaFields,
+                //'enabled' => 1
+            ]);
+            $metaQuery->contain(['MetaTemplateFields']);
+            $metaTemplates = $metaQuery->all();
+            foreach ($metaTemplates as $metaTemplate) {
+                foreach ($metaTemplate->meta_template_fields as $field) {
+                    $metaFields[$field['field']] = $field;
+                }
+            }
+        }
+        $this->Controller->set('metaFields', $metaFields);
+        return true;
+    }
+
     public function add(array $params = []): void
     {
+        $this->getMetaTemplates();
         $data = $this->Table->newEmptyEntity();
         if ($this->request->is('post')) {
             $input = $this->request->getData();
@@ -62,6 +81,9 @@ class CRUDComponent extends Component
             $data = $this->Table->patchEntity($data, $input);
             if ($this->Table->save($data)) {
                 $message = __('{0} added.', $this->ObjectAlias);
+                if (!empty($input['metaFields'])) {
+                    $this->saveMetaFields($data->id, $input);
+                }
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
                 } else {
@@ -72,7 +94,7 @@ class CRUDComponent extends Component
                         $this->Controller->render($params['displayOnSuccess']);
                         return;
                     }
-                    $this->Controller->redirect(['action' => 'index']);
+                    $this->Controller->redirect(['action' => 'view', $data->id]);
                 }
             } else {
                 $message = __('{0} could not be added.', $this->ObjectAlias);
@@ -86,12 +108,33 @@ class CRUDComponent extends Component
         $this->Controller->set('entity', $data);
     }
 
+    private function saveMetaFields($id, $input)
+    {
+        foreach ($input['metaFields'] as $metaField => $values) {
+            if (!is_array($values)) {
+                $values = [$values];
+            }
+            foreach ($values as $value) {
+                if ($value !== '') {
+                    $temp = $this->MetaFields->newEmptyEntity();
+                    $temp->field = $metaField;
+                    $temp->value = $value;
+                    $temp->scope = $this->Table->metaFields;
+                    $temp->parent_id = $id;
+                    $this->MetaFields->save($temp);
+                }
+            }
+        }
+    }
+
     public function edit(int $id, array $params = []): void
     {
         if (empty($id)) {
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
+        $this->getMetaTemplates();
         $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : []);
+        $data = $this->getMetaFields($id, $data);
         if ($this->request->is(['post', 'put'])) {
             $input = $this->request->getData();
             if (!empty($params['override'])) {
@@ -102,11 +145,15 @@ class CRUDComponent extends Component
             $this->Table->patchEntity($data, $this->request->getData());
             if ($this->Table->save($data)) {
                 $message = __('{0} updated.', $this->ObjectAlias);
+                if (!empty($input['metaFields'])) {
+                    $this->MetaFields->deleteAll(['scope' => $this->Table->metaFields, 'parent_id' => $data->id]);
+                    $this->saveMetaFields($data->id, $input);
+                }
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
                 } else {
                     $this->Controller->Flash->success($message);
-                    $this->Controller->redirect(['action' => 'index']);
+                    $this->Controller->redirect(['action' => 'view', $id]);
                 }
             } else {
                 if ($this->Controller->ParamHandler->isRest()) {
@@ -114,7 +161,20 @@ class CRUDComponent extends Component
                 }
             }
         }
+
         $this->Controller->set('entity', $data);
+    }
+
+    public function getMetaFields($id, $data)
+    {
+        $query = $this->MetaFields->find();
+        $query->where(['scope' => $this->Table->metaFields, 'parent_id' => $id]);
+        $metaFields = $query->all();
+        $data['metaFields'] = [];
+        foreach($metaFields as $metaField) {
+            $data['metaFields'][$metaField->field] = $metaField->value;
+        }
+        return $data;
     }
 
     public function view(int $id, array $params = []): void
@@ -124,6 +184,7 @@ class CRUDComponent extends Component
         }
 
         $data = $this->Table->get($id, $params);
+        $data = $this->getMetaFields($id, $data);
         if ($this->Controller->ParamHandler->isRest()) {
             $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData($data, 'json');
         }

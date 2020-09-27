@@ -16,10 +16,10 @@
         h(\Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::classify($this->request->getParam('controller')))) :
         h($data['model']);
     $fieldsString = '';
-    $simpleFieldWhitelist = array(
+    $simpleFieldWhitelist = [
         'default', 'type', 'placeholder', 'label', 'empty', 'rows', 'div', 'required'
-    );
-    $fieldsArrayForPersistence = array();
+    ];
+    //$fieldsArrayForPersistence = array();
     if (empty($data['url'])) {
         $data['url'] = ["controller" => $this->request->getParam('controller'), "action" => $this->request->getParam('url')];
     }
@@ -47,67 +47,29 @@
             if (isset($fieldData['requirements']) && !$fieldData['requirements']) {
                 continue;
             }
-            if (is_array($fieldData)) {
-                if (empty($fieldData['type'])) {
-                    $fieldData['type'] = 'text';
-                }
-                $fieldTemplate = 'genericField';
-                if (file_exists(ROOT . '/templates/element/genericElements/Form/Fields/' . $fieldData['type'] . 'Field.php')) {
-                    $fieldTemplate = $fieldData['type'] . 'Field';
-                }
-                if (empty($fieldData['label'])) {
-                    $fieldData['label'] = \Cake\Utility\Inflector::humanize($fieldData['field']);
-                }
-                if (!empty($fieldDesc[$fieldData['field']])) {
-                    $fieldData['label'] .= $this->element(
-                        'genericElements/Form/formInfo', array(
-                            'field' => $fieldData,
-                            'fieldDesc' => $fieldDesc[$fieldData['field']],
-                            'modelForForm' => $modelForForm
-                        )
-                    );
-                }
-                $params = array();
-                if (!empty($fieldData['class'])) {
-                    if (is_array($fieldData['class'])) {
-                        $class = implode(' ', $fieldData['class']);
-                    } else {
-                        $class = $fieldData['class'];
-                    }
-                    $params['class'] = $class;
-                } else {
-                    $params['class'] = '';
-                }
-                if (empty($fieldData['type']) || $fieldData['type'] !== 'checkbox' ) {
-                    $params['class'] .= ' form-control';
-                }
-                //$params['class'] = sprintf('form-control %s', $params['class']);
-                foreach ($fieldData as $k => $fd) {
-                    if (in_array($k, $simpleFieldWhitelist) || strpos($k, 'data-') === 0) {
-                        $params[$k] = $fd;
-                    }
-                }
-                $temp = $this->element('genericElements/Form/Fields/' . $fieldTemplate, array(
+            $fieldsString .= $this->element(
+                'genericElements/Form/fieldScaffold', [
                     'fieldData' => $fieldData,
-                    'params' => $params
-                ));
-                if (!empty($fieldData['hidden'])) {
-                    $temp = '<span class="hidden">' . $temp . '</span>';
-                }
-                $fieldsString .= $temp;
-                $fieldsArrayForPersistence []= $modelForForm . \Cake\Utility\Inflector::camelize($fieldData['field']);
-            } else {
-                $fieldsString .= $fieldData;
-            }
+                    'form' => $this->Form,
+                    'simpleFieldWhitelist' => $simpleFieldWhitelist
+                ]
+            );
         }
     }
     $metaFieldString = '';
     if (!empty($data['metaFields'])) {
         foreach ($data['metaFields'] as $metaField) {
-            $metaFieldString .= $metaField;
+            $metaField['label'] = \Cake\Utility\Inflector::humanize($metaField['field']);
+            $metaField['field'] = 'metaFields.' . $metaField['field'];
+            $metaFieldString .= $this->element(
+                'genericElements/Form/fieldScaffold', [
+                    'fieldData' => $metaField->toArray(),
+                    'form' => $this->Form
+                ]
+            );
         }
     }
-    $submitButtonData = array('model' => $modelForForm, 'formRandomValue' => $formRandomValue);
+    $submitButtonData = ['model' => $modelForForm, 'formRandomValue' => $formRandomValue];
     if (!empty($data['submit'])) {
         $submitButtonData = array_merge($submitButtonData, $data['submit']);
     }
@@ -125,7 +87,7 @@
     $actionName = h(\Cake\Utility\Inflector::humanize($this->request->getParam('action')));
     $modelName = h(\Cake\Utility\Inflector::humanize(\Cake\Utility\Inflector::singularize($this->request->getParam('controller'))));
     if (!empty($ajax)) {
-        echo $this->element('genericElements/genericModal', array(
+        echo $this->element('genericElements/genericModal', [
             'title' => empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
             'body' => sprintf(
                 '%s%s%s%s%s%s',
@@ -136,15 +98,20 @@
                 $ajaxFlashMessage,
                 $formCreate,
                 $fieldsString,
-                $formEnd,
-                $metaFieldString
+                $this->element(
+                    'genericElements/accordion_scaffold', [
+                        'body' => $metaFieldString,
+                        'title' => 'Meta fields'
+                    ]
+                ),
+                $formEnd
             ),
             'actionButton' => $this->element('genericElements/Form/submitButton', $submitButtonData),
             'class' => 'modal-lg'
-        ));
+        ]);
     } else {
         echo sprintf(
-            '%s<h2>%s</h2>%s%s%s%s%s%s%s%s',
+            '%s<h2>%s</h2>%s%s%s%s%s%s%s%s%s',
             empty($ajax) ? '<div class="col-8">' : '',
             empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
             $formCreate,
@@ -154,9 +121,16 @@
                 $data['description']
             ),
             $fieldsString,
+            $this->element(
+                'genericElements/accordion_scaffold', [
+                    'body' => $metaFieldString,
+                    'title' => 'Meta fields'
+                ]
+            ),
             $this->element('genericElements/Form/submitButton', $submitButtonData),
+            //$metaFieldString,
             $formEnd,
-            $metaFieldString,
+            '<br /><br />',
             empty($ajax) ? '</div>' : ''
         );
     }

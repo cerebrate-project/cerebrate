@@ -189,6 +189,28 @@ class AppTable extends Table
                             'skipTopMenu' => 1
                         ]
                     ]
+                ],
+                'MetaTemplates' => [
+                    'label' => __('Meta Field Templates'),
+                    'url' => '/metaTemplates/index',
+                    'children' => [
+                        'index' => [
+                            'url' => '/metaTemplates/index',
+                            'label' => __('List Meta Templates')
+                        ],
+                        'view' => [
+                            'url' => '/metaTemplates/view/{{id}}',
+                            'label' => __('View Meta Template'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1
+                        ],
+                        'delete' => [
+                            'url' => '/metaTemplates/delete/{{id}}',
+                            'label' => __('Delete Meta Template'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1
+                        ]
+                    ]
                 ]
             ],
             'Cerebrate' => [
