@@ -167,6 +167,9 @@ class CRUDComponent extends Component
 
     public function getMetaFields($id, $data)
     {
+        if (empty($this->Table->metaFields)) {
+            return $data;
+        }
         $query = $this->MetaFields->find();
         $query->where(['scope' => $this->Table->metaFields, 'parent_id' => $id]);
         $metaFields = $query->all();
