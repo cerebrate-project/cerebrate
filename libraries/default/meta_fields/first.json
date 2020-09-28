@@ -1,0 +1,88 @@
+{
+    "name": "FIRST Directory",
+    "namespace": "first",
+    "description": "Template based on the output of the FIRST Directory API",
+    "version": 1,
+    "scope": "organisation",
+    "uuid": "a89c80d0-7019-422a-b45b-fe59532886c7",
+    "source": "FIRST.org API",
+    "metaFields": [
+        {
+            "field": "first-id",
+            "type": "text"
+        },
+        {
+            "field": "team",
+            "type": "text"
+        },
+        {
+            "field": "team-full",
+            "type": "text"
+        },
+        {
+            "field": "host",
+            "type": "text"
+        },
+        {
+            "field": "establishment",
+            "type": "date"
+        },
+        {
+            "field": "address",
+            "type": "text"
+        },
+        {
+            "field": "country",
+            "type": "text"
+        },
+        {
+            "field": "website",
+            "type": "text",
+            "multiple": 1
+        },
+        {
+            "field": "email",
+            "type": "text"
+        },
+        {
+            "field": "phone",
+            "type": "text",
+            "regex": "/^\\+[0-9\\-]*$/",
+            "multiple": 1
+        },
+        {
+            "field": "phone-emergency",
+            "type": "text",
+            "regex": "/^\\+[0-9\\-]*$/"
+        },
+        {
+            "field": "timezone",
+            "type": "text"
+        },
+        {
+            "field": "timezone-dst",
+            "type": "text"
+        },
+        {
+            "field": "other-communication",
+            "type": "text"
+        },
+        {
+            "field": "operating-hours",
+            "type": "text"
+        },
+        {
+            "field": "constituency",
+            "type": "text"
+        },
+        {
+            "field": "constituency-description",
+            "type": "text"
+        },
+        {
+            "field": "member-since",
+            "type": "date"
+        }
+    ]
+}
+
