@@ -108,7 +108,7 @@ class AppController extends Controller
             throw new MethodNotAllowedException(__('Invalid user credentials.'));
         }
         $this->ACL->checkAccess();
-        $this->set('menu', $this->{$this->modelClass}->getMenu());
+        $this->set('menu', $this->ACL->getMenu());
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
         $this->set('darkMode', !empty(Configure::read('Cerebrate.dark')));
@@ -135,13 +135,8 @@ class AppController extends Controller
         return $this->RestResponse->viewData(['uuid' => $uuid], 'json');
     }
 
-    public function checkPermission($perm_flag)
-    {
-        return true;
-    }
-
     public function queryACL()
     {
-        $this->ACL->findMissingFunctionNames();
+        return $this->RestResponse->viewData($this->ACL->findMissingFunctionNames());
     }
 }
