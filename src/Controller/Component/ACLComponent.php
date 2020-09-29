@@ -45,6 +45,27 @@ class ACLComponent extends Component
         'Pages' => [
             'display' => ['*']
         ],
+        'Organisations' => [
+            'add' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'edit' => ['perm_admin'],
+            'index' => ['*'],
+            'view' => ['*']
+        ],
+        'Individuals' => [
+            'add' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'edit' => ['perm_admin'],
+            'index' => ['*'],
+            'view' => ['*']
+        ],
+        'SharingGroups' => [
+            'add' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'edit' => ['perm_admin'],
+            'index' => ['*'],
+            'view' => ['*']
+        ],
         'Users' => [
             'add' => ['perm_admin'],
             'delete' => ['perm_admin'],
