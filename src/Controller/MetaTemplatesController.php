@@ -15,14 +15,6 @@ class MetaTemplatesController extends AppController
         return $this->RestResponse->viewData($result, 'json');
     }
 
-    public function status()
-    {
-        $data = file_get_contents(APP . 'VERSION.json');
-        $data = json_decode($data, true);
-        $data['user'] = $this->ACL->getUser();
-        return $this->RestResponse->viewData($data, 'json');
-    }
-
     public function index()
     {
         $this->CRUD->index([
