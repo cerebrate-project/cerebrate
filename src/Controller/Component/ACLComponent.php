@@ -255,8 +255,6 @@ class ACLComponent extends Component
         } else {
             return $this->checkAccessInternal(Inflector::camelize($urlParts[1]), $urlParts[2], $soft);
         }
-
-
     }
 
     // The check works like this:
@@ -631,6 +629,21 @@ class ACLComponent extends Component
                         'home' => [
                             'url' => '/instance/home',
                             'label' => __('Home')
+                        ]
+                    ]
+                ],
+                'Users' => [
+                    __('My Profile'),
+                    'children' => [
+                        'View My Profile' => [
+                            'url' => '/users/view',
+                            'label' => __('View My Profile')
+                        ],
+                        'Edit My Profile' => [
+                            'url' => '/users/edit',
+                            'label' => __('Edit My Profile'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1
                         ]
                     ]
                 ]
