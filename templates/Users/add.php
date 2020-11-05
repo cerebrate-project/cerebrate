@@ -16,12 +16,14 @@
                 [
                     'field' => 'password',
                     'label' => __('Password'),
-                    'type' => 'password'
+                    'type' => 'password',
+                    'required' => $this->request->getParam('action') === 'add' ? 'required' : false
                 ],
                 [
                     'field' => 'confirm_password',
                     'label' => __('Confirm Password'),
-                    'type' => 'password'
+                    'type' => 'password',
+                    'required' => $this->request->getParam('action') === 'add' ? 'required' : false
                 ],
                 [
                     'field' => 'role_id',
