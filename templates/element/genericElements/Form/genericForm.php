@@ -42,6 +42,11 @@
     ];
     if (!empty($data['fields'])) {
         foreach ($data['fields'] as $fieldData) {
+            if (!empty($fields)) {
+                if (!in_array($fieldData['field'], $fields)) {
+                    continue;
+                }
+            }
             // we reset the template each iteration as individual fields might override the defaults.
             $this->Form->setTemplates($default_template);
             if (isset($fieldData['requirements']) && !$fieldData['requirements']) {

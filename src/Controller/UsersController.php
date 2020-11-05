@@ -57,11 +57,23 @@ class UsersController extends AppController
         if (empty($id) || empty($this->ACL->getUser()['role']['perm_admin'])) {
             $id = $this->ACL->getUser()['id'];
         }
-        $this->CRUD->edit($id, [
+        $params = [
             'get' => [
-                'fields' => ['id', 'individual_id', 'role_id', 'username', 'disabled']
+                'fields' => [
+                    'id', 'individual_id', 'role_id', 'username', 'disabled'
+                ]
+            ],
+            'removeEmpty' => [
+                'password'
+            ],
+            'fields' => [
+                'id', 'individual_id', 'username', 'disabled', 'password', 'confirm_password'
             ]
-        ]);
+        ];
+        if (!empty($this->ACL->getUser()['role']['perm_admin'])) {
+            $params['fields'][] = 'role_id';
+        }
+        $this->CRUD->edit($id, $params);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }

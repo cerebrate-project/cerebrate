@@ -71,14 +71,16 @@ class CRUDComponent extends Component
     {
         $this->getMetaTemplates();
         $data = $this->Table->newEmptyEntity();
+        if (!empty($params['fields'])) {
+            $this->Controller->set('fields', $params['fields']);
+        }
         if ($this->request->is('post')) {
-            $input = $this->request->getData();
-            if (!empty($params['override'])) {
-                foreach ($params['override'] as $field => $value) {
-                    $input[$field] = $value;
-                }
+            $patchEntityParams = [];
+            $input = $this->__massageInput($params);
+            if (!empty($params['fields'])) {
+                $patchEntityParams['fields'] = $params['fields'];
             }
-            $data = $this->Table->patchEntity($data, $input);
+            $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if ($this->Table->save($data)) {
                 $message = __('{0} added.', $this->ObjectAlias);
                 if (!empty($input['metaFields'])) {
@@ -127,6 +129,23 @@ class CRUDComponent extends Component
         }
     }
 
+    private function __massageInput($params)
+    {
+        $input = $this->request->getData();
+        if (!empty($params['override'])) {
+            foreach ($params['override'] as $field => $value) {
+                $input[$field] = $value;
+            }
+        }
+        if (!empty($params['removeEmpty'])) {
+            foreach ($params['removeEmpty'] as $removeEmptyField)
+            if (isset($input[$removeEmptyField])) {
+                unset($input[$removeEmptyField]);
+            }
+        }
+        return $input;
+    }
+
     public function edit(int $id, array $params = []): void
     {
         if (empty($id)) {
@@ -135,14 +154,16 @@ class CRUDComponent extends Component
         $this->getMetaTemplates();
         $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : []);
         $data = $this->getMetaFields($id, $data);
+        if (!empty($params['fields'])) {
+            $this->Controller->set('fields', $params['fields']);
+        }
         if ($this->request->is(['post', 'put'])) {
-            $input = $this->request->getData();
-            if (!empty($params['override'])) {
-                foreach ($params['override'] as $field => $value) {
-                    $input[$field] = $value;
-                }
+            $patchEntityParams = [];
+            $input = $this->__massageInput($params);
+            if (!empty($params['fields'])) {
+                $patchEntityParams['fields'] = $params['fields'];
             }
-            $this->Table->patchEntity($data, $this->request->getData());
+            $this->Table->patchEntity($data, $input, $patchEntityParams);
             if ($this->Table->save($data)) {
                 $message = __('{0} updated.', $this->ObjectAlias);
                 if (!empty($input['metaFields'])) {
@@ -161,7 +182,6 @@ class CRUDComponent extends Component
                 }
             }
         }
-
         $this->Controller->set('entity', $data);
     }
 
