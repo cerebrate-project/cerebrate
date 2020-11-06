@@ -99,7 +99,12 @@ class CRUDComponent extends Component
                     $this->Controller->redirect(['action' => 'view', $data->id]);
                 }
             } else {
-                $message = __('{0} could not be added.', $this->ObjectAlias);
+                $validationMessage = $this->prepareValidationError($data);
+                $message = __(
+                    '{0} could not be added.{1}',
+                    $this->ObjectAlias,
+                    empty($validationMessage) ? '' : ' ' . __('Reason:{0}', $validationMessage)
+                );
                 if ($this->Controller->ParamHandler->isRest()) {
 
                 } else {
@@ -108,6 +113,21 @@ class CRUDComponent extends Component
             }
         }
         $this->Controller->set('entity', $data);
+    }
+
+    private function prepareValidationError($data)
+    {
+        $validationMessage = '';
+        if (!empty($data->getErrors())) {
+            foreach ($data->getErrors() as $field => $errorData) {
+                $errorMessages = [];
+                foreach ($errorData as $key => $value) {
+                    $errorMessages[] = $value;
+                }
+                $validationMessage .= __(' {1}', $field, implode(',', $errorMessages));
+            }
+        }
+        return $validationMessage;
     }
 
     private function saveMetaFields($id, $input)
@@ -163,7 +183,9 @@ class CRUDComponent extends Component
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
             }
-            $this->Table->patchEntity($data, $input, $patchEntityParams);
+            $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
+            Debugger::log($data);
+            throw new Exception();
             if ($this->Table->save($data)) {
                 $message = __('{0} updated.', $this->ObjectAlias);
                 if (!empty($input['metaFields'])) {
@@ -177,8 +199,16 @@ class CRUDComponent extends Component
                     $this->Controller->redirect(['action' => 'view', $id]);
                 }
             } else {
+                $validationMessage = $this->prepareValidationError($data);
+                $message = __(
+                    '{0} could not be modified.{1}',
+                    $this->ObjectAlias,
+                    empty($validationMessage) ? '' : ' ' . __('Reason:{0}', $validationMessage)
+                );
                 if ($this->Controller->ParamHandler->isRest()) {
 
+                } else {
+                    $this->Controller->Flash->error($message);
                 }
             }
         }

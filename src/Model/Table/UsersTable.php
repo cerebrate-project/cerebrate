@@ -34,7 +34,29 @@ class UsersTable extends AppTable
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->requirePresence(['password'], 'create');
+            ->requirePresence(['password'], 'create')
+            ->add('password', [
+                'password_complexity' => [
+                    'rule' => function($value, $context) {
+                        if (!preg_match('/^((?=.*\d)|(?=.*\W+))(?![\n])(?=.*[A-Z])(?=.*[a-z]).*$|.{16,}/', $value) || strlen($value) < 12) {
+                            return false;
+                        }
+                        return true;
+                    },
+                    'message' => __('Invalid password. Passwords have to be either 16 character long or 12 character long with 3/4 special groups.')
+                ],
+                'password_confirmation' => [
+                    'rule' => function($value, $context) {
+                        if (isset($context['data']['confirm_password'])) {
+                            if ($context['data']['confirm_password'] !== $value) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    },
+                    'message' => __('Password confirmation missing or not matching the password.')
+                ]
+            ]);
         return $validator;
     }
 
