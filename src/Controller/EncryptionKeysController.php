@@ -54,4 +54,21 @@ class EncryptionKeysController extends AppController
         $this->set(compact('dropdownData'));
         $this->set('metaGroup', 'ContactDB');
     }
+
+    public function edit($id = false)
+    {
+        $params = [
+            'fields' => [
+                'type', 'encryption_key', 'revoked'
+            ],
+            'redirect' => $this->referer()
+        ];
+        $this->CRUD->edit($id, $params);
+        if ($this->ParamHandler->isRest()) {
+            return $this->restResponsePayload;
+        }
+        $this->set('dropdownData', []);
+        $this->set('metaGroup', 'ContactDB');
+        $this->render('add');
+    }
 }

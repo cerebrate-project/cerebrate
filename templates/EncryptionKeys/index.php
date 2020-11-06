@@ -57,12 +57,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'boolean'
             ],
             [
-                'name' => __('Expires'),
-                'sort' => 'expires',
-                'data_path' => 'expires',
-                'element' => 'timestamp'
-            ],
-            [
                 'name' => __('Key'),
                 'data_path' => 'encryption_key'
             ],
@@ -72,9 +66,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'pull' => 'right',
         'actions' => [
             [
-                'onclick' => 'populateAndLoadModal(\'/encryptionKeys/edit/[onclick_params_data_path]\');',
+                'onclick' => 'populateAndLoadModal(\'/encryptionKeys/view/[onclick_params_data_path]\');',
                 'onclick_params_data_path' => 'id',
                 'icon' => 'eye'
+            ],
+            [
+                'onclick' => 'populateAndLoadModal(\'/encryptionKeys/edit/[onclick_params_data_path]\');',
+                'onclick_params_data_path' => 'id',
+                'icon' => 'edit'
             ],
             [
                 'onclick' => 'populateAndLoadModal(\'/encryptionKeys/delete/[onclick_params_data_path]\');',
