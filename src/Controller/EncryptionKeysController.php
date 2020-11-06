@@ -37,7 +37,7 @@ class EncryptionKeysController extends AppController
 
     public function add()
     {
-        $this->CRUD->add(['displayOnSuccess' => 'add_success']);
+        $this->CRUD->add(['redirect' => $this->referer()]);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }

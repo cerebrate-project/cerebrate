@@ -35,9 +35,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'id',
             ],
             [
-                'name' => __('Owner type'),
-                'sort' => 'owner_type',
-                'data_path' => 'owner_type',
+                'name' => __('Type'),
+                'sort' => 'type',
+                'data_path' => 'type',
             ],
             [
                 'name' => __('Owner ID'),
@@ -64,8 +64,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ],
             [
                 'name' => __('Key'),
-                'data_path' => 'encryption_key',
-                'privacy' => 1
+                'data_path' => 'encryption_key'
             ],
         ],
         'title' => __('Encryption key Index'),

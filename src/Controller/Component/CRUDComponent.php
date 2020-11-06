@@ -96,7 +96,11 @@ class CRUDComponent extends Component
                         $this->Controller->render($params['displayOnSuccess']);
                         return;
                     }
-                    $this->Controller->redirect(['action' => 'view', $data->id]);
+                    if (empty($params['redirect'])) {
+                        $this->Controller->redirect(['action' => 'view', $id]);
+                    } else {
+                        $this->Controller->redirect($params['redirect']);
+                    }
                 }
             } else {
                 $validationMessage = $this->prepareValidationError($data);
@@ -194,7 +198,11 @@ class CRUDComponent extends Component
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
                 } else {
                     $this->Controller->Flash->success($message);
-                    $this->Controller->redirect(['action' => 'view', $id]);
+                    if (empty($params['redirect'])) {
+                        $this->Controller->redirect(['action' => 'view', $id]);
+                    } else {
+                        $this->Controller->redirect($params['redirect']);
+                    }
                 }
             } else {
                 $validationMessage = $this->prepareValidationError($data);
