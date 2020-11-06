@@ -13,6 +13,9 @@ class FormFieldMassageHelper extends Helper
             $controlParams['data-dependence-option'] = h($fieldData['stateDependence']['option']);
         }
         $controlParams['id'] = $fieldData['field'] . '-field';
+        if (!empty($fieldData['autocomplete'])) {
+            $controlParams['autocomplete'] = $fieldData['autocomplete'];
+        }
         $formFieldElement = $form->control($fieldData['field'], $controlParams);
         if (!empty($fieldData['hidden'])) {
             $formFieldElement = '<span class="hidden">' . $formFieldElement . '</span>';

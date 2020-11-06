@@ -11,19 +11,22 @@
                     'options' => $dropdownData['individual']
                 ],
                 [
-                    'field' => 'username'
+                    'field' => 'username',
+                    'autocomplete' => 'off'
                 ],
                 [
                     'field' => 'password',
                     'label' => __('Password'),
                     'type' => 'password',
-                    'required' => $this->request->getParam('action') === 'add' ? 'required' : false
+                    'required' => $this->request->getParam('action') === 'add' ? 'required' : false,
+                    'autocomplete' => 'new-password'
                 ],
                 [
                     'field' => 'confirm_password',
                     'label' => __('Confirm Password'),
                     'type' => 'password',
-                    'required' => $this->request->getParam('action') === 'add' ? 'required' : false
+                    'required' => $this->request->getParam('action') === 'add' ? 'required' : false,
+                    'autocomplete' => 'off'
                 ],
                 [
                     'field' => 'role_id',
