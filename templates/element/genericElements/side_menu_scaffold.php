@@ -34,8 +34,13 @@ if (isset($menu[$metaGroup])) {
                 }
             }
             $active = ($scope === $this->request->getParam('controller') && $action === $this->request->getParam('action'));
+            if (!empty($data['popup'])) {
+                $link_template = '<a href="#" onClick="populateAndLoadModal(\'%s\')" class="list-group-item list-group-item-action %s %s pl-3 border-0 %s">%s</a>';
+            } else {
+                $link_template = '<a href="%s" class="list-group-item list-group-item-action %s %s pl-3 border-0 %s">%s</a>';
+            }
             $children .= sprintf(
-                '<a href="%s" class="list-group-item list-group-item-action %s %s pl-3 border-0 %s">%s</a>',
+                $link_template,
                 empty($data['url']) ? '#' : h($data['url']),
                 empty($data['class']) ? '' : h($data['class']),
                 $active ? 'active' : '',

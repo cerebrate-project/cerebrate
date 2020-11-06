@@ -97,7 +97,7 @@ class CRUDComponent extends Component
                         return;
                     }
                     if (empty($params['redirect'])) {
-                        $this->Controller->redirect(['action' => 'view', $id]);
+                        $this->Controller->redirect(['action' => 'view', $data->id]);
                     } else {
                         $this->Controller->redirect($params['redirect']);
                     }

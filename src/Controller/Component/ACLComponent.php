@@ -420,7 +420,8 @@ class ACLComponent extends Component
                         ],
                         'add' => [
                             'url' => '/individuals/add',
-                            'label' => __('Add individual')
+                            'label' => __('Add individual'),
+                            'popup' => 1
                         ],
                         'view' => [
                             'url' => '/individuals/view/{{id}}',
@@ -432,13 +433,15 @@ class ACLComponent extends Component
                             'url' => '/individuals/edit/{{id}}',
                             'label' => __('Edit individual'),
                             'actions' => ['edit', 'delete', 'view'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ],
                         'delete' => [
                             'url' => '/individuals/delete/{{id}}',
                             'label' => __('Delete individual'),
                             'actions' => ['delete', 'edit', 'view'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ]
                     ]
                 ],
@@ -452,7 +455,8 @@ class ACLComponent extends Component
                         ],
                         'add' => [
                             'url' => '/organisations/add',
-                            'label' => __('Add organisation')
+                            'label' => __('Add organisation'),
+                            'popup' => 1
                         ],
                         'view' => [
                             'url' => '/organisations/view/{{id}}',
@@ -464,13 +468,15 @@ class ACLComponent extends Component
                             'url' => '/organisations/edit/{{id}}',
                             'label' => __('Edit organisation'),
                             'actions' => ['edit', 'delete', 'view'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ],
                         'delete' => [
                             'url' => '/organisations/delete/{{id}}',
                             'label' => __('Delete organisation'),
                             'actions' => ['delete', 'edit', 'view'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ]
                     ]
                 ],
@@ -484,13 +490,15 @@ class ACLComponent extends Component
                         ],
                         'add' => [
                             'url' => '/encryptionKeys/add',
-                            'label' => __('Add encryption key')
+                            'label' => __('Add encryption key'),
+                            'popup' => 1
                         ],
                         'edit' => [
                             'url' => '/encryptionKeys/edit/{{id}}',
                             'label' => __('Edit organisation'),
                             'actions' => ['edit'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ]
                     ]
                 ]
@@ -506,13 +514,22 @@ class ACLComponent extends Component
                         ],
                         'add' => [
                             'url' => '/SharingGroups/add',
-                            'label' => __('Add sharing group')
+                            'label' => __('Add sharing group'),
+                            'popup' => 1
                         ],
                         'edit' => [
                             'url' => '/SharingGroups/edit/{{id}}',
                             'label' => __('Edit sharing group'),
-                            'actions' => ['edit'],
-                            'skipTopMenu' => 1
+                            'actions' => ['edit', 'view'],
+                            'skipTopMenu' => 1,
+                            'popup' => 1
+                        ],
+                        'delete' => [
+                            'url' => '/SharingGroups/delete/{{id}}',
+                            'label' => __('Delete sharing group'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ]
                     ]
                 ]
@@ -528,7 +545,8 @@ class ACLComponent extends Component
                         ],
                         'add' => [
                             'url' => '/roles/add',
-                            'label' => __('Add role')
+                            'label' => __('Add role'),
+                            'popup' => 1
                         ],
                         'view' => [
                             'url' => '/roles/view/{{id}}',
@@ -540,13 +558,15 @@ class ACLComponent extends Component
                             'url' => '/roles/edit/{{id}}',
                             'label' => __('Edit role'),
                             'actions' => ['edit', 'delete', 'view'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ],
                         'delete' => [
                             'url' => '/roles/delete/{{id}}',
                             'label' => __('Delete role'),
                             'actions' => ['delete', 'edit', 'view'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ]
                     ]
                 ],
@@ -560,7 +580,8 @@ class ACLComponent extends Component
                         ],
                         'add' => [
                             'url' => '/users/add',
-                            'label' => __('Add user')
+                            'label' => __('Add user'),
+                            'popup' => 1
                         ],
                         'view' => [
                             'url' => '/users/view/{{id}}',
@@ -572,13 +593,15 @@ class ACLComponent extends Component
                             'url' => '/users/edit/{{id}}',
                             'label' => __('Edit user'),
                             'actions' => ['edit', 'delete', 'view'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ],
                         'delete' => [
                             'url' => '/users/delete/{{id}}',
                             'label' => __('Delete user'),
                             'actions' => ['delete', 'edit', 'view'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ]
                     ]
                 ],
@@ -600,7 +623,8 @@ class ACLComponent extends Component
                             'url' => '/metaTemplates/delete/{{id}}',
                             'label' => __('Delete Meta Template'),
                             'actions' => ['delete', 'edit', 'view'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ]
                     ]
                 ]
@@ -619,6 +643,13 @@ class ACLComponent extends Component
                             'label' => __('View role'),
                             'actions' => ['delete', 'edit', 'view'],
                             'skipTopMenu' => 1
+                        ],
+                        'delete' => [
+                            'url' => '/roles/delete/{{id}}',
+                            'label' => __('Delete Role'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ]
                     ]
                 ],
@@ -643,7 +674,8 @@ class ACLComponent extends Component
                             'url' => '/users/edit',
                             'label' => __('Edit My Profile'),
                             'actions' => ['delete', 'edit', 'view'],
-                            'skipTopMenu' => 1
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ]
                     ]
                 ]
