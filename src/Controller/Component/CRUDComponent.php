@@ -184,8 +184,6 @@ class CRUDComponent extends Component
                 $patchEntityParams['fields'] = $params['fields'];
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
-            Debugger::log($data);
-            throw new Exception();
             if ($this->Table->save($data)) {
                 $message = __('{0} updated.', $this->ObjectAlias);
                 if (!empty($input['metaFields'])) {
