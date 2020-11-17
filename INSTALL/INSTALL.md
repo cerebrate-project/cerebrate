@@ -62,10 +62,6 @@ sudo -u www-data cp -a /var/www/cerebrate/config/app_local.example.php /var/www/
 sudo -u www-data vim /var/www/cerebrate/config/app_local.php
 ```
 
-Modify the Datasource -> default array's username, password, database fields
-
-Create an apache config file for cerebrate / ssh key and point the document root to /var/www/cerebrate/webroot/index.php and you're good to go.
-
 mod_rewrite needs to be enabled:
 
 ```
@@ -83,7 +79,7 @@ This would be, when following the steps above:
             'password' => 'YOUR_PASSWORD',
             'database' => 'cerebrate',
 ```
-Create an apache config file for cerebrate / ssh key and point the document root to /var/www/cerebrate/webroot/index.php and you're good to go
+Create an apache config file for cerebrate / ssh key and point the document root to /var/www/cerebrate/webroot and you're good to go
 
 For development installs the following can be done:
 
@@ -99,5 +95,5 @@ Now you can point your browser to: http://localhost:8000
 
 To log in use the default credentials below:
 
-Username: admin
-Password: Password1234
+- Username: admin
+- Password: Password1234
