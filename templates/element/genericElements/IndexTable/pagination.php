@@ -23,7 +23,7 @@
             'first' => '<li class="first"><a href="#" ' . $onClick . '>{{text}}</a></li>',
             'last' => '<li class="last"><a href="#" ' . $onClick . '>{{text}}</a></li>',
             'number' => '<li class="page-item"><a class="page-link" href="#" ' . $onClick . '>{{text}}</a></li>',
-            'current' => '<li class="active"><a href="">{{text}}</a></li>',
+            'current' => '<li class="page-item active"><a href="" class="page-link">{{text}}</a></li>',
             'ellipsis' => '<li class="ellipsis">&hellip;</li>',
             'sort' => '<a href="#" ' . $onClick . '>{{text}}</a>',
             'sortAsc' => '<a href="#" ' . $onClick . '>{{text}} <i class="fas fa-sort-up"></i></a>',
