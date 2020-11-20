@@ -21,6 +21,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'id',
             ],
             [
+                'name' => 'Enabled',
+                'sort' => 'enabled',
+                'data_path' => 'enabled',
+                'element' => 'boolean'
+            ],
+            [
                 'name' => __('Scope'),
                 'sort' => 'scope',
                 'data_path' => 'scope',
@@ -39,13 +45,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => __('UUID'),
                 'sort' => 'uuid',
                 'data_path' => 'uuid'
-            ],
-            [
-                'name' => 'Enabled',
-                'sort' => 'enabled',
-                'data_path' => 'enabled',
-                'element' => 'boolean'
-            ],
+            ]
         ],
         'title' => __('Meta Field Templates'),
         'description' => __('The various templates used to enrich certain objects by a set of standardised fields.'),
@@ -57,7 +57,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'url' => '/metaTemplates/enable',
+                'url' => '/metaTemplates/toggle',
                 'url_params_data_paths' => ['id'],
                 'title' => __('Enable template'),
                 'icon' => 'plus',
@@ -68,7 +68,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 ]
             ],
             [
-                'url' => '/metaTemplates/disable',
+                'url' => '/metaTemplates/toggle',
                 'url_params_data_paths' => ['id'],
                 'title' => __('DIsable template'),
                 'icon' => 'minus',

@@ -47,13 +47,25 @@ class MetaTemplatesTable extends AppTable
                 $files = scandir($path);
                 foreach ($files as $k => $file) {
                     if (substr($file, -5) === '.json') {
-                        $files_processed[] = $file;
-                        $this->loadMetaFile($path . $file);
+                        if ($this->loadMetaFile($path . $file) === true) {
+                            $files_processed[] = $file;
+                        }
                     }
                 }
             }
         }
         return $files_processed;
+    }
+
+    public function getTemplate($id)
+    {
+        $query = $this->find();
+        $query->where(['id' => $id]);
+        $template = $query->first();
+        if (empty($template)) {
+            throw new NotFoundException(__('Invalid template ID specified.'));
+        }
+        return $template;
     }
 
     public function loadMetaFile(String $filePath)
@@ -69,17 +81,18 @@ class MetaTemplatesTable extends AppTable
                     $template = $this->newEntity($metaTemplate);
                     $result = $this->save($template);
                     if (!$result) {
-                        return false;
+                        return __('Something went wrong, could not create the template.');
                     }
                 } else {
                     if ($template->version >= $metaTemplate['version']) {
-                        return true;
+                        return false;
                     }
                     foreach (['version', 'source', 'name', 'namespace', 'scope', 'description'] as $field) {
                         $template->{$field} = $metaTemplate[$field];
                     }
                     $result = $this->save($template);
                     if (!$result) {
+                        return __('Something went wrong, could not update the template.');
                         return false;
                     }
                 }

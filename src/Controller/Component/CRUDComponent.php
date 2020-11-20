@@ -53,7 +53,7 @@ class CRUDComponent extends Component
             $metaQuery = $this->MetaTemplates->find();
             $metaQuery->where([
                 'scope' => $this->Table->metaFields,
-                //'enabled' => 1
+                'enabled' => 1
             ]);
             $metaQuery->contain(['MetaTemplateFields']);
             $metaTemplates = $metaQuery->all();
@@ -340,5 +340,27 @@ class CRUDComponent extends Component
             }
         }
         return $query;
+    }
+
+    public function toggleEnabled(int $id, array $path, string $fieldName = 'enabled'): bool
+    {
+        if (empty($id)) {
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+        }
+        $data = $this->Table->get($id);
+        if ($this->request->is('post')) {
+            $data[$fieldName] = $data[$fieldName] ? true : false;
+            $this->Table->save($data);
+            $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData(['value' => $data[$fieldName]], 'json');
+        } else {
+            if ($this->Controller->ParamHandler->isRest()) {
+                $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData(['value' => $data[$fieldName]], 'json');
+            } else {
+                $this->Controller->set('fieldName', $fieldName);
+                $this->Controller->set('currentValue', $data[$fieldName]);
+                $this->Controller->set('path', $path);
+                $this->Controller->render('/genericTemplates/ajaxForm');
+            }
+        }
     }
 }

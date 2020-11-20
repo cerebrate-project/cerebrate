@@ -103,7 +103,7 @@
                 $ajaxFlashMessage,
                 $formCreate,
                 $fieldsString,
-                empty($metaFieldStrings) ? '' : $this->element(
+                empty($metaFieldString) ? '' : $this->element(
                     'genericElements/accordion_scaffold', [
                         'body' => $metaFieldString,
                         'title' => 'Meta fields'
@@ -126,14 +126,13 @@
                 $data['description']
             ),
             $fieldsString,
-            empty($metaFieldStrings) ? '' : $this->element(
+            empty($metaFieldString) ? '' : $this->element(
                 'genericElements/accordion_scaffold', [
                     'body' => $metaFieldString,
                     'title' => 'Meta fields'
                 ]
             ),
             $this->element('genericElements/Form/submitButton', $submitButtonData),
-            //$metaFieldString,
             $formEnd,
             '<br /><br />',
             empty($ajax) ? '</div>' : ''

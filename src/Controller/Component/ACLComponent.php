@@ -625,6 +625,13 @@ class ACLComponent extends Component
                             'actions' => ['delete', 'edit', 'view'],
                             'skipTopMenu' => 1,
                             'popup' => 1
+                        ],
+                        'update' => [
+                            'url' => '/metaTemplates/update',
+                            'label' => __('Update Meta Templates'),
+                            'actions' => ['index', 'view'],
+                            'skipTopMenu' => 1,
+                            'popup' => 1
                         ]
                     ]
                 ]
