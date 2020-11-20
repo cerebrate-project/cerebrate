@@ -38,7 +38,7 @@ class UsersTable extends AppTable
             ->add('password', [
                 'password_complexity' => [
                     'rule' => function($value, $context) {
-                        if (!preg_match('/^((?=.*\d)|(?=.*\W+))(?![\n])(?=.*[A-Z])(?=.*[a-z]).*$|.{16,}/', $value) || strlen($value) < 12) {
+                        if (!preg_match('/^((?=.*\d)|(?=.*\W+))(?![\n])(?=.*[A-Z])(?=.*[a-z]).*$|.{16,}/s', $value) || strlen($value) < 12) {
                             return false;
                         }
                         return true;
