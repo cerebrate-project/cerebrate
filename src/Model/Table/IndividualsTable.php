@@ -8,6 +8,8 @@ use Cake\Validation\Validator;
 
 class IndividualsTable extends AppTable
 {
+    public $metaFields = 'individual';
+
     public function initialize(array $config): void
     {
         parent::initialize($config);
