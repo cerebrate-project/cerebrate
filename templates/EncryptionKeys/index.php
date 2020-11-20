@@ -40,11 +40,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'type',
             ],
             [
-                'name' => __('Owner ID'),
-                'sort' => 'owner_id',
-                'data_path' => 'owner_id',
-            ],
-            [
                 'name' => __('Owner'),
                 'data_path' => 'owner_id',
                 'owner_type_path' => 'owner_type',
