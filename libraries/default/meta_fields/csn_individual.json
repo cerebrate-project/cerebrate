@@ -1,0 +1,47 @@
+{
+    "name": "CSIRT Network individual fields",
+    "namespace": "cnw",
+    "description": "Template based on the CSIRT network portal",
+    "version": 2,
+    "scope": "individual",
+    "uuid": "e833915c-6843-4eb4-8396-fe7ba7e0426e",
+    "source": "CSIRT-network",
+    "metaFields": [
+        {
+            "field": "position_held",
+            "type": "text"
+        },
+        {
+            "field": "mobile_phone",
+            "type": "text"
+        },
+        {
+            "field": "email",
+            "type": "text"
+        },
+        {
+            "field": "country",
+            "type": "text"
+        },
+        {
+            "field": "contact_number_landline",
+            "type": "text"
+        },
+        {
+            "field": "public_key_user_id",
+            "type": "text"
+        },
+        {
+            "field": "public_key_key_id",
+            "type": "text"
+        },
+        {
+            "field": "key_fingerprint",
+            "type": "text"
+        },
+        {
+            "field": "time_zone",
+            "type": "text"
+        }
+    ]
+}

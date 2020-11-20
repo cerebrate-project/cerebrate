@@ -1,0 +1,71 @@
+{
+    "name": "CSIRT Network organisation fields",
+    "namespace": "cnw",
+    "description": "Template based on the CSIRT network portal",
+    "version": 2,
+    "scope": "organisation",
+    "uuid": "bf72ff7f-ee63-4f13-94e9-fd046503a90c",
+    "source": "CSIRT-network",
+    "metaFields": [
+        {
+            "field": "team_short_name",
+            "type": "text"
+        },
+        {
+            "field": "membership_type",
+            "type": "text"
+        },
+        {
+            "field": "email",
+            "type": "text"
+        },
+        {
+            "field": "country",
+            "type": "text"
+        },
+        {
+            "field": "official_name",
+            "type": "text"
+        },
+        {
+            "field": "time_zone",
+            "type": "text"
+        },
+        {
+            "field": "established",
+            "type": "text"
+        },
+        {
+            "field": "description",
+            "type": "text"
+        },
+        {
+            "field": "website",
+            "type": "text"
+        },
+        {
+            "field": "team_contact_number",
+            "type": "text"
+        },
+        {
+            "field": "team_public_key_user_id",
+            "type": "text"
+        },
+        {
+            "field": "team_public_key_key_id",
+            "type": "text"
+        },
+        {
+            "field": "team_fingerprint",
+            "type": "text"
+        },
+        {
+            "field": "postal_address",
+            "type": "text"
+        },
+        {
+            "field": "business_hours",
+            "type": "text"
+        }
+    ]
+}
