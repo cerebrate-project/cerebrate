@@ -29,12 +29,7 @@ class SharingGroupsController extends AppController
             ]
         ]);
         $dropdownData = [
-            'organisation' => $this->SharingGroups->Organisations->find('list', [
-                'sort' => ['name' => 'asc'],
-                'conditions' => [
-                    'id IN' => array_values(\Cake\Utility\Hash::extract($this->ACL->getUser(), 'individual.organisations.{n}.id'))
-                ]
-            ])
+            'organisation' => $this->getAvailableOrgForSg($this->ACL->getUser())
         ];
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
@@ -61,12 +56,7 @@ class SharingGroupsController extends AppController
             return $this->restResponsePayload;
         }
         $dropdownData = [
-            'organisation' => $this->SharingGroups->Organisations->find('list', [
-                'sort' => ['name' => 'asc'],
-                'conditions' => [
-                    'id IN' => array_values(\Cake\Utility\Hash::extract($this->ACL->getUser(), 'individual.organisations.{n}.id'))
-                ]
-            ])
+            'organisation' => $this->getAvailableOrgForSg($this->ACL->getUser())
         ];
         $this->set(compact('dropdownData'));
         $this->set('metaGroup', 'Trust Circles');
@@ -159,5 +149,21 @@ class SharingGroupsController extends AppController
         }
         $this->set('sharing_group_id', $id);
         $this->set('sharing_group_orgs', $sharingGroup['sharing_group_orgs']);
+    }
+
+    private function getAvailableOrgForSg($user)
+    {
+        $organisations = [];
+        if (!empty($user['role']['perm_admin'])) {
+            $organisations = $this->SharingGroups->Organisations->find('list')->order(['name' => 'ASC'])->toArray();
+        } else if (!empty($user['individual']['organisations'])) {
+            $organisations = $this->SharingGroups->Organisations->find('list', [
+                'sort' => ['name' => 'asc'],
+                'conditions' => [
+                    'id IN' => array_values(\Cake\Utility\Hash::extract($user, 'individual.organisations.{n}.id'))
+                ]
+            ]);
+        }
+        return $organisations;
     }
 }

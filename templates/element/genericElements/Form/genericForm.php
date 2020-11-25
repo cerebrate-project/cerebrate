@@ -15,6 +15,7 @@
     $modelForForm = empty($data['model']) ?
         h(\Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::classify($this->request->getParam('controller')))) :
         h($data['model']);
+    $entity = isset($entity) ? $entity : null;
     $fieldsString = '';
     $simpleFieldWhitelist = [
         'default', 'type', 'placeholder', 'label', 'empty', 'rows', 'div', 'required'

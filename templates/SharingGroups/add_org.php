@@ -12,7 +12,7 @@
             ],
             'submit' => [
                 'action' => $this->request->getParam('action')
-            ]
+            ],
         ]
     ]);
 ?>

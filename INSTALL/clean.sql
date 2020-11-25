@@ -8,6 +8,8 @@ DROP TABLE IF EXISTS encryption_keys;
 DROP TABLE IF EXISTS organisation_encryption_keys;
 DROP TABLE IF EXISTS organisations;
 DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS sharing_groups;
+DROP TABLE IF EXISTS sgo;
 DROP TABLE IF EXISTS tags;
 DROP TABLE IF EXISTS user_keys;
 DROP TABLE IF EXISTS users;
