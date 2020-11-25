@@ -12,8 +12,9 @@
             ],
             'submit' => [
                 'action' => $this->request->getParam('action')
-            ]
-        ]
+            ],
+        ],
+        'entity' => null,
     ]);
 ?>
 </div>

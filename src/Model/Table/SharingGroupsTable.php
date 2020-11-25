@@ -24,7 +24,6 @@ class SharingGroupsTable extends AppTable
             'SharingGroupOrgs',
             [
                 'className' => 'Organisations',
-                'joinTable' => 'sgo',
                 'foreignKey' => 'sharing_group_id',
                 'targetForeignKey' => 'organisation_id'
             ]

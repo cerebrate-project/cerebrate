@@ -309,7 +309,7 @@ CREATE TABLE `sharing_groups` (
   KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `sharing_group_orgs` (
+CREATE TABLE `organisations_sharing_groups` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `sharing_group_id` int(10) unsigned NOT NULL,
   `organisation_id` int(10) unsigned NOT NULL,
