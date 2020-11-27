@@ -133,6 +133,9 @@ class ImporterCommand extends Command
         $data = [];
         foreach ($config as $key => $fieldConfig) {
             $values = null;
+            if (!is_array($fieldConfig)) {
+                $fieldConfig = ['path' =>  $fieldConfig];
+            }
             if (!empty($fieldConfig['path'])) {
                 $values = Hash::extract($source, $fieldConfig['path']);
             }
