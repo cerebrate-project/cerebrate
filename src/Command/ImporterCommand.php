@@ -53,7 +53,6 @@ class ImporterCommand extends Command
         $ioTable = $this->transformEntitiesIntoTable($entitiesSample);
         $io->helper('Table')->output($ioTable);
         $selection = $io->askChoice('A sample of the data you are about to save is provided above. Would you like to proceed?', ['Y', 'N'], 'N');
-        // debug(json_encode($entities, JSON_PRETTY_PRINT));
         if ($selection == 'Y') {
             $this->saveData($this->{$table}, $entities);
         }
@@ -79,7 +78,7 @@ class ImporterCommand extends Command
             }
         }
         $hasErrors = false;
-        foreach ($entities as $entity) {
+        foreach ($entities as $i => $entity) {
             if ($entity->hasErrors()) {
                 $hasErrors = true;
                 $this->io->error(json_encode(['entity' => $entity, 'errors' => $entity->getErrors()], JSON_PRETTY_PRINT));
@@ -93,12 +92,38 @@ class ImporterCommand extends Command
 
     private function saveData($table, $entities)
     {
+        $this->loadModel('MetaFields');
         $this->io->verbose('Saving data');
-        $result = $table->saveMany($entities);
-        if ($result == false) {
+        $entities = $table->saveMany($entities);
+        if ($entities === false) {
             $this->io->error('Error while saving data');
         }
-        // take care of meta fields
+        $this->io->verbose('Saving meta fields');
+        $errorWhileSaving = 0;
+        foreach ($entities as $i => $entity) {
+            foreach ($entity['metaFields'] as $fieldName => $fieldValue) {
+                $query = $this->MetaFields->find('all')->where([
+                    'parent_id' => $entity->id,
+                    'field' => $fieldName
+                ]);
+                $metaEntity = $query->first();
+                if (is_null($metaEntity)) {
+                    $metaEntity = $this->MetaFields->newEmptyEntity();
+                }
+                $metaEntity->field = $fieldName;
+                $metaEntity->value = $fieldValue;
+                $metaEntity->scope = $table->metaFields;
+                $metaEntity->parent_id = $entity->id;
+                $metaEntity = $this->MetaFields->save($metaEntity);
+                if ($metaEntity === false) {
+                    $errorWhileSaving++;
+                    $this->io->verbose('Error while saving metafield: ' . PHP_EOL . json_encode($metaEntity, JSON_PRETTY_PRINT));
+                }
+            }
+            if ($errorWhileSaving) {
+                $this->io->error('Error while saving meta data: ' . (string) $errorWhileSaving);
+            }
+        }
     }
     
     private function extractData($table, $config, $source)
@@ -216,15 +241,20 @@ class ImporterCommand extends Command
     {
         $table = [[]];
         if (!empty($entities)) {
-            // $tableHeader = empty($header) ? array_keys($entities[0]->toArray()) : $header;
             $tableHeader = empty($header) ? array_keys(Hash::flatten($entities[0]->toArray())) : $header;
+            $tableHeader = array_filter($tableHeader, function($name) {
+                return !in_array('metaFields', explode('.', $name));
+            });
+            foreach ($entities[0]['metaFields'] as $metaField => $metaValue) {
+                $tableHeader[] = "metaFields.$metaField";
+            }
             $tableContent = [];
             foreach ($entities as $entity) {
                 $row = [];
                 foreach ($tableHeader as $key) {
                     $subKeys = explode('.', $key);
                     if (in_array('metaFields', $subKeys)) {
-                        $row[] = (string) Hash::get($entity, $key);
+                        $row[] = (string) $entity['metaFields'][$subKeys[1]];
                     } else {
                         $row[] = (string) $entity[$key];
                     }
