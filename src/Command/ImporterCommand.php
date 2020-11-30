@@ -160,32 +160,30 @@ class ImporterCommand extends Command
             $this->io->error('Error while saving data');
         }
         $this->io->verbose('Saving meta fields');
+        $this->io->out('');
         $progress->init([
-            'total' => count($entities)
+            'total' => count($entities),
+            'length' => 20
         ]);
         foreach ($entities as $i => $entity) {
             $this->saveMetaFields($entity);
             $progress->increment(1);
             $progress->draw();
         }
+        $this->io->out('');
     }
     
     private function saveMetaFields($entity)
     {
-        $errorWhileSaving = 0;
-        foreach ($entity->metaFields as $metaEntity) {
+        foreach ($entity->metaFields as $i => $metaEntity) {
             $metaEntity->parent_id = $entity->id;
             if ($metaEntity->hasErrors() || is_null($metaEntity->value)) {
-                continue;
-            }
-            $metaEntity = $this->MetaFields->save($metaEntity);
-            if ($metaEntity === false) {
-                $errorWhileSaving++;
-                $this->io->verbose('Error while saving metafield: ' . PHP_EOL . json_encode($metaEntity, JSON_PRETTY_PRINT));
+                unset($entity->metaFields[$i]);
             }
         }
-        if ($errorWhileSaving) {
-            $this->io->error('Error while saving meta data: ' . (string) $errorWhileSaving);
+        $entity->metaFields = $this->MetaFields->saveMany($entity->metaFields);
+        if ($entity->metaFields === false) {
+            $this->io->error('Error while saving meta data');
         }
     }
     
