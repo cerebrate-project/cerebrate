@@ -1,0 +1,25 @@
+{
+    "format": "json",
+    "mapping": {
+        "name": "data.{n}.short-team-name",
+        "uuid": {
+                "path": "data.{n}.team-name",
+                "override": false,
+                "massage": "genUUID"
+        },
+        "url": "data.{n}.website",
+        "nationality": "data.{n}.country-name",
+        "membership_type": "data.{n}.first-member-type",
+        "email": "data.{n}.email",
+        "country": "data.{n}.country-name",
+        "official_name": "data.{n}.team-name",
+        "established": "data.{n}.establishment",
+        "website": "data.{n}.website",
+        "constituency": "data.{n}.constituency",
+        "is_approved": "data.{n}.is_approved",
+        "enisa_geo_group": "data.{n}.enisa-geo-group",
+        "oes_coverage": "data.{n}.oes-coverage",
+        "enisa-tistatus": "data.{n}.enisa-tistatus",
+        "csirt_network_status": "data.{n}.csirt-network-status"
+    }
+}

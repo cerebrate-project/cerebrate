@@ -23,6 +23,7 @@ class OrganisationsTable extends AppTable
         $this->hasMany(
             'EncryptionKeys',
             [
+                'dependent' => true,
                 'foreignKey' => 'owner_id',
                 'conditions' => ['owner_type' => 'organisation']
             ]
@@ -30,6 +31,7 @@ class OrganisationsTable extends AppTable
         $this->hasMany(
             'MetaFields',
             [
+                'dependent' => true,
                 'foreignKey' => 'parent_id',
                 'conditions' => ['scope' => 'organisation']
             ]
