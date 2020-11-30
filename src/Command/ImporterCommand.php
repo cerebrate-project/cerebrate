@@ -95,9 +95,12 @@ class ImporterCommand extends Command
             $entities = $table->newEntities($data);
         } else {
             foreach ($data as $i => $item) {
-                $query = $table->find('all')
-                    ->where(["${primary_key}" => $item[$primary_key]]);
-                $entity = $query->first();
+                $entity = null;
+                if (isset($item[$primary_key])) {
+                    $query = $table->find('all')
+                        ->where(["${primary_key}" => $item[$primary_key]]);
+                    $entity = $query->first();
+                }
                 if (is_null($entity)) {
                     $entity = $table->newEmptyEntity();
                 } else {
@@ -139,6 +142,9 @@ class ImporterCommand extends Command
         }
         if (!$hasErrors) {
             $this->io->verbose('No validation errors');
+        } else {
+            $this->io->error('Validation errors, please fix before importing');
+            die(1);
         }
         return $entities;
     }
@@ -147,13 +153,20 @@ class ImporterCommand extends Command
     {
         $this->loadModel('MetaFields');
         $this->io->verbose('Saving data');
+        $progress = $this->io->helper('Progress');
+        
         $entities = $table->saveMany($entities);
         if ($entities === false) {
             $this->io->error('Error while saving data');
         }
         $this->io->verbose('Saving meta fields');
+        $progress->init([
+            'total' => count($entities)
+        ]);
         foreach ($entities as $i => $entity) {
             $this->saveMetaFields($entity);
+            $progress->increment(1);
+            $progress->draw();
         }
     }
     
@@ -162,6 +175,9 @@ class ImporterCommand extends Command
         $errorWhileSaving = 0;
         foreach ($entity->metaFields as $metaEntity) {
             $metaEntity->parent_id = $entity->id;
+            if ($metaEntity->hasErrors() || is_null($metaEntity->value)) {
+                continue;
+            }
             $metaEntity = $this->MetaFields->save($metaEntity);
             if ($metaEntity === false) {
                 $errorWhileSaving++;
