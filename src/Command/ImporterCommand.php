@@ -54,10 +54,16 @@ class ImporterCommand extends Command
             'help' => 'The source that should be imported. Can be either a file on the disk or an valid URL.',
             'required' => true
         ]);
-        $parser->addArgument('primary_key', [
+        $parser->addOption('primary_key', [
+            'short' => 'p',
             'help' => 'To avoid duplicates, entries having the value specified by the primary key will be updated instead of inserted. Leave empty if only insertion should be done',
-            'required' => false,
             'default' => null,
+        ]);
+        $parser->addOption('model_class', [
+            'short' => 'm',
+            'help' => 'The target cerebrate model for the import',
+            'default' => 'Organisations',
+            'choices' => ['Organisations', 'Individuals', 'AuthKeys']
         ]);
         return $parser;
     }
@@ -67,7 +73,11 @@ class ImporterCommand extends Command
         $this->io = $io;
         $configPath = $args->getArgument('config');
         $source = $args->getArgument('source');
-        $primary_key = $args->getArgument('primary_key');
+        $primary_key = $args->getOption('primary_key');
+        $model_class = $args->getOption('model_class');
+        if (!is_null($model_class)) {
+            $this->modelClass = $model_class;
+        }
 
         $table = $this->modelClass;
         $this->loadModel($table);
