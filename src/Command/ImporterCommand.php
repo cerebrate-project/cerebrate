@@ -14,6 +14,7 @@ use Cake\Http\Client;
 class ImporterCommand extends Command
 {
     protected $modelClass = 'Organisations';
+    private $fieldsNoOverride = [];
 
     protected function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {
@@ -27,7 +28,7 @@ class ImporterCommand extends Command
             'required' => true
         ]);
         $parser->addArgument('primary_key', [
-            'help' => 'To avoid duplicates, entries having the value specified by the primary key will be updated instead of inserted. Empty if only insertion should be done',
+            'help' => 'To avoid duplicates, entries having the value specified by the primary key will be updated instead of inserted. Leave empty if only insertion should be done',
             'required' => false,
             'default' => null,
         ]);
@@ -43,23 +44,25 @@ class ImporterCommand extends Command
 
         $table = $this->modelClass;
         $this->loadModel($table);
-        // $orgs = $this->{$table}->find()->enableHydration(false)->toList();
         $config = $this->getConfigFromFile($configPath);
+        $this->processConfig($config);
         $sourceData = $this->getDataFromSource($source);
-        // $sourceData = ['data' => [['name' => 'Test2', 'uuid' => '28de34ac-e284-495c-ae0e-9f46dd12da35', 'sector' => 'ss']]];
         $data = $this->extractData($this->{$table}, $config, $sourceData);
-        $entities = $this->marshalData($this->{$table}, $data, $primary_key);
+        $entities = $this->marshalData($this->{$table}, $data, $config, $primary_key);
+
         $entitiesSample = array_slice($entities, 0, min(10, count($entities)));
         $ioTable = $this->transformEntitiesIntoTable($entitiesSample);
         $io->helper('Table')->output($ioTable);
+
         $selection = $io->askChoice('A sample of the data you are about to save is provided above. Would you like to proceed?', ['Y', 'N'], 'N');
         if ($selection == 'Y') {
             $this->saveData($this->{$table}, $entities);
         }
     }
 
-    private function marshalData($table, $data, $primary_key=null)
+    private function marshalData($table, $data, $config, $primary_key=null)
     {
+        $this->loadModel('MetaFields');
         $entities = [];
         if (is_null($primary_key)) {
             $entities = $table->newEntities($data);
@@ -68,10 +71,10 @@ class ImporterCommand extends Command
                 $query = $table->find('all')
                     ->where(["${primary_key}" => $item[$primary_key]]);
                 $entity = $query->first();
-                if ($entity) {
-                    $entity->setAccess('uuid', false);
-                } else {
+                if (is_null($entity)) {
                     $entity = $table->newEmptyEntity();
+                } else {
+                    $this->lockAccess($config, $entity);
                 }
                 $entity = $table->patchEntity($entity, $item);
                 $entities[] = $entity;
@@ -82,6 +85,29 @@ class ImporterCommand extends Command
             if ($entity->hasErrors()) {
                 $hasErrors = true;
                 $this->io->error(json_encode(['entity' => $entity, 'errors' => $entity->getErrors()], JSON_PRETTY_PRINT));
+            } else {
+                $metaFields = [];
+                foreach ($entity['metaFields'] as $fieldName => $fieldValue) {
+                    $metaEntity = null;
+                    if (!$entity->isNew()) {
+                        $query = $this->MetaFields->find('all')->where([
+                            'parent_id' => $entity->id,
+                            'field' => $fieldName
+                        ]);
+                        $metaEntity = $query->first();
+                    }
+                    if (is_null($metaEntity)) {
+                        $metaEntity = $this->MetaFields->newEmptyEntity();
+                        $metaEntity->field = $fieldName;
+                        $metaEntity->scope = $table->metaFields;
+                        $metaEntity->parent_id = $entity->id;
+                    }
+                    if ($this->canBeOverriden($config, $metaEntity)) {
+                        $metaEntity->value = $fieldValue;
+                    }
+                    $metaFields[] = $metaEntity;
+                }
+                $entities[$i]->metaFields = $metaFields;
             }
         }
         if (!$hasErrors) {
@@ -99,30 +125,24 @@ class ImporterCommand extends Command
             $this->io->error('Error while saving data');
         }
         $this->io->verbose('Saving meta fields');
-        $errorWhileSaving = 0;
         foreach ($entities as $i => $entity) {
-            foreach ($entity['metaFields'] as $fieldName => $fieldValue) {
-                $query = $this->MetaFields->find('all')->where([
-                    'parent_id' => $entity->id,
-                    'field' => $fieldName
-                ]);
-                $metaEntity = $query->first();
-                if (is_null($metaEntity)) {
-                    $metaEntity = $this->MetaFields->newEmptyEntity();
-                }
-                $metaEntity->field = $fieldName;
-                $metaEntity->value = $fieldValue;
-                $metaEntity->scope = $table->metaFields;
-                $metaEntity->parent_id = $entity->id;
-                $metaEntity = $this->MetaFields->save($metaEntity);
-                if ($metaEntity === false) {
-                    $errorWhileSaving++;
-                    $this->io->verbose('Error while saving metafield: ' . PHP_EOL . json_encode($metaEntity, JSON_PRETTY_PRINT));
-                }
+            $this->saveMetaFields($entity);
+        }
+    }
+    
+    private function saveMetaFields($entity)
+    {
+        $errorWhileSaving = 0;
+        foreach ($entity->metaFields as $metaEntity) {
+            $metaEntity->parent_id = $entity->id;
+            $metaEntity = $this->MetaFields->save($metaEntity);
+            if ($metaEntity === false) {
+                $errorWhileSaving++;
+                $this->io->verbose('Error while saving metafield: ' . PHP_EOL . json_encode($metaEntity, JSON_PRETTY_PRINT));
             }
-            if ($errorWhileSaving) {
-                $this->io->error('Error while saving meta data: ' . (string) $errorWhileSaving);
-            }
+        }
+        if ($errorWhileSaving) {
+            $this->io->error('Error while saving meta data: ' . (string) $errorWhileSaving);
         }
     }
     
@@ -149,6 +169,18 @@ class ImporterCommand extends Command
             }
         }
         return $this->invertArray($data);
+    }
+
+    private function lockAccess($config, &$entity)
+    {
+        foreach ($this->fieldsNoOverride as $fieldName) {
+            $entity->setAccess($fieldName, false);
+        }
+    }
+
+    private function canBeOverriden($config, $metaEntity)
+    {
+        return !in_array($metaEntity->field, $this->fieldsNoOverride);
     }
 
     private function getDataFromSource($source)
@@ -218,6 +250,18 @@ class ImporterCommand extends Command
         }
     }
 
+    private function processConfig($config)
+    {
+        $this->fieldsNoOverride = [];
+        foreach ($config as $fieldName => $fieldConfig) {
+            if (is_array($fieldConfig)) {
+                if (isset($fieldConfig['override']) && $fieldConfig['override'] === false) {
+                    $this->fieldsNoOverride[] = $fieldName;
+                }
+            }
+        }
+    }
+
     private function transformResultSetsIntoTable($result, $header=[])
     {
         $table = [[]];
@@ -248,8 +292,8 @@ class ImporterCommand extends Command
             $tableHeader = array_filter($tableHeader, function($name) {
                 return !in_array('metaFields', explode('.', $name));
             });
-            foreach ($entities[0]['metaFields'] as $metaField => $metaValue) {
-                $tableHeader[] = "metaFields.$metaField";
+            foreach ($entities[0]->metaFields as $metaField) {
+                $tableHeader[] = "metaFields.$metaField->field";
             }
             $tableContent = [];
             foreach ($entities as $entity) {
@@ -257,7 +301,17 @@ class ImporterCommand extends Command
                 foreach ($tableHeader as $key) {
                     $subKeys = explode('.', $key);
                     if (in_array('metaFields', $subKeys)) {
-                        $row[] = (string) $entity['metaFields'][$subKeys[1]];
+                        $found = false;
+                        foreach ($entity->metaFields as $metaField) {
+                            if ($metaField->field == $subKeys[1]) {
+                                $row[] = (string) $metaField->value;
+                                $found = true;
+                                break;
+                            }
+                        }
+                        if (!$found) {
+                            $row[] = '';
+                        }
                     } else {
                         $row[] = (string) $entity[$key];
                     }
