@@ -1,4 +1,30 @@
 <?php
+
+/**
+ * Generic importer to feed data to cerebrate from JSON or CSV.
+ * 
+ * - JSON configuration file must have the `format` key which can either take the value `json` or `csv`
+ *  - If `csv` is provided, the file must contains the header.
+ *  - If `json` is provided, a `mapping` key on how to reach each fields using the cakephp4's Hash syntax must be provided.
+ *      - The mapping is done in the following way:
+ *          - The key is the field name
+ *          - The value
+ *              - Can either be the string representing the path from which to get the value
+ *              - Or a JSON containg the `path`, the optional `override` parameter specifying if the existing data should be overriden 
+ *                and an optional `massage` function able to alter the data.
+ *          - Example
+ *              {
+ *                  "name": "data.{n}.team-name",
+ *                  "uuid": {
+ *                          "path": "data.{n}.team-name",   // a path MUST always be provided
+ *                          "override": false,              // If the value already exists in the database, do not override it
+ *                          "massage": "genUUID"            // The function genUUID will be called on every piece of data
+ *              },
+ *
+ * - The optional primary key argument provides a way to make import replayable. It can typically be used when an ID or UUID is not provided in the source file but can be replaced by something else (e.g. team-name or other type of unique data).
+ * 
+ */
+
 namespace App\Command;
 
 use Cake\Console\Command;
@@ -15,12 +41,13 @@ class ImporterCommand extends Command
 {
     protected $modelClass = 'Organisations';
     private $fieldsNoOverride = [];
+    private $format = 'json';
 
     protected function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {
         $parser->setDescription('Import data based on the provided configuration file.');
         $parser->addArgument('config', [
-            'help' => 'Configuration file path for the importer',
+            'help' => 'JSON configuration file path for the importer.',
             'required' => true
         ]);
         $parser->addArgument('source', [
@@ -74,7 +101,7 @@ class ImporterCommand extends Command
                 if (is_null($entity)) {
                     $entity = $table->newEmptyEntity();
                 } else {
-                    $this->lockAccess($config, $entity);
+                    $this->lockAccess($entity);
                 }
                 $entity = $table->patchEntity($entity, $item);
                 $entities[] = $entity;
@@ -102,7 +129,7 @@ class ImporterCommand extends Command
                         $metaEntity->scope = $table->metaFields;
                         $metaEntity->parent_id = $entity->id;
                     }
-                    if ($this->canBeOverriden($config, $metaEntity)) {
+                    if ($this->canBeOverriden($metaEntity)) {
                         $metaEntity->value = $fieldValue;
                     }
                     $metaFields[] = $metaEntity;
@@ -148,10 +175,23 @@ class ImporterCommand extends Command
     
     private function extractData($table, $config, $source)
     {
-        $defaultFields = array_flip($table->getSchema()->columns());
         $this->io->verbose('Extracting data');
+        $defaultFields = array_flip($table->getSchema()->columns());
+        if ($this->format == 'json') {
+            $data = $this->extractDataFromJSON($defaultFields, $config, $source);
+        } else if ($this->format == 'csv') {
+            $data = $this->extractDataFromCSV($defaultFields, $config, $source);
+        } else {
+            $this->io->error('Cannot extract data: Invalid file format');
+            die(1);
+        }
+        return $data;
+    }
+
+    private function extractDataFromJSON($defaultFields, $config, $source)
+    {
         $data = [];
-        foreach ($config as $key => $fieldConfig) {
+        foreach ($config['mapping'] as $key => $fieldConfig) {
             $values = null;
             if (!is_array($fieldConfig)) {
                 $fieldConfig = ['path' =>  $fieldConfig];
@@ -171,14 +211,37 @@ class ImporterCommand extends Command
         return $this->invertArray($data);
     }
 
-    private function lockAccess($config, &$entity)
+    private function extractDataFromCSV($defaultFields, $config, $source)
+    {
+        $rows = array_map('str_getcsv', explode(PHP_EOL, $source));
+        if (count($rows[0]) != count($rows[1])) {
+            $this->io->error('Error while parsing source data. CSV doesn\'t have the same number of columns');
+            die(1);
+        }
+        $header = array_shift($rows);
+        $data = array();
+        foreach($rows as $row) {
+            $dataRow = [];
+            foreach ($header as $i => $headerField) {
+                if (isset($defaultFields[$headerField])) {
+                    $dataRow[$headerField] = $row[$i];
+                } else {
+                    $dataRow['metaFields'][$headerField] = $row[$i];
+                }
+            }
+            $data[] = $dataRow;
+        }
+        return $data;
+    }
+
+    private function lockAccess(&$entity)
     {
         foreach ($this->fieldsNoOverride as $fieldName) {
             $entity->setAccess($fieldName, false);
         }
     }
 
-    private function canBeOverriden($config, $metaEntity)
+    private function canBeOverriden($metaEntity)
     {
         return !in_array($metaEntity->field, $this->fieldsNoOverride);
     }
@@ -207,7 +270,13 @@ class ImporterCommand extends Command
         $http = new Client();
         $this->io->verbose('Downloading file');
         $response = $http->get($url);
-        return $response->getJson();
+        if ($this->format == 'json') {
+            return $response->getJson();
+        } else if ($this->format == 'csv') {
+            return $response->getStringBody();
+        } else {
+            $this->io->error('Cannot parse source data: Invalid file format');
+        }
     }
 
     private function getDataFromFile($path)
@@ -218,12 +287,18 @@ class ImporterCommand extends Command
             $data = $file->read();
             $file->close();
             if (!empty($data)) {
-                $data = json_decode($data, true);
-                if (is_null($data)) {
-                    $this->io->error('Error while parsing the source file');
-                    die(1);
+                if ($this->format == 'json') {
+                    $data = json_decode($data, true);
+                    if (is_null($data)) {
+                        $this->io->error('Error while parsing the source file');
+                        die(1);
+                    }
+                    return $data;
+                } else if ($this->format == 'csv') {
+                    return $data;
+                } else {
+                    $this->io->error('Cannot parse source data: Invalid file format');
                 }
-                return $data;
             }
         }
         return false;
@@ -252,8 +327,15 @@ class ImporterCommand extends Command
 
     private function processConfig($config)
     {
+        if (empty($config['mapping'])) {
+            $this->io->error('Error while parsing the configuration file, mapping missing');
+            die(1);
+        }
+        if (!empty($config['format'])) {
+            $this->format = $config['format'];
+        }
         $this->fieldsNoOverride = [];
-        foreach ($config as $fieldName => $fieldConfig) {
+        foreach ($config['mapping'] as $fieldName => $fieldConfig) {
             if (is_array($fieldConfig)) {
                 if (isset($fieldConfig['override']) && $fieldConfig['override'] === false) {
                     $this->fieldsNoOverride[] = $fieldName;
@@ -292,8 +374,10 @@ class ImporterCommand extends Command
             $tableHeader = array_filter($tableHeader, function($name) {
                 return !in_array('metaFields', explode('.', $name));
             });
-            foreach ($entities[0]->metaFields as $metaField) {
-                $tableHeader[] = "metaFields.$metaField->field";
+            if (!empty($entities[0]->metaFields)) {
+                foreach ($entities[0]->metaFields as $metaField) {
+                    $tableHeader[] = "metaFields.$metaField->field";
+                }
             }
             $tableContent = [];
             foreach ($entities as $entity) {
