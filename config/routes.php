@@ -48,7 +48,7 @@ $routes->scope('/', function (RouteBuilder $builder) {
     $builder->setExtensions(['json']);
     // Register scoped middleware for in scopes.
     $builder->registerMiddleware('csrf', new CsrfProtectionMiddleware([
-        'httpOnly' => true,
+        'httponly' => true,
     ]));
     /*
      * Apply a middleware to the current route scope.
