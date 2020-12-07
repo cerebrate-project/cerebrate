@@ -62,12 +62,14 @@
             );
         }
     }
-    $metaTemplateString = $this->element(
-        'genericElements/Form/metaTemplateScaffold', [
-            'metaTemplatesData' => $data['metaTemplates'],
-            'form' => $this->Form,
-        ]
-    );
+    if (!empty($data['metaTemplates']) && $data['metaTemplates']->count() > 0) {
+        $metaTemplateString = $this->element(
+            'genericElements/Form/metaTemplateScaffold', [
+                'metaTemplatesData' => $data['metaTemplates'],
+                'form' => $this->Form,
+            ]
+        );
+    }
     $submitButtonData = ['model' => $modelForForm, 'formRandomValue' => $formRandomValue];
     if (!empty($data['submit'])) {
         $submitButtonData = array_merge($submitButtonData, $data['submit']);
