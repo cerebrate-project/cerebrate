@@ -35,6 +35,7 @@ class MetaTemplatesController extends AppController
         $this->CRUD->index([
             'filters' => ['name', 'uuid', 'scope'],
             'quickFilters' => ['name', 'uuid', 'scope'],
+            'context' => 'scope',
             'contain' => ['MetaTemplateFields']
         ]);
         if ($this->ParamHandler->isRest()) {

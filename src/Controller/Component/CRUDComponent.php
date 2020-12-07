@@ -42,7 +42,14 @@ class CRUDComponent extends Component
         } else {
             $this->Controller->loadComponent('Paginator');
             $data = $this->Controller->Paginator->paginate($query);
+            if (!empty($options['context'])) {
+                $this->setCurrentContext($options, $params);
+            }
             $this->Controller->set('data', $data);
+            if (!empty($options['context'])) {
+                $contexts = array_merge(['_all'], $this->getAllContexts($options['context']));
+                $this->Controller->set('contexts', $contexts);
+            }
         }
     }
 
@@ -349,6 +356,16 @@ class CRUDComponent extends Component
         return $query;
     }
 
+    protected function setCurrentContext($options, $params)
+    {
+        foreach ($params as $filter => $filterValue) {
+            if ($options['context'] == $filter) {
+                $this->Controller->set('currentContext', $filterValue);
+                break;
+            }
+        }
+    }
+
     public function toggle(int $id, string $fieldName = 'enabled', array $params = []): void
     {
         if (empty($id)) {
@@ -424,5 +441,10 @@ class CRUDComponent extends Component
                 $this->Controller->render('/genericTemplates/ajaxForm');
             }
         }
+    }
+
+    private function getAllContexts($context)
+    {
+        return $this->Table->find()->distinct([$context])->all()->extract($context)->toList();
     }
 }
