@@ -4,7 +4,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'data' => $sharing_group_orgs,
         'skip_pagination' => 1,
         'top_bar' => [
-            'pull' => 'right',
             'children' => [
                 [
                     'type' => 'simple',

@@ -6,7 +6,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
         },
         'data' => $data,
         'top_bar' => [
-            'pull' => 'right',
             'children' => [
                 [
                     'type' => 'simple',
