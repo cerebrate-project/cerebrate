@@ -62,19 +62,12 @@
             );
         }
     }
-    $metaFieldString = '';
-    if (!empty($data['metaFields'])) {
-        foreach ($data['metaFields'] as $metaField) {
-            $metaField['label'] = \Cake\Utility\Inflector::humanize($metaField['field']);
-            $metaField['field'] = 'metaFields.' . $metaField['field'];
-            $metaFieldString .= $this->element(
-                'genericElements/Form/fieldScaffold', [
-                    'fieldData' => $metaField->toArray(),
-                    'form' => $this->Form
-                ]
-            );
-        }
-    }
+    $metaTemplateString = $this->element(
+        'genericElements/Form/metaTemplateScaffold', [
+            'metaTemplatesData' => $data['metaTemplates'],
+            'form' => $this->Form,
+        ]
+    );
     $submitButtonData = ['model' => $modelForForm, 'formRandomValue' => $formRandomValue];
     if (!empty($data['submit'])) {
         $submitButtonData = array_merge($submitButtonData, $data['submit']);
@@ -104,9 +97,9 @@
                 $ajaxFlashMessage,
                 $formCreate,
                 $fieldsString,
-                empty($metaFieldString) ? '' : $this->element(
+                empty($metaTemplateString) ? '' : $this->element(
                     'genericElements/accordion_scaffold', [
-                        'body' => $metaFieldString,
+                        'body' => $metaTemplateString,
                         'title' => 'Meta fields'
                     ]
                 ),

@@ -48,7 +48,7 @@ class CRUDComponent extends Component
 
     private function getMetaTemplates()
     {
-        $metaFields = [];
+        $metaTemplates = [];
         if (!empty($this->Table->metaFields)) {
             $metaQuery = $this->MetaTemplates->find();
             $metaQuery->where([
@@ -57,13 +57,8 @@ class CRUDComponent extends Component
             ]);
             $metaQuery->contain(['MetaTemplateFields']);
             $metaTemplates = $metaQuery->all();
-            foreach ($metaTemplates as $metaTemplate) {
-                foreach ($metaTemplate->meta_template_fields as $field) {
-                    $metaFields[$field['field']] = $field;
-                }
-            }
         }
-        $this->Controller->set('metaFields', $metaFields);
+        $this->Controller->set('metaTemplates', $metaTemplates);
         return true;
     }
 
@@ -136,18 +131,30 @@ class CRUDComponent extends Component
 
     private function saveMetaFields($id, $input)
     {
-        foreach ($input['metaFields'] as $metaField => $values) {
-            if (!is_array($values)) {
-                $values = [$values];
+        foreach ($input['metaFields'] as $templateID => $metaFields) {
+            $metaTemplates = $this->MetaTemplates->find()->where([
+                'id' => $templateID,
+                'enabled' => 1
+            ])->contain(['MetaTemplateFields'])->first();
+            $fieldNameToId = [];
+            foreach ($metaTemplates->meta_template_fields as $i => $metaTemplateField) {
+                $fieldNameToId[$metaTemplateField->field] = $metaTemplateField->id;
             }
-            foreach ($values as $value) {
-                if ($value !== '') {
-                    $temp = $this->MetaFields->newEmptyEntity();
-                    $temp->field = $metaField;
-                    $temp->value = $value;
-                    $temp->scope = $this->Table->metaFields;
-                    $temp->parent_id = $id;
-                    $this->MetaFields->save($temp);
+            foreach ($metaFields as $metaField => $values) {
+                if (!is_array($values)) {
+                    $values = [$values];
+                }
+                foreach ($values as $value) {
+                    if ($value !== '') {
+                        $temp = $this->MetaFields->newEmptyEntity();
+                        $temp->field = $metaField;
+                        $temp->value = $value;
+                        $temp->scope = $this->Table->metaFields;
+                        $temp->parent_id = $id;
+                        $temp->meta_template_id = $templateID;
+                        $temp->meta_template_field_id = $fieldNameToId[$metaField];
+                        $this->MetaFields->save($temp);
+                    }
                 }
             }
         }
@@ -227,7 +234,7 @@ class CRUDComponent extends Component
             return $data;
         }
         $query = $this->MetaFields->find();
-        $query->where(['scope' => $this->Table->metaFields, 'parent_id' => $id]);
+        $query->where(['MetaFields.scope' => $this->Table->metaFields, 'MetaFields.parent_id' => $id]);
         $metaFields = $query->all();
         $data['metaFields'] = [];
         foreach($metaFields as $metaField) {

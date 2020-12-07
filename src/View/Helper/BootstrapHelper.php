@@ -138,6 +138,13 @@ class BootstrapTabs extends Helper
         $this->data['navs'][$activeTab]['active'] = true;
 
         $this->options['vertical-size'] = $this->options['vertical-size'] < 0 || $this->options['vertical-size'] > 11 ? 3 : $this->options['vertical-size'];
+
+        if (!is_array($this->options['nav-class'])) {
+            $this->options['nav-class'] = [$this->options['nav-class']];
+        }
+        if (!is_array($this->options['content-class'])) {
+            $this->options['content-class'] = [$this->options['content-class']];
+        }
     }
 
     private function checkOptionValidity()
