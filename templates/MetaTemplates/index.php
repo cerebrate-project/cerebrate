@@ -24,7 +24,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => 'Enabled',
                 'sort' => 'enabled',
                 'data_path' => 'enabled',
-                'element' => 'boolean'
+                'element' => 'toggle',
+                'url' => '/metaTemplates/toggle',
+                'url_params_data_paths' => ['id'],
             ],
             [
                 'name' => __('Scope'),

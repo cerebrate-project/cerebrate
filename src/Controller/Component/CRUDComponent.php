@@ -16,7 +16,7 @@ class CRUDComponent extends Component
         $this->Table = $config['table'];
         $this->request = $config['request'];
         $this->TableAlias = $this->Table->getAlias();
-        $this->ObjectAlias = \Cake\Utility\Inflector::singularize($this->TableAlias);
+        $this->ObjectAlias = Inflector::singularize($this->TableAlias);
         $this->MetaFields = $config['MetaFields'];
         $this->MetaTemplates = $config['MetaTemplates'];
     }
@@ -347,6 +347,61 @@ class CRUDComponent extends Component
             }
         }
         return $query;
+    }
+
+    public function toggle(int $id, string $fieldName = 'enabled', array $params = []): void
+    {
+        if (empty($id)) {
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+        }
+
+        $data = $this->Table->get($id, $params);
+        if ($this->request->is(['post', 'put'])) {
+            $data->{$fieldName} = !$data->{$fieldName};
+            $data = $this->Table->save($data);
+            if ($data !== false) {
+                $message = __('{0}\'s `{1}` field: {2}. (ID: {3})',
+                    $this->ObjectAlias,
+                    $fieldName,
+                    $data->{$fieldName} ? __('enabled') : __('disabled'),
+                    $data->id,
+                );
+                if ($this->Controller->ParamHandler->isRest()) {
+                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'toggle', $data, $message);
+                } else {
+                    $this->Controller->Flash->success($message);
+                    if (empty($params['redirect'])) {
+                        $this->Controller->redirect(['action' => 'view', $id]);
+                    } else {
+                        $this->Controller->redirect($params['redirect']);
+                    }
+                }
+            } else {
+                $validationMessage = $this->prepareValidationError($data);
+                $message = __(
+                    '{0} could not be modified.{1}',
+                    $this->ObjectAlias,
+                    empty($validationMessage) ? '' : ' ' . __('Reason:{0}', $validationMessage)
+                );
+                if ($this->Controller->ParamHandler->isRest()) {
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $data, $message);
+                } else {
+                    $this->Controller->Flash->error($message);
+                    if (empty($params['redirect'])) {
+                        $this->Controller->redirect(['action' => 'view', $id]);
+                    } else {
+                        $this->Controller->redirect($params['redirect']);
+                    }
+                }
+            }
+        }
+        $this->Controller->set('entity', $data);
+        $this->Controller->set('fieldName', $fieldName);
+        $this->Controller->viewBuilder()->setLayout('ajax');
+        $this->Controller->render('/genericTemplates/toggle');
     }
 
     public function toggleEnabled(int $id, array $path, string $fieldName = 'enabled'): bool

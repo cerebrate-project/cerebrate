@@ -57,23 +57,11 @@ class MetaTemplatesController extends AppController
 
     public function toggle($id)
     {
-        $template = $this->MetaTemplates->getTemplate($id);
-        $template['enabled'] = $template['enabled'] ? 0 : 1;
-        $result = $this->MetaTemplates->save($template);
-        if ($template['enabled']) {
-            $message = $result ? __('Template enabled.') : __('Could not enable template');
-        } else {
-            $message = $result ? __('Template disabled.') : __('Could not disable template');
-        }
+        $this->CRUD->toggle($id);
         if ($this->ParamHandler->isRest()) {
-            if ($result) {
-                return $this->RestResponse->saveSuccessResponse('MetaTemplates', 'toggle', $id, 'json', $message);
-            } else {
-                return $this->RestResponse->saveFailResponse('MetaTemplates', 'toggle', $id, 'json', $message);
-            }
-        } else {
-            if ($this->Flash->{$result ? 'success' : 'error'}($message));
-            $this->redirect($this->referer());
+            return $this->restResponsePayload;
+        } else if($this->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
+            return $this->ajaxResponsePayload;
         }
     }
 }
