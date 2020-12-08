@@ -29,6 +29,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'toggle',
                 'url' => '/metaTemplates/toggle',
                 'url_params_data_paths' => ['id'],
+                'toggle_requirement' => [
+                    'function' => function($row, $options) {
+                        return true;
+                    }
+                ]
             ],
             [
                 'name' => __('Scope'),
@@ -60,29 +65,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url_params_data_paths' => ['id'],
                 'icon' => 'eye'
             ],
-            [
-                'url' => '/metaTemplates/toggle',
-                'url_params_data_paths' => ['id'],
-                'title' => __('Enable template'),
-                'icon' => 'plus',
-                'complex_requirement' => [
-                    'function' => function($row, $options) {
-                        return !(bool)$row['enabled'];
-                    }
-                ]
-            ],
-            [
-                'url' => '/metaTemplates/toggle',
-                'url_params_data_paths' => ['id'],
-                'title' => __('DIsable template'),
-                'icon' => 'minus',
-                'complex_requirement' => [
-                    'function' => function($row, $options) {
-                        return (bool)$row['enabled'];
-                    }
-                ]
-            ]
-
         ]
     ]
 ]);

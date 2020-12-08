@@ -10,13 +10,28 @@
     $seed = rand();
     $checkboxId = 'GenericToggle-' . $seed;
     $tempboxId = 'TempBox-' . $seed;
+
+    $requirementMet = true;
+    if (isset($field['toggle_requirement'])) {
+        if (isset($field['toggle_requirement']['options']['datapath'])) {
+            foreach ($field['toggle_requirement']['options']['datapath'] as $name => $path) {
+                $field['toggle_requirement']['options']['datapath'][$name] = empty($this->Hash->extract($row, $path)[0]) ? null : $this->Hash->extract($row, $path)[0];
+            }
+        }
+        $options = isset($field['toggle_requirement']['options']) ? $field['toggle_requirement']['options'] : array();
+        $requirementMet = $field['toggle_requirement']['function']($row, $options);
+    }
+
     echo sprintf(
-        '<input type="checkbox" id="%s" %s><span id="%s" class="d-none">',
+        '<input type="checkbox" id="%s" %s %s><span id="%s" class="d-none">',
         $checkboxId,
         empty($data[0]) ? '' : 'checked',
+        $requirementMet ? '' : 'disabled="disabled"',
         $tempboxId
     );
 ?>
+
+<?php if ($requirementMet): ?>
 <script type="text/javascript">
 $(document).ready(function() {
     var url = "<?= h($field['url']) ?>";
@@ -69,3 +84,4 @@ $(document).ready(function() {
     });
 });
 </script>
+<?php endif; ?>

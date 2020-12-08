@@ -48,7 +48,7 @@ if ($field['scope'] === 'individuals') {
     }
 }
 echo sprintf(
-    '<div class="alignments-list">%s</div><div class="alignments-add-container"><button class="alignments-add-button btn btn-secondary btn-sm" onclick="%s">%s</button></div>',
+    '<div class="alignments-list">%s</div><div class="alignments-add-container"><button class="alignments-add-button btn btn-primary btn-sm" onclick="%s">%s</button></div>',
     $alignments,
     sprintf(
         "populateAndLoadModal('/alignments/add/%s/%s');",
