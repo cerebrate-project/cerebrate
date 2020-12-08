@@ -241,8 +241,10 @@ class CRUDComponent extends Component
             return $data;
         }
         $query = $this->MetaFields->MetaTemplates->find();
-        $query->contain('MetaTemplateFields', function ($q) {
-            return $q->innerJoinWith('MetaFields');
+        $metaFields = $this->Table->metaFields;
+        $query->contain('MetaTemplateFields', function ($q) use ($id, $metaFields) {
+            return $q->innerJoinWith('MetaFields')
+                ->where(['MetaFields.scope' => $metaFields, 'MetaFields.parent_id' => $id]);
         });
         $query->innerJoinWith('MetaTemplateFields', function ($q) {
             return $q->contain('MetaFields')->innerJoinWith('MetaFields');
