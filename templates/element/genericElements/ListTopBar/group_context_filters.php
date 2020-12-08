@@ -1,18 +1,18 @@
 <?php
     $contextArray = [];
-    $currentContext = !empty($currentContext) ? $currentContext : '_all';
-    foreach ($contexts as $context) {
+    foreach ($filteringContexts as $filteringContext) {
+        $filteringContext['filterCondition'] = empty($filteringContext['filterCondition']) ? [] : $filteringContext['filterCondition'];
         $urlParams = [
             'controller' => $this->request->getParam('controller'),
             'action' => 'index',
+            '?' => $filteringContext['filterCondition']
         ];
-        if ($context != '_all') {
-            $urlParams['?'] = ['scope' => $context];
-        }
+        $currentQuery = $this->request->getQuery();
+        unset($currentQuery['page'], $currentQuery['limit'], $currentQuery['sort']);
         $contextArray[] = [
-            'active' => $context === $currentContext,
+            'active' => $currentQuery == $filteringContext['filterCondition'],
             'url' => $this->Url->build($urlParams),
-            'text' => Cake\Utility\Inflector::humanize($context),
+            'text' => $filteringContext['label'],
         ];
     }
 

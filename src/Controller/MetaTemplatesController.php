@@ -9,6 +9,7 @@ use \Cake\Database\Expression\QueryExpression;
 
 class MetaTemplatesController extends AppController
 {
+
     public function update()
     {
         if ($this->request->is('post')) {
@@ -33,9 +34,22 @@ class MetaTemplatesController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['name', 'uuid', 'scope'],
+            'filters' => ['name', 'uuid', 'scope', 'namespace'],
             'quickFilters' => ['name', 'uuid', 'scope'],
-            'context' => 'scope',
+            'contextFilters' => [
+                'allow_all' => true,
+                'fields' => ['scope'],
+                'custom' => [
+                    [
+                        'label' => __('Contact DB'),
+                        'filterCondition' => ['scope' => ['individual', 'organisation']]
+                    ],
+                    [
+                        'label' => __('Namespace CNW'),
+                        'filterCondition' => ['namespace' => 'cnw']
+                    ],
+                ]
+            ],
             'contain' => ['MetaTemplateFields']
         ]);
         if ($this->ParamHandler->isRest()) {

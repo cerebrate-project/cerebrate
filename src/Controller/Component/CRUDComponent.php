@@ -42,14 +42,10 @@ class CRUDComponent extends Component
         } else {
             $this->Controller->loadComponent('Paginator');
             $data = $this->Controller->Paginator->paginate($query);
-            if (!empty($options['context'])) {
-                $this->setCurrentContext($options, $params);
+            if (!empty($options['contextFilters'])) {
+                $this->setFilteringContext($options['contextFilters'], $params);
             }
             $this->Controller->set('data', $data);
-            if (!empty($options['context'])) {
-                $contexts = array_merge(['_all'], $this->getAllContexts($options['context']));
-                $this->Controller->set('contexts', $contexts);
-            }
         }
     }
 
@@ -380,14 +376,29 @@ class CRUDComponent extends Component
         return $query;
     }
 
-    protected function setCurrentContext($options, $params)
+    protected function setFilteringContext($contextFilters, $params)
     {
-        foreach ($params as $filter => $filterValue) {
-            if ($options['context'] == $filter) {
-                $this->Controller->set('currentContext', $filterValue);
-                break;
+        $filteringContexts = [];
+        if (!empty($contextFilters['allow_all'])) {
+            $filteringContexts[] = ['label' => __('All')];
+        }
+        if (!empty($contextFilters['fields'])) {
+            foreach ($contextFilters['fields'] as $field) {
+                $contextsFromField = $this->getFilteringContextFromField($field);
+                foreach ($contextsFromField as $contextFromField) {
+                    $filteringContexts[] = [
+                        'label' => Inflector::humanize($contextFromField),
+                        'filterCondition' => [
+                            $field => $contextFromField
+                        ]
+                    ];
+                }
             }
         }
+        if (!empty($contextFilters['custom'])) {
+            $filteringContexts = array_merge($filteringContexts, $contextFilters['custom']);
+        }
+        $this->Controller->set('filteringContexts', $filteringContexts);
     }
 
     public function toggle(int $id, string $fieldName = 'enabled', array $params = []): void
@@ -467,7 +478,7 @@ class CRUDComponent extends Component
         }
     }
 
-    private function getAllContexts($context)
+    private function getFilteringContextFromField($context)
     {
         return $this->Table->find()->distinct([$context])->all()->extract($context)->toList();
     }
