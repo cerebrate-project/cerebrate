@@ -354,10 +354,14 @@ class CRUDComponent extends Component
                 if ($filter === 'quickFilter') {
                     continue;
                 }
-                if (strlen(trim($filterValue, '%')) === strlen($filterValue)) {
-                    $query->where([$filter => $filterValue]);
+                if (is_array($filterValue)) {
+                    $query->where([($filter . ' IN') => $filterValue]);
                 } else {
-                    $query->like([$filter => $filterValue]);
+                    if (strlen(trim($filterValue, '%')) === strlen($filterValue)) {
+                        $query->where([$filter => $filterValue]);
+                    } else {
+                        $query->like([$filter => $filterValue]);
+                    }
                 }
             }
         }
