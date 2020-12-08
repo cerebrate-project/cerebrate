@@ -43,22 +43,39 @@
             );
         }
     }
-    if (!empty($data['metaFields'])) {
-        foreach ($data['metaFields'] as $metaField => $value) {
-            $listElements .= sprintf(
-                '<tr class="row"><td class="col-sm-2 font-weight-bold">%s</td><td class="col-sm-10">%s</td></tr>',
-                h($metaField),
-                $this->element(
-                    '/genericElements/SingleViews/Fields/genericField',
-                    [
-                        'data' => $value,
-                        'field' => [
-                        	'raw' => $value
+    $metaTemplateTabs = '';
+    if (!empty($data['metaTemplates'])) {
+        $tabData = [
+            'navs' => [],
+            'content' => []
+        ];
+        foreach($data['metaTemplates'] as $metaTemplate) {
+            $tabData['navs'][] = $metaTemplate->namespace;
+            $fieldsHtml = '<table class="table table-striped col-sm-8">';
+            foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
+                $metaField = $metaTemplateField->meta_fields[0];
+                $fieldsHtml .= sprintf(
+                    '<tr class="row"><td class="col-sm-2 font-weight-bold">%s</td><td class="col-sm-10">%s</td></tr>',
+                    h($metaField->field),
+                    $this->element(
+                        '/genericElements/SingleViews/Fields/genericField',
+                        [
+                            'data' => $metaField->value,
+                            'field' => [
+                                'raw' => $metaField->value
+                            ]
                         ]
-                    ]
-                )
-            );
+                    )
+                );
+            }
+            $fieldsHtml .= '</table>';
+            $tabData['content'][] = $fieldsHtml;
         }
+        $metaTemplateTabs = $this->Bootstrap->Tabs([
+           'pills' => true,
+           'card' => true,
+           'data' => $tabData
+       ]);
     }
     $ajaxLists = '';
     if (!empty($children)) {
@@ -76,11 +93,12 @@
         __('{0} view', \Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::humanize($this->request->getParam('controller')))) :
         $title;
     echo sprintf(
-        '<div><h2>%s</h2>%s%s<div class="px-3"><table class="table table-striped col-sm-8">%s</table></div><div id="accordion">%s</div></div>',
+        '<div><h2>%s</h2>%s%s<div class="px-3"><table class="table table-striped col-sm-8">%s</table></div><div id="metaTemplates">%s</div><div id="accordion">%s</div></div>',
         h($title),
         empty($description) ? '' : sprintf('<p>%s</p>', h($description)),
         empty($description_html) ? '' : sprintf('<p>%s</p>', $description_html),
         $listElements,
+        $metaTemplateTabs,
         $ajaxLists
     );
 ?>

@@ -235,6 +235,23 @@ class CRUDComponent extends Component
         $this->Controller->set('entity', $data);
     }
 
+    public function attachMetaData($id, $data)
+    {
+        if (empty($this->Table->metaFields)) {
+            return $data;
+        }
+        $query = $this->MetaFields->MetaTemplates->find();
+        $query->contain('MetaTemplateFields', function ($q) {
+            return $q->innerJoinWith('MetaFields');
+        });
+        $query->innerJoinWith('MetaTemplateFields', function ($q) {
+            return $q->contain('MetaFields')->innerJoinWith('MetaFields');
+        });
+        $metaTemplates = $query->all();
+        $data['metaTemplates'] = $metaTemplates;
+        return $data;
+    }
+
     public function getMetaFields($id, $data)
     {
         if (empty($this->Table->metaFields)) {
@@ -257,7 +274,7 @@ class CRUDComponent extends Component
         }
 
         $data = $this->Table->get($id, $params);
-        $data = $this->getMetaFields($id, $data);
+        $data = $this->attachMetaData($id, $data);
         if ($this->Controller->ParamHandler->isRest()) {
             $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData($data, 'json');
         }

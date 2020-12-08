@@ -13,7 +13,7 @@ class MetaFieldsTable extends AppTable
         parent::initialize($config);
         $this->addBehavior('UUID');
         $this->setDisplayField('field');
-        $this->hasOne('MetaTemplates');
+        $this->belongsTo('MetaTemplates');
         $this->belongsTo('MetaTemplateFields');
     }
 
