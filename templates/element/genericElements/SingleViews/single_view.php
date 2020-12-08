@@ -50,7 +50,7 @@
             'content' => []
         ];
         foreach($data['metaTemplates'] as $metaTemplate) {
-            $tabData['navs'][] = $metaTemplate->namespace;
+            $tabData['navs'][] = $metaTemplate->name;
             $fieldsHtml = '<table class="table table-striped">';
             foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
                 $metaField = $metaTemplateField->meta_fields[0];
