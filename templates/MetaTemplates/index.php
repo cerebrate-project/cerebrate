@@ -6,6 +6,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
             'children' => [
                 [
                     'type' => 'context_filters',
+                    'context_filters' => $filteringContexts
                 ],
                 [
                     'type' => 'search',

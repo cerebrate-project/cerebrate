@@ -1,6 +1,6 @@
 <?php
     $contextArray = [];
-    foreach ($filteringContexts as $filteringContext) {
+    foreach ($data['context_filters'] as $filteringContext) {
         $filteringContext['filterCondition'] = empty($filteringContext['filterCondition']) ? [] : $filteringContext['filterCondition'];
         $urlParams = [
             'controller' => $this->request->getParam('controller'),
