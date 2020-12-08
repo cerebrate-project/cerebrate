@@ -50,32 +50,36 @@
             'content' => []
         ];
         foreach($data['metaTemplates'] as $metaTemplate) {
-            $tabData['navs'][] = $metaTemplate->name;
-            $fieldsHtml = '<table class="table table-striped">';
-            foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
-                $metaField = $metaTemplateField->meta_fields[0];
-                $fieldsHtml .= sprintf(
-                    '<tr class="row"><td class="col-sm-2 font-weight-bold">%s</td><td class="col-sm-10">%s</td></tr>',
-                    h($metaField->field),
-                    $this->element(
-                        '/genericElements/SingleViews/Fields/genericField',
-                        [
-                            'data' => $metaField->value,
-                            'field' => [
-                                'raw' => $metaField->value
+            if (!empty($metaTemplate->meta_template_fields)) {
+                $tabData['navs'][] = $metaTemplate->name;
+                $fieldsHtml = '<table class="table table-striped">';
+                foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
+                    $metaField = $metaTemplateField->meta_fields[0];
+                    $fieldsHtml .= sprintf(
+                        '<tr class="row"><td class="col-sm-2 font-weight-bold">%s</td><td class="col-sm-10">%s</td></tr>',
+                        h($metaField->field),
+                        $this->element(
+                            '/genericElements/SingleViews/Fields/genericField',
+                            [
+                                'data' => $metaField->value,
+                                'field' => [
+                                    'raw' => $metaField->value
+                                ]
                             ]
-                        ]
-                    )
-                );
+                        )
+                    );
+                }
+                $fieldsHtml .= '</table>';
+                $tabData['content'][] = $fieldsHtml;
             }
-            $fieldsHtml .= '</table>';
-            $tabData['content'][] = $fieldsHtml;
         }
-        $metaTemplateTabs = $this->Bootstrap->Tabs([
-           'pills' => true,
-           'card' => true,
-           'data' => $tabData
-       ]);
+        if (!empty($tabData['navs'])) {
+            $metaTemplateTabs = $this->Bootstrap->Tabs([
+               'pills' => true,
+               'card' => true,
+               'data' => $tabData
+           ]);
+        }
     }
     $ajaxLists = '';
     if (!empty($children)) {
