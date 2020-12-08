@@ -198,11 +198,11 @@ class BootstrapTabs extends Helper
 
     private function genVerticalTabs()
     {
-        $html = sprintf('<div %s>', $this->genHTMLParams(['class' => 'row']));
-            $html .= sprintf('<div %s>', $this->genHTMLParams(['class' => 'col-' . $this->options['vertical-size']]));
+        $html = $this->genNode('div', ['class' => ['row']]);;
+            $html .= $this->genNode('div', ['class' => 'col-' . $this->options['vertical-size']]);
                 $html .= $this->genNav();
             $html .= '</div>';
-            $html .= sprintf('<div %s>', $this->genHTMLParams(['class' => 'col-' . (12 - $this->options['vertical-size'])]));
+            $html .= $this->genNode('div', ['class' => 'col-' . (12 - $this->options['vertical-size'])]);
                 $html .= $this->genContent();
             $html .= '</div>';
         $html .= '</div>';
@@ -211,11 +211,10 @@ class BootstrapTabs extends Helper
 
     private function genNav()
     {
-        $ulParams = [
+        $html = $this->genNode('ul', [
             'class' => array_merge(['nav'], $this->bsClasses['nav'], $this->options['nav-class']),
             'role' => 'tablist',
-        ];
-        $html = sprintf('<ul %s>', $this->genHTMLParams($ulParams));
+        ]);
         foreach ($this->data['navs'] as $navItem) {
             $html .= $this->genNavItem($navItem);
         }
@@ -225,11 +224,11 @@ class BootstrapTabs extends Helper
 
     private function genNavItem($navItem)
     {
-        $liParams = [
+        $html = $this->genNode('li', [
             'class' => array_merge(['nav-item'], $this->bsClasses['nav-item'], $this->options['nav-item-class']),
             'role' => 'presentation',
-        ];
-        $aParams = [
+        ]);
+        $html .= $this->genNode('a', [
             'class' => array_merge(
                 ['nav-link'],
                 [!empty($navItem['active']) ? 'active' : ''],
@@ -241,9 +240,7 @@ class BootstrapTabs extends Helper
             'aria-controls' => $navItem['id'],
             'aria-selected' => !empty($navItem['active']),
             'role' => 'tab',
-        ];
-        $html = sprintf('<li %s>', $this->genHTMLParams($liParams));
-        $html .= sprintf('<a %s>', $this->genHTMLParams($aParams));
+        ]);
         if (!empty($navItem['html'])) {
             $html .= $navItem['html'];
         } else {
@@ -255,10 +252,9 @@ class BootstrapTabs extends Helper
 
     private function genContent()
     {
-        $divParams = [
+        $html = $this->genNode('div', [
             'class' => array_merge(['tab-content'], $this->options['content-class']),
-        ];
-        $html = sprintf('<div %s>', $this->genHTMLParams($divParams));
+        ]);
         foreach ($this->data['content'] as $i => $content) {
             $navItem = $this->data['navs'][$i];
             $html .= $this->genContentItem($navItem, $content);
@@ -269,13 +265,12 @@ class BootstrapTabs extends Helper
 
     private function genContentItem($navItem, $content)
     {
-        $divParams = [
+        $html = $this->genNode('div', [
             'class' => array_merge(['tab-pane', 'fade'], [!empty($navItem['active']) ? 'show active' : '']),
             'role' => 'tabpanel',
             'id' => $navItem['id'],
             'aria-labelledby' => $navItem['id'] . '-tab'
-        ];
-        $html = sprintf('<div %s>', $this->genHTMLParams($divParams));
+        ]);
         $html .= $content;
         $html .= '</div>';
         return $html;
