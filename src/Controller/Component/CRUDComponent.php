@@ -247,6 +247,7 @@ class CRUDComponent extends Component
         $query->innerJoinWith('MetaTemplateFields', function ($q) {
             return $q->contain('MetaFields')->innerJoinWith('MetaFields');
         });
+        $query->group(['MetaTemplates.id']);
         $metaTemplates = $query->all();
         $data['metaTemplates'] = $metaTemplates;
         return $data;
@@ -262,7 +263,7 @@ class CRUDComponent extends Component
         $metaFields = $query->all();
         $data['metaFields'] = [];
         foreach($metaFields as $metaField) {
-            $data['metaFields'][$metaField->field] = $metaField->value;
+            $data['metaFields'][$metaField->meta_template_id][$metaField->field] = $metaField->value;
         }
         return $data;
     }

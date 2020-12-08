@@ -9,7 +9,7 @@ foreach($metaTemplatesData as $i => $metaTemplate) {
     $fieldsHtml = '';
     foreach ($metaTemplate->meta_template_fields as $metaField) {
         $metaField->label = Inflector::humanize($metaField->field);
-        $metaField->field = sprintf('%s.%s.%s', 'metaFields', $metaTemplate->id, $metaField->field);
+        $metaField->field = sprintf('%s.%s.%s', 'metaFields', $metaField->meta_template_id, $metaField->field);
         $fieldsHtml .= $this->element(
             'genericElements/Form/fieldScaffold', [
                 'fieldData' => $metaField->toArray(),
