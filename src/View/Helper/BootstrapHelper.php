@@ -191,6 +191,7 @@ class BootstrapTabs extends Helper
         $html .= $this->genContent();
         if ($this->options['card']) {
             $html .= '</div>';
+            $html .= '</div>';
         }
         return $html;
     }
