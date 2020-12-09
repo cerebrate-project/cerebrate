@@ -259,7 +259,7 @@ class BootstrapTabs extends Helper
             $navItem = $this->data['navs'][$i];
             $html .= $this->genContentItem($navItem, $content);
         }
-        $html .= '</ul>';
+        $html .= '</div>';
         return $html;
     }
 
