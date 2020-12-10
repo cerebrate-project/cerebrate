@@ -11,7 +11,13 @@
         unset($currentQuery['page'], $currentQuery['limit'], $currentQuery['sort']);
         $contextArray[] = [
             'active' => $currentQuery == $filteringContext['filterCondition'],
-            'url' => $this->Url->build($urlParams),
+            'isFilter' => true,
+            'onClick' => 'UI.reload',
+            'onClickParams' => [
+                $this->Url->build($urlParams),
+                "#table-container-${tableRandomValue}",
+                "#table-container-${tableRandomValue} table.table",
+            ],
             'text' => $filteringContext['label'],
         ];
     }

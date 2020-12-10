@@ -13,6 +13,20 @@ class UIFactory {
         theModal.show()
         return theModal
     }
+
+    reload (url, $container, $statusNode=null) {
+        $container = $($container)
+        $statusNode = $($statusNode)
+        if (!$statusNode) {
+            $statusNode = $container
+        }
+        const tmpApi = new AJAXApi({
+            statusNode: $statusNode[0],
+        })
+        tmpApi.fetchURL(url).then((data) => {
+            $container.html(data)
+        })
+    }
 }
 
 class Toaster {

@@ -43,15 +43,3 @@ $(document).ready(() => {
     AjaxApi = new AJAXApi()
     UI = new UIFactory()
 })
-
-function reloadElement(url, $container, $statusNode=null) {
-    if (!$statusNode) {
-        $statusNode = $container
-    }
-    tmpApi = new AJAXApi({
-        statusNode: $statusNode[0],
-    })
-    tmpApi.fetchURL(url).then((data) => {
-        $container.html(data)
-    })
-}

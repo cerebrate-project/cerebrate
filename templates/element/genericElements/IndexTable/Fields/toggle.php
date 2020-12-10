@@ -82,7 +82,7 @@
     function submitForm(api, url) {
         return api.fetchAndPostForm(url, {})
             .then(() => {
-                reloadElement('/meta-templates', $('#table-container-<?= $tableRandomValue ?>'), $('#table-container-<?= $tableRandomValue ?> table.table'))
+                UI.reload('/meta-templates', $('#table-container-<?= $tableRandomValue ?>'), $('#table-container-<?= $tableRandomValue ?> table.table'))
             })
     }
 }())

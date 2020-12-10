@@ -1,12 +1,10 @@
 <?php
     if (!isset($data['requirement']) || $data['requirement']) {
-        $onClickActive = false;
         if (!empty($data['popover_url'])) {
             $onClick = sprintf(
                 'onClick="populateAndLoadModal(%s)"',
                 sprintf("'%s'", h($data['popover_url']))
             );
-            $onClickActive = true;
         }
         if (empty($onClick)) {
             if (!empty($data['onClick']) || empty($data['url'])) {
@@ -30,7 +28,6 @@
                         $onClickParams
                     ) : '')
                 );
-                $onClickActive = true;
             } else if(!empty($data['url'])) {
                 $onClick = sprintf(
                     'onClick = "%s"',
@@ -52,7 +49,7 @@
         echo sprintf(
             '<button class="btn btn-sm %s %s" %s href="%s" %s %s %s %s %s>%s%s%s</button>',
             empty($data['class']) ? '' : h($data['class']),
-            $onClickActive ? 'btn-primary' : (empty($data['active']) ? 'btn-light' : 'btn-secondary'),   // Change the default class for highlighted/active toggles here
+            !$data['isFilter'] ? 'btn-primary' : (empty($data['active']) ? 'btn-light' : 'btn-secondary'),   // Change the default class for highlighted/active toggles here
             empty($data['id']) ? '' : 'id="' . h($data['id']) . '"',
             empty($data['url']) ? '#' : h($data['url']),    // prevent default is passed if the url is not set
             empty($onClick) ? '' : $onClick,    // pass $data['onClick'] for the function name to call and $data['onClickParams'] for the parameter list
