@@ -57,15 +57,26 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'titleHtml_vars' => ['name'],
                             'bodyHtml' => $this->Html->nestedList([
                                 __('Only one template per scope can be set as the default template'),
-                                '{{1}}',
+                                '{{0}}',
                             ]),
                             'bodyHtml_vars' => [
-                                'scope',
                                 [
                                     'function' => function($row, $data) {
                                         $conflictingTemplate = getConflictingTemplate($row, $data);
                                         if (!empty($conflictingTemplate)) {
-                                            return sprintf('<span class="text-danger font-weight-bolder">%s</span> %s', __('Conflict with:'), h($conflictingTemplate->name));
+                                            return sprintf(
+                                                "<span class=\"text-danger font-weight-bolder\">%s</span> %s.<br />
+                                                <span class=\"font-weight-bolder\">%s</span> %s <span class=\"font-weight-bolder\">%s</span>",
+                                                __('Conflict with:'),
+                                                $this->Html->link(
+                                                    h($conflictingTemplate->name),
+                                                    '/metaTemplates/view/' . h($conflictingTemplate->id),
+                                                    ['target' => '_blank']
+                                                ),
+                                                __('By proceeding'),
+                                                h($conflictingTemplate->name),
+                                                __('will not be the default anymore')
+                                            );
                                         }
                                         return __('Current scope: {0}', h($row->scope));
                                     },
