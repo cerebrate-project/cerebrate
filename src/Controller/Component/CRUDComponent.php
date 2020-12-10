@@ -413,7 +413,11 @@ class CRUDComponent extends Component
 
         $data = $this->Table->get($id, $params);
         if ($this->request->is(['post', 'put'])) {
-            $data->{$fieldName} = !$data->{$fieldName};
+            if (isset($params['force_state'])) {
+                $data->{$fieldName} = $params['force_state'];
+            } else {
+                $data->{$fieldName} = !$data->{$fieldName};
+            }
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
                 $message = __('{0} field {1}. (ID: {2} {3})',

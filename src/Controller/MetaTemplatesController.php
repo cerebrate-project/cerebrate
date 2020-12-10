@@ -73,17 +73,17 @@ class MetaTemplatesController extends AppController
 
     public function toggle($id, $fieldName = 'enabled')
     {
-        $this->CRUD->toggle($id, $fieldName);
+        if ($this->request->is('POST') && $fieldName == 'is_default') {
+            $template = $this->MetaTemplates->get($id);
+            $this->MetaTemplates->removeDefaultFlag($template->scope);
+            $this->CRUD->toggle($id, $fieldName, ['force_state' => !$template->is_default]);
+        } else {
+            $this->CRUD->toggle($id, $fieldName);
+        }
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         } else if($this->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
             return $this->ajaxResponsePayload;
         }
-    }
-
-    public function getDefaultTemplatePerScope($scope = '')
-    {
-        $defaultTemplate = $this->MetaTemplates->getDefaultTemplatePerScope($scope);
-        return $this->RestResponse->viewData($defaultTemplate, 'json');
     }
 }

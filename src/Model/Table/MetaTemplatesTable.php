@@ -82,6 +82,14 @@ class MetaTemplatesTable extends AppTable
         return $query->all()->toArray();
     }
 
+    public function removeDefaultFlag(String $scope)
+    {
+        $this->updateAll(
+            ['is_default' => false],
+            ['scope' => $scope]
+        );
+    }
+
     public function loadMetaFile(String $filePath)
     {
         if (file_exists($filePath)) {
