@@ -6,82 +6,85 @@
  *  to fetch it.
  *
  */
-    $data = $this->Hash->extract($row, $field['data_path']);
+    $data = $this->Hash->get($row, $field['data_path']);
     $seed = rand();
     $checkboxId = 'GenericToggle-' . $seed;
     $tempboxId = 'TempBox-' . $seed;
 
     $requirementMet = true;
-    if (isset($field['toggle_requirement'])) {
-        if (isset($field['toggle_requirement']['options']['datapath'])) {
-            foreach ($field['toggle_requirement']['options']['datapath'] as $name => $path) {
-                $field['toggle_requirement']['options']['datapath'][$name] = empty($this->Hash->extract($row, $path)[0]) ? null : $this->Hash->extract($row, $path)[0];
+    if (isset($field['toggle_data']['requirement'])) {
+        if (isset($field['toggle_data']['requirement']['options']['datapath'])) {
+            foreach ($field['toggle_data']['requirement']['options']['datapath'] as $name => $path) {
+                $field['toggle_data']['requirement']['options']['datapath'][$name] = empty($this->Hash->extract($row, $path)[0]) ? null : $this->Hash->extract($row, $path)[0];
             }
         }
-        $options = isset($field['toggle_requirement']['options']) ? $field['toggle_requirement']['options'] : array();
-        $requirementMet = $field['toggle_requirement']['function']($row, $options);
+        $options = isset($field['toggle_data']['requirement']['options']) ? $field['toggle_data']['requirement']['options'] : array();
+        $requirementMet = $field['toggle_data']['requirement']['function']($row, $options);
     }
 
     echo sprintf(
-        '<input type="checkbox" id="%s" %s %s><span id="%s" class="d-none">',
+        '<input type="checkbox" id="%s" %s %s><span id="%s" class="d-none"></span>',
         $checkboxId,
-        empty($data[0]) ? '' : 'checked',
+        empty($data) ? '' : 'checked',
         $requirementMet ? '' : 'disabled="disabled"',
         $tempboxId
     );
+
+    // inject title and body vars into their placeholder
+    if (!empty($field['toggle_data']['confirm'])) {
+        $availableConfirmOptions = ['enable', 'disable'];
+        $confirmOptions = $field['toggle_data']['confirm'];
+        foreach ($availableConfirmOptions as $optionType) {
+            $availableType = ['title', 'titleHtml', 'body', 'bodyHtml'];
+            foreach ($availableType as $varType) {
+                if (!isset($confirmOptions[$optionType][$varType])) {
+                    continue;
+                }
+                $confirmOptions[$optionType][$varType] = $this->StringFromPath->buildStringFromDataPath(
+                    $confirmOptions[$optionType][$varType],
+                    $row,
+                    $confirmOptions[$optionType][$varType . '_vars'],
+                    ['highlight' => true]
+                );
+            }
+        }
+    }
+    $url = $this->StringFromPath->buildStringFromDataPath($field['url'], $row, $field['url_params_vars']);
 ?>
 
 <?php if ($requirementMet): ?>
 <script type="text/javascript">
-$(document).ready(function() {
-    var url = "<?= h($field['url']) ?>";
-    <?php
-        if (!empty($field['url_params_data_paths'][0])) {
-            $id = $this->Hash->extract($row, $field['url_params_data_paths'][0]);
-            echo 'url = url +  "/' . h($id[0]) . '";';
-        }
-    ?>
+(function() {
+    const url = "<?= h($url) ?>"
+    const confirmationOptions = <?= isset($confirmOptions) ? json_encode($confirmOptions) : 'false' ?>;
     $('#<?= $checkboxId ?>').click(function(evt) {
-        evt.preventDefault();
-        $.ajax({
-            type:"get",
-            url: url,
-            error:function() {
-                showToast({
-                    variant: 'danger',
-                    title: '<?= __('Could not retrieve current state.') ?>.'
-                })
-            },
-            success: function (data, textStatus) {
-                $('#<?= $tempboxId ?>').html(data);
-                var $form = $('#<?= $tempboxId ?>').find('form');
-                $.ajax({
-                    data: $form.serialize(),
-                    cache: false,
-                    type:"post",
-                    url: $form.attr('action'),
-                    success:function(data, textStatus) {
-                        showToast({
-                            variant: 'success',
-                            title: data.message
+        evt.preventDefault()
+        if(confirmationOptions !== false) {
+            const correctOptions = $('#<?= $checkboxId ?>').prop('checked') ? confirmationOptions['enable'] : confirmationOptions['disable'] // Adjust modal option based on checkbox state
+            const modalOptions = {
+                ...correctOptions,
+                APIConfirm: (tmpApi) => {
+                    return submitForm(tmpApi, url)
+                        .catch(e => {
+                            // Provide feedback inside modal?
                         })
-                        if (data.success) {
-                            $('#<?= $checkboxId ?>').prop('checked', !$('#<?= $checkboxId ?>').prop('checked'));
-                        }
-                    },
-                    error:function() {
-                        showToast({
-                            variant: 'danger',
-                            title: data.message
-                        })
-                    },
-                    complete:function() {
-                        $('#<?= $tempboxId ?>').empty();
-                    }
-                });
+                },
             }
-        });
-    });
-});
+            UI.modal(modalOptions)
+        } else {
+            const tmpApi = new AJAXApi({
+                statusNode: $('#<?= $checkboxId ?>')[0]
+            })
+            submitForm(tmpApi, url)
+        }
+    })
+
+    function submitForm(api, url) {
+        return api.fetchAndPostForm(url, {})
+            .then(() => {
+                reloadElement('/meta-templates', $('#table-container-<?= $tableRandomValue ?>'), $('#table-container-<?= $tableRandomValue ?> table.table'))
+            })
+    }
+}())
 </script>
 <?php endif; ?>

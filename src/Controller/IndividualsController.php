@@ -49,6 +49,8 @@ class IndividualsController extends AppController
         $this->CRUD->edit($id);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
+        } else if($this->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
+            return $this->ajaxResponsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
         $this->render('add');

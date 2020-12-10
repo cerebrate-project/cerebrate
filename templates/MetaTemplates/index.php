@@ -28,12 +28,52 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'sort' => 'enabled',
                 'data_path' => 'enabled',
                 'element' => 'toggle',
-                'url' => '/metaTemplates/toggle',
-                'url_params_data_paths' => ['id'],
-                'toggle_requirement' => [
-                    'function' => function($row, $options) {
-                        return true;
-                    }
+                'url' => '/metaTemplates/toggle/{{0}}',
+                'url_params_vars' => ['id'],
+                'toggle_data' => [
+                    'requirement' => [
+                        'function' => function($row, $options) {
+                            return true;
+                        }
+                    ]
+                ]
+            ],
+            [
+                'name' => 'Default',
+                'sort' => 'is_default',
+                'data_path' => 'is_default',
+                'element' => 'toggle',
+                'url' => '/metaTemplates/toggle/{{0}}/{{1}}',
+                'url_params_vars' => [['datapath' => 'id'], ['raw' => 'is_default']],
+                'toggle_data' => [
+                    'requirement' => [
+                        'function' => function($row, $options) {
+                            return true;
+                        }
+                    ],
+                    'confirm' => [
+                        'enable' => [
+                            'titleHtml' => __('Make {{0}} the default template?'),
+                            'titleHtml_vars' => ['name'],
+                            'bodyHtml' => $this->Html->nestedList([
+                                __('Only one template per scope can be set as the default template'),
+                                __('Current scope: {{0}}'),
+                            ]),
+                            'bodyHtml_vars' => ['scope'],
+                            'type' => 'confirm-warning',
+                            'confirmText' => __('Yes, set as default')
+                        ],
+                        'disable' => [
+                            'titleHtml' => __('Remove {{0}} as the default template?'),
+                            'titleHtml_vars' => ['name'],
+                            'bodyHtml' => $this->Html->nestedList([
+                                __('Current scope: {{0}}'),
+                            ]),
+                            'bodyHtml_vars' => ['scope'],
+                            'type' => 'confirm-warning',
+                            'confirmText' => __('Yes, do not set as default')
+                        ]
+                    ]
                 ]
             ],
             [

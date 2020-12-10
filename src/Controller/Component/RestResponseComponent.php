@@ -426,17 +426,19 @@ class RestResponseComponent extends Component
         $response = [
             'success' => true,
             'message' => $message,
+            'data' => $entity->toArray(),
             'url' =>  $this->__generateURL($action, $ObjectAlias, $entity->id)
         ];
         return $this->viewData($response);
     }
 
-    public function ajaxFailResponse($ObjectAlias, $action, $entity, $message)
+    public function ajaxFailResponse($ObjectAlias, $action, $entity, $message, $errors = [])
     {
         $action = $this->__dissectAdminRouting($action);
         $response = [
             'success' => false,
             'message' => $message,
+            'errors' => $errors,
             'url' =>  $this->__generateURL($action, $ObjectAlias, $entity->id)
         ];
         return $this->viewData($response);

@@ -122,10 +122,11 @@
                 $data['description']
             ),
             $fieldsString,
-            empty($metaFieldString) ? '' : $this->element(
+            empty($metaTemplateString) ? '' : $this->element(
                 'genericElements/accordion_scaffold', [
-                    'body' => $metaFieldString,
-                    'title' => 'Meta fields'
+                    'body' => $metaTemplateString,
+                    'title' => 'Meta fields',
+                    'class' => 'mb-2'
                 ]
             ),
             $this->element('genericElements/Form/submitButton', $submitButtonData),

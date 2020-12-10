@@ -198,7 +198,8 @@ class CRUDComponent extends Component
                 $patchEntityParams['fields'] = $params['fields'];
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
-            if ($this->Table->save($data)) {
+            $savedData = $this->Table->save($data);
+            if ($savedData !== false) {
                 $message = __('{0} updated.', $this->ObjectAlias);
                 if (!empty($input['metaFields'])) {
                     $this->MetaFields->deleteAll(['scope' => $this->Table->metaFields, 'parent_id' => $data->id]);
@@ -206,6 +207,8 @@ class CRUDComponent extends Component
                 }
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'edit', $savedData, $message);
                 } else {
                     $this->Controller->Flash->success($message);
                     if (empty($params['redirect'])) {
@@ -222,7 +225,8 @@ class CRUDComponent extends Component
                     empty($validationMessage) ? '' : ' ' . __('Reason:{0}', $validationMessage)
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
-
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $data, $message, $validationMessage);
                 } else {
                     $this->Controller->Flash->error($message);
                 }
@@ -410,18 +414,18 @@ class CRUDComponent extends Component
         $data = $this->Table->get($id, $params);
         if ($this->request->is(['post', 'put'])) {
             $data->{$fieldName} = !$data->{$fieldName};
-            $data = $this->Table->save($data);
-            if ($data !== false) {
-                $message = __('{0}\'s `{1}` field: {2}. (ID: {3})',
-                    $this->ObjectAlias,
+            $savedData = $this->Table->save($data);
+            if ($savedData !== false) {
+                $message = __('{0} field {1}. (ID: {2} {3})',
                     $fieldName,
                     $data->{$fieldName} ? __('enabled') : __('disabled'),
-                    $data->id,
+                    Inflector::humanize($this->ObjectAlias),
+                    $data->id
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'toggle', $data, $message);
+                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'toggle', $savedData, $message);
                 } else {
                     $this->Controller->Flash->success($message);
                     if (empty($params['redirect'])) {
@@ -439,7 +443,7 @@ class CRUDComponent extends Component
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $data, $message);
+                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $message, $validationMessage);
                 } else {
                     $this->Controller->Flash->error($message);
                     if (empty($params['redirect'])) {

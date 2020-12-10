@@ -11,4 +11,9 @@ class HashHelper extends Helper
     {
         return Hash::extract($target, $extraction_string);
     }
+
+    public function get($target, $extraction_string)
+    {
+        return Hash::get($target, $extraction_string);
+    }
 }

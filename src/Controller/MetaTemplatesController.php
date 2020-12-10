@@ -70,9 +70,9 @@ class MetaTemplatesController extends AppController
         $this->set('metaGroup', 'Administration');
     }
 
-    public function toggle($id)
+    public function toggle($id, $fieldName = 'enabled')
     {
-        $this->CRUD->toggle($id);
+        $this->CRUD->toggle($id, $fieldName);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         } else if($this->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
