@@ -3,9 +3,15 @@ use Cake\Utility\Inflector;
 
 $tabData = [];
 foreach($metaTemplatesData as $i => $metaTemplate) {
-    $tabData['navs'][$i] = [
-        'text' => $metaTemplate->name
-    ];
+    if ($metaTemplate->is_default) {
+        $tabData['navs'][$i] = [
+            'html' => $this->element('/genericElements/MetaTemplates/metaTemplateNav', ['metaTemplate' => $metaTemplate])
+        ];
+    } else {
+        $tabData['navs'][$i] = [
+            'text' => $metaTemplate->name
+        ];
+    }
     $fieldsHtml = '';
     foreach ($metaTemplate->meta_template_fields as $metaField) {
         $metaField->label = Inflector::humanize($metaField->field);

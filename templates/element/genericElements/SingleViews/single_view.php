@@ -51,7 +51,15 @@
         ];
         foreach($data['metaTemplates'] as $metaTemplate) {
             if (!empty($metaTemplate->meta_template_fields)) {
-                $tabData['navs'][] = $metaTemplate->name;
+                if ($metaTemplate->is_default) {
+                    $tabData['navs'][] = [
+                        'html' => $this->element('/genericElements/MetaTemplates/metaTemplateNav', ['metaTemplate' => $metaTemplate])
+                    ];
+                } else {
+                    $tabData['navs'][] = [
+                        'text' => $metaTemplate->name
+                    ];
+                }
                 $fieldsHtml = '<table class="table table-striped">';
                 foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
                     $metaField = $metaTemplateField->meta_fields[0];

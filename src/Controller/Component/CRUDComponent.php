@@ -54,10 +54,12 @@ class CRUDComponent extends Component
         $metaTemplates = [];
         if (!empty($this->Table->metaFields)) {
             $metaQuery = $this->MetaTemplates->find();
-            $metaQuery->where([
-                'scope' => $this->Table->metaFields,
-                'enabled' => 1
-            ]);
+            $metaQuery
+                ->order(['is_default' => 'DESC'])
+                ->where([
+                    'scope' => $this->Table->metaFields,
+                    'enabled' => 1
+                ]);
             $metaQuery->contain(['MetaTemplateFields']);
             $metaTemplates = $metaQuery->all();
         }
@@ -249,7 +251,7 @@ class CRUDComponent extends Component
         $query->innerJoinWith('MetaTemplateFields', function ($q) {
             return $q->contain('MetaFields')->innerJoinWith('MetaFields');
         });
-        $query->group(['MetaTemplates.id']);
+        $query->group(['MetaTemplates.id'])->order(['MetaTemplates.is_default' => 'DESC']);
         $metaTemplates = $query->all();
         $data['metaTemplates'] = $metaTemplates;
         return $data;
