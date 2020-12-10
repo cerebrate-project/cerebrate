@@ -47,6 +47,12 @@
                     ['highlight' => true]
                 );
             }
+            if (!empty($confirmOptions[$optionType]['type'])) {
+                if (!empty($confirmOptions[$optionType]['type']['function'])) {
+                    $typeData = !empty($confirmOptions[$optionType]['type']['data']) ? $confirmOptions[$optionType]['type'] : [];
+                    $confirmOptions[$optionType]['type'] = $confirmOptions[$optionType]['type']['function']($row, $typeData);
+                }
+            }
         }
     }
     $url = $this->StringFromPath->buildStringFromDataPath($field['url'], $row, $field['url_params_vars']);

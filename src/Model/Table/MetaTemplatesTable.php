@@ -68,6 +68,20 @@ class MetaTemplatesTable extends AppTable
         return $template;
     }
 
+    public function getDefaultTemplatePerScope(String $scope = '')
+    {
+        $query = $this->find('list', [
+            'keyField' => 'scope',
+            'valueField' => function ($template) {
+                return $template;
+            }
+        ])->where(['is_default' => true]);
+        if (!empty($scope)) {
+            $query->where(['scope' => $scope]);
+        }
+        return $query->all()->toArray();
+    }
+
     public function loadMetaFile(String $filePath)
     {
         if (file_exists($filePath)) {

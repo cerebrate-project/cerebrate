@@ -57,19 +57,40 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'titleHtml_vars' => ['name'],
                             'bodyHtml' => $this->Html->nestedList([
                                 __('Only one template per scope can be set as the default template'),
-                                __('Current scope: {{0}}'),
+                                '{{1}}',
                             ]),
-                            'bodyHtml_vars' => ['scope'],
-                            'type' => 'confirm-warning',
+                            'bodyHtml_vars' => [
+                                'scope',
+                                [
+                                    'function' => function($row, $data) {
+                                        $conflictingTemplate = getConflictingTemplate($row, $data);
+                                        if (!empty($conflictingTemplate)) {
+                                            return sprintf('<span class="text-danger font-weight-bolder">%s</span> %s', __('Conflict with:'), h($conflictingTemplate->name));
+                                        }
+                                        return __('Current scope: {0}', h($row->scope));
+                                    },
+                                    'data' => [
+                                        'defaultTemplatePerScope' => $defaultTemplatePerScope
+                                    ]
+                                ]
+                            ],
+                            'type' => [
+                                'function' => function($row, $data) {
+                                    $conflictingTemplate = getConflictingTemplate($row, $data);
+                                    if (!empty($conflictingTemplate)) {
+                                        return 'confirm-danger';
+                                    }
+                                    return 'confirm-warning';
+                                },
+                                'data' => [
+                                    'defaultTemplatePerScope' => $defaultTemplatePerScope
+                                ]
+                            ],
                             'confirmText' => __('Yes, set as default')
                         ],
                         'disable' => [
                             'titleHtml' => __('Remove {{0}} as the default template?'),
                             'titleHtml_vars' => ['name'],
-                            'bodyHtml' => $this->Html->nestedList([
-                                __('Current scope: {{0}}'),
-                            ]),
-                            'bodyHtml_vars' => ['scope'],
                             'type' => 'confirm-warning',
                             'confirmText' => __('Yes, do not set as default')
                         ]
@@ -109,4 +130,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ]
     ]
 ]);
+
+function getConflictingTemplate($row, $data) {
+    if (!empty($data['data']['defaultTemplatePerScope'][$row->scope])) {
+        $conflictingTemplate = $data['data']['defaultTemplatePerScope'][$row->scope];
+        if (!empty($conflictingTemplate)) {
+            return $conflictingTemplate;
+        }
+    }
+    return [];
+}
 ?>

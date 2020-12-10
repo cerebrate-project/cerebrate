@@ -55,6 +55,7 @@ class MetaTemplatesController extends AppController
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }
+        $this->set('defaultTemplatePerScope', $this->MetaTemplates->getDefaultTemplatePerScope());
         $this->set('alignmentScope', 'individuals');
         $this->set('metaGroup', 'Administration');
     }
@@ -78,5 +79,11 @@ class MetaTemplatesController extends AppController
         } else if($this->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
             return $this->ajaxResponsePayload;
         }
+    }
+
+    public function getDefaultTemplatePerScope($scope = '')
+    {
+        $defaultTemplate = $this->MetaTemplates->getDefaultTemplatePerScope($scope);
+        return $this->RestResponse->viewData($defaultTemplate, 'json');
     }
 }

@@ -18,20 +18,26 @@ class StringFromPathHelper extends Helper
         if (!empty($dataPaths)) {
             $extractedVars = [];
             foreach ($dataPaths as $i => $dataPath) {
+                $varValue = '';
                 if (is_array($dataPath)) {
                     $varValue = '';
                     if (!empty($dataPath['datapath'])) {
                         $varValue = Hash::get($data, $dataPath['datapath']);
                     } else if (!empty($dataPath['raw'])) {
                         $varValue = $dataPath['raw'];
+                    } else if (!empty($dataPath['function'])) {
+                        $varValue = $dataPath['function']($data, $dataPath);
                     }
-                    $extractedVars[] = $varValue;
+                    // $extractedVars[] = $varValue;
                 } else {
-                    $extractedVars[] = Hash::get($data, $dataPath);
+                    $varValue = Hash::get($data, $dataPath);
                 }
+                if (empty($dataPath['function'])) {
+                    $varValue = $options['sanitize'] ? h($varValue) : $varValue;
+                }
+                $extractedVars[] = $varValue;
             }
             foreach ($extractedVars as $i => $value) {
-                $value = $options['sanitize'] ? h($value) : $value;
                 $value = $options['highlight'] ? "<span class=\"font-weight-light\">${value}</span>" : $value;
                 $str = str_replace(
                     "{{{$i}}}",

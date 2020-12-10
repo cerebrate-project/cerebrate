@@ -139,7 +139,7 @@ class ModalFactory {
         scrollable: false,
         title: '',
         titleHtml: false,
-        body: '',
+        body: false,
         bodyHtml: false,
         variant: '',
         modalClass: [],
