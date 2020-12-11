@@ -12,8 +12,8 @@ class AJAXApi {
     }
 
     static defaultOptions = {
-        showToast: true,
-        statusNode: false
+        provideFeedback: true,
+        statusNode: false,
     }
     options = {}
     loadingOverlay = false
@@ -23,11 +23,13 @@ class AJAXApi {
         this.mergeOptions(options)
     }
 
-    provideFeedback(options) {
-        if (this.options.showToast) {
+    provideFeedback(options, isError=false) {
+        if (this.options.provideFeedback) {
             UI.toast(options)
         } else {
-            console.error(options.body)
+            if (isError) {
+                console.error(options.body)
+            }
         }
     }
 
@@ -42,6 +44,24 @@ class AJAXApi {
         return formData
     }
 
+    static async quickFetchURL(url, options={}) {
+        const constAlteredOptions = Object.assign({}, {provideFeedback: false}, options)
+        const tmpApi = new AJAXApi(constAlteredOptions)
+        return tmpApi.fetchURL(url, constAlteredOptions.skipRequestHooks)
+    }
+
+    static async quickFetchForm(url, options={}) {
+        const constAlteredOptions = Object.assign({}, {provideFeedback: false}, options)
+        const tmpApi = new AJAXApi(constAlteredOptions)
+        return tmpApi.fetchForm(url, constAlteredOptions.skipRequestHooks)
+    }
+
+    static async quickFetchAndPostForm(url, dataToMerge={}, options={}) {
+        const constAlteredOptions = Object.assign({}, {}, options)
+        const tmpApi = new AJAXApi(constAlteredOptions)
+        return tmpApi.fetchAndPostForm(url, dataToMerge, constAlteredOptions.skipRequestHooks)
+    }
+
     async fetchURL(url, skipRequestHooks=false) {
         if (!skipRequestHooks) {
             this.beforeRequest()
@@ -53,13 +73,17 @@ class AJAXApi {
                 throw new Error('Network response was not ok')
             }
             const data = await response.text();
+            this.provideFeedback({
+                variant: 'success',
+                title: 'URL fetched',
+            });
             toReturn = data;
         } catch (error) {
             this.provideFeedback({
                 variant: 'danger',
                 title: 'There has been a problem with the operation',
                 body: error
-            });
+            }, true);
             toReturn = Promise.reject(error);
         } finally {
             if (!skipRequestHooks) {
@@ -92,7 +116,7 @@ class AJAXApi {
                 variant: 'danger',
                 title: 'There has been a problem with the operation',
                 body: error
-            });
+            }, true);
             toReturn = Promise.reject(error);
         } finally {
             if (!skipRequestHooks) {
@@ -132,7 +156,7 @@ class AJAXApi {
                         variant: 'danger',
                         title: 'There has been a problem with the operation',
                         body: data.errors
-                    });
+                    }, true);
                     toReturn = Promise.reject(error);
                 }
             } catch (error) {
@@ -140,7 +164,7 @@ class AJAXApi {
                     variant: 'danger',
                     title: 'There has been a problem with the operation',
                     body: error
-                });
+                }, true);
                 toReturn = Promise.reject(error);
             }
         } catch (error) {

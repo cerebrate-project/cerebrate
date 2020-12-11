@@ -38,8 +38,7 @@ function executeStateDependencyChecks(dependenceSourceSelector) {
     });
 }
 
-var AjaxApi, UI
+var UI
 $(document).ready(() => {
-    AjaxApi = new AJAXApi()
     UI = new UIFactory()
 })

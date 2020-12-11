@@ -1,5 +1,6 @@
 
 class UIFactory {
+    /* Display a toast based on provided options */
     toast(options) {
         const theToast = new Toaster(options);
         theToast.makeToast()
@@ -7,6 +8,7 @@ class UIFactory {
         return theToast
     }
 
+    /* Display a modal based on provided options */
     modal (options) {
         const theModal = new ModalFactory(options);
         theModal.makeModal()
@@ -14,17 +16,17 @@ class UIFactory {
         return theModal
     }
 
+    /* Fetch HTML from the provided URL and override content of $container. $statusNode allows to specify another HTML node to display the loading */
     reload (url, $container, $statusNode=null) {
         $container = $($container)
         $statusNode = $($statusNode)
         if (!$statusNode) {
             $statusNode = $container
         }
-        const tmpApi = new AJAXApi({
-            statusNode: $statusNode[0],
-        })
-        tmpApi.fetchURL(url).then((data) => {
-            $container.html(data)
+        AJAXApi.quickFetchURL(url, {
+            statusNode: $statusNode[0]
+        }).then((data) => {
+            $container[0].outerHTML = data
         })
     }
 }
