@@ -66,7 +66,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                                         if (!empty($conflictingTemplate)) {
                                             return sprintf(
                                                 "<span class=\"text-danger font-weight-bolder\">%s</span> %s.<br />
-                                                <span class=\"font-weight-bolder\">%s</span> %s <span class=\"font-weight-bolder\">%s</span>",
+                                                <ul><li><span class=\"font-weight-bolder\">%s</span> %s <span class=\"font-weight-bolder\">%s</span></li></ul>",
                                                 __('Conflict with:'),
                                                 $this->Html->link(
                                                     h($conflictingTemplate->name),

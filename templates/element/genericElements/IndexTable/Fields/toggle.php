@@ -30,32 +30,24 @@
         $tempboxId
     );
 
-    // inject title and body vars into their placeholder
+    // inject variables into the strings
     if (!empty($field['toggle_data']['confirm'])) {
-        $availableConfirmOptions = ['enable', 'disable'];
-        $confirmOptions = $field['toggle_data']['confirm'];
-        foreach ($availableConfirmOptions as $optionType) {
-            $availableType = ['title', 'titleHtml', 'body', 'bodyHtml'];
-            foreach ($availableType as $varType) {
-                if (!isset($confirmOptions[$optionType][$varType])) {
-                    continue;
-                }
-                $confirmOptions[$optionType][$varType] = $this->StringFromPath->buildStringFromDataPath(
-                    $confirmOptions[$optionType][$varType],
-                    $row,
-                    $confirmOptions[$optionType][$varType . '_vars'],
-                    ['highlight' => true]
-                );
-            }
-            if (!empty($confirmOptions[$optionType]['type'])) {
-                if (!empty($confirmOptions[$optionType]['type']['function'])) {
-                    $typeData = !empty($confirmOptions[$optionType]['type']['data']) ? $confirmOptions[$optionType]['type'] : [];
-                    $confirmOptions[$optionType]['type'] = $confirmOptions[$optionType]['type']['function']($row, $typeData);
-                }
-            }
-        }
+        $instructions = [
+            'enable.title' => 'enable.title_vars',
+            'enable.titleHtml' => 'enable.titleHtml_vars',
+            'enable.body' => 'enable.body_vars',
+            'enable.bodyHtml' => 'enable.bodyHtml_vars',
+            'enable.type' => 'enable.type',
+            'disable.title' => 'disable.title_vars',
+            'disable.titleHtml' => 'disable.titleHtml_vars',
+            'disable.body' => 'disable.body_vars',
+            'disable.bodyHtml' => 'disable.bodyHtml_vars',
+            'disable.bodyHtml' => 'disable.bodyHtml_vars',
+            'disable.type' => 'disable.type',
+        ];
+        $confirmOptions = $this->DataFromPath->buildStringsInArray($field['toggle_data']['confirm'], $row, $instructions, ['highlight' => true]);
     }
-    $url = $this->StringFromPath->buildStringFromDataPath($field['url'], $row, $field['url_params_vars']);
+    $url = $this->DataFromPath->buildStringFromDataPath($field['url'], $row, $field['url_params_vars']);
 ?>
 
 <?php if ($requirementMet): ?>

@@ -5,7 +5,7 @@ namespace App\View\Helper;
 use Cake\View\Helper;
 use Cake\Utility\Hash;
 
-class StringFromPathHelper extends Helper
+class DataFromPathHelper extends Helper
 {
     private $defaultOptions = [
         'sanitize' => true, // Should the variables to be injected into the string be sanitized. (ignored with the function)
@@ -25,7 +25,7 @@ class StringFromPathHelper extends Helper
      *              - `raw`: A raw string to be injecte as-is
      *              - `function`: A function to be executed with its $strArgs being passed
      * @param  array  $options Allows to configure the behavior of the function
-     * @return String
+     * @return String The string with its arguments replaced by their value
      */
     public function buildStringFromDataPath(String $str, $data=[], array $strArgs=[], array $options=[])
     {
@@ -61,5 +61,35 @@ class StringFromPathHelper extends Helper
             }
         }
         return $str;
+    }
+    
+    /**
+     * buildStringsInArray
+     *
+     * @param  array $stringArray The array containing the strings that will have their arguments replaced by their value
+     * @param  mixed $data The data from which the value of datapath arguement will be taken
+     * @param  array $instructions Instruct how $stringArray should be processed
+     *      - Keys are the path to the string
+     *      - Values are the path to the argument
+     * @param  array $options Allows to configure the behavior of the function
+     * @return array The array containing the strings with their arguments replaced by their value
+     */
+    public function buildStringsInArray(array $stringArray, $data=[], array $instructions, array $options=[])
+    {
+        foreach ($instructions as $stringPath => $argsPath) {
+            $theString = Hash::get($stringArray, $stringPath);
+            if (!is_null($theString)) {
+                $theArgs = Hash::get($stringArray, $argsPath);
+                $theArgs = is_null($theArgs) ? [] : $theArgs;
+                $theArgs = !is_array($theArgs) ? [$theArgs] : $theArgs;
+                if (!empty($theArgs['function'])) {
+                    $newString = $theArgs['function']($data, $theArgs);
+                } else {
+                    $newString = $this->buildStringFromDataPath($theString, $data, $theArgs, $options);
+                }
+                $stringArray = Hash::insert($stringArray, $stringPath, $newString);
+            }
+        }
+        return $stringArray;
     }
 }
