@@ -3,11 +3,11 @@
  * Bootstrap Tabs helper
  * Options:
  *  [style]
- *      - fill: Should the navigation occupies all space
- *      - justify: Should the navigation be justified (accept: ['center', 'end'])
- *      - pills: Should the tabs be  pills
- *      - vertical: Should the navigation be placed on the left side of the content
- *      - vertical-size: How many boostrap cols be used for the navigation (only used when `vertical` is true)
+ *      - fill: Should the navigation items occupies all space
+ *      - justify: Should the navigation items be justified (accept: ['center', 'end'])
+ *      - pills: Should the navigation items be pills
+ *      - vertical: Should the navigation bar be placed on the left side of the content
+ *      - vertical-size: Specify how many boostrap's `cols` should be used for the navigation (only used when `vertical` is true)
  *      - card: Should the navigation be placed in a bootstrap card
  *      - nav-class: additional class to add to the nav container
  *      - content-class: additional class to add to the content container
@@ -55,8 +55,8 @@ class BootstrapHelper extends Helper
 class BootstrapTabs extends Helper
 {
     private $defaultOptions = [
-        'nav-fill' => false,
-        'nav-justify' => false,
+        'fill' => false,
+        'justify' => false,
         'pills' => false,
         'vertical' => false,
         'vertical-size' => 3,
@@ -71,7 +71,7 @@ class BootstrapTabs extends Helper
     ];
 
     private $allowedOptionValues = [
-        'nav-justify' => [false, 'center', 'end'],
+        'justify' => [false, 'center', 'end'],
     ];
 
     private $options = null;
@@ -97,8 +97,8 @@ class BootstrapTabs extends Helper
     
         ];
 
-        if (!empty($this->options['nav-justify'])) {
-            $this->bsClasses['nav'][] = 'justify-content-' . $this->options['nav-justify'];
+        if (!empty($this->options['justify'])) {
+            $this->bsClasses['nav'][] = 'justify-content-' . $this->options['justify'];
         }
     
         if ($this->options['pills']) {
@@ -116,10 +116,10 @@ class BootstrapTabs extends Helper
             }
         }
 
-        if ($this->options['nav-fill']) {
+        if ($this->options['fill']) {
             $this->bsClasses['nav'][] = 'nav-fill';
         }
-        if ($this->options['nav-justify']) {
+        if ($this->options['justify']) {
             $this->bsClasses['nav'][] = 'nav-justify';
         }
 
@@ -160,9 +160,6 @@ class BootstrapTabs extends Helper
         if (empty($this->data['navs'])) {
             throw new InvalidArgumentException(__('No navigation data provided'));
         }
-        if ($this->options['card'] && $this->options['vertical']) {
-            throw new InvalidArgumentException(__('`card` option can only be used on horizontal mode'));
-        }
     }
 
     private function genTabs()
@@ -198,11 +195,11 @@ class BootstrapTabs extends Helper
 
     private function genVerticalTabs()
     {
-        $html = $this->genNode('div', ['class' => ['row']]);;
-            $html .= $this->genNode('div', ['class' => 'col-' . $this->options['vertical-size']]);
+        $html = $this->genNode('div', ['class' => ['row', ($this->options['card'] ? 'card flex-row' : '')]]);
+            $html .= $this->genNode('div', ['class' => ['col-' . $this->options['vertical-size'], ($this->options['card'] ? 'card-header border-right' : '')]]);
                 $html .= $this->genNav();
             $html .= '</div>';
-            $html .= $this->genNode('div', ['class' => 'col-' . (12 - $this->options['vertical-size'])]);
+            $html .= $this->genNode('div', ['class' => ['col-' . (12 - $this->options['vertical-size']), ($this->options['card'] ? 'card-body2' : '')]]);
                 $html .= $this->genContent();
             $html .= '</div>';
         $html .= '</div>';

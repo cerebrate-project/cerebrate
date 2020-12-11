@@ -8,31 +8,45 @@ use Cake\Utility\Hash;
 class StringFromPathHelper extends Helper
 {
     private $defaultOptions = [
-        'sanitize' => true,
-        'highlight' => false,
+        'sanitize' => true, // Should the variables to be injected into the string be sanitized. (ignored with the function)
+        'highlight' => false, // Should the extracted data be highlighted
     ];
-
-    public function buildStringFromDataPath(String $str, $data=[], array $dataPaths=[], array $options=[])
+    
+    /**
+     * buildStringFromDataPath Inject data into a string at the correct place
+     *
+     * @param  String $str The string that will have its arguements replaced by their value
+     * @param  mixed  $data The data from which the value of datapath arguement will be taken
+     * @param  array  $strArgs The arguments to be injected into the string.
+     *      - Each argument ca be of mixed type:
+     *          - String: A cakephp's Hash datapath used to extract the data
+     *          - array:  can contain a key of either
+     *              - `datapath`: A cakephp's Hash datapath used to extract the data
+     *              - `raw`: A raw string to be injecte as-is
+     *              - `function`: A function to be executed with its $strArgs being passed
+     * @param  array  $options Allows to configure the behavior of the function
+     * @return String
+     */
+    public function buildStringFromDataPath(String $str, $data=[], array $strArgs=[], array $options=[])
     {
         $options = array_merge($this->defaultOptions, $options);
-        if (!empty($dataPaths)) {
+        if (!empty($strArgs)) {
             $extractedVars = [];
-            foreach ($dataPaths as $i => $dataPath) {
+            foreach ($strArgs as $i => $strArg) {
                 $varValue = '';
-                if (is_array($dataPath)) {
+                if (is_array($strArg)) {
                     $varValue = '';
-                    if (!empty($dataPath['datapath'])) {
-                        $varValue = Hash::get($data, $dataPath['datapath']);
-                    } else if (!empty($dataPath['raw'])) {
-                        $varValue = $dataPath['raw'];
-                    } else if (!empty($dataPath['function'])) {
-                        $varValue = $dataPath['function']($data, $dataPath);
+                    if (!empty($strArg['datapath'])) {
+                        $varValue = Hash::get($data, $strArg['datapath']);
+                    } else if (!empty($strArg['raw'])) {
+                        $varValue = $strArg['raw'];
+                    } else if (!empty($strArg['function'])) {
+                        $varValue = $strArg['function']($data, $strArg);
                     }
-                    // $extractedVars[] = $varValue;
                 } else {
-                    $varValue = Hash::get($data, $dataPath);
+                    $varValue = Hash::get($data, $strArg);
                 }
-                if (empty($dataPath['function'])) {
+                if (empty($strArg['function'])) {
                     $varValue = $options['sanitize'] ? h($varValue) : $varValue;
                 }
                 $extractedVars[] = $varValue;
