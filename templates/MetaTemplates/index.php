@@ -31,10 +31,10 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url' => '/metaTemplates/toggle/{{0}}',
                 'url_params_vars' => ['id'],
                 'toggle_data' => [
-                    'requirement' => [
+                    'editRequirement' => [
                         'function' => function($row, $options) {
                             return true;
-                        }
+                        },
                     ],
                     'skip_full_reload' => true
                 ]
@@ -47,7 +47,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url' => '/metaTemplates/toggle/{{0}}/{{1}}',
                 'url_params_vars' => [['datapath' => 'id'], ['raw' => 'is_default']],
                 'toggle_data' => [
-                    'requirement' => [
+                    'editRequirement' => [
                         'function' => function($row, $options) {
                             return true;
                         }

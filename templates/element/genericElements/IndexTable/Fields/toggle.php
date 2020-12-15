@@ -4,6 +4,18 @@
  *  On click, issues a GET to a given endpoint, retrieving a form with the
  *  value flipped, which is immediately POSTed.
  *  to fetch it.
+ *  Options:
+ *      - url: The URL on which to perform the POST
+ *      - url_params_vars: Variables to be injected into the URL using the DataFromPath helper
+ *      - toggle_data.skip_full_reload: If true, the index will not be reloaded and the checkbox will be flipped on success
+ *      - toggle_data.editRequirement.function: A function to be called to assess if the checkbox can be toggled
+ *      - toggle_data.editRequirement.options: Option that will be passed to the function
+ *      - toggle_data.editRequirement.options.datapath: If provided, entries will have their datapath values converted into their extracted value
+ *      - toggle_data.confirm.[enable/disable].title: 
+ *      - toggle_data.confirm.[enable/disable].titleHtml: 
+ *      - toggle_data.confirm.[enable/disable].body: 
+ *      - toggle_data.confirm.[enable/disable].bodyHtml: 
+ *      - toggle_data.confirm.[enable/disable].type: 
  *
  */
     $data = $this->Hash->get($row, $field['data_path']);
@@ -11,15 +23,15 @@
     $checkboxId = 'GenericToggle-' . $seed;
     $tempboxId = 'TempBox-' . $seed;
 
-    $requirementMet = true;
-    if (isset($field['toggle_data']['requirement'])) {
-        if (isset($field['toggle_data']['requirement']['options']['datapath'])) {
-            foreach ($field['toggle_data']['requirement']['options']['datapath'] as $name => $path) {
-                $field['toggle_data']['requirement']['options']['datapath'][$name] = empty($this->Hash->extract($row, $path)[0]) ? null : $this->Hash->extract($row, $path)[0];
+    $requirementMet = false;
+    if (isset($field['toggle_data']['editRequirement'])) {
+        if (isset($field['toggle_data']['editRequirement']['options']['datapath'])) {
+            foreach ($field['toggle_data']['editRequirement']['options']['datapath'] as $name => $path) {
+                $field['toggle_data']['editRequirement']['options']['datapath'][$name] = empty($this->Hash->extract($row, $path)[0]) ? null : $this->Hash->extract($row, $path)[0];
             }
         }
-        $options = isset($field['toggle_data']['requirement']['options']) ? $field['toggle_data']['requirement']['options'] : array();
-        $requirementMet = $field['toggle_data']['requirement']['function']($row, $options);
+        $options = isset($field['toggle_data']['editRequirement']['options']) ? $field['toggle_data']['editRequirement']['options'] : array();
+        $requirementMet = $field['toggle_data']['editRequirement']['function']($row, $options);
     }
 
     echo sprintf(
