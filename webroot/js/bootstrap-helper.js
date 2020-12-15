@@ -50,7 +50,7 @@ class UIFactory {
      * @param  {string} url - The URL from which the $container's content should be fetched
      * @param  {(jQuery|string)} $container - The container that should hold the data fetched
      * @param  {(jQuery|string)} [$statusNode=null] - A reference to a HTML node on which the loading animation should be displayed. If not provided, $container will be used
-     * @return {Promise<Object>} Promise object resolving to the $container object after its content has been replaced
+     * @return {Promise<jQuery>} Promise object resolving to the $container object after its content has been replaced
      */
     reload (url, $container, $statusNode=null) {
         $container = $($container)
@@ -514,7 +514,7 @@ class ModalFactory {
         }
 
         this.options.APIConfirm = (tmpApi) => {
-            tmpApi.mergeOptions({renderedHTMLOnFailureRequested: true})
+            tmpApi.mergeOptions({forceHTMLOnValidationFailure: true})
             return tmpApi.postForm($form[0])
                 .then((data) => {
                     if (data.success) {
