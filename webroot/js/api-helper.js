@@ -242,7 +242,7 @@ class AJAXApi {
 
     toggleLoading(loading) {
         if (this.loadingOverlay === false) {
-            this.loadingOverlay = new OverlayFactory({node: this.options.statusNode});
+            this.loadingOverlay = new OverlayFactory(this.options.statusNode);
         }
         if (loading) {
             this.loadingOverlay.show()

@@ -1,4 +1,4 @@
-
+/** Class containing common UI functionalities */
 class UIFactory {
     /**
      * Create and display a toast

@@ -30,5 +30,6 @@
         $dataGroup['requirement'] = $data['requirement'];
     }
     echo $this->element('/genericElements/ListTopBar/group_simple', [
-        'data' => $dataGroup
+        'data' => $dataGroup,
+        'tableRandomValue' => $tableRandomValue
     ]);
