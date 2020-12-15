@@ -78,9 +78,15 @@
     })
 
     function submitForm(api, url) {
+        const reloadUrl = '<?= isset($field['toggle_data']['reload_url']) ? $field['toggle_data']['reload_url'] : $this->Url->build(['action' => 'index']) ?>'
         return api.fetchAndPostForm(url, {})
             .then(() => {
-                UI.reload('/meta-templates', $('#table-container-<?= $tableRandomValue ?>'), $('#table-container-<?= $tableRandomValue ?> table.table'))
+                <?php if (!empty($field['toggle_data']['skip_full_reload'])): ?>
+                    const isChecked = $('#<?= $checkboxId ?>').prop('checked')
+                    $('#<?= $checkboxId ?>').prop('checked', !$('#<?= $checkboxId ?>').prop('checked'))
+                <?php else: ?>
+                    UI.reload(reloadUrl, $('#table-container-<?= $tableRandomValue ?>'), $('#table-container-<?= $tableRandomValue ?> table.table'))
+                <?php endif; ?>
             })
     }
 }())

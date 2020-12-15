@@ -35,7 +35,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         'function' => function($row, $options) {
                             return true;
                         }
-                    ]
+                    ],
+                    'skip_full_reload' => true
                 ]
             ],
             [
