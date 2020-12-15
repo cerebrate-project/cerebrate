@@ -81,13 +81,16 @@ class CRUDComponent extends Component
                 $patchEntityParams['fields'] = $params['fields'];
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
-            if ($this->Table->save($data)) {
+            $savedData = $this->Table->save($data);
+            if ($savedData !== false) {
                 $message = __('{0} added.', $this->ObjectAlias);
                 if (!empty($input['metaFields'])) {
                     $this->saveMetaFields($data->id, $input);
                 }
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message);
                 } else {
                     $this->Controller->Flash->success($message);
                     if (!empty($params['displayOnSuccess'])) {
@@ -103,6 +106,7 @@ class CRUDComponent extends Component
                     }
                 }
             } else {
+                $this->Controller->isFailResponse = true;
                 $validationMessage = $this->prepareValidationError($data);
                 $message = __(
                     '{0} could not be added.{1}',
@@ -110,7 +114,8 @@ class CRUDComponent extends Component
                     empty($validationMessage) ? '' : ' ' . __('Reason:{0}', $validationMessage)
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
-
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxFailResponse($this->ObjectAlias, 'add', $data, $message, $validationMessage);
                 } else {
                     $this->Controller->Flash->error($message);
                 }

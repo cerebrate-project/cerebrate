@@ -12,6 +12,7 @@
            - use these to define dynamic form fields, or anything that will feed into the regular fields via JS population
      * - submit: The submit button itself. By default it will simply submit to the form as defined via the 'model' field
      */
+    $this->Form->setConfig('errorClass', 'is-invalid');
     $modelForForm = empty($data['model']) ?
         h(\Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::classify($this->request->getParam('controller')))) :
         h($data['model']);
@@ -35,11 +36,14 @@
         'select' => '<select name="{{name}}" {{attrs}}>{{content}}</select>',
         'checkbox' => '<input type="checkbox" name="{{name}}" value="{{value}}"{{attrs}}>',
         'checkboxFormGroup' => '{{label}}',
-        'formGroup' => '<div class="col-sm-2 col-form-label" {{attrs}}>{{label}}</div><div class="col-sm-10">{{input}}</div>',
+        'formGroup' => '<div class="col-sm-2 col-form-label" {{attrs}}>{{label}}</div><div class="col-sm-10">{{input}}{{error}}</div>',
         'nestingLabel' => '{{hidden}}<div class="col-sm-2 col-form-label">{{text}}</div><div class="col-sm-10">{{input}}</div>',
         'option' => '<option value="{{value}}"{{attrs}}>{{text}}</option>',
         'optgroup' => '<optgroup label="{{label}}"{{attrs}}>{{content}}</optgroup>',
-        'select' => '<select name="{{name}}"{{attrs}}>{{content}}</select>'
+        'select' => '<select name="{{name}}"{{attrs}}>{{content}}</select>',
+        'error' => '<div class="error-message invalid-feedback d-block">{{content}}</div>',
+        'errorList' => '<ul>{{content}}</ul>',
+        'errorItem' => '<li>{{text}}</li>',
     ];
     if (!empty($data['fields'])) {
         foreach ($data['fields'] as $fieldData) {
@@ -49,6 +53,7 @@
                 }
             }
             // we reset the template each iteration as individual fields might override the defaults.
+            $this->Form->setConfig($default_template);
             $this->Form->setTemplates($default_template);
             if (isset($fieldData['requirements']) && !$fieldData['requirements']) {
                 continue;

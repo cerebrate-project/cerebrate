@@ -25,6 +25,10 @@ class UsersController extends AppController
         $this->CRUD->add();
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
+        } else if ($this->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
+            if (empty($this->isFailResponse) || empty($this->ajax_with_html_on_failure)) {
+                return $this->ajaxResponsePayload;
+            }
         }
         $dropdownData = [
             'role' => $this->Users->Roles->find('list', [

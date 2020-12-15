@@ -2,7 +2,7 @@
     if (!isset($data['requirement']) || $data['requirement']) {
         if (!empty($data['popover_url'])) {
             $onClick = sprintf(
-                'onClick="populateAndLoadModal(%s)"',
+                'onClick="openModalFromURL(%s)"',
                 sprintf("'%s'", h($data['popover_url']))
             );
         }
@@ -67,3 +67,11 @@
         );
     }
 ?>
+
+<script>
+    function openModalFromURL(url) {
+        UI.modalFromURL(url, (data) => {
+            UI.reload('<?= $this->Url->build(['action' => 'index']); ?>', $('#table-container-<?= $tableRandomValue ?>'), $('#table-container-<?= $tableRandomValue ?> table.table'))
+        })
+    }
+</script>

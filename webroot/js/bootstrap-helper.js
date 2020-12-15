@@ -16,6 +16,22 @@ class UIFactory {
         return theModal
     }
 
+    /* Display a modal based on provided options */
+    modalFromURL (url, successCallback, failCallback) {
+        return AJAXApi.quickFetchURL(url).then((modalHTML) => {
+            const theModal = new ModalFactory({
+                rawHTML: modalHTML,
+                replaceFormSubmissionByAjax: true,
+                successCallback: successCallback !== undefined ? successCallback : () => {},
+                failCallback: failCallback !== undefined ? failCallback : (errorMessage) => {},
+            });
+            theModal.makeModal(modalHTML)
+            theModal.show()
+            theModal.$modal.data('modalObject', theModal)
+            return theModal
+        })
+    }
+
     /* Fetch HTML from the provided URL and override content of $container. $statusNode allows to specify another HTML node to display the loading */
     reload (url, $container, $statusNode=null) {
         $container = $($container)
@@ -26,7 +42,7 @@ class UIFactory {
         AJAXApi.quickFetchURL(url, {
             statusNode: $statusNode[0]
         }).then((data) => {
-            $container[0].outerHTML = data
+            $container.replaceWith(data)
         })
     }
 }
@@ -143,6 +159,7 @@ class ModalFactory {
         titleHtml: false,
         body: false,
         bodyHtml: false,
+        rawHTML: false,
         variant: '',
         modalClass: [],
         headerClass: [],
@@ -160,6 +177,8 @@ class ModalFactory {
         error: function() {},
         shownCallback: function() {},
         hiddenCallback: function() {},
+        successCallback: function() {},
+        replaceFormSubmissionByAjax: false
     }
 
     static availableType = [
@@ -190,6 +209,9 @@ class ModalFactory {
                 })
                 .on('shown.bs.modal', function () {
                     that.options.shownCallback()
+                    if (that.options.replaceFormSubmissionByAjax) {
+                        that.replaceFormSubmissionByAjax()
+                    }
                 })
         }
     }
@@ -203,11 +225,11 @@ class ModalFactory {
     }
 
     isValid() {
-        return this.options.title !== false || this.options.body !== false || this.options.titleHtml !== false || this.options.bodyHtml !== false
+        return this.options.title !== false || this.options.body !== false || this.options.titleHtml !== false || this.options.bodyHtml !== false || this.options.rawHTML !== false
     }
 
     buildModal() {
-        var $modal = $('<div class="modal fade" tabindex="-1" aria-hidden="true"/>')
+        const $modal = $('<div class="modal fade" tabindex="-1" aria-hidden="true"/>')
         if (this.options.id !== false) {
             $modal.attr('id', this.options.id)
             $modal.attr('aria-labelledby', this.options.id)
@@ -215,37 +237,42 @@ class ModalFactory {
         if (this.options.modalClass !== false) {
             $modal.addClass(this.options.modalClass)
         }
-        var $modalDialog = $('<div class="modal-dialog"/>')
-        var $modalContent = $('<div class="modal-content"/>')
-        if (this.options.title !== false || this.options.titleHtml !== false) {
-            var $modalHeader = $('<div class="modal-header"/>')
-            var $modalHeaderText
-            if (this.options.titleHtml !== false) {
-                $modalHeaderText = $('<div/>').html(this.options.titleHtml);
-            } else {
-                $modalHeaderText = $('<h5 class="modal-title"/>').text(this.options.title)
+        let $modalDialog
+        if (this.options.rawHTML) {
+            $modalDialog = $(this.options.rawHTML)
+        } else {
+            $modalDialog = $('<div class="modal-dialog"/>')
+            const $modalContent = $('<div class="modal-content"/>')
+            if (this.options.title !== false || this.options.titleHtml !== false) {
+                const $modalHeader = $('<div class="modal-header"/>')
+                let $modalHeaderText
+                if (this.options.titleHtml !== false) {
+                    $modalHeaderText = $('<div/>').html(this.options.titleHtml);
+                } else {
+                    $modalHeaderText = $('<h5 class="modal-title"/>').text(this.options.title)
+                }
+                $modalHeader.append($modalHeaderText, ModalFactory.getCloseButton())
+                $modalContent.append($modalHeader)
             }
-            $modalHeader.append($modalHeaderText, ModalFactory.getCloseButton())
-            $modalContent.append($modalHeader)
-        }
-
-        if (this.options.body !== false || this.options.bodyHtml !== false) {
-            var $modalBody = $('<div class="modal-body"/>')
-            var $modalBodyText
-            if (this.options.bodyHtml !== false) {
-                $modalBodyText = $('<div/>').html(this.options.bodyHtml);
-            } else {
-                $modalBodyText = $('<div/>').text(this.options.body)
+    
+            if (this.options.body !== false || this.options.bodyHtml !== false) {
+                const $modalBody = $('<div class="modal-body"/>')
+                let $modalBodyText
+                if (this.options.bodyHtml !== false) {
+                    $modalBodyText = $('<div/>').html(this.options.bodyHtml);
+                } else {
+                    $modalBodyText = $('<div/>').text(this.options.body)
+                }
+                $modalBody.append($modalBodyText)
+                $modalContent.append($modalBody)
             }
-            $modalBody.append($modalBodyText)
-            $modalContent.append($modalBody)
+    
+            const $modalFooter = $('<div class="modal-footer"/>')
+            $modalFooter.append(this.getFooterBasedOnType())
+            $modalContent.append($modalFooter)
+    
+            $modalDialog.append($modalContent)
         }
-
-        var $modalFooter = $('<div class="modal-footer"/>')
-        $modalFooter.append(this.getFooterBasedOnType())
-        $modalContent.append($modalFooter)
-
-        $modalDialog.append($modalContent)
         $modal.append($modalDialog)
         return $modal
     }
@@ -270,48 +297,80 @@ class ModalFactory {
     getFooterConfirm() {
         let variant = this.options.type.split('-')[1]
         variant = variant !== undefined ? variant : 'primary'
-        return [
-            $('<button type="button" class="btn btn-secondary" data-dismiss="modal"></button>')
+        const $buttonCancel = $('<button type="button" class="btn btn-secondary" data-dismiss="modal"></button>')
                 .text(this.options.cancelText)
                 .click(
                     (evt) => {
                         this.options.cancel(() => { this.hide() }, this, evt)
                     }
                 )
-                .attr('data-dismiss', (this.options.closeManually || !this.options.closeOnSuccess) ? '' : 'modal'),
-            $('<button type="button" class="btn"></button>')
+                .attr('data-dismiss', (this.options.closeManually || !this.options.closeOnSuccess) ? '' : 'modal')
+
+        const $buttonConfirm = $('<button type="button" class="btn"></button>')
                 .addClass('btn-' + variant)
                 .text(this.options.confirmText)
-                .click(
-                    (evt) => {
-                        let confirmFunction = this.options.confirm
-                        if (this.options.APIConfirm) {
-                            const tmpApi = new AJAXApi({
-                                statusNode: evt.target
-                            })
-                            confirmFunction = () => { return this.options.APIConfirm(tmpApi) }
-                        }
-                        let confirmResult = confirmFunction(() => { this.hide() }, this, evt)
-                        if (confirmResult === undefined) {
-                            this.hide()
-                        } else {
-                            confirmResult.then(() => {
-                                if (this.options.closeOnSuccess) {
-                                    this.hide()
-                                }
-                            })
-                            .catch(() => {
-                                this.options.error(() => { this.hide() }, this, evt)
-                            })
-                        }
-                    }
-                )
+                .click(this.getConfirmationHandlerFunction())
                 .attr('data-dismiss', (this.options.closeManually || this.options.closeOnSuccess) ? '' : 'modal')
-        ]
+        return [$buttonCancel, $buttonConfirm]
     }
 
     static getCloseButton() {
         return $(ModalFactory.closeButtonHtml)
+    }
+
+    getConfirmationHandlerFunction() {
+        return (evt) => {
+            let confirmFunction = this.options.confirm
+            if (this.options.APIConfirm) {
+                const tmpApi = new AJAXApi({
+                    statusNode: evt.target
+                })
+                confirmFunction = () => { return this.options.APIConfirm(tmpApi) }
+            }
+            let confirmResult = confirmFunction(() => { this.hide() }, this, evt)
+            if (confirmResult === undefined) {
+                this.hide()
+            } else {
+                confirmResult.then((data) => {
+                    if (this.options.closeOnSuccess) {
+                        this.hide()
+                    }
+                })
+                .catch(() => {
+                    this.options.error(() => { this.hide() }, this, evt)
+                })
+            }
+        }
+    }
+
+    replaceFormSubmissionByAjax() {
+        const $submitButton = this.$modal.find('.modal-footer #submitButton')
+        const formID = $submitButton.data('form-id')
+        let $form
+        if (formID) {
+            $form = $(formID)
+        } else {
+            $form = this.$modal.find('form')
+        }
+
+        this.options.APIConfirm = (tmpApi) => {
+            tmpApi.mergeOptions({renderedHTMLOnFailureRequested: true})
+            return tmpApi.postForm($form[0])
+                .then((data) => {
+                    if (data.success) {
+                        this.options.successCallback(data)
+                    } else { // Validation error, replace modal content with new html
+                        this.$modal.html(data.html)
+                        this.replaceFormSubmissionByAjax()
+                        return Promise.reject('Validation error');
+                    }
+                })
+                .catch((errorMessage, response) => {
+                    this.options.failCallback(errorMessage)
+                    return Promise.reject(errorMessage);
+                })
+        }
+        $submitButton.click(this.getConfirmationHandlerFunction())
     }
 }
 
