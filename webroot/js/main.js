@@ -40,5 +40,7 @@ function executeStateDependencyChecks(dependenceSourceSelector) {
 
 var UI
 $(document).ready(() => {
-    UI = new UIFactory()
+    if (typeof UIFactory !== "undefined") {
+        UI = new UIFactory()
+    }
 })

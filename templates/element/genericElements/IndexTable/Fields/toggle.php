@@ -35,7 +35,7 @@
     }
 
     echo sprintf(
-        '<input type="checkbox" id="%s" %s %s><span id="%s" class="d-none"></span>',
+        '<input type="checkbox" id="%s" class="change-cursor" %s %s><span id="%s" class="d-none"></span>',
         $checkboxId,
         empty($data) ? '' : 'checked',
         $requirementMet ? '' : 'disabled="disabled"',

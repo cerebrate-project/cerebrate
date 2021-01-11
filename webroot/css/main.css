@@ -119,3 +119,11 @@
     border-top-right-radius: 0.2rem;
     border-bottom-right-radius: 0.2rem;
 }
+
+input[type="checkbox"].change-cursor {
+    cursor: pointer;
+}
+
+input[type="checkbox"]:disabled.change-cursor {
+    cursor: not-allowed;
+}
