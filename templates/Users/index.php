@@ -3,7 +3,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $data,
         'top_bar' => [
-            'pull' => 'right',
             'children' => [
                 [
                     'type' => 'simple',
@@ -30,6 +29,22 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => '#',
                 'sort' => 'id',
                 'data_path' => 'id',
+            ],
+            [
+                'name' => __('Disabled'),
+                'sort' => 'disabled',
+                'data_path' => 'disabled',
+                'element' => 'toggle',
+                'url' => '/users/toggle/{{0}}',
+                'url_params_vars' => ['id'],
+                'toggle_data' => [
+                    'editRequirement' => [
+                        'function' => function($row, $options) {
+                            return true;
+                        },
+                    ],
+                    'skip_full_reload' => true
+                ]
             ],
             [
                 'name' => __('Username'),
@@ -71,12 +86,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/users/edit/[onclick_params_data_path]\');',
+                'onclick' => 'openModalFromURL(\'/users/edit/[onclick_params_data_path]\');',
                 'onclick_params_data_path' => 'id',
                 'icon' => 'edit'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/users/delete/[onclick_params_data_path]\');',
+                'onclick' => 'openModalFromURL(\'/users/delete/[onclick_params_data_path]\');',
                 'onclick_params_data_path' => 'id',
                 'icon' => 'trash'
             ]

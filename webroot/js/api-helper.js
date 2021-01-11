@@ -142,7 +142,7 @@ class AJAXApi {
         try {
             const response = await fetch(url, AJAXApi.genericRequestConfigGET);
             if (!response.ok) {
-                throw new Error('Network response was not ok')
+                throw new Error(`Network response was not ok. \`${response.statusText}\``)
             }
             const dataHtml = await response.text();
             this.provideFeedback({
@@ -179,7 +179,7 @@ class AJAXApi {
         try {
             const response = await fetch(url, AJAXApi.genericRequestConfigGET);
             if (!response.ok) {
-                throw new Error('Network response was not ok')
+                throw new Error(`Network response was not ok. \`${response.statusText}\``)
             }
             const formHtml = await response.text();
             let tmpNode = document.createElement("div");
@@ -231,7 +231,7 @@ class AJAXApi {
                 };
                 const response = await fetch(form.action, options);
                 if (!response.ok) {
-                    throw new Error('Network response was not ok')
+                    throw new Error(`Network response was not ok. \`${response.statusText}\``)
                 }
                 const clonedResponse = response.clone()
                 try {
@@ -268,7 +268,7 @@ class AJAXApi {
                 }, true, feedbackShown);
                 toReturn = Promise.reject(error);
             }
-        } catch (error) {
+        } catch (error) { // -> probably not useful
             toReturn = Promise.reject(error);
         } finally {
             if (!skipRequestHooks) {

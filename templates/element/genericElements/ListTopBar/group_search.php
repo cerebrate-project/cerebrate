@@ -32,7 +32,7 @@
             empty($data['value']) ? '' : h($data['value'])
         );
         echo sprintf(
-            '<div class="input-group" data-table-random-value="%s">%s%s</div>',
+            '<div class="input-group" data-table-random-value="%s" style="margin-left: auto;">%s%s</div>',
             h($tableRandomValue),
             $input,
             $button

@@ -15,8 +15,14 @@ class IndividualsController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id'],
+            'filters' => ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'],
             'quickFilters' => ['uuid', 'email', 'first_name', 'last_name', 'position'],
+            'contextFilters' => [
+                'allow_all' => true,
+                'fields' => [
+                    'Alignments.type'
+                ]
+            ],
             'contain' => ['Alignments' => 'Organisations']
         ]);
         if ($this->ParamHandler->isRest()) {
@@ -29,8 +35,9 @@ class IndividualsController extends AppController
     public function add()
     {
         $this->CRUD->add();
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
     }
@@ -38,8 +45,9 @@ class IndividualsController extends AppController
     public function view($id)
     {
         $this->CRUD->view($id, ['contain' => ['Alignments' => 'Organisations']]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
     }
@@ -47,10 +55,9 @@ class IndividualsController extends AppController
     public function edit($id)
     {
         $this->CRUD->edit($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
-        } else if($this->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
-            return $this->ajaxResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
         $this->render('add');
@@ -59,8 +66,9 @@ class IndividualsController extends AppController
     public function delete($id)
     {
         $this->CRUD->delete($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
     }

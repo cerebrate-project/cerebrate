@@ -13,7 +13,7 @@
             <?= $this->Form->postLink(
                 'Delete',
                 ['action' => 'delete', $id],
-                ['class' => 'btn btn-primary button-execute']
+                ['class' => 'btn btn-primary button-execute', 'id' => 'submitButton']
                 )
             ?>
             <button type="button" class="btn btn-secondary cancel-button" data-dismiss="modal"><?= __('Cancel') ?></button>

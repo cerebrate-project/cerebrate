@@ -16,6 +16,10 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     ]
                 ],
                 [
+                    'type' => 'context_filters',
+                    'context_filters' => $filteringContexts
+                ],
+                [
                     'type' => 'search',
                     'button' => __('Filter'),
                     'placeholder' => __('Enter value to search'),
@@ -68,12 +72,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/individuals/edit/[onclick_params_data_path]\');',
+                'onclick' => 'openModalFromURL(\'/individuals/edit/[onclick_params_data_path]\');',
                 'onclick_params_data_path' => 'id',
                 'icon' => 'edit'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/individuals/delete/[onclick_params_data_path]\');',
+                'onclick' => 'openModalFromURL(\'/individuals/delete/[onclick_params_data_path]\');',
                 'onclick_params_data_path' => 'id',
                 'icon' => 'trash'
             ]

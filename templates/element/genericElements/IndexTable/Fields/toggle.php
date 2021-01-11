@@ -75,9 +75,6 @@
                 ...correctOptions,
                 APIConfirm: (tmpApi) => {
                     return submitForm(tmpApi, url)
-                        .catch(e => {
-                            // Provide feedback inside modal?
-                        })
                 },
             }
             UI.modal(modalOptions)

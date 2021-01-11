@@ -48,6 +48,23 @@ class CRUDComponent extends Component
             $this->Controller->set('data', $data);
         }
     }
+    
+    /**
+     * getResponsePayload Returns the adaquate response payload based on the request context
+     *
+     * @return false or Array
+     */
+    public function getResponsePayload()
+    {
+        if ($this->Controller->ParamHandler->isRest()) {
+            return $this->Controller->restResponsePayload;
+        } else if ($this->Controller->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
+            if (empty($this->Controller->isFailResponse) || empty($this->Controller->ajax_with_html_on_failure)) {
+                return $this->Controller->ajaxResponsePayload;
+            }
+        }
+        return false;
+    }
 
     private function getMetaTemplates()
     {
@@ -301,8 +318,9 @@ class CRUDComponent extends Component
             if ($this->Table->delete($data)) {
                 $message = __('{0} deleted.', $this->ObjectAlias);
                 if ($this->Controller->ParamHandler->isRest()) {
-                    $data = $this->Table->get($id);
-                    $this->Controller->restResponsePayload = $this->RestResponse->saveSuccessResponse($this->TableAlias, 'delete', $id, 'json', $message);
+                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'delete', $data, $message);
                 } else {
                     $this->Controller->Flash->success($message);
                     $this->Controller->redirect($this->Controller->referer());
@@ -493,8 +511,17 @@ class CRUDComponent extends Component
         }
     }
 
-    private function getFilteringContextFromField($context)
+    private function getFilteringContextFromField($field)
     {
-        return $this->Table->find()->distinct([$context])->all()->extract($context)->toList();
+        $exploded = explode('.', $field);
+        if (count($exploded) > 1) {
+            $model = $exploded[0];
+            $subField = $exploded[1];
+            return $this->Table->{$model}->find()
+                ->distinct([$subField])
+                ->extract($subField)->toList();
+        } else {
+            return $this->Table->find()->distinct([$field])->all()->extract($field)->toList();
+        }
     }
 }

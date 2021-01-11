@@ -114,3 +114,8 @@
   color: inherit;
   text-decoration: inherit;
 }
+
+.btn-group > .btn:last-of-type:not(.dropdown-toggle), .btn-group > .btn-group:not(:last-of-type) > .btn {
+    border-top-right-radius: 0.2rem;
+    border-bottom-right-radius: 0.2rem;
+}
