@@ -72,15 +72,15 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'onclick' => 'openModalFromURL(\'/individuals/edit/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/individuals/edit/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'edit'
             ],
             [
-                'onclick' => 'openModalFromURL(\'/individuals/delete/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/individuals/delete/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'trash'
-            ]
+            ],
         ]
     ]
 ]);

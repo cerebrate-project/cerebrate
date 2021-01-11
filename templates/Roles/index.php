@@ -64,15 +64,15 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/roles/edit/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
-                'icon' => 'edit',
+                'open_modal' => '/roles/edit/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'icon' => 'edit'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/roles/delete/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/roles/delete/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'trash'
-            ]
+            ],
         ]
     ]
 ]);

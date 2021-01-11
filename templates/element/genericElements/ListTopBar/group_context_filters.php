@@ -9,8 +9,16 @@
         ];
         $currentQuery = $this->request->getQuery();
         unset($currentQuery['page'], $currentQuery['limit'], $currentQuery['sort']);
+        if (!empty($filteringContext['filterCondition'])) { // PHP replaces `.` by `_` when fetching the request parameter
+            $currentFilteringContextKey = array_key_first($filteringContext['filterCondition']);
+            $currentFilteringContext = [
+                str_replace('.', '_', $currentFilteringContextKey) => $filteringContext['filterCondition'][$currentFilteringContextKey]
+            ];
+        } else {
+            $currentFilteringContext = $filteringContext['filterCondition'];
+        }
         $contextArray[] = [
-            'active' => $currentQuery == $filteringContext['filterCondition'],
+            'active' => $currentQuery == $currentFilteringContext,
             'isFilter' => true,
             'onClick' => 'UI.reload',
             'onClickParams' => [

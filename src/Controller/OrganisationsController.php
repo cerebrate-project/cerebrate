@@ -19,8 +19,9 @@ class OrganisationsController extends AppController
             'quickFilters' => ['name', 'uuid', 'nationality', 'sector', 'type', 'url'],
             'contain' => ['Alignments' => 'Individuals']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('alignmentScope', 'individuals');
         $this->set('metaGroup', 'ContactDB');
@@ -29,8 +30,9 @@ class OrganisationsController extends AppController
     public function add()
     {
         $this->CRUD->add();
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
     }
@@ -38,8 +40,9 @@ class OrganisationsController extends AppController
     public function view($id)
     {
         $this->CRUD->view($id, ['contain' => ['Alignments' => 'Individuals']]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
     }
@@ -47,8 +50,9 @@ class OrganisationsController extends AppController
     public function edit($id)
     {
         $this->CRUD->edit($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
         $this->render('add');
@@ -57,8 +61,9 @@ class OrganisationsController extends AppController
     public function delete($id)
     {
         $this->CRUD->delete($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
     }

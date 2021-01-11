@@ -36,10 +36,8 @@ class AlignmentsController extends AppController
             throw new NotFoundException(__('Invalid alignment.'));
         }
         $individual = $this->Alignments->get($id);
-        if ($this->ParamHandler->isRest()) {
+        if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
             return $this->RestResponse->viewData($individual, 'json');
-        } else {
-
         }
         $this->set('metaGroup', 'ContactDB');
         $this->set('alignment', $individual);
@@ -50,12 +48,11 @@ class AlignmentsController extends AppController
         if (empty($id)) {
             throw new NotFoundException(__('Invalid alignment.'));
         }
-        $individual = $this->Alignments->get($id);
+        $alignment = $this->Alignments->get($id);
         if ($this->request->is('post') || $this->request->is('delete')) {
-            if ($this->Alignments->delete($individual)) {
-                $message = __('Individual deleted.');
-                if ($this->ParamHandler->isRest()) {
-                    $individual = $this->Alignments->get($id);
+            if ($this->Alignments->delete($alignment)) {
+                $message = __('Alignments deleted.');
+                if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
                     return $this->RestResponse->saveSuccessResponse('Alignments', 'delete', $id, 'json', $message);
                 } else {
                     $this->Flash->success($message);
@@ -65,8 +62,8 @@ class AlignmentsController extends AppController
         }
         $this->set('metaGroup', 'ContactDB');
         $this->set('scope', 'alignments');
-        $this->set('id', $individual['id']);
-        $this->set('alignment', $individual);
+        $this->set('id', $alignment['id']);
+        $this->set('alignment', $alignment);
         $this->viewBuilder()->setLayout('ajax');
         $this->render('/genericTemplates/delete');
     }
@@ -86,18 +83,20 @@ class AlignmentsController extends AppController
             } else {
                 $alignment['organisation_id'] = $source_id;
             }
-            if ($this->Alignments->save($alignment)) {
+            $alignment = $this->Alignments->save($alignment);
+            if ($alignment) {
                 $message = __('Alignment added.');
                 if ($this->ParamHandler->isRest()) {
-                    $alignment = $this->Alignments->get($this->Alignments->id);
                     return $this->RestResponse->viewData($alignment, 'json');
+                } else if($this->ParamHandler->isAjax()) {
+                    return $this->RestResponse->ajaxSuccessResponse('Alignment', 'add', $alignment, $message);
                 } else {
                     $this->Flash->success($message);
                     $this->redirect($this->referer());
                 }
             } else {
                 $message = __('Alignment could not be added.');
-                if ($this->ParamHandler->isRest()) {
+                if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
                     return $this->RestResponse->saveFailResponse('Individuals', 'addAlignment', false, $message);
                 } else {
                     $this->Flash->error($message);

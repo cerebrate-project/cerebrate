@@ -64,8 +64,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'pull' => 'right',
         'actions' => [
             [
-                'onclick' => 'populateAndLoadModal(\'/authKeys/delete/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/authKeys/delete/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'trash'
             ]
         ]

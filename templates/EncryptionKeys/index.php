@@ -19,6 +19,10 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     ]
                 ],
                 [
+                    'type' => 'context_filters',
+                    'context_filters' => $filteringContexts
+                ],
+                [
                     'type' => 'search',
                     'button' => __('Filter'),
                     'placeholder' => __('Enter value to search'),
@@ -60,20 +64,20 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'pull' => 'right',
         'actions' => [
             [
-                'onclick' => 'populateAndLoadModal(\'/encryptionKeys/view/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'url' => '/encryptionKeys/view',
+                'url_params_data_paths' => ['id'],
                 'icon' => 'eye'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/encryptionKeys/edit/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/encryptionKeys/edit/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'edit'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/encryptionKeys/delete/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/encryptionKeys/delete/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'trash'
-            ]
+            ],
         ]
     ]
 ]);

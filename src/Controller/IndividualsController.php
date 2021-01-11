@@ -18,15 +18,15 @@ class IndividualsController extends AppController
             'filters' => ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'],
             'quickFilters' => ['uuid', 'email', 'first_name', 'last_name', 'position'],
             'contextFilters' => [
-                'allow_all' => true,
                 'fields' => [
                     'Alignments.type'
                 ]
             ],
             'contain' => ['Alignments' => 'Organisations']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('alignmentScope', 'individuals');
         $this->set('metaGroup', 'ContactDB');

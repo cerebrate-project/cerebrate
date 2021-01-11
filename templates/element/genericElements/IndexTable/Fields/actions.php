@@ -80,6 +80,14 @@
                     $action['onclick']
                 );
 
+            } else if (!empty($action['open_modal']) && !empty($action['modal_params_data_path'])) {
+                $modal_url = str_replace(
+                    '[onclick_params_data_path]',
+                    h(Cake\Utility\Hash::extract($row, $action['modal_params_data_path'])[0]),
+                    $action['open_modal']
+                );
+                $reload_url = !empty($action['reload_url']) ? $action['reload_url'] : $this->Url->build(['action' => 'index']);
+                $action['onclick'] = sprintf('UI.openModalFromURL(\'%s\', \'%s\', \'%s\')', $modal_url, $reload_url, $tableRandomValue);
             }
             echo sprintf(
                 '<a href="%s" title="%s" aria-label="%s" %s %s class="link-unstyled"><i class="%s"></i></a> ',

@@ -37,7 +37,6 @@ class MetaTemplatesController extends AppController
             'filters' => ['name', 'uuid', 'scope', 'namespace'],
             'quickFilters' => ['name', 'uuid', 'scope'],
             'contextFilters' => [
-                'allow_all' => true,
                 'fields' => ['scope'],
                 'custom' => [
                     [

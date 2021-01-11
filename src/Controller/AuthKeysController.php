@@ -22,8 +22,9 @@ class AuthKeysController extends AppController
             'contain' => ['Users'],
             'exclude_fields' => ['authkey']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
@@ -31,8 +32,9 @@ class AuthKeysController extends AppController
     public function delete($id)
     {
         $this->CRUD->delete($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
@@ -43,8 +45,9 @@ class AuthKeysController extends AppController
         $this->CRUD->add([
             'displayOnSuccess' => 'authkey_display'
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->loadModel('Users');
         $dropdownData = [

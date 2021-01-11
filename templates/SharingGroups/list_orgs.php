@@ -52,10 +52,10 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/sharingGroups/removeOrg/' . h($sharing_group_id) . '/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/sharingGroups/removeOrg/' . h($sharing_group_id) . '/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'trash'
-            ]
+            ],
         ]
     ]
 ]);

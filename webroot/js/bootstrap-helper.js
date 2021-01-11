@@ -46,6 +46,35 @@ class UIFactory {
     }
 
     /**
+     * Create and display a modal where the modal's content is fetched from the provided URL. Reload the table after a successful operation
+     * @param  {string} url - The URL from which the modal's content should be fetched
+     * @param  {string} tableId - The table ID which should be reloaded on success
+     * @return {Promise<Object>} Promise object resolving to the ModalFactory object
+     */
+    openModalFromURL(url, reloadUrl=false, tableId=false) {
+        UI.modalFromURL(url, () => {
+            if (reloadUrl === false || tableId === false) { // Try to get information from the DOM
+                let $elligibleTable = $('table.table')
+                let currentModel = location.pathname.split('/')[1]
+                if ($elligibleTable.length == 1 && currentModel.length > 0) {
+                    let $container = $elligibleTable.closest('div[id^="table-container-"]')
+                    if ($container.length == 1) {
+                        return UI.reload(`/${currentModel}/index`, $container, $elligibleTable)
+                    } else {
+                        $container = $elligibleTable.closest('div[id^="single-view-table-container-"]')
+                        if ($container.length == 1) {
+                            return UI.reload(location.pathname, $container, $elligibleTable)
+                        }
+                    }
+                }
+            } else {
+                return UI.reload(reloadUrl, $(`#table-container-${tableId}`), $(`#table-container-${tableId} table.table`))
+            }
+            location.reload()
+        })
+    }
+
+    /**
      * Fetch HTML from the provided URL and override the $container's content. $statusNode allows to specify another HTML node to display the loading
      * @param  {string} url - The URL from which the $container's content should be fetched
      * @param  {(jQuery|string)} $container - The container that should hold the data fetched
@@ -495,7 +524,7 @@ class ModalFactory {
                         this.hide()
                     }
                 })
-                .catch(() => {
+                .catch((err) => {
                     this.options.APIError(() => { this.hide() }, this, evt)
                 })
             }

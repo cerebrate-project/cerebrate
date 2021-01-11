@@ -2,7 +2,7 @@
     if (!isset($data['requirement']) || $data['requirement']) {
         if (!empty($data['popover_url'])) {
             $onClick = sprintf(
-                'onClick="openModalFromURL(%s)"',
+                'onClick="openModalForButton(%s)"',
                 sprintf("'%s'", h($data['popover_url']))
             );
         }
@@ -60,8 +60,8 @@
             empty($data['fa-icon']) ? '' : sprintf(
                 '<i class="%s fa-%s"></i> ',
                 empty($data['fa-source']) ? 'fas' : h($data['fa-source']),
-                $data['fa-icon']
-            ),  // this has to be sanitised beforehand!
+                h($data['fa-icon'])
+            ),
             empty($data['html']) ? '' : $data['html'],  // this has to be sanitised beforehand!
             empty($data['text']) ? '' : h($data['text'])
         );
@@ -69,9 +69,7 @@
 ?>
 
 <script>
-    function openModalFromURL(url) {
-        UI.modalFromURL(url, (data) => {
-            UI.reload('<?= $this->Url->build(['action' => 'index']); ?>', $('#table-container-<?= $tableRandomValue ?>'), $('#table-container-<?= $tableRandomValue ?> table.table'))
-        })
+    function openModalForButton(url) {
+        UI.openModalFromURL(url, '<?= $this->Url->build(['action' => 'index']); ?>', '<?= $tableRandomValue ?>')
     }
 </script>

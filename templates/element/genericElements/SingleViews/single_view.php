@@ -28,6 +28,7 @@
  *  ]);
  *
  */
+    $tableRandomValue = Cake\Utility\Security::randomString(8);
     $listElements = '';
     if (!empty($fields)) {
         foreach ($fields as $field) {
@@ -109,18 +110,20 @@
         __('{0} view', \Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::humanize($this->request->getParam('controller')))) :
         $title;
     echo sprintf(
-        "<div>
+        "<div id=\"single-view-table-container-%s\">
             <h2>%s</h2>
             %s%s
             <div class=\"px-3\">
-                <table class=\"table table-striped col-sm-8\">%s</table>
+                <table id=\"single-view-table-%s\" class=\"table table-striped col-sm-8\">%s</table>
             </div>
             <div id=\"metaTemplates\" class=\"col-lg-8 px-0\">%s</div>
             <div id=\"accordion\">%s</div>
         </div>",
+        $tableRandomValue,
         h($title),
         empty($description) ? '' : sprintf('<p>%s</p>', h($description)),
         empty($description_html) ? '' : sprintf('<p>%s</p>', $description_html),
+        $tableRandomValue,
         $listElements,
         $metaTemplateTabs,
         $ajaxLists
