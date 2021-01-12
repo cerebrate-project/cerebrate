@@ -240,7 +240,7 @@ class AJAXApi {
                             body: data.message
                         }, true, skipFeedback);
                         feedbackShown = true
-                        this.injectFormValidation(form, data.errors)
+                        this.injectFormValidationFeedback(form, data.errors)
                         toReturn = Promise.reject(data.errors);
                     }
                 } catch (error) {
@@ -297,7 +297,7 @@ class AJAXApi {
      * @param {HTMLFormElement} form - The form form which the POST operation is coming from
      * @param {Object} [validationErrors={}]   - Validation errors reported by the server
      */
-    injectFormValidation(form, validationErrors) {
+    injectFormValidationFeedback(form, validationErrors) {
         const formHelper = new FormHelper(form)
         formHelper.injectValidationErrors(validationErrors)
     }
