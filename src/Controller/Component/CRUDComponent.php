@@ -196,9 +196,10 @@ class CRUDComponent extends Component
             }
         }
         if (!empty($params['removeEmpty'])) {
-            foreach ($params['removeEmpty'] as $removeEmptyField)
-            if (isset($input[$removeEmptyField])) {
-                unset($input[$removeEmptyField]);
+            foreach ($params['removeEmpty'] as $removeEmptyField) {
+                if (empty($input[$removeEmptyField])) {
+                    unset($input[$removeEmptyField]);
+                }
             }
         }
         return $input;
