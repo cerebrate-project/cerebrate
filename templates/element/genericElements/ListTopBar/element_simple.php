@@ -2,7 +2,7 @@
     if (!isset($data['requirement']) || $data['requirement']) {
         if (!empty($data['popover_url'])) {
             $onClick = sprintf(
-                'onClick="openModalForButton(%s)"',
+                'onClick="openModalForButton(this, %s)"',
                 sprintf("'%s'", h($data['popover_url']))
             );
         }
@@ -69,7 +69,11 @@
 ?>
 
 <script>
-    function openModalForButton(url) {
-        UI.openModalFromURL(url, '<?= $this->Url->build(['action' => 'index']); ?>', '<?= $tableRandomValue ?>')
+    function openModalForButton(clicked, url) {
+        const loadingOverlay = new OverlayFactory(clicked);
+        loadingOverlay.show()
+        UI.openModalFromURL(url, '<?= $this->Url->build(['action' => 'index']); ?>', '<?= $tableRandomValue ?>').finally(() => {
+            loadingOverlay.hide()
+        })
     }
 </script>

@@ -52,7 +52,7 @@ class UIFactory {
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
     openModalFromURL(url, reloadUrl=false, tableId=false) {
-        UI.modalFromURL(url, () => {
+        return UI.modalFromURL(url, () => {
             if (reloadUrl === false || tableId === false) { // Try to get information from the DOM
                 let $elligibleTable = $('table.table')
                 let currentModel = location.pathname.split('/')[1]
