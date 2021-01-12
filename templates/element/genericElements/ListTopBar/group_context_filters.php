@@ -37,7 +37,9 @@
     if (isset($data['requirement'])) {
         $dataGroup['requirement'] = $data['requirement'];
     }
+    echo '<div class="d-flex align-items-end topbar-contextual-filter">';
     echo $this->element('/genericElements/ListTopBar/group_simple', [
         'data' => $dataGroup,
         'tableRandomValue' => $tableRandomValue
     ]);
+    echo '</div>';

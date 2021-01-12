@@ -47,7 +47,7 @@
         }
         $dataFields = implode(' ', $dataFields);
         echo sprintf(
-            '<button class="btn btn-sm %s %s" %s href="%s" %s %s %s %s %s>%s%s%s</button>',
+            '<button class="btn %s %s" %s href="%s" %s %s %s %s %s>%s%s%s</button>',
             empty($data['class']) ? '' : h($data['class']),
             empty($data['isFilter']) ? 'btn-primary' : (empty($data['active']) ? 'btn-light' : 'btn-secondary'),   // Change the default class for highlighted/active toggles here
             empty($data['id']) ? '' : 'id="' . h($data['id']) . '"',
