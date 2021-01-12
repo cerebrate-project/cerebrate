@@ -110,9 +110,6 @@ class AppController extends Controller
         $this->ACL->checkAccess();
         $this->set('menu', $this->ACL->getMenu());
         $this->set('ajax', $this->request->is('ajax'));
-        if (!empty($this->request->getHeader('X-Force-HTML-On-Validation-Failure'))) {
-            $this->ajax_with_html_on_failure = true;
-        }
         $this->request->getParam('prefix');
         $this->set('darkMode', !empty(Configure::read('Cerebrate.dark')));
     }

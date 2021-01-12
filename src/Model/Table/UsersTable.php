@@ -56,7 +56,9 @@ class UsersTable extends AppTable
                     },
                     'message' => __('Password confirmation missing or not matching the password.')
                 ]
-            ]);
+            ])
+            ->requirePresence(['username'], 'create')
+            ->notEmptyString('username', 'Please fill this field');
         return $validator;
     }
 

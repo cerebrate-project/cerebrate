@@ -11,22 +11,16 @@ class AJAXApi {
         redirect: 'manual',
         method: 'POST',
     }
-    static renderHTMLOnFailureHeader = {
-        name: 'X-Force-HTML-On-Validation-Failure',
-        value: '1'
-    }
 
     /**
      * @namespace
      * @property {boolean}         provideFeedback              - The ID to be used for the toast's container
      * @property {(jQuery|string)} statusNode                   - The node on which the loading overlay should be placed (OverlayFactory.node)
-     * @property {boolean}         forceHTMLOnValidationFailure - If true, attach a special header to ask for HTML instead of JSON in case of form validation failure
      * @property {Object}          errorToast                   - The options supported by Toaster#defaultOptions
      */
     static defaultOptions = {
         provideFeedback: true,
         statusNode: false,
-        forceHTMLOnValidationFailure: false,
         errorToast: {
             delay: 10000
         }
@@ -222,9 +216,6 @@ class AJAXApi {
                 let formData = new FormData(form)
                 formData = AJAXApi.mergeFormData(formData, dataToMerge)
                 let requestConfig = AJAXApi.genericRequestConfigPOST
-                if (this.options.forceHTMLOnValidationFailure) {
-                    requestConfig.headers.append(AJAXApi.renderHTMLOnFailureHeader.name, AJAXApi.renderHTMLOnFailureHeader.value)
-                }
                 let options = {
                     ...requestConfig,
                     body: formData,
@@ -246,19 +237,19 @@ class AJAXApi {
                         this.provideFeedback({
                             variant: 'danger',
                             title: 'There has been a problem with the operation',
-                            body: data.errors
+                            body: data.message
                         }, true, skipFeedback);
                         feedbackShown = true
+                        this.injectFormValidation(form, data.errors)
                         toReturn = Promise.reject(data.errors);
                     }
-                } catch (error) { // could not parse JSON
-                    if (this.options.forceHTMLOnValidationFailure) {
-                        const data = await clonedResponse.text();
-                        toReturn = {
-                            success: 0,
-                            html: data,
-                        }
-                    }
+                } catch (error) {
+                    this.provideFeedback({
+                        variant: 'danger',
+                        title: 'There has been a problem with the operation',
+                        body: error
+                    }, true, feedbackShown);
+                    toReturn = Promise.reject(error);
                 }
             } catch (error) {
                 this.provideFeedback({
@@ -268,7 +259,7 @@ class AJAXApi {
                 }, true, feedbackShown);
                 toReturn = Promise.reject(error);
             }
-        } catch (error) { // -> probably not useful
+        } catch (error) {
             toReturn = Promise.reject(error);
         } finally {
             if (!skipRequestHooks) {
@@ -300,6 +291,15 @@ class AJAXApi {
             }
         }
         return toReturn
+    }
+
+    /**
+     * @param {HTMLFormElement} form - The form form which the POST operation is coming from
+     * @param {Object} [validationErrors={}]   - Validation errors reported by the server
+     */
+    injectFormValidation(form, validationErrors) {
+        const formHelper = new FormHelper(form)
+        formHelper.injectValidationErrors(validationErrors)
     }
 
     /** Based on the configuration, show the loading overlay */

@@ -697,3 +697,70 @@ class OverlayFactory {
         return '';
     }
 }
+
+/** Class representing a FormHelper */
+class FormHelper {
+    /**
+     * Create a FormHelper.
+     * @param  {Object} options - The options supported by Toaster#defaultOptions
+     */
+    constructor(form, options={}) {
+        this.form = form
+        this.options = Object.assign({}, Toaster.defaultOptions, options)
+    }
+
+    /**
+     * @namespace
+     */
+    static defaultOptions = {
+    }
+
+    /**
+     * Create node containing validation information from validationError. If no field can be associated to the error, it will be placed on top
+     * @param  {Object} validationErrors - The validation errors to be displayed
+     */
+    injectValidationErrors(validationErrors) {
+        this.cleanValidationErrors()
+        for (const [fieldName, errors] of Object.entries(validationErrors)) {
+            this.injectValidationErrorInForm(fieldName, errors)
+        }
+    }
+
+    injectValidationErrorInForm(fieldName, errors) {
+        const inputField = Array.from(this.form).find(node => { return node.name == fieldName })
+        if (inputField !== undefined) {
+            const $messageNode = this.buildValidationMessageNode(errors)
+            const $inputField = $(inputField)
+            $inputField.addClass('is-invalid')
+            $messageNode.insertAfter($inputField)
+        } else {
+            const $messageNode = this.buildValidationMessageNode(errors, true)
+            const $flashContainer = $(this.form).parent().find('#flashContainer')
+            $messageNode.insertAfter($flashContainer)
+        }
+    }
+
+    buildValidationMessageNode(errors, isAlert=false) {
+        const $messageNode = $('<div></div>')
+        if (isAlert) {
+            $messageNode.addClass('alert alert-danger').attr('role', 'alert')
+        } else {
+            $messageNode.addClass('invalid-feedback')
+        }
+        const isList = Object.keys(errors).length > 1
+        for (const [ruleName, error] of Object.entries(errors)) {
+            if (isList) {
+                $messageNode.append($('<li></li>').text(error))
+            } else {
+                $messageNode.text(error)
+            }
+        }
+        return $messageNode
+    }
+
+    cleanValidationErrors() {
+        $(this.form).find('textarea, input, select').removeClass('is-invalid')
+        $(this.form).find('.invalid-feedback').remove()
+        $(this.form).parent().find('.alert').remove()
+    }
+}

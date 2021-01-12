@@ -59,9 +59,7 @@ class CRUDComponent extends Component
         if ($this->Controller->ParamHandler->isRest()) {
             return $this->Controller->restResponsePayload;
         } else if ($this->Controller->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
-            if (empty($this->Controller->isFailResponse) || empty($this->Controller->ajax_with_html_on_failure)) {
-                return $this->Controller->ajaxResponsePayload;
-            }
+            return $this->Controller->ajaxResponsePayload;
         }
         return false;
     }
@@ -245,13 +243,12 @@ class CRUDComponent extends Component
             } else {
                 $validationMessage = $this->prepareValidationError($data);
                 $message = __(
-                    '{0} could not be modified.{1}',
+                    __('{0} could not be modified.'),
                     $this->ObjectAlias,
-                    empty($validationMessage) ? '' : ' ' . __('Reason:{0}', $validationMessage)
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $data, $message, $validationMessage);
+                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxFailResponse($this->ObjectAlias, 'edit', $data, $message, $data->getErrors());
                 } else {
                     $this->Controller->Flash->error($message);
                 }
