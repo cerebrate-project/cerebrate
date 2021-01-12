@@ -10,8 +10,8 @@
             <?= $body ?>
         </div>
         <div class="modal-footer">
-            <?= $actionButton ?>
             <button type="button" class="btn btn-secondary cancel-button" data-dismiss="modal"><?= __('Cancel') ?></button>
+            <?= $actionButton ?>
         </div>
     </div>
 </div>
