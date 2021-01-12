@@ -573,10 +573,11 @@ class OverlayFactory {
      * @param {(jQuery|string)} node    - The node on which the overlay should be placed
      * @param {Object}          options - The options supported by OverlayFactory#defaultOptions 
      */
-    constructor(node, options) {
+    constructor(node, options={}) {
         this.node = node
         this.$node = $(this.node)
         this.options = Object.assign({}, OverlayFactory.defaultOptions, options)
+        this.options.auto = options.auto ? this.options.auto : !(options.variant || options.spinnerVariant)
         if (this.options.auto) {
             this.adjustOptionsBasedOnNode()
         }
@@ -590,6 +591,7 @@ class OverlayFactory {
      * @property {number}  auto           - Whether overlay and spinner options should be adapted automatically based on the node
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} spinnerVariant - The variant of the spinner
      * @property {boolean} spinnerSmall   - If the spinner inside the overlay should be small
+     * @property {string=('border'|'grow')} spinnerSmall   - If the spinner inside the overlay should be small
      */
     static defaultOptions = {
         variant: 'light',
@@ -599,12 +601,13 @@ class OverlayFactory {
         auto: true,
         spinnerVariant: '',
         spinnerSmall: false,
+        spinnerType: 'border'
     }
 
     static overlayWrapper = '<div aria-busy="true" class="position-relative"/>'
     static overlayContainer = '<div class="position-absolute" style="inset: 0px; z-index: 10;"/>'
     static overlayBg = '<div class="position-absolute" style="inset: 0px;"/>'
-    static overlaySpinner = '<div class="position-absolute" style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);"><span aria-hidden="true" class="spinner-border"><!----></span></div></div>'
+    static overlaySpinner = '<div class="position-absolute" style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);"><span aria-hidden="true" class=""><!----></span></div></div>'
 
     shown = false
     originalNodeIndex = 0
@@ -617,8 +620,9 @@ class OverlayFactory {
             .addClass([`bg-${this.options.variant}`, (this.options.rounded ? 'rounded' : '')])
             .css('opacity', this.options.opacity)
         this.$overlaySpinner = $(OverlayFactory.overlaySpinner)
+        this.$overlaySpinner.children().addClass(`spinner-${this.options.spinnerType}`)
         if (this.options.spinnerSmall) {
-            this.$overlaySpinner.children().addClass('spinner-border-sm')
+            this.$overlaySpinner.children().addClass(`spinner-${this.options.spinnerType}-sm`)
         }
         if (this.options.spinnerVariant.length > 0) {
             this.$overlaySpinner.children().addClass(`text-${this.options.spinnerVariant}`)

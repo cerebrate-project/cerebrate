@@ -20,13 +20,15 @@
         $contextArray[] = [
             'active' => $currentQuery == $currentFilteringContext,
             'isFilter' => true,
-            'onClick' => 'UI.reload',
+            'onClick' => 'changeIndexContext',
             'onClickParams' => [
+                'this',
                 $this->Url->build($urlParams),
                 "#table-container-${tableRandomValue}",
                 "#table-container-${tableRandomValue} table.table",
             ],
             'text' => $filteringContext['label'],
+            'class' => 'btn-sm'
         ];
     }
 
@@ -43,3 +45,18 @@
         'tableRandomValue' => $tableRandomValue
     ]);
     echo '</div>';
+?>
+
+<script>
+    function changeIndexContext(clicked, url, container, statusNode) {
+        const loadingOverlay = new OverlayFactory(clicked, {
+            spinnerVariant: 'dark',
+            spinnerType: 'grow',
+            spinnerSmall: true
+        });
+        loadingOverlay.show()
+        UI.reload(url, container, statusNode).finally(() => {
+            loadingOverlay.hide()
+        })
+    }
+</script>
