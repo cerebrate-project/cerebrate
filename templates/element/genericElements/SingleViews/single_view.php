@@ -51,7 +51,6 @@
                 $this->element(
                     '/genericElements/SingleViews/Fields/genericField',
                     [
-                        'data' => $value,
                         'field' => [
                         	'raw' => $value
                         ]
