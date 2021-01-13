@@ -55,37 +55,10 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'confirm' => [
                         'enable' => [
                             'titleHtml' => __('Make {{0}} the default template?'),
-                            'titleHtml_vars' => ['name'],
                             'bodyHtml' => $this->Html->nestedList([
                                 __('Only one template per scope can be set as the default template'),
                                 '{{0}}',
                             ]),
-                            'bodyHtml_vars' => [
-                                [
-                                    'function' => function($row, $data) {
-                                        $conflictingTemplate = getConflictingTemplate($row, $data);
-                                        if (!empty($conflictingTemplate)) {
-                                            return sprintf(
-                                                "<span class=\"text-danger font-weight-bolder\">%s</span> %s.<br />
-                                                <ul><li><span class=\"font-weight-bolder\">%s</span> %s <span class=\"font-weight-bolder\">%s</span></li></ul>",
-                                                __('Conflict with:'),
-                                                $this->Html->link(
-                                                    h($conflictingTemplate->name),
-                                                    '/metaTemplates/view/' . h($conflictingTemplate->id),
-                                                    ['target' => '_blank']
-                                                ),
-                                                __('By proceeding'),
-                                                h($conflictingTemplate->name),
-                                                __('will not be the default anymore')
-                                            );
-                                        }
-                                        return __('Current scope: {0}', h($row->scope));
-                                    },
-                                    'data' => [
-                                        'defaultTemplatePerScope' => $defaultTemplatePerScope
-                                    ]
-                                ]
-                            ],
                             'type' => [
                                 'function' => function($row, $data) {
                                     $conflictingTemplate = getConflictingTemplate($row, $data);
@@ -98,13 +71,44 @@ echo $this->element('genericElements/IndexTable/index_table', [
                                     'defaultTemplatePerScope' => $defaultTemplatePerScope
                                 ]
                             ],
-                            'confirmText' => __('Yes, set as default')
+                            'confirmText' => __('Yes, set as default'),
+                            'arguments' => [
+                                'titleHtml' => ['name'],
+                                'bodyHtml' => [
+                                    [
+                                        'function' => function($row, $data) {
+                                            $conflictingTemplate = getConflictingTemplate($row, $data);
+                                            if (!empty($conflictingTemplate)) {
+                                                return sprintf(
+                                                    "<span class=\"text-danger font-weight-bolder\">%s</span> %s.<br />
+                                                    <ul><li><span class=\"font-weight-bolder\">%s</span> %s <span class=\"font-weight-bolder\">%s</span></li></ul>",
+                                                    __('Conflict with:'),
+                                                    $this->Html->link(
+                                                        h($conflictingTemplate->name),
+                                                        '/metaTemplates/view/' . h($conflictingTemplate->id),
+                                                        ['target' => '_blank']
+                                                    ),
+                                                    __('By proceeding'),
+                                                    h($conflictingTemplate->name),
+                                                    __('will not be the default anymore')
+                                                );
+                                            }
+                                            return __('Current scope: {0}', h($row->scope));
+                                        },
+                                        'data' => [
+                                            'defaultTemplatePerScope' => $defaultTemplatePerScope
+                                        ]
+                                    ]
+                                ]
+                            ]
                         ],
                         'disable' => [
                             'titleHtml' => __('Remove {{0}} as the default template?'),
-                            'titleHtml_vars' => ['name'],
                             'type' => 'confirm-warning',
-                            'confirmText' => __('Yes, do not set as default')
+                            'confirmText' => __('Yes, do not set as default'),
+                            'arguements' => [
+                                'titleHtml' => ['name'],
+                            ]
                         ]
                     ]
                 ]

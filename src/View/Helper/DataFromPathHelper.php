@@ -15,10 +15,10 @@ class DataFromPathHelper extends Helper
     /**
      * buildStringFromDataPath Inject data into a string at the correct place
      *
-     * @param  String $str The string that will have its arguements replaced by their value
+     * @param  String $str The string that will have its arguments replaced by their value
      * @param  mixed  $data The data from which the value of datapath arguement will be taken
      * @param  array  $strArgs The arguments to be injected into the string.
-     *      - Each argument ca be of mixed type:
+     *      - Each argument can be of mixed type:
      *          - String: A cakephp's Hash datapath used to extract the data
      *          - array:  can contain a key of either
      *              - `datapath`: A cakephp's Hash datapath used to extract the data
@@ -64,30 +64,32 @@ class DataFromPathHelper extends Helper
     }
     
     /**
-     * buildStringsInArray
+     * buildStringsInArray Apply buildStringFromDataPath for all strings in the provided array
      *
      * @param  array $stringArray The array containing the strings that will have their arguments replaced by their value
      * @param  mixed $data The data from which the value of datapath arguement will be taken
-     * @param  array $instructions Instruct how $stringArray should be processed
-     *      - Keys are the path to the string
-     *      - Values are the path to the argument
+     * @param  array $stringArrayArgs The arguments to be injected into each strings.
+     *      - Each argument can be of mixed type:
+     *          - String: A cakephp's Hash datapath used to extract the data
+     *          - array:  can contain a key of either
+     *              - `datapath`: A cakephp's Hash datapath used to extract the data
+     *              - `raw`: A raw string to be injecte as-is
+     *              - `function`: A function to be executed with its $strArgs being passed
      * @param  array $options Allows to configure the behavior of the function
      * @return array The array containing the strings with their arguments replaced by their value
      */
-    public function buildStringsInArray(array $stringArray, $data=[], array $instructions, array $options=[])
+    public function buildStringsInArray(array $stringArray, $data=[], array $stringArrayArgs, array $options=[])
     {
-        foreach ($instructions as $stringPath => $argsPath) {
-            $theString = Hash::get($stringArray, $stringPath);
+        foreach ($stringArrayArgs as $stringName => $argsPath) {
+            $theString = Hash::get($stringArray, $stringName);
             if (!is_null($theString)) {
-                $theArgs = Hash::get($stringArray, $argsPath);
-                $theArgs = is_null($theArgs) ? [] : $theArgs;
-                $theArgs = !is_array($theArgs) ? [$theArgs] : $theArgs;
-                if (!empty($theArgs['function'])) {
-                    $newString = $theArgs['function']($data, $theArgs);
+                $argsPath = !is_array($argsPath) ? [$argsPath] : $argsPath;
+                if (!empty($argsPath['function'])) {
+                    $newString = $argsPath['function']($data, $argsPath);
                 } else {
-                    $newString = $this->buildStringFromDataPath($theString, $data, $theArgs, $options);
+                    $newString = $this->buildStringFromDataPath($theString, $data, $argsPath, $options);
                 }
-                $stringArray = Hash::insert($stringArray, $stringPath, $newString);
+                $stringArray = Hash::insert($stringArray, $stringName, $newString);
             }
         }
         return $stringArray;

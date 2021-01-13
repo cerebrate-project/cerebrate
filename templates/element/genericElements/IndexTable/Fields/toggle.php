@@ -44,20 +44,16 @@
 
     // inject variables into the strings
     if (!empty($field['toggle_data']['confirm'])) {
-        $instructions = [
-            'enable.title' => 'enable.title_vars',
-            'enable.titleHtml' => 'enable.titleHtml_vars',
-            'enable.body' => 'enable.body_vars',
-            'enable.bodyHtml' => 'enable.bodyHtml_vars',
-            'enable.type' => 'enable.type',
-            'disable.title' => 'disable.title_vars',
-            'disable.titleHtml' => 'disable.titleHtml_vars',
-            'disable.body' => 'disable.body_vars',
-            'disable.bodyHtml' => 'disable.bodyHtml_vars',
-            'disable.bodyHtml' => 'disable.bodyHtml_vars',
-            'disable.type' => 'disable.type',
-        ];
-        $confirmOptions = $this->DataFromPath->buildStringsInArray($field['toggle_data']['confirm'], $row, $instructions, ['highlight' => true]);
+        $field['toggle_data']['confirm']['enable']['arguments'] = isset($field['toggle_data']['confirm']['enable']['arguments']) ? $field['toggle_data']['confirm']['enable']['arguments'] : [];
+        $field['toggle_data']['confirm']['disable']['arguments'] = isset($field['toggle_data']['confirm']['disable']['arguments']) ? $field['toggle_data']['confirm']['disable']['arguments'] : [];
+        $stringArrayEnable = $field['toggle_data']['confirm']['enable'];
+        unset($stringArrayEnable['arguments']);
+        $stringArrayDisable = $field['toggle_data']['confirm']['disable'];
+        unset($stringArrayDisable['arguments']);
+        $confirmOptions = array_merge(
+            $this->DataFromPath->buildStringsInArray($stringArrayEnable, $row, $field['toggle_data']['confirm']['enable']['arguments'], ['highlight' => true]),
+            $this->DataFromPath->buildStringsInArray($stringArrayDisable, $row, $field['toggle_data']['confirm']['disable']['arguments'], ['highlight' => true]),
+        );
     }
     $url = $this->DataFromPath->buildStringFromDataPath($field['url'], $row, $field['url_params_vars']);
 ?>
