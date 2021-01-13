@@ -22,5 +22,24 @@ class AlignmentsTable extends AppTable
             ->notEmptyString('organisation_id')
             ->requirePresence(['individual_id', 'organisation_id'], 'create');
         return $validator;
+        }
+
+    public function setAlignment($organisation_id, $individual_id, $type): void
+    {
+        $query = $this->find();
+        $query->where([
+            'organisation_id' => $organisation_id,
+            'individual_id' => $individual_id
+        ]);
+        $existingAlignment = $query->first();
+        if (empty($existingAlignment)) {
+            $alignment = $this->newEmptyEntity();
+            $data = [
+                'organisation_id' => $organisation_id,
+                'individual_id' => $individual_id,
+                'type' => $type
+            ];
+            $this->patchEntity($alignment, $data);
+        }
     }
 }
