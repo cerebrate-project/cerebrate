@@ -34,6 +34,10 @@ The platform is built on CakePHP 4 along with Bootstrap 4 and shares parts of th
 
 The installation is documented at the following location [INSTALL/INSTALL.md](INSTALL/INSTALL.md)
 
+Hardware requirements:
+
+A webserver with 4GB of memory and a single CPU core should be plenty for the current scope of Cerebrate. This might increase over the time with additional features being added, but the goal is to keep Cerebrate as lean as possible.
+
 # License
 
 ~~~~
