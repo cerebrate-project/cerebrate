@@ -75,7 +75,12 @@ class CRUDComponent extends Component
             $this->Controller->set('fields', $params['fields']);
         }
         if ($this->request->is('post')) {
-            $patchEntityParams = [];
+            $patchEntityParams = [
+                'associated' => []
+            ];
+            if (!empty($params['id'])) {
+                unset($params['id']);
+            }
             $input = $this->__massageInput($params);
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
@@ -136,21 +141,7 @@ class CRUDComponent extends Component
 
     private function saveMetaFields($id, $input)
     {
-        foreach ($input['metaFields'] as $metaField => $values) {
-            if (!is_array($values)) {
-                $values = [$values];
-            }
-            foreach ($values as $value) {
-                if ($value !== '') {
-                    $temp = $this->MetaFields->newEmptyEntity();
-                    $temp->field = $metaField;
-                    $temp->value = $value;
-                    $temp->scope = $this->Table->metaFields;
-                    $temp->parent_id = $id;
-                    $this->MetaFields->save($temp);
-                }
-            }
-        }
+        $this->Table->saveMetaFields($id, $input);
     }
 
     private function __massageInput($params)
@@ -182,7 +173,9 @@ class CRUDComponent extends Component
             $this->Controller->set('fields', $params['fields']);
         }
         if ($this->request->is(['post', 'put'])) {
-            $patchEntityParams = [];
+            $patchEntityParams = [
+                'associated' => []
+            ];
             $input = $this->__massageInput($params);
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
