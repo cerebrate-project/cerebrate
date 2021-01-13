@@ -534,6 +534,43 @@ class ACLComponent extends Component
                     ]
                 ]
             ],
+            'Sync' => [
+                'Broods' => [
+                    'label' => __('Broods'),
+                    'url' => '/broods/index',
+                    'children' => [
+                        'index' => [
+                            'url' => '/broods/index',
+                            'label' => __('List broods')
+                        ],
+                        'add' => [
+                            'url' => '/broods/add',
+                            'label' => __('Add brood'),
+                            'popup' => 1
+                        ],
+                        'view' => [
+                            'url' => '/broods/view/{{id}}',
+                            'label' => __('View brood'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1
+                        ],
+                        'edit' => [
+                            'url' => '/broods/edit/{{id}}',
+                            'label' => __('Edit brood'),
+                            'actions' => ['edit', 'delete', 'view'],
+                            'skipTopMenu' => 1,
+                            'popup' => 1
+                        ],
+                        'delete' => [
+                            'url' => '/broods/delete/{{id}}',
+                            'label' => __('Delete brood'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1,
+                            'popup' => 1
+                        ]
+                    ]
+                ]
+            ],
             'Administration' => [
                 'Roles' => [
                     'label' => __('Roles'),
