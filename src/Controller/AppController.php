@@ -78,7 +78,7 @@ class AppController extends Controller
             Configure::write('DebugKit.panels', ['DebugKit.Packages' => true]);
             Configure::write('DebugKit.forceEnable', true);
         }
-
+        $this->loadComponent('CustomPagination');
         /*
          * Enable the following component for recommended CakePHP form protection settings.
          * see https://book.cakephp.org/4/en/controllers/components/form-protection.html
@@ -112,6 +112,7 @@ class AppController extends Controller
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
         $this->set('darkMode', !empty(Configure::read('Cerebrate.dark')));
+        $this->set('baseurl', empty(Configure::read('baseurl')) ? '' : Configure::read('baseurl'));
     }
 
     private function authApiUser(): void
