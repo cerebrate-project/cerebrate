@@ -5,6 +5,25 @@
  * Note: It is not recommended to commit files with credentials such as app_local.php
  * into source code version control.
  */
+$db = [
+    'username' => env('CEREBRATE_DB_USERNAME', 'cerebrate'),
+    'password' => env('CEREBRATE_DB_PASSWORD', ''),
+    'host' => env('CEREBRATE_DB_HOST', 'localhost'),
+    'database' => env('CEREBRATE_DB_NAME', 'cerebrate'),
+    // You can use a DSN string to set the entire configuration
+    'url' => env('CEREBRATE_DB_URL', null)
+];
+
+// non-default port can be set on demand - otherwise the DB driver will choose the default
+if (!empty(env('CEREBRATE_DB_PORT'))) {
+    $db['port'] = env('CEREBRATE_DB_PORT');
+}
+
+// If not using the default 'public' schema with the PostgreSQL driver set it here.
+if (!empty(env('CEREBRATE_DB_SCHEMA'))) {
+    $db['schema'] = env('CEREBRATE_DB_SCHEMA');
+}
+
 return [
     /*
      * Debug Level:
@@ -35,30 +54,7 @@ return [
      * See app.php for more configuration options.
      */
     'Datasources' => [
-        'default' => [
-            'host' => 'localhost',
-            /*
-             * CakePHP will use the default DB port based on the driver selected
-             * MySQL on MAMP uses port 8889, MAMP users will want to uncomment
-             * the following line and set the port accordingly
-             */
-            //'port' => 'non_standard_port_number',
-
-            'username' => 'my_app',
-            'password' => 'secret',
-
-            'database' => 'my_app',
-            /**
-             * If not using the default 'public' schema with the PostgreSQL driver
-             * set it here.
-             */
-            //'schema' => 'myapp',
-
-            /**
-             * You can use a DSN string to set the entire configuration
-             */
-            'url' => env('DATABASE_URL', null),
-        ],
+        'default' => $db,
         /*
          * The test connection is used during the test suite.
          */

@@ -1,5 +1,5 @@
 <?php
-    echo $this->Html->image('logo.png', ['alt' => 'CakePHP', 'class="form-signin"']);
+    echo $this->Html->image('logo-purple.png', ['alt' => 'CakePHP', 'class="form-signin"']);
     echo '<div class="form-signin">';
     echo $this->Form->create(null, ['url' => ['controller' => 'users', 'action' => 'login']]);
     echo $this->Form->control('username', ['label' => false, 'class' => 'form-control', 'placeholder' => __('Username')]);
