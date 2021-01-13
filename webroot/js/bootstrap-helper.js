@@ -17,7 +17,7 @@ class UIFactory {
      * @param  {Object} options - The options to be passed to the ModalFactory class
      * @return {Object} The ModalFactory object
      */
-    modal (options) {
+    modal(options) {
         const theModal = new ModalFactory(options);
         theModal.makeModal()
         theModal.show()
@@ -31,7 +31,7 @@ class UIFactory {
      * @param  {ModalFactory~POSTFailCallback} POSTFailCallback - The callback that handles form submissions errors and validation errors.
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
-    modalFromURL (url, POSTSuccessCallback, POSTFailCallback) {
+    modalFromURL(url, POSTSuccessCallback, POSTFailCallback) {
         return AJAXApi.quickFetchURL(url).then((modalHTML) => {
             const theModal = new ModalFactory({
                 rawHTML: modalHTML,
@@ -81,7 +81,7 @@ class UIFactory {
      * @param  {(jQuery|string)} [$statusNode=null] - A reference to a HTML node on which the loading animation should be displayed. If not provided, $container will be used
      * @return {Promise<jQuery>} Promise object resolving to the $container object after its content has been replaced
      */
-    reload (url, $container, $statusNode=null) {
+    reload(url, $container, $statusNode=null) {
         $container = $($container)
         $statusNode = $($statusNode)
         if (!$statusNode) {
@@ -92,6 +92,21 @@ class UIFactory {
         }).then((theHTML) => {
             $container.replaceWith(theHTML)
             return $container
+        })
+    }
+
+    /**
+     * Place an overlay onto a node and remove it whenever the promise resolves
+     * @param {(jQuery|string)} node       - The node on which the overlay should be placed
+     * @param {Promise} promise            - A promise to be fulfilled
+     * @param {Object} [overlayOptions={}  - The options to be passed to the overlay class
+     */
+    overlayUntilResolve(node, promise, overlayOptions={}) {
+        const $node = $(node)
+        const loadingOverlay = new OverlayFactory($node[0], overlayOptions);
+        loadingOverlay.show()
+        promise.finally(() => {
+            loadingOverlay.hide()
         })
     }
 }
@@ -235,6 +250,9 @@ class ModalFactory {
         if (this.options.rawHTML) {
             this.attachSubmitButtonListener = true
         }
+        if (options.type === undefined && options.cancel !== undefined) {
+            this.options.type = 'confirm'
+        }
         this.bsModalOptions = {
             show: true
         }
@@ -297,14 +315,14 @@ class ModalFactory {
      * @property {string} headerClass                      - Classes to be added to the modal's header
      * @property {string} bodyClass                        - Classes to be added to the modal's body
      * @property {string} footerClass                      - Classes to be added to the modal's footer
-     * @property {string=('ok-only','confirm','confirm-s   uccess','confirm-warning','confirm-danger')} type - Pre-configured template covering most use cases
+     * @property {string=('ok-only','confirm','confirm-success','confirm-warning','confirm-danger')} type - Pre-configured template covering most use cases
      * @property {string} confirmText                      - The text to be placed in the confirm button
      * @property {string} cancelText                       - The text to be placed in the cancel button
      * @property {boolean} closeManually                   - If true, the modal will be closed automatically whenever a footer's button is pressed
      * @property {boolean} closeOnSuccess                  - If true, the modal will be closed if the $FILL_ME operation is successful
      * @property {ModalFactory~confirm} confirm                         - The callback that should be called if the user confirm the modal
      * @property {ModalFactory~cancel} cancel                           - The callback that should be called if the user cancel the modal
-     * @property {ModalFactory~APIConfirm} APIConfirm                   - The callback that should be called if the user confirm the modal. Behave like the confirm option but provide an AJAXApi object that can be used to issue requests
+     * @property {ModalFactory~APIConfirm} APIConfirm                   - The callback that should be called if the user confirm the modal. Behaves like the confirm option but provides an AJAXApi object that can be used to issue requests
      * @property {ModalFactory~APIError} APIError                       - The callback called if the APIConfirm callback fails.
      * @property {ModalFactory~shownCallback} shownCallback             - The callback that should be called whenever the modal is shown
      * @property {ModalFactory~hiddenCallback} hiddenCallback           - The callback that should be called whenever the modal is hiddenAPIConfirm
@@ -702,11 +720,11 @@ class OverlayFactory {
     }
 }
 
-/** Class representing a FormHelper */
-class FormHelper {
+/** Class representing a FormValidationHelper */
+class FormValidationHelper {
     /**
-     * Create a FormHelper.
-     * @param  {Object} options - The options supported by Toaster#defaultOptions
+     * Create a FormValidationHelper.
+     * @param  {Object} options - The options supported by FormValidationHelper#defaultOptions
      */
     constructor(form, options={}) {
         this.form = form
@@ -721,7 +739,7 @@ class FormHelper {
 
     /**
      * Create node containing validation information from validationError. If no field can be associated to the error, it will be placed on top
-     * @param  {Object} validationErrors - The validation errors to be displayed
+     * @param  {Object} validationErrors - The validation errors to be displayed. Keys are the fieldName that had errors, values are the error text
      */
     injectValidationErrors(validationErrors) {
         this.cleanValidationErrors()
@@ -751,9 +769,9 @@ class FormHelper {
         } else {
             $messageNode.addClass('invalid-feedback')
         }
-        const isList = Object.keys(errors).length > 1
+        const hasMultipleErrors = Object.keys(errors).length > 1
         for (const [ruleName, error] of Object.entries(errors)) {
-            if (isList) {
+            if (hasMultipleErrors) {
                 $messageNode.append($('<li></li>').text(error))
             } else {
                 $messageNode.text(error)
