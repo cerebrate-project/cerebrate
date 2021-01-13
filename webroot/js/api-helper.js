@@ -11,19 +11,24 @@ class AJAXApi {
         redirect: 'manual',
         method: 'POST',
     }
+    static genericRequestConfigGETJSON = {
+        headers: new Headers(Object.assign({}, AJAXApi.genericRequestHeaders, {Accept: 'application/json'}))
+    }
 
     /**
      * @namespace
-     * @property {boolean}         provideFeedback              - The ID to be used for the toast's container
-     * @property {(jQuery|string)} statusNode                   - The node on which the loading overlay should be placed (OverlayFactory.node)
-     * @property {Object}          errorToast                   - The options supported by Toaster#defaultOptions
+     * @property {boolean}         provideFeedback   - Should a toast be used to provide feedback upon request fulfillment
+     * @property {(jQuery|string)} statusNode        - The node on which the loading overlay should be placed (OverlayFactory.node)
+     * @property {Object}          errorToastOptions - The options supported by Toaster#defaultOptions
      */
     static defaultOptions = {
         provideFeedback: true,
         statusNode: false,
-        errorToast: {
+        errorToastOptions: {
             delay: 10000
-        }
+        },
+        successToastOptions: {
+        },
     }
     options = {}
     loadingOverlay = false
@@ -44,7 +49,11 @@ class AJAXApi {
      * @param {boolean} skip        - If true, skip the feedback regardless of the configuration
      */
     provideFeedback(toastOptions, isError=false, skip=false) {
-        const alteredToastOptions = isError ? Object.assign({}, AJAXApi.defaultOptions.errorToast, toastOptions) : toastOptions
+        const alteredToastOptions = Object.assign(
+            {},
+            isError ? AJAXApi.defaultOptions.errorToastOptions : AJAXApi.defaultOptions.successToastOptions,
+            toastOptions
+        )
         if (!skip) {
             if (this.options.provideFeedback) {
                 UI.toast(alteredToastOptions)
@@ -78,7 +87,7 @@ class AJAXApi {
     }
 
     /**
-     * @param {string} url      - The URL to fetch
+     * @param {string} url           - The URL to fetch
      * @param {Object} [options={}]  - The options supported by AJAXApi#defaultOptions 
      * @return {Promise<string>} Promise object resolving to the fetched HTML
      */
@@ -86,6 +95,17 @@ class AJAXApi {
         const constAlteredOptions = Object.assign({}, {provideFeedback: false}, options)
         const tmpApi = new AJAXApi(constAlteredOptions)
         return tmpApi.fetchURL(url, constAlteredOptions.skipRequestHooks)
+    }
+
+    /**
+     * @param {string} url           - The URL to fetch
+     * @param {Object} [options={}]  - The options supported by AJAXApi#defaultOptions 
+     * @return {Promise<Object>} Promise object resolving to the fetched HTML
+     */
+    static async quickFetchJSON(url, options={}) {
+        const constAlteredOptions = Object.assign({}, {provideFeedback: false}, options)
+        const tmpApi = new AJAXApi(constAlteredOptions)
+        return tmpApi.fetchJSON(url, constAlteredOptions.skipRequestHooks)
     }
 
     /**
@@ -144,6 +164,43 @@ class AJAXApi {
                 title: 'URL fetched',
             }, false, skipFeedback);
             toReturn = dataHtml;
+        } catch (error) {
+            this.provideFeedback({
+                variant: 'danger',
+                title: 'There has been a problem with the operation',
+                body: error
+            }, true, skipFeedback);
+            toReturn = Promise.reject(error);
+        } finally {
+            if (!skipRequestHooks) {
+                this.afterRequest()
+            }
+        }
+        return toReturn
+    }
+
+    /**
+     * @param {string}  url                      - The URL to fetch
+     * @param {boolean} [skipRequestHooks=false] - If true, default request hooks will be skipped
+     * @param {boolean} [skipFeedback=false]     - Pass this value to the AJAXApi.provideFeedback function
+     * @return {Promise<string>} Promise object resolving to the fetched JSON
+     */
+    async fetchJSON(url, skipRequestHooks=false, skipFeedback=false) {
+        if (!skipRequestHooks) {
+            this.beforeRequest()
+        }
+        let toReturn
+        try {
+            const response = await fetch(url, AJAXApi.genericRequestConfigGETJSON);
+            if (!response.ok) {
+                throw new Error(`Network response was not ok. \`${response.statusText}\``)
+            }
+            const dataJson = await response.json();
+            this.provideFeedback({
+                variant: 'success',
+                title: 'URL fetched',
+            }, false, skipFeedback);
+            toReturn = dataJson;
         } catch (error) {
             this.provideFeedback({
                 variant: 'danger',
@@ -298,7 +355,7 @@ class AJAXApi {
      * @param {Object} [validationErrors={}]   - Validation errors reported by the server
      */
     injectFormValidationFeedback(form, validationErrors) {
-        const formHelper = new FormHelper(form)
+        const formHelper = new FormValidationHelper(form)
         formHelper.injectValidationErrors(validationErrors)
     }
 
