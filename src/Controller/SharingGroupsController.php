@@ -31,8 +31,9 @@ class SharingGroupsController extends AppController
         $dropdownData = [
             'organisation' => $this->getAvailableOrgForSg($this->ACL->getUser())
         ];
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set(compact('dropdownData'));
         $this->set('metaGroup', 'Trust Circles');
@@ -52,8 +53,9 @@ class SharingGroupsController extends AppController
     public function edit($id = false)
     {
         $this->CRUD->edit($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $dropdownData = [
             'organisation' => $this->getAvailableOrgForSg($this->ACL->getUser())
@@ -66,8 +68,9 @@ class SharingGroupsController extends AppController
     public function delete($id)
     {
         $this->CRUD->delete($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Trust Circles');
     }
@@ -110,7 +113,7 @@ class SharingGroupsController extends AppController
             } else {
                 $message = __('Organisation(s) could not be added to the sharing group.');
             }
-            if ($this->ParamHandler->isRest()) {
+            if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
                 if ($result) {
                     $this->RestResponse->saveSuccessResponse('SharingGroups', 'addOrg', $id, 'json', $message);
                 } else {

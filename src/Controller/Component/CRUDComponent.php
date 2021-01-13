@@ -223,7 +223,7 @@ class CRUDComponent extends Component
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
-                $message = __('{0} updated.', $this->ObjectAlias);
+                $message = __('{0} `{1}` updated.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()});
                 if (!empty($input['metaFields'])) {
                     $this->MetaFields->deleteAll(['scope' => $this->Table->metaFields, 'parent_id' => $data->id]);
                     $this->saveMetaFields($data->id, $input);
