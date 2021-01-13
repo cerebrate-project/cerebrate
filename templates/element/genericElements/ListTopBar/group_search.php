@@ -43,14 +43,23 @@
     $(document).ready(function() {
         var controller = '<?= $this->request->getParam('controller') ?>';
         var action = '<?= $this->request->getParam('action') ?>';
+        var additionalUrlParams = '';
+        <?php
+            if (!empty($data['additionalUrlParams'])) {
+                echo sprintf(
+                    'additionalUrlParams = \'/%s\';',
+                    h($data['additionalUrlParams'])
+                );
+            }
+        ?>
         var randomValue = '<?= h($tableRandomValue) ?>';
         $('#quickFilterButton-' + randomValue).click(function() {
-            var url = '/' + controller + '/' + action + '?quickFilter=' + encodeURIComponent($('#quickFilterField-<?= h($tableRandomValue) ?>').val());
+            var url = '/' + controller + '/' + action + additionalUrlParams + '?quickFilter=' + encodeURIComponent($('#quickFilterField-<?= h($tableRandomValue) ?>').val());
             executePagination(randomValue, url);
         });
         $('#quickFilterField').on('keypress', function (e) {
             if(e.which === 13) {
-                var url = '/' + controller + '/' + action + '?quickFilter=' + encodeURIComponent($('#quickFilterField-<?= h($tableRandomValue) ?>').val());
+                var url = '/' + controller + '/' + action + additionalUrlParams + '?quickFilter=' + encodeURIComponent($('#quickFilterField-<?= h($tableRandomValue) ?>').val());
                 executePagination(randomValue, url);
             }
         });
