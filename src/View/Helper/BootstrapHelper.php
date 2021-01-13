@@ -3,12 +3,14 @@
  * Bootstrap Tabs helper
  * Options:
  *  [style]
- *      - fill: Should the navigation items occupies all space
+ *      - fill: Should the navigation items occupy all available space
  *      - justify: Should the navigation items be justified (accept: ['center', 'end'])
  *      - pills: Should the navigation items be pills
  *      - vertical: Should the navigation bar be placed on the left side of the content
  *      - vertical-size: Specify how many boostrap's `cols` should be used for the navigation (only used when `vertical` is true)
  *      - card: Should the navigation be placed in a bootstrap card
+ *      - header-variant: The bootstrap variant to be used for the card header
+ *      - body-variant: The bootstrap variant to be used for the card body
  *      - nav-class: additional class to add to the nav container
  *      - content-class: additional class to add to the content container
  *  [data]
@@ -61,6 +63,8 @@ class BootstrapTabs extends Helper
         'vertical' => false,
         'vertical-size' => 3,
         'card' => false,
+        'header-variant' => 'light',
+        'body-variant' => '',
         'nav-class' => [],
         'nav-item-class' => [],
         'content-class' => [],
@@ -72,6 +76,8 @@ class BootstrapTabs extends Helper
 
     private $allowedOptionValues = [
         'justify' => [false, 'center', 'end'],
+        'body-variant' => ['primary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent', ''],
+        'header-variant' => ['primary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'],
     ];
 
     private $options = null;
@@ -99,6 +105,11 @@ class BootstrapTabs extends Helper
 
         if (!empty($this->options['justify'])) {
             $this->bsClasses['nav'][] = 'justify-content-' . $this->options['justify'];
+        }
+
+        if ($this->options['vertical'] && !isset($options['pills']) && !isset($options['card'])) {
+            $this->options['pills'] = true;
+            $this->options['card'] = true;
         }
     
         if ($this->options['pills']) {
@@ -139,6 +150,10 @@ class BootstrapTabs extends Helper
 
         $this->options['vertical-size'] = $this->options['vertical-size'] < 0 || $this->options['vertical-size'] > 11 ? 3 : $this->options['vertical-size'];
 
+        $this->options['header-text-variant'] = $this->options['header-variant'] == 'light' ? 'body' : 'white';
+        $this->options['header-border-variant'] = $this->options['header-variant'] == 'light' ? '' : $this->options['header-variant'];
+        $this->options['body-text-variant'] = $this->options['body-variant'] == '' ? 'body' : 'white';
+
         if (!is_array($this->options['nav-class'])) {
             $this->options['nav-class'] = [$this->options['nav-class']];
         }
@@ -177,13 +192,13 @@ class BootstrapTabs extends Helper
     {
         $html = '';
         if ($this->options['card']) {
-            $html .= $this->genNode('div', ['class' => ['card']]);
-            $html .= $this->genNode('div', ['class' => ['card-header']]);
+            $html .= $this->genNode('div', ['class' => array_merge(['card'], ["border-{$this->options['header-border-variant']}"])]);
+            $html .= $this->genNode('div', ['class' => array_merge(['card-header'], ["bg-{$this->options['header-variant']}", "text-{$this->options['header-text-variant']}"])]);
         }
         $html .= $this->genNav();
         if ($this->options['card']) {
             $html .= '</div>';
-            $html .= $this->genNode('div', ['class' => ['card-body']]);
+            $html .= $this->genNode('div', ['class' => array_merge(['card-body'], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
         }
         $html .= $this->genContent();
         if ($this->options['card']) {
@@ -195,11 +210,11 @@ class BootstrapTabs extends Helper
 
     private function genVerticalTabs()
     {
-        $html = $this->genNode('div', ['class' => ['row', ($this->options['card'] ? 'card flex-row' : '')]]);
-            $html .= $this->genNode('div', ['class' => ['col-' . $this->options['vertical-size'], ($this->options['card'] ? 'card-header border-right' : '')]]);
+        $html = $this->genNode('div', ['class' => array_merge(['row', ($this->options['card'] ? 'card flex-row' : '')], ["border-{$this->options['header-border-variant']}"])]);
+            $html .= $this->genNode('div', ['class' => array_merge(['col-' . $this->options['vertical-size'], ($this->options['card'] ? 'card-header border-right' : '')], ["bg-{$this->options['header-variant']}", "text-{$this->options['header-text-variant']}", "border-{$this->options['header-border-variant']}"])]);
                 $html .= $this->genNav();
             $html .= '</div>';
-            $html .= $this->genNode('div', ['class' => ['col-' . (12 - $this->options['vertical-size']), ($this->options['card'] ? 'card-body2' : '')]]);
+            $html .= $this->genNode('div', ['class' => array_merge(['col-' . (12 - $this->options['vertical-size']), ($this->options['card'] ? 'card-body2' : '')], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
                 $html .= $this->genContent();
             $html .= '</div>';
         $html .= '</div>';
