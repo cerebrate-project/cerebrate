@@ -5,6 +5,8 @@ use Cake\Console\Arguments;
 use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
+use Cake\Datasource\ConnectionManager;
+use Cake\Database\Schema\TableSchema;
 use Cake\Utility\Security;
 
 class UpdaterCommand extends Command
@@ -40,7 +42,6 @@ class UpdaterCommand extends Command
         if ($selection == 'Y') {
             $updateFunction = $this->availableUpdates[$targetUpdateName];
             $updateResult = $this->{$updateFunction}();
-            $io->out('Update ' . ($updateResult ? 'successful' : 'fail'));
         } else {
             $io->out('Update canceled');
         }
@@ -57,6 +58,76 @@ class UpdaterCommand extends Command
 
     private function metaTemplateV2()
     {
+        
+        $db = ConnectionManager::get('default');
+        try {
+            $db->query("ALTER TABLE `meta_fields` ADD `meta_template_id` int(10) unsigned NOT NULL;");
+        } catch (\Exception $e) {
+            $this->io->out('Caught exception: '.  $e->getMessage());
+        }
+        try {
+            $db->query("ALTER TABLE `meta_fields` ADD `meta_template_field_id` int(10) unsigned NOT NULL;");
+        } catch (\Exception $e) {
+            $this->io->out('Caught exception: '.  $e->getMessage());
+        }
+        try {
+            $db->query("ALTER TABLE `meta_templates` ADD `is_default` tinyint(1) NOT NULL DEFAULT 0;");
+        } catch (\Exception $e) {
+            $this->io->out('Caught exception: '.  $e->getMessage());
+        }
+        try {
+            $db->query("ALTER TABLE `meta_fields` ADD INDEX `meta_template_id` (`meta_template_id`);");
+        } catch (\Exception $e) {
+            $this->io->out('Caught exception: '.  $e->getMessage());
+        }
+        try {
+            $db->query("ALTER TABLE `meta_fields` ADD INDEX `meta_template_field_id` (`meta_template_field_id`);");
+        } catch (\Exception $e) {
+            $this->io->out('Caught exception: '.  $e->getMessage());
+        }
+
+        // $schemaMetaFields = new TableSchema('meta_fields');
+        // $schemaMetaTemplates = new TableSchema('meta_templates');
+
+        // $schemaMetaFields->addColumn('meta_template_id', [
+        //     'type' => 'integer',
+        //     'length' => 10,
+        //     'unsigned' => true,
+        //     'null' => false
+        // ])
+        // ->addColumn('meta_template_field_id', [
+        //     'type' => 'integer',
+        //     'length' => 10,
+        //     'unsigned' => true,
+        //     'null' => false
+        // ])
+        // ->addIndex('meta_template_id', [
+        //     'columns' => ['meta_template_id'],
+        //     'type' => 'index'
+        // ])
+        // ->addIndex('meta_template_field_id', [
+        //     'columns' => ['meta_template_field_id'],
+        //     'type' => 'index'
+        // ]);
+
+        
+        // $schemaMetaTemplates->addColumn('is_default', [
+        //     'type' => 'tinyint',
+        //     'length' => 1,
+        //     'null' => false,
+        //     'default' => 1
+        // ]);
+
+        // $queries = $schemaMetaFields->createSql($db);
+
+        // $collection = $db->getSchemaCollection();
+        // $tableSchema = $collection->describe('meta_fields');
+        // $tableSchema->addColumn('foobar', [
+        //     'type' => 'integer',
+        //     'length' => 10,
+        //     'unsigned' => true,
+        //     'null' => false
+        // ]);
         return true;
     }
 }
