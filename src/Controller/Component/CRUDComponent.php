@@ -394,8 +394,13 @@ class CRUDComponent extends Component
             foreach ($contextFilters['fields'] as $field) {
                 $contextsFromField = $this->getFilteringContextFromField($field);
                 foreach ($contextsFromField as $contextFromField) {
+                    if (is_bool($contextFromField)) {
+                        $contextFromFieldText = sprintf('%s: %s', $field, $contextFromField ? 'true' : 'false');
+                    } else {
+                        $contextFromFieldText = $contextFromField;
+                    }
                     $filteringContexts[] = [
-                        'label' => Inflector::humanize($contextFromField),
+                        'label' => Inflector::humanize($contextFromFieldText),
                         'filterCondition' => [
                             $field => $contextFromField
                         ]
@@ -496,9 +501,9 @@ class CRUDComponent extends Component
         if (count($exploded) > 1) {
             $model = $exploded[0];
             $subField = $exploded[1];
-            return $this->Table->{$model}->find()
-                ->distinct([$subField])
-                ->extract($subField)->toList();
+            $fieldToExtract = sprintf('%s.%s', Inflector::singularize(strtolower($model)), $subField);
+            $query = $this->Table->find()->contain($model)->distinct($field);
+            return  $query->all()->extract($fieldToExtract)->toList();
         } else {
             return $this->Table->find()->distinct([$field])->all()->extract($field)->toList();
         }
