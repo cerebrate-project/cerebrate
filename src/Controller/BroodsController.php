@@ -14,10 +14,17 @@ class BroodsController extends AppController
         $this->CRUD->index([
             'filters' => ['name', 'uuid', 'url', 'description', 'Organisations.id', 'trusted', 'pull', 'authkey'],
             'quickFilters' => ['name', 'uuid', 'description'],
+            'contextFilters' => [
+                'fields' => [
+                    'pull',
+                    'Organisations.name',
+                ]
+            ],
             'contain' => ['Organisations']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
     }
@@ -25,8 +32,9 @@ class BroodsController extends AppController
     public function add()
     {
         $this->CRUD->add();
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
         $this->loadModel('Organisations');
@@ -41,8 +49,9 @@ class BroodsController extends AppController
     public function view($id)
     {
         $this->CRUD->view($id, ['contain' => ['Organisations']]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
     }
@@ -50,8 +59,9 @@ class BroodsController extends AppController
     public function edit($id)
     {
         $this->CRUD->edit($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
         $this->render('add');
@@ -60,8 +70,9 @@ class BroodsController extends AppController
     public function delete($id)
     {
         $this->CRUD->delete($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
     }

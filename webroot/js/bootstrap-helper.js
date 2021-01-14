@@ -120,6 +120,7 @@ class UIFactory {
         promise.finally(() => {
             loadingOverlay.hide()
         })
+        return promise
     }
 }
 

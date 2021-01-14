@@ -168,7 +168,7 @@ class AJAXApi {
             this.provideFeedback({
                 variant: 'danger',
                 title: 'There has been a problem with the operation',
-                body: error
+                body: error.message
             }, true, skipFeedback);
             toReturn = Promise.reject(error);
         } finally {
@@ -205,7 +205,7 @@ class AJAXApi {
             this.provideFeedback({
                 variant: 'danger',
                 title: 'There has been a problem with the operation',
-                body: error
+                body: error.message
             }, true, skipFeedback);
             toReturn = Promise.reject(error);
         } finally {
@@ -244,7 +244,7 @@ class AJAXApi {
             this.provideFeedback({
                 variant: 'danger',
                 title: 'There has been a problem with the operation',
-                body: error
+                body: error.message
             }, true, skipFeedback);
             toReturn = Promise.reject(error);
         } finally {
@@ -304,7 +304,7 @@ class AJAXApi {
                     this.provideFeedback({
                         variant: 'danger',
                         title: 'There has been a problem with the operation',
-                        body: error
+                        body: error.message
                     }, true, feedbackShown);
                     toReturn = Promise.reject(error);
                 }
@@ -312,7 +312,7 @@ class AJAXApi {
                 this.provideFeedback({
                     variant: 'danger',
                     title: 'There has been a problem with the operation',
-                    body: error
+                    body: error.message
                 }, true, feedbackShown);
                 toReturn = Promise.reject(error);
             }

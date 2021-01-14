@@ -27,35 +27,51 @@ function executeStateDependencyChecks(dependenceSourceSelector) {
 }
 
 function testConnection(id) {
-    $.ajax({
-        url: '/broods/testConnection/' + id,
-        type: 'GET',
-        beforeSend: function () {
-            $("#connection_test_" + id).html('Running test...');
-        },
-        error: function(){
-            $("#connection_test_" + id).html('<span class="red bold">Internal error</span>');
-        },
-        success: function(result) {
-            var html = '';
-            if (result['error']) {
-                html += '<strong>Status</strong>: <span class="text-danger">OK</span> (' + $("<span>").text(result['ping']).html() + ' ms)<br />';
-                html += '<strong>Status</strong>: <span class="text-danger">Error: ' + result['error'] + '</span>';
-                html += '<strong>Reason</strong>: <span class="text-danger">' + result['reason'] + '</span>';
-            } else {
-                html += '<strong>Status</strong>: <span class="text-success">OK</span> (' + $("<span>").text(result['ping']).html() + ' ms)<br />';
-                html += '<strong>Remote</strong>: ' + $("<span>").text(result['response']['application']).html() + ' v' + $("<span>").text(result['response']['version']).html() + '<br />';
-                html += '<strong>User</strong>: ' + $("<span>").text(result['response']['user']).html() + ' (' + $("<span>").text(result['response']['role']['name']).html() + ')' + '<br />';
-                var canSync = result['response']['role']['perm_admin'] || result['response']['role']['perm_sync'];
-                if (canSync) {
-                    html += '<strong>Sync permission</strong>: <span class="text-success">Yes</span><br />';
-                } else {
-                    html += '<strong>Sync permission</strong>: <span class="text-danger">No</span><br />';
-                }
-            }
-            $("#connection_test_" + id).html(html);
-        }
+    $container = $(`#connection_test_${id}`)
+    UI.overlayUntilResolve(
+        $container[0],
+        AJAXApi.quickFetchJSON(`/broods/testConnection/${id}`),
+        {text: 'Running test'}
+    ).then(result => {
+        const $testResult = attachTestConnectionResultHtml(result, $container)
+        $(`#connection_test_${id}`).append($testResult)
     })
+    .catch((error) => {
+        const $testResult = attachTestConnectionResultHtml(error.message, $container)
+        $(`#connection_test_${id}`).append($testResult)
+    })
+}
+
+function attachTestConnectionResultHtml(result, $container) {
+    function getKVHtml(key, value, valueClasses=[], extraValue='') {
+        return $('<div/>').append(
+            $('<strong/>').text(key + ': '),
+            $('<span/>').addClass(valueClasses).text(value),
+            $('<span/>').text(extraValue.length > 0 ? ` (${extraValue})` : '')
+        )
+    }
+    $container.find('div.tester-result').remove()
+    $testResultDiv = $('<div class="tester-result"></div>');
+    if (typeof result !== 'object') {
+        $testResultDiv.append(getKVHtml('Internal error', result, ['text-danger font-weight-bold']))
+    } else {
+        if (result['error']) {
+            $testResultDiv.append(
+                getKVHtml('Status', 'OK', ['text-danger'], `${result['ping']} ms`),
+                getKVHtml('Status', `Error: ${result['error']}`, ['text-danger']),
+                getKVHtml('Reason', result['reason'], ['text-danger'])
+            )
+        } else {
+            const canSync = result['response']['role']['perm_admin'] || result['response']['role']['perm_sync'];
+            $testResultDiv.append(
+                getKVHtml('Status', 'OK', ['text-success'], `${result['ping']} ms`),
+                getKVHtml('Remote', `${result['response']['application']} v${result['response']['version']}`),
+                getKVHtml('User', result['response']['user'], [], result['response']['role']['name']),
+                getKVHtml('Sync permission', (canSync ? 'Yes' : 'No'), [(canSync ? 'text-success' : 'text-danger')]),
+            )
+        }
+    }
+    return $testResultDiv
 }
 
 var UI
