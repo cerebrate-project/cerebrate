@@ -17,7 +17,6 @@ class BroodsController extends AppController
             'contextFilters' => [
                 'fields' => [
                     'pull',
-                    'Organisations.name',
                 ]
             ],
             'contain' => ['Organisations']
@@ -64,6 +63,13 @@ class BroodsController extends AppController
             return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
+        $this->loadModel('Organisations');
+        $dropdownData = [
+            'organisation' => $this->Organisations->find('list', [
+                'sort' => ['name' => 'asc']
+            ])
+        ];
+        $this->set(compact('dropdownData'));
         $this->render('add');
     }
 
