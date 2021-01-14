@@ -420,7 +420,7 @@ class RestResponseComponent extends Component
         return $this->__sendResponse($response, 200, $format);
     }
 
-    public function ajaxSuccessResponse($ObjectAlias, $action, $entity, $message)
+    public function ajaxSuccessResponse($ObjectAlias, $action, $entity, $message, $additionalData=[])
     {
         $action = $this->__dissectAdminRouting($action);
         $response = [
@@ -429,6 +429,9 @@ class RestResponseComponent extends Component
             'data' => $entity->toArray(),
             'url' =>  $this->__generateURL($action, $ObjectAlias, $entity->id)
         ];
+        if (!empty($additionalData)) {
+            $response['additionalData'] = $additionalData;
+        }
         return $this->viewData($response);
     }
 

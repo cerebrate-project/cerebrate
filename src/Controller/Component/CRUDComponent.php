@@ -6,6 +6,7 @@ use Cake\Controller\Component;
 use Cake\Error\Debugger;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
+use Cake\View\ViewBuilder;
 
 class CRUDComponent extends Component
 {
@@ -108,17 +109,16 @@ class CRUDComponent extends Component
                     $this->saveMetaFields($data->id, $input);
                 }
                 if ($this->Controller->ParamHandler->isRest()) {
-                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($savedData, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message);
+                    if (!empty($params['displayOnSuccess'])) {
+                        $displayOnSuccess = $this->renderViewInVariable($params['displayOnSuccess'], ['entity' => $data]);
+                        $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message, ['displayOnSuccess' => $displayOnSuccess]);
+                    } else {
+                        $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message);
+                    }
                 } else {
                     $this->Controller->Flash->success($message);
-                    if (!empty($params['displayOnSuccess'])) {
-                        $this->Controller->set('entity', $data);
-                        $this->Controller->set('referer', $this->Controller->referer());
-                        $this->Controller->render($params['displayOnSuccess']);
-                        return;
-                    }
                     if (empty($params['redirect'])) {
                         $this->Controller->redirect(['action' => 'view', $data->id]);
                     } else {
@@ -502,5 +502,13 @@ class CRUDComponent extends Component
         } else {
             return $this->Table->find()->distinct([$field])->all()->extract($field)->toList();
         }
+    }
+
+    private function renderViewInVariable($templateRelativeName, $data)
+    {
+        $builder = new ViewBuilder();
+        $builder->disableAutoLayout()->setTemplate("{$this->TableAlias}/{$templateRelativeName}");
+        $view = $builder->build($data);
+        return $view->render();
     }
 }

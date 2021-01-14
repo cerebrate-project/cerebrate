@@ -17,7 +17,7 @@ class AuthKeysController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['users.username', 'authkey', 'comment', 'users.id'],
+            'filters' => ['Users.username', 'authkey', 'comment', 'Users.id'],
             'quickFilters' => ['authkey', 'comment'],
             'contain' => ['Users'],
             'exclude_fields' => ['authkey']
@@ -45,7 +45,9 @@ class AuthKeysController extends AppController
         $this->CRUD->add([
             'displayOnSuccess' => 'authkey_display'
         ]);
-        $responsePayload = $this->CRUD->getResponsePayload();
+        $responsePayload = $this->CRUD->getResponsePayload([
+            'displayOnSuccess' => 'authkey_display'
+        ]);
         if (!empty($responsePayload)) {
             return $responsePayload;
         }

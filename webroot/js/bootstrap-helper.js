@@ -34,7 +34,7 @@ class UIFactory {
     modalFromURL(url, POSTSuccessCallback, POSTFailCallback) {
         return AJAXApi.quickFetchURL(url).then((modalHTML) => {
             const theModal = new ModalFactory({
-                rawHTML: modalHTML,
+                rawHtml: modalHTML,
                 POSTSuccessCallback: POSTSuccessCallback !== undefined ? POSTSuccessCallback : () => {},
                 POSTFailCallback: POSTFailCallback !== undefined ? POSTFailCallback : (errorMessage) => {},
             });
@@ -46,31 +46,43 @@ class UIFactory {
     }
 
     /**
-     * Create and display a modal where the modal's content is fetched from the provided URL. Reload the table after a successful operation
+     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the table after a successful operation and handles displayOnSuccess option
      * @param  {string} url - The URL from which the modal's content should be fetched
      * @param  {string} tableId - The table ID which should be reloaded on success
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
     openModalFromURL(url, reloadUrl=false, tableId=false) {
-        return UI.modalFromURL(url, () => {
+        return UI.modalFromURL(url, (data) => {
+            let reloaded = false
             if (reloadUrl === false || tableId === false) { // Try to get information from the DOM
                 let $elligibleTable = $('table.table')
                 let currentModel = location.pathname.split('/')[1]
                 if ($elligibleTable.length == 1 && currentModel.length > 0) {
                     let $container = $elligibleTable.closest('div[id^="table-container-"]')
                     if ($container.length == 1) {
-                        return UI.reload(`/${currentModel}/index`, $container, $elligibleTable)
+                        UI.reload(`/${currentModel}/index`, $container, $elligibleTable)
+                        reloaded = true
                     } else {
                         $container = $elligibleTable.closest('div[id^="single-view-table-container-"]')
                         if ($container.length == 1) {
-                            return UI.reload(location.pathname, $container, $elligibleTable)
+                            UI.reload(location.pathname, $container, $elligibleTable)
+                            reloaded = true
                         }
                     }
                 }
             } else {
-                return UI.reload(reloadUrl, $(`#table-container-${tableId}`), $(`#table-container-${tableId} table.table`))
+                UI.reload(reloadUrl, $(`#table-container-${tableId}`), $(`#table-container-${tableId} table.table`))
+                reloaded = true
             }
-            location.reload()
+            if (data.additionalData !== undefined && data.additionalData.displayOnSuccess !== undefined) {
+                UI.modal({
+                    rawHtml: data.additionalData.displayOnSuccess
+                })
+            } else {
+                if (!reloaded) {
+                    location.reload()
+                }
+            }
         })
     }
 
@@ -247,7 +259,7 @@ class ModalFactory {
      */
     constructor(options) {
         this.options = Object.assign({}, ModalFactory.defaultOptions, options)
-        if (this.options.rawHTML) {
+        if (this.options.rawHtml && options.POSTSuccessCallback !== undefined) {
             this.attachSubmitButtonListener = true
         }
         if (options.type === undefined && options.cancel !== undefined) {
@@ -255,6 +267,9 @@ class ModalFactory {
         }
         this.bsModalOptions = {
             show: true
+        }
+        if (this.options.backdropStatic) {
+            this.bsModalOptions['backdrop'] = 'static'
         }
     }
 
@@ -305,11 +320,12 @@ class ModalFactory {
      * @property {string=('sm'|'lg'|'xl'|'')} size         - The size of the modal
      * @property {boolean} centered                        - Should the modal be vertically centered
      * @property {boolean} scrollable                      - Should the modal be scrollable
+     * @property {boolean} backdropStatic                  - When set, the modal will not close when clicking outside it.
      * @property {string} title                            - The title's content of the modal
      * @property {string} titleHtml                        - The raw HTML title's content of the modal
      * @property {string} body                             - The body's content of the modal
      * @property {string} bodyHtml                         - The raw HTML body's content of the modal
-     * @property {string} rawHTML                          - The raw HTML of the whole modal. If provided, will override any other content
+     * @property {string} rawHtml                          - The raw HTML of the whole modal. If provided, will override any other content
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} variant - The variant of the modal
      * @property {string} modalClass                       - Classes to be added to the modal's container
      * @property {string} headerClass                      - Classes to be added to the modal's header
@@ -334,11 +350,12 @@ class ModalFactory {
         size: 'md',
         centered: false,
         scrollable: false,
+        backdropStatic: false,
         title: '',
         titleHtml: false,
         body: false,
         bodyHtml: false,
-        rawHTML: false,
+        rawHtml: false,
         variant: '',
         modalClass: '',
         headerClass: '',
@@ -375,6 +392,8 @@ class ModalFactory {
         if (this.isValid()) {
             this.$modal = this.buildModal()
             $('#mainModalContainer').append(this.$modal)
+        } else {
+            console.log('Modal not valid')
         }
     }
 
@@ -393,6 +412,8 @@ class ModalFactory {
                         that.findSubmitButtonAndAddListener()
                     }
                 })
+        } else {
+            console.log('Modal not valid')
         }
     }
 
@@ -413,7 +434,7 @@ class ModalFactory {
     isValid() {
         return this.options.title !== false || this.options.titleHtml !== false ||
         this.options.body !== false ||  this.options.bodyHtml !== false ||
-        this.options.rawHTML !== false
+        this.options.rawHtml !== false
     }
 
     /**
@@ -430,8 +451,11 @@ class ModalFactory {
             $modal.addClass(this.options.modalClass)
         }
         let $modalDialog
-        if (this.options.rawHTML) {
-            $modalDialog = $(this.options.rawHTML)
+        if (this.options.rawHtml) {
+            $modalDialog = $(this.options.rawHtml)
+            if ($modalDialog.data('backdrop') == 'static') {
+                this.bsModalOptions['backdrop'] = 'static'
+            }
         } else {
             $modalDialog = $('<div class="modal-dialog"/>')
             const $modalContent = $('<div class="modal-content"/>')
@@ -564,14 +588,12 @@ class ModalFactory {
         }
 
         this.options.APIConfirm = (tmpApi) => {
-            tmpApi.mergeOptions({forceHTMLOnValidationFailure: true})
             return tmpApi.postForm($form[0])
                 .then((data) => {
                     if (data.success) {
                         this.options.POSTSuccessCallback(data)
-                    } else { // Validation error, replace modal content with new html
-                        this.$modal.html(data.html)
-                        this.findSubmitButtonAndAddListener()
+                    } else { // Validation error
+                        this.injectFormValidationFeedback(form, data.errors)
                         return Promise.reject('Validation error');
                     }
                 })
