@@ -625,6 +625,7 @@ class OverlayFactory {
 
     /**
      * @namespace
+     * @property {string}  text - A small text indicating the reason of the overlay
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} variant - The variant of the overlay
      * @property {number}  opacity        - The opacity of the overlay
      * @property {boolean} rounded        - If the overlay should be rounded
@@ -634,6 +635,7 @@ class OverlayFactory {
      * @property {string=('border'|'grow')} spinnerSmall   - If the spinner inside the overlay should be small
      */
     static defaultOptions = {
+        text: '',
         variant: 'light',
         opacity: 0.85,
         blur: '2px',
@@ -645,9 +647,10 @@ class OverlayFactory {
     }
 
     static overlayWrapper = '<div aria-busy="true" class="position-relative"/>'
-    static overlayContainer = '<div class="position-absolute" style="inset: 0px; z-index: 10;"/>'
+    static overlayContainer = '<div class="position-absolute text-nowrap" style="inset: 0px; z-index: 10;"/>'
     static overlayBg = '<div class="position-absolute" style="inset: 0px;"/>'
     static overlaySpinner = '<div class="position-absolute" style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);"><span aria-hidden="true" class=""><!----></span></div></div>'
+    static overlayText = '<span class="ml-1 align-text-top"></span>'
 
     shown = false
     originalNodeIndex = 0
@@ -666,6 +669,12 @@ class OverlayFactory {
         }
         if (this.options.spinnerVariant.length > 0) {
             this.$overlaySpinner.children().addClass(`text-${this.options.spinnerVariant}`)
+        }
+        if (this.options.text.length > 0) {
+            this.$overlayText = $(OverlayFactory.overlayText);
+            this.$overlayText.addClass(`text-${this.options.spinnerVariant}`)
+                .text(this.options.text)
+            this.$overlaySpinner.append(this.$overlayText)
         }
     }
 
