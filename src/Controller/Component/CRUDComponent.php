@@ -90,7 +90,12 @@ class CRUDComponent extends Component
             $this->Controller->set('fields', $params['fields']);
         }
         if ($this->request->is('post')) {
-            $patchEntityParams = [];
+            $patchEntityParams = [
+                'associated' => []
+            ];
+            if (!empty($params['id'])) {
+                unset($params['id']);
+            }
             $input = $this->__massageInput($params);
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
@@ -156,33 +161,7 @@ class CRUDComponent extends Component
 
     private function saveMetaFields($id, $input)
     {
-        foreach ($input['metaFields'] as $templateID => $metaFields) {
-            $metaTemplates = $this->MetaTemplates->find()->where([
-                'id' => $templateID,
-                'enabled' => 1
-            ])->contain(['MetaTemplateFields'])->first();
-            $fieldNameToId = [];
-            foreach ($metaTemplates->meta_template_fields as $i => $metaTemplateField) {
-                $fieldNameToId[$metaTemplateField->field] = $metaTemplateField->id;
-            }
-            foreach ($metaFields as $metaField => $values) {
-                if (!is_array($values)) {
-                    $values = [$values];
-                }
-                foreach ($values as $value) {
-                    if ($value !== '') {
-                        $temp = $this->MetaFields->newEmptyEntity();
-                        $temp->field = $metaField;
-                        $temp->value = $value;
-                        $temp->scope = $this->Table->metaFields;
-                        $temp->parent_id = $id;
-                        $temp->meta_template_id = $templateID;
-                        $temp->meta_template_field_id = $fieldNameToId[$metaField];
-                        $this->MetaFields->save($temp);
-                    }
-                }
-            }
-        }
+        $this->Table->saveMetaFields($id, $input);
     }
 
     private function __massageInput($params)
@@ -215,7 +194,9 @@ class CRUDComponent extends Component
             $this->Controller->set('fields', $params['fields']);
         }
         if ($this->request->is(['post', 'put'])) {
-            $patchEntityParams = [];
+            $patchEntityParams = [
+                'associated' => []
+            ];
             $input = $this->__massageInput($params);
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
