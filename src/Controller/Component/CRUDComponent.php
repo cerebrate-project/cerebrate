@@ -501,9 +501,19 @@ class CRUDComponent extends Component
         if (count($exploded) > 1) {
             $model = $exploded[0];
             $subField = $exploded[1];
-            $fieldToExtract = sprintf('%s.%s', Inflector::singularize(strtolower($model)), $subField);
-            $query = $this->Table->find()->contain($model)->distinct($field);
-            return  $query->all()->extract($fieldToExtract)->toList();
+            $associationType = $this->Table->associations()->get($model)->type();
+            if ($associationType == 'oneToMany' || $associationType == 'manyToMany') {
+                $fieldToExtract = sprintf('%s.{*}.%s', strtolower($model), $subField);
+            } else {
+                $fieldToExtract = sprintf('%s.%s', Inflector::singularize(strtolower($model)), $subField);
+            }
+            $query = $this->Table->find()->contain($model);
+            return $query->all()->extract($fieldToExtract)->reduce(function ($output, $value) {
+                    if (!in_array($value, $output)) {
+                        $output[] = $value;
+                    }
+                    return $output;
+                }, []);
         } else {
             return $this->Table->find()->distinct([$field])->all()->extract($field)->toList();
         }
