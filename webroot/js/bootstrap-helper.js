@@ -112,6 +112,7 @@ class UIFactory {
      * @param {(jQuery|string)} node       - The node on which the overlay should be placed
      * @param {Promise} promise            - A promise to be fulfilled
      * @param {Object} [overlayOptions={}  - The options to be passed to the overlay class
+     * @return {Promise} Result of the passed promised
      */
     overlayUntilResolve(node, promise, overlayOptions={}) {
         const $node = $(node)
