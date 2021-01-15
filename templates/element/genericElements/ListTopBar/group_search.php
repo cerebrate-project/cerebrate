@@ -29,7 +29,7 @@
             empty($data['placeholder']) ? '' : h($data['placeholder']),
             empty($data['id']) ? 'quickFilterField' : h($data['id']),
             empty($data['searchKey']) ? 'searchall' : h($data['searchKey']),
-            empty($data['value']) ? '' : h($data['value'])
+            empty($data['value']) ? (!empty($quickFilterValue) ? h($quickFilterValue) : '') : h($data['value'])
         );
         echo sprintf(
             '<div class="input-group" data-table-random-value="%s" style="margin-left: auto;">%s%s</div>',
@@ -44,6 +44,7 @@
         var controller = '<?= $this->request->getParam('controller') ?>';
         var action = '<?= $this->request->getParam('action') ?>';
         var additionalUrlParams = '';
+        var quickFilter = <?= json_encode($quickFilter) ?>;
         <?php
             if (!empty($data['additionalUrlParams'])) {
                 echo sprintf(
@@ -53,6 +54,13 @@
             }
         ?>
         var randomValue = '<?= h($tableRandomValue) ?>';
+        $(`#quickFilterField-${randomValue}`).popover({
+            title: '<?= __('Searcheable fields') ?>',
+            content: function() { return buildPopoverQuickFilterBody(quickFilter) },
+            html: true,
+            sanitize: false,
+            trigger: 'manual',
+        })
         $(`#quickFilterButton-${randomValue}`).click((e) => {
             doFilter($(e.target))
         });
@@ -61,9 +69,14 @@
                 const $button = $(`#quickFilterButton-${randomValue}`)
                 doFilter($button)
             }
+        }).on('focus', (e) => {
+            $(`#quickFilterField-${randomValue}`).popover('show')
+        }).on('focusout', (e) => {
+            $(`#quickFilterField-${randomValue}`).popover('hide')
         });
 
         function doFilter($button) {
+            $(`#quickFilterField-${randomValue}`).popover('hide')
             const encodedFilters = encodeURIComponent($(`#quickFilterField-${randomValue}`).val())
             const url = `/${controller}/${action}${additionalUrlParams}?quickFilter=${encodedFilters}`
             UI.reload(url, $(`#table-container-${randomValue}`), $(`#table-container-${randomValue} table.table`), [{
@@ -71,5 +84,35 @@
                 config: {}
             }])
         }
+
+        function buildPopoverQuickFilterBody(quickFilter) {
+            let tableData = []
+            quickFilter.forEach(field => {
+                let fieldName, searchContain
+                if (typeof field === 'object') {
+                    fieldName = Object.keys(field)[0];
+                    searchContain = field[fieldName]
+                } else {
+                    fieldName = field
+                    searchContain = false
+                }
+                $searchType = $('<span/>')
+                    .text(searchContain ? '<?= __('Contain') ?>' : '<?= __('Exact match') ?>')
+                    .attr('title', searchContain ? '<?= __('The search value will be used as a substring') ?>' : '<?= __('The search value must strictly match') ?>')
+                tableData.push([fieldName, $searchType])
+            });
+            tableData.sort((a, b) => a[0] < b[0] ? -1 : 1)
+            $table = HtmlHelper.table(
+                ['<?= __('Field name') ?>', '<?= __('Search type') ?>'],
+                tableData,
+                {
+                    small: true,
+                    tableClass: ['mb-0'],
+                    caption: '<?= __('All these fields will be searched simultaneously') ?>'
+                }
+            )
+            return $table[0].outerHTML
+        }
+
     });
 </script>

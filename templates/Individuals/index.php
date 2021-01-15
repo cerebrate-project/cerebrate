@@ -23,7 +23,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'button' => __('Filter'),
                     'placeholder' => __('Enter value to search'),
                     'data' => '',
-                    'value' => $quickFilterValue,
                     'searchKey' => 'value'
                 ]
             ]

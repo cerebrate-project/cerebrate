@@ -649,7 +649,7 @@ class OverlayFactory {
     static defaultOptions = {
         text: '',
         variant: 'light',
-        opacity: 0.85,
+        opacity: 0.15,
         blur: '2px',
         rounded: false,
         auto: true,
@@ -827,5 +827,75 @@ class FormValidationHelper {
         $(this.form).find('textarea, input, select').removeClass('is-invalid')
         $(this.form).find('.invalid-feedback').remove()
         $(this.form).parent().find('.alert').remove()
+    }
+
+}
+
+class HtmlHelper {
+    static table(head=[], body=[], options={}) {
+        const $table = $('<table/>')
+        const $thead = $('<thead/>')
+        const $tbody = $('<tbody/>')
+        
+        $table.addClass('table')
+        if (options.striped) {
+            $table.addClass('table-striped')
+        }
+        if (options.bordered) {
+            $table.addClass('table-bordered')
+        }
+        if (options.borderless) {
+            $table.addClass('table-borderless')
+        }
+        if (options.hoverable) {
+            $table.addClass('table-hover')
+        }
+        if (options.small) {
+            $table.addClass('table-sm')
+        }
+        if (options.variant) {
+            $table.addClass(`table-${options.variant}`)
+        }
+        if (options.tableClass) {
+            $table.addClass(options.tableClass)
+        }
+
+        const $caption = $('<caption/>')
+        if (options.caption) {
+            if (options.caption instanceof jQuery) {
+                $caption = options.caption
+            } else {
+                $caption.text(options.caption)
+            }
+        }
+
+        const $theadRow = $('<tr/>')
+        head.forEach(head => {
+            if (head instanceof jQuery) {
+                $theadRow.append($('<td/>').append(head))
+            } else {
+                $theadRow.append($('<th/>').text(head))
+            }
+        })
+        $thead.append($theadRow)
+
+        body.forEach(row => {
+            const $bodyRow = $('<tr/>')
+            row.forEach(item => {
+                if (item instanceof jQuery) {
+                    $bodyRow.append($('<td/>').append(item))
+                } else {
+                    $bodyRow.append($('<td/>').text(item))
+                }
+            })
+            $tbody.append($bodyRow)
+        })
+
+        $table.append($caption, $thead, $tbody)
+        if (options.responsive) {
+            options.responsiveBreakpoint = options.responsiveBreakpoint !== undefined ? options.responsiveBreakpoint : ''
+            $table = $('<div/>').addClass(options.responsiveBreakpoint !== undefined ? `table-responsive-${options.responsiveBreakpoint}` : 'table-responsive').append($table)
+        }
+        return $table
     }
 }
