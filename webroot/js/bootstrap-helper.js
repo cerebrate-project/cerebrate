@@ -91,19 +91,30 @@ class UIFactory {
      * @param  {string} url - The URL from which the $container's content should be fetched
      * @param  {(jQuery|string)} $container - The container that should hold the data fetched
      * @param  {(jQuery|string)} [$statusNode=null] - A reference to a HTML node on which the loading animation should be displayed. If not provided, $container will be used
+     * @param  {array} [additionalStatusNodes=[]] - A list of other node on which to apply overlay. Must contain the node and possibly the overlay configuration
      * @return {Promise<jQuery>} Promise object resolving to the $container object after its content has been replaced
      */
-    reload(url, $container, $statusNode=null) {
+    reload(url, $container, $statusNode=null, additionalStatusNodes=[]) {
         $container = $($container)
         $statusNode = $($statusNode)
         if (!$statusNode) {
             $statusNode = $container
         }
+        const otherStatusNodes = []
+        additionalStatusNodes.forEach(otherStatusNode => {
+            const loadingOverlay = new OverlayFactory(otherStatusNode.node, otherStatusNode.config)
+            loadingOverlay.show()
+            otherStatusNodes.push(loadingOverlay)
+        })
         return AJAXApi.quickFetchURL(url, {
             statusNode: $statusNode[0]
         }).then((theHTML) => {
             $container.replaceWith(theHTML)
             return $container
+        }).finally(() => {
+            otherStatusNodes.forEach(overlay => {
+                overlay.hide()
+            })
         })
     }
 
@@ -387,7 +398,6 @@ class ModalFactory {
     ]
 
     static closeButtonHtml = '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>'
-    static spinnerHtml = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>Loading...'
 
     /** Create the HTML of the modal and inject it into the DOM */
     makeModal() {
