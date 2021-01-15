@@ -161,7 +161,7 @@ class CRUDComponent extends Component
 
     private function saveMetaFields($id, $input)
     {
-        $this->Table->saveMetaFields($id, $input);
+        $this->Table->saveMetaFields($id, $input, $this->Table);
     }
 
     private function __massageInput($params)
@@ -206,11 +206,11 @@ class CRUDComponent extends Component
             if ($savedData !== false) {
                 $message = __('{0} `{1}` updated.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()});
                 if (!empty($input['metaFields'])) {
-                    $this->MetaFields->deleteAll(['scope' => $this->Table->metaFields, 'parent_id' => $data->id]);
-                    $this->saveMetaFields($data->id, $input);
+                    $this->MetaFields->deleteAll(['scope' => $this->Table->metaFields, 'parent_id' => $savedData->id]);
+                    $this->saveMetaFields($savedData->id, $input);
                 }
                 if ($this->Controller->ParamHandler->isRest()) {
-                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($savedData, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
                     $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'edit', $savedData, $message);
                 } else {

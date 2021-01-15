@@ -36,11 +36,11 @@ class AppTable extends Table
                         $temp = $this->MetaFields->newEmptyEntity();
                         $temp->field = $metaField;
                         $temp->value = $value;
-                        $temp->scope = $this->Table->metaFields;
+                        $temp->scope = $this->metaFields;
                         $temp->parent_id = $id;
                         $temp->meta_template_id = $templateID;
                         $temp->meta_template_field_id = $fieldNameToId[$metaField];
-                        $this->MetaFields->save($temp);
+                        $res = $this->MetaFields->save($temp);
                     }
                 }
             }
