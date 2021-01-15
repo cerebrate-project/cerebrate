@@ -342,7 +342,14 @@ class CRUDComponent extends Component
         $queryConditions = [];
         if (!empty($params['quickFilter']) && !empty($quickFilterFields)) {
             foreach ($quickFilterFields as $filterField) {
-                $queryConditions[$filterField] = $params['quickFilter'];
+                $likeCondition = false;
+                if (is_array($filterField)) {
+                    $likeCondition = reset($filterField);
+                    $filterFieldName = array_key_first($filterField);
+                    $queryConditions[$filterFieldName . ' LIKE'] = '%' . $params['quickFilter'] .'%';
+                } else {
+                    $queryConditions[$filterField] = $params['quickFilter'];
+                }
             }
             $query->where(['OR' => $queryConditions]);
         }
