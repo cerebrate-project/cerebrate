@@ -1,13 +1,5 @@
 function executePagination(randomValue, url) {
-    var target = '#table-container-' + randomValue
-    $.ajax({
-        dataType:"html",
-        cache: false,
-        success:function (data, textStatus) {
-            $(target).html(data);
-        },
-        url:url,
-    });
+    UI.reload(url, $(`#table-container-${randomValue}`), $(`#table-container-${randomValue} table.table`))
 }
 
 function executeStateDependencyChecks(dependenceSourceSelector) {

@@ -53,15 +53,23 @@
             }
         ?>
         var randomValue = '<?= h($tableRandomValue) ?>';
-        $('#quickFilterButton-' + randomValue).click(function() {
-            var url = '/' + controller + '/' + action + additionalUrlParams + '?quickFilter=' + encodeURIComponent($('#quickFilterField-<?= h($tableRandomValue) ?>').val());
-            executePagination(randomValue, url);
+        $(`#quickFilterButton-${randomValue}`).click(() => {
+            doFilter($(this))
         });
-        $('#quickFilterField-' + randomValue).on('keypress', function (e) {
+        $(`#quickFilterField-${randomValue}`).on('keypress', (e) => {
             if(e.which === 13) {
-                var url = '/' + controller + '/' + action + additionalUrlParams + '?quickFilter=' + encodeURIComponent($('#quickFilterField-<?= h($tableRandomValue) ?>').val());
-                executePagination(randomValue, url);
+                const $button = $(this).parent().find(`#quickFilterButton-${randomValue}`)
+                doFilter($button)
             }
         });
+
+        function doFilter($button) {
+            const encodedFilters = encodeURIComponent($(`#quickFilterField-${randomValue}`).val())
+            const url = `/${controller}/${action}${additionalUrlParams}?quickFilter=${encodedFilters}`
+            UI.reload(url, $(`#table-container-${randomValue}`), $(`#table-container-${randomValue} table.table`), [{
+                node: $button,
+                config: {}
+            }])
+        }
     });
 </script>
