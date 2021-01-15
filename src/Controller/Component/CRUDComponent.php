@@ -341,6 +341,7 @@ class CRUDComponent extends Component
     {
         $queryConditions = [];
         if (!empty($params['quickFilter']) && !empty($quickFilterFields)) {
+            $this->Controller->set('quickFilterValue', $params['quickFilter']);
             foreach ($quickFilterFields as $filterField) {
                 $likeCondition = false;
                 if (is_array($filterField)) {
@@ -352,6 +353,8 @@ class CRUDComponent extends Component
                 }
             }
             $query->where(['OR' => $queryConditions]);
+        } else {
+            $this->Controller->set('quickFilterValue', '');
         }
         return $query;
     }

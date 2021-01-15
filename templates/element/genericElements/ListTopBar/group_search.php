@@ -57,7 +57,7 @@
             var url = '/' + controller + '/' + action + additionalUrlParams + '?quickFilter=' + encodeURIComponent($('#quickFilterField-<?= h($tableRandomValue) ?>').val());
             executePagination(randomValue, url);
         });
-        $('#quickFilterField').on('keypress', function (e) {
+        $('#quickFilterField-' + randomValue).on('keypress', function (e) {
             if(e.which === 13) {
                 var url = '/' + controller + '/' + action + additionalUrlParams + '?quickFilter=' + encodeURIComponent($('#quickFilterField-<?= h($tableRandomValue) ?>').val());
                 executePagination(randomValue, url);
