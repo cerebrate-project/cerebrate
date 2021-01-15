@@ -12,8 +12,8 @@ class BroodsController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['name', 'uuid', 'url', 'description', 'Organisations.id', 'trusted', 'pull', 'authkey'],
-            'quickFilters' => ['name', 'uuid', 'description'],
+            'filters' => ['Broods.name', 'Broods.uuid', 'Broods.url', 'Broods.description', 'Organisations.id', 'Broods.trusted', 'pull', 'authkey'],
+            'quickFilters' => [['Broods.name' => true], 'Broods.uuid', ['Broods.description' => true]],
             'contextFilters' => [
                 'fields' => [
                     'pull',
