@@ -49,14 +49,13 @@
 
 <script>
     function changeIndexContext(clicked, url, container, statusNode) {
-        const loadingOverlay = new OverlayFactory(clicked, {
-            spinnerVariant: 'dark',
-            spinnerType: 'grow',
-            spinnerSmall: true
-        });
-        loadingOverlay.show()
-        UI.reload(url, container, statusNode).finally(() => {
-            loadingOverlay.hide()
-        })
+        UI.reload(url, container, statusNode, [{
+            node: clicked,
+            config: {
+                spinnerVariant: 'dark',
+                spinnerType: 'grow',
+                spinnerSmall: true
+            }
+        }])
     }
 </script>
