@@ -53,12 +53,12 @@
             }
         ?>
         var randomValue = '<?= h($tableRandomValue) ?>';
-        $(`#quickFilterButton-${randomValue}`).click(() => {
-            doFilter($(this))
+        $(`#quickFilterButton-${randomValue}`).click((e) => {
+            doFilter($(e.target))
         });
         $(`#quickFilterField-${randomValue}`).on('keypress', (e) => {
-            if(e.which === 13) {
-                const $button = $(this).parent().find(`#quickFilterButton-${randomValue}`)
+            if (e.which === 13) {
+                const $button = $(`#quickFilterButton-${randomValue}`)
                 doFilter($button)
             }
         });
