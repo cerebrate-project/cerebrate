@@ -225,7 +225,7 @@ class CRUDComponent extends Component
                 $validationMessage = $this->prepareValidationError($data);
                 $message = __(
                     __('{0} could not be modified.'),
-                    $this->ObjectAlias,
+                    $this->ObjectAlias
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
