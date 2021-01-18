@@ -107,7 +107,7 @@ class UIFactory {
             otherStatusNodes.push(loadingOverlay)
         })
         return AJAXApi.quickFetchURL(url, {
-            statusNode: $statusNode[0]
+            statusNode: $statusNode[0],
         }).then((theHTML) => {
             $container.replaceWith(theHTML)
             return $container
@@ -622,13 +622,17 @@ class ModalFactory {
 class OverlayFactory {
     /**
      * Create a loading overlay
-     * @param {(jQuery|string)} node    - The node on which the overlay should be placed
-     * @param {Object}          options - The options supported by OverlayFactory#defaultOptions 
+     * @param {(jQuery|string|HTMLButtonElement)} node    - The node on which the overlay should be placed
+     * @param {Object}                            options - The options supported by OverlayFactory#defaultOptions 
      */
     constructor(node, options={}) {
         this.node = node
         this.$node = $(this.node)
-        this.options = Object.assign({}, OverlayFactory.defaultOptions, options)
+        if (darkMode) {
+            this.options = Object.assign({}, OverlayFactory.defaultOptionsDarkTheme, options)
+        } else {
+            this.options = Object.assign({}, OverlayFactory.defaultOptions, options)
+        }
         this.options.auto = options.auto ? this.options.auto : !(options.variant || options.spinnerVariant)
         if (this.options.auto) {
             this.adjustOptionsBasedOnNode()
@@ -646,16 +650,29 @@ class OverlayFactory {
      * @property {boolean} spinnerSmall   - If the spinner inside the overlay should be small
      * @property {string=('border'|'grow')} spinnerSmall   - If the spinner inside the overlay should be small
      */
-    static defaultOptions = {
+    static defaultOptionsDarkTheme = {
         text: '',
         variant: 'light',
-        opacity: 0.15,
+        opacity: 0.25,
         blur: '2px',
         rounded: false,
         auto: true,
         spinnerVariant: '',
         spinnerSmall: false,
-        spinnerType: 'border'
+        spinnerType: 'border',
+        fallbackBoostrapVariant: 'light'
+    }
+    static defaultOptions = {
+        text: '',
+        variant: 'light',
+        opacity: 0.85,
+        blur: '2px',
+        rounded: false,
+        auto: true,
+        spinnerVariant: '',
+        spinnerSmall: false,
+        spinnerType: 'border',
+        fallbackBoostrapVariant: ''
     }
 
     static overlayWrapper = '<div aria-busy="true" class="position-relative"/>'
@@ -733,14 +750,14 @@ class OverlayFactory {
         if (this.$node.width() < 50 || this.$node.height() < 50) {
             this.options.spinnerSmall = true
         }
-        if (this.$node.is('input[type="checkbox"]')) {
+        if (this.$node.is('input[type="checkbox"]') || this.$node.css('border-radius') !== '0px') {
             this.options.rounded = true
-        } else {
-            let classes = this.$node.attr('class')
-            if (classes !== undefined) {
-                classes = classes.split(' ')
-                this.options.spinnerVariant = OverlayFactory.detectedBootstrapVariant(classes)
-            }
+        } 
+        let classes = this.$node.attr('class')
+        if (classes !== undefined) {
+            classes = classes.split(' ')
+            const detectedVariant = OverlayFactory.detectedBootstrapVariant(classes, this.options.fallbackBoostrapVariant)
+            this.options.spinnerVariant = detectedVariant
         }
     }
 
@@ -748,7 +765,7 @@ class OverlayFactory {
      * Detect the bootstrap variant from a list of classes
      * @param {Array} classes - A list of classes containg a bootstrap variant 
      */
-    static detectedBootstrapVariant(classes) {
+    static detectedBootstrapVariant(classes, fallback=OverlayFactory.defaultOptions.fallbackBoostrapVariant) {
         const re = /^[a-zA-Z]+-(?<variant>primary|success|danger|warning|info|light|dark|white|transparent)$/;
         let result
         for (let i=0; i<classes.length; i++) {
@@ -759,7 +776,7 @@ class OverlayFactory {
                 }
             }
         }
-        return '';
+        return fallback
     }
 }
 
