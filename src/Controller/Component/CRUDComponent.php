@@ -519,15 +519,14 @@ class CRUDComponent extends Component
                 $fieldToExtract = sprintf('%s.%s', Inflector::singularize(strtolower($model)), $subField);
             }
             $query = $this->Table->find()->contain($model);
-            return $query->all()->extract($fieldToExtract)->reduce(function ($output, $value) {
-                    if (!in_array($value, $output)) {
-                        $output[] = $value;
-                    }
-                    return $output;
-                }, []);
         } else {
-            return $this->Table->find()->distinct([$field])->all()->extract($field)->toList();
+            $fieldToExtract = $field;
+            $query = $this->Table->find();
         }
+        return $query->select([$field])
+            ->distinct()
+            ->extract($fieldToExtract)
+            ->toList();
     }
 
     private function renderViewInVariable($templateRelativeName, $data)
