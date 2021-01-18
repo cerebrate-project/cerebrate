@@ -119,6 +119,15 @@
     border-top-right-radius: 0.2rem;
 }
 
+.btn-group > div > .btn:not(:last-child):not(.dropdown-toggle), .btn-group > .btn-group:not(:last-child) > div > .btn {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
+.topbar-contextual-filter button.btn:not(:first-child) {
+    border-left: 1px solid #77777733;
+}
+
 input[type="checkbox"].change-cursor {
     cursor: pointer;
 }
