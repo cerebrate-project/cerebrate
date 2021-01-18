@@ -116,4 +116,25 @@ class BroodsController extends AppController
             $this->redirect($this->referer());
         }
     }
+
+    public function downloadIndividual($brood_id, $individual_id)
+    {
+        $result = $this->Broods->downloadIndividual($brood_id, $individual_id);
+        $success = __('Individual fetched from remote.');
+        $fail = __('Could not save the remote individual');
+        if ($this->ParamHandler->isRest()) {
+            if ($result) {
+                return $this->RestResponse->saveSuccessResponse('Brood', 'downloadIndividual', $brood_id, 'json', $success);
+            } else {
+                return $this->RestResponse->saveFailResponse('Brood', 'downloadIndividual', $brood_id, $fail, 'json');
+            }
+        } else {
+            if ($result) {
+                $this->Flash->success($success);
+            } else {
+                $this->Flash->error($fail);
+            }
+            $this->redirect($this->referer());
+        }
+    }
 }

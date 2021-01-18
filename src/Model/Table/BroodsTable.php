@@ -93,6 +93,31 @@ class BroodsTable extends AppTable
         }
     }
 
+    public function downloadAndCapture($brood_id, $object_id, $scope, $path)
+    {
+        $query = $this->find();
+        $brood = $query->where(['id' => $brood_id])->first();
+        if (empty($brood)) {
+            throw new NotFoundException(__('Brood not found'));
+        }
+        $http = new Client();
+        $response = $http->get($brood['url'] . '/' . $scope . '/view/' . $org_id . '/index.json' , [], [
+            'headers' => [
+                'Authorization' => $brood['authkey'],
+                'Accept' => 'Application/json',
+                'Content-type' => 'Application/json'
+            ]
+        ]);
+        if ($response->isOk()) {
+            $org = $response->getJson();
+            $this->Organisation = TableRegistry::getTableLocator()->get('Organisations');
+            $result = $this->Organisation->captureOrg($org);
+            return $result;
+        } else {
+            return false;
+        }
+    }
+
     public function downloadOrg($brood_id, $org_id)
     {
         $query = $this->find();
@@ -112,6 +137,31 @@ class BroodsTable extends AppTable
             $org = $response->getJson();
             $this->Organisation = TableRegistry::getTableLocator()->get('Organisations');
             $result = $this->Organisation->captureOrg($org);
+            return $result;
+        } else {
+            return false;
+        }
+    }
+
+    public function downloadIndividual($brood_id, $individual_id)
+    {
+        $query = $this->find();
+        $brood = $query->where(['id' => $brood_id])->first();
+        if (empty($brood)) {
+            throw new NotFoundException(__('Brood not found'));
+        }
+        $http = new Client();
+        $response = $http->get($brood['url'] . '/individuals/view/' . $individual_id . '/index.json' , [], [
+            'headers' => [
+                'Authorization' => $brood['authkey'],
+                'Accept' => 'Application/json',
+                'Content-type' => 'Application/json'
+            ]
+        ]);
+        if ($response->isOk()) {
+            $org = $response->getJson();
+            $this->Individual = TableRegistry::getTableLocator()->get('Individual');
+            $result = $this->Individual->captureIndividual($individual);
             return $result;
         } else {
             return false;
