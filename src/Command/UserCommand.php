@@ -58,7 +58,7 @@ class UserCommand extends Command
                     } else {
                         $confirm = $io->askChoice(__('Do you want to {0} the user {1}', $user->disabled ? __('enable') : __('disable'), $user->username), ['Y', 'N'], 'N');
                         if ($confirm) {
-                            $user = $this->flipDisable($user);
+                            $user = $this->toggleDisable($user);
                             if ($user) {
                                 $io->out(__('User {0}', !$user->disabled ? __('enabled') : __('disabled')));
                             } else {
@@ -112,7 +112,7 @@ class UserCommand extends Command
         return $this->Users->save($user);
     }
 
-    private function flipDisable($user)
+    private function toggleDisable($user)
     {
         $user->disabled = !$user->disabled;
         return $this->Users->save($user);
