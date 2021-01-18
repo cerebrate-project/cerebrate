@@ -17,13 +17,16 @@ class AJAXApi {
 
     /**
      * @namespace
-     * @property {boolean}         provideFeedback   - Should a toast be used to provide feedback upon request fulfillment
-     * @property {(jQuery|string)} statusNode        - The node on which the loading overlay should be placed (OverlayFactory.node)
-     * @property {Object}          errorToastOptions - The options supported by Toaster#defaultOptions
+     * @property {boolean}         provideFeedback         - Should a toast be used to provide feedback upon request fulfillment
+     * @property {(jQuery|string)} statusNode              - The node on which the loading overlay should be placed (OverlayFactory.node)
+     * @property {Object}          statusNodeOverlayConfig - The configuration (OverlayFactory.options) of the overlay applied on the status node
+     * @property {Object}          errorToastOptions       - The options supported by Toaster#defaultOptions
+     * @property {Object}          successToastOptions     - The options supported by Toaster#defaultOptions
      */
     static defaultOptions = {
         provideFeedback: true,
         statusNode: false,
+        statusNodeOverlayConfig: {},
         errorToastOptions: {
             delay: 10000
         },
@@ -376,7 +379,7 @@ class AJAXApi {
     /** Show or hide the loading overlay */
     toggleLoading(loading) {
         if (this.loadingOverlay === false) {
-            this.loadingOverlay = new OverlayFactory(this.options.statusNode);
+            this.loadingOverlay = new OverlayFactory(this.options.statusNode, this.options.statusNodeOverlayConfig);
         }
         if (loading) {
             this.loadingOverlay.show()
