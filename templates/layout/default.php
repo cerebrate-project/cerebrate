@@ -69,4 +69,7 @@ $cakeDescription = 'Cerebrate';
     <div id="mainToastContainer" style="position: absolute; top: 15px; right: 15px; z-index: 1080"></div>
     <div id="mainModalContainer"></div>
 </body>
+<script>
+    const darkMode = (<?= empty($darkMode) ? 'false' : 'true' ?>)
+</script>
 </html>
