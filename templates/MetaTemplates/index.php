@@ -59,18 +59,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                                 __('Only one template per scope can be set as the default template'),
                                 '{{0}}',
                             ]),
-                            'type' => [
-                                'function' => function($row, $data) {
-                                    $conflictingTemplate = getConflictingTemplate($row, $data);
-                                    if (!empty($conflictingTemplate)) {
-                                        return 'confirm-danger';
-                                    }
-                                    return 'confirm-warning';
-                                },
-                                'data' => [
-                                    'defaultTemplatePerScope' => $defaultTemplatePerScope
-                                ]
-                            ],
+                            'type' => '{{0}}',
                             'confirmText' => __('Yes, set as default'),
                             'arguments' => [
                                 'titleHtml' => ['name'],
@@ -99,6 +88,18 @@ echo $this->element('genericElements/IndexTable/index_table', [
                                             'defaultTemplatePerScope' => $defaultTemplatePerScope
                                         ]
                                     ]
+                                ],
+                                'type' => [
+                                    'function' => function($row, $data) {
+                                        $conflictingTemplate = getConflictingTemplate($row, $data);
+                                        if (!empty($conflictingTemplate)) {
+                                            return 'confirm-danger';
+                                        }
+                                        return 'confirm-warning';
+                                    },
+                                    'data' => [
+                                        'defaultTemplatePerScope' => $defaultTemplatePerScope
+                                    ]
                                 ]
                             ]
                         ],
@@ -106,7 +107,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'titleHtml' => __('Remove {{0}} as the default template?'),
                             'type' => 'confirm-warning',
                             'confirmText' => __('Yes, do not set as default'),
-                            'arguements' => [
+                            'arguments' => [
                                 'titleHtml' => ['name'],
                             ]
                         ]

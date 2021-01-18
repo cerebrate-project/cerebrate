@@ -50,10 +50,10 @@
         unset($stringArrayEnable['arguments']);
         $stringArrayDisable = $field['toggle_data']['confirm']['disable'];
         unset($stringArrayDisable['arguments']);
-        $confirmOptions = array_merge(
-            $this->DataFromPath->buildStringsInArray($stringArrayEnable, $row, $field['toggle_data']['confirm']['enable']['arguments'], ['highlight' => true]),
-            $this->DataFromPath->buildStringsInArray($stringArrayDisable, $row, $field['toggle_data']['confirm']['disable']['arguments'], ['highlight' => true]),
-        );
+        $confirmOptions = [
+            'enable' => $this->DataFromPath->buildStringsInArray($stringArrayEnable, $row, $field['toggle_data']['confirm']['enable']['arguments'], ['highlight' => true]),
+            'disable' => $this->DataFromPath->buildStringsInArray($stringArrayDisable, $row, $field['toggle_data']['confirm']['disable']['arguments'], ['highlight' => true]),
+        ];
     }
     $url = $this->DataFromPath->buildStringFromDataPath($field['url'], $row, $field['url_params_vars']);
 ?>
