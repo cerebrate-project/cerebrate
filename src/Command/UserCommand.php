@@ -18,6 +18,7 @@ class UserCommand extends Command
                 ['', 'Cerebrate users'],
                 ['1', 'List users'],
                 ['2', 'Reset password for a user'],
+                ['3', 'Enable/Disable a user'],
                 ['0', 'Exit']
             ];
             $io->helper('Table')->output($menu);
@@ -46,6 +47,23 @@ class UserCommand extends Command
                             }
                         } else {
                             $io->out('Password empty, change aborted.');
+                        }
+                    }
+                    break;
+                case '3':
+                    $user = $io->ask(__('Which user do you want to enable/disable?'));
+                    $user = $this->selectUser($user);
+                    if (empty($user)) {
+                        $io->out('Invalid user.');
+                    } else {
+                        $confirm = $io->askChoice(__('Do you want to {0} the user {1}', $user->disabled ? __('enable') : __('disable'), $user->username), ['Y', 'N'], 'N');
+                        if ($confirm) {
+                            $user = $this->flipDisable($user);
+                            if ($user) {
+                                $io->out(__('User {0}', !$user->disabled ? __('enabled') : __('disabled')));
+                            } else {
+                                $io->out('Could not save the disabled flag.');
+                            }
                         }
                     }
                     break;
@@ -91,6 +109,12 @@ class UserCommand extends Command
     private function setPassword($user, $password)
     {
         $user->password = $password;
+        return $this->Users->save($user);
+    }
+
+    private function flipDisable($user)
+    {
+        $user->disabled = !$user->disabled;
         return $this->Users->save($user);
     }
 }
