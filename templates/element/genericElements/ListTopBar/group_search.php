@@ -44,7 +44,7 @@
         var controller = '<?= $this->request->getParam('controller') ?>';
         var action = '<?= $this->request->getParam('action') ?>';
         var additionalUrlParams = '';
-        var quickFilter = <?= json_encode($quickFilter) ?>;
+        var quickFilter = <?= json_encode(!empty($quickFilter) ? $quickFilter : []) ?>;
         <?php
             if (!empty($data['additionalUrlParams'])) {
                 echo sprintf(
