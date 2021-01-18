@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Utility\Inflector;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
@@ -115,9 +116,12 @@ class SharingGroupsController extends AppController
             }
             if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
                 if ($result) {
-                    $this->RestResponse->saveSuccessResponse('SharingGroups', 'addOrg', $id, 'json', $message);
+                    $savedData = $this->SharingGroups->get($id, [
+                        'contain' => 'SharingGroupOrgs'
+                    ]);
+                    return $this->RestResponse->ajaxSuccessResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'addOrg', $savedData, $message);
                 } else {
-                    $this->RestResponse->saveFailResponse('SharingGroups', 'addOrg', $id, $message, 'json');
+                    return $this->RestResponse->ajaxFailResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'addOrg', $sharingGroup, $message);;
                 }
             } else {
                 if ($result) {
@@ -131,9 +135,45 @@ class SharingGroupsController extends AppController
         $this->set(compact('dropdownData'));
     }
 
-    public function removeOrg($id)
+    public function removeOrg($id, $org_id)
     {
-
+        $sharingGroup = $this->SharingGroups->get($id, [
+            'contain' => 'SharingGroupOrgs'
+        ]);
+        if ($this->request->is('post')) {
+            $org = $this->SharingGroups->SharingGroupOrgs->get($org_id);
+            $result = (bool)$this->SharingGroups->SharingGroupOrgs->unlink($sharingGroup, [$org]);
+            if ($result) {
+                $message = __('Organisation(s) removed from the sharing group.');
+            } else {
+                $message = __('Organisation(s) could not be removed to the sharing group.');
+            }
+            if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
+                if ($result) {
+                    $savedData = $this->SharingGroups->get($id, [
+                        'contain' => 'SharingGroupOrgs'
+                    ]);
+                    return $this->RestResponse->ajaxSuccessResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'removeOrg', $savedData, $message);
+                } else {
+                    return $this->RestResponse->ajaxFailResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'removeOrg', $sharingGroup, $message);
+                    ;
+                }
+            } else {
+                if ($result) {
+                    $this->Flash->success($message);
+                } else {
+                    $this->Flash->error($message);
+                }
+                $this->redirect(['action' => 'view', $id]);
+            }
+        }
+        $this->set('scope', 'sharing_groups');
+        $this->set('id', $org_id);
+        $this->set('sharingGroup', $sharingGroup);
+        $this->set('deletionText', __('Are you sure you want to remove Organisation #{0} from Sharing group #{1}?', $org_id, $sharingGroup['id']));
+        $this->set('postLinkParameters', ['action' => 'removeOrg', $id, $org_id]);
+        $this->viewBuilder()->setLayout('ajax');
+        $this->render('/genericTemplates/delete');
     }
 
     public function listOrgs($id)

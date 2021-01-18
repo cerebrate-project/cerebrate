@@ -10,7 +10,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         'data' => [
                             'type' => 'simple',
                             'text' => __('Add sharing group'),
-                            'class' => 'btn btn-primary',
                             'popover_url' => '/SharingGroups/add'
                         ]
                     ]
