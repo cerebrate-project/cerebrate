@@ -512,13 +512,24 @@ class CRUDComponent extends Component
         if (count($exploded) > 1) {
             $model = $exploded[0];
             $subField = $exploded[1];
-            $associationType = $this->Table->associations()->get($model)->type();
-            if ($associationType == 'oneToMany' || $associationType == 'manyToMany') {
-                $fieldToExtract = sprintf('%s.{*}.%s', strtolower($model), $subField);
-            } else {
+            $association = $this->Table->associations()->get($model);
+            $associationType = $association->type();
+            if ($associationType == 'oneToMany') {
+                $fieldToExtract = $subField;
+                $associatedTable = $association->getTarget();
+                $query = $associatedTable->find()->rightJoin(
+                    [$this->Table->getAlias() => $this->Table->getTable()],
+                    [sprintf('%s.id = %s.%s', $this->Table->getAlias(), $associatedTable->getAlias(), $association->getForeignKey())]
+                )
+                ->where([
+                    ["${field} IS NOT" => NULL]
+                ]);
+            } else if ($associationType == 'manyToOne') {
                 $fieldToExtract = sprintf('%s.%s', Inflector::singularize(strtolower($model)), $subField);
+                $query = $this->Table->find()->contain($model);
+            } else {
+                throw new Exception("Association ${associationType} not supported in CRUD Component");
             }
-            $query = $this->Table->find()->contain($model);
         } else {
             $fieldToExtract = $field;
             $query = $this->Table->find();
