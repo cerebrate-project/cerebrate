@@ -1,4 +1,4 @@
-<div class="modal-dialog <?= empty($class) ? '' : h($class) ?>" role="document">
+<div class="modal-dialog <?= empty($class) ? '' : h($class) ?>" <?= !empty($staticBackdrop) ? 'data-backdrop="static"' : ''?> role="document">
     <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title"><?= h($title) ?></h5>
@@ -10,8 +10,10 @@
             <?= $body ?>
         </div>
         <div class="modal-footer">
+            <?php if (empty($noCancel)): ?>
+                <button type="button" class="btn btn-secondary cancel-button" data-dismiss="modal"><?= __('Cancel') ?></button>
+            <?php endif; ?>
             <?= $actionButton ?>
-            <button type="button" class="btn btn-secondary cancel-button" data-dismiss="modal"><?= __('Cancel') ?></button>
         </div>
     </div>
 </div>

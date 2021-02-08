@@ -22,7 +22,7 @@
                     'field' => 'position'
                 )
             ),
-            'metaFields' => empty($metaFields) ? [] : $metaFields,
+            'metaTemplates' => empty($metaTemplates) ? [] : $metaTemplates,
             'submit' => array(
                 'action' => $this->request->getParam('action')
             )

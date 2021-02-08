@@ -13,6 +13,8 @@ class MetaFieldsTable extends AppTable
         parent::initialize($config);
         $this->addBehavior('UUID');
         $this->setDisplayField('field');
+        $this->belongsTo('MetaTemplates');
+        $this->belongsTo('MetaTemplateFields');
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -22,7 +24,9 @@ class MetaFieldsTable extends AppTable
             ->notEmptyString('field')
             ->notEmptyString('uuid')
             ->notEmptyString('value')
-            ->requirePresence(['scope', 'field', 'value', 'uuid'], 'create');
+            ->notEmptyString('meta_template_id')
+            ->notEmptyString('meta_template_field_id')
+            ->requirePresence(['scope', 'field', 'value', 'uuid', 'meta_template_id', 'meta_template_field_id'], 'create');
         return $validator;
     }
 }

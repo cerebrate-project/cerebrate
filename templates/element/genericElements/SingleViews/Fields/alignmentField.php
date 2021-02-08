@@ -19,7 +19,7 @@ if ($field['scope'] === 'individuals') {
                 h($alignment['organisation']['name'])
             ),
             sprintf(
-                "populateAndLoadModal(%s);",
+                "UI.openModalFromURL(%s);",
                 sprintf(
                     "'/alignments/delete/%s'",
                     $alignment['id']
@@ -38,7 +38,7 @@ if ($field['scope'] === 'individuals') {
                 h($alignment['individual']['email'])
             ),
             sprintf(
-                "populateAndLoadModal(%s);",
+                "UI.openModalFromURL(%s);",
                 sprintf(
                     "'/alignments/delete/%s'",
                     $alignment['id']
@@ -48,10 +48,10 @@ if ($field['scope'] === 'individuals') {
     }
 }
 echo sprintf(
-    '<div class="alignments-list">%s</div><div class="alignments-add-container"><button class="alignments-add-button btn btn-secondary btn-sm" onclick="%s">%s</button></div>',
+    '<div class="alignments-list">%s</div><div class="alignments-add-container"><button class="alignments-add-button btn btn-primary btn-sm" onclick="%s">%s</button></div>',
     $alignments,
     sprintf(
-        "populateAndLoadModal('/alignments/add/%s/%s');",
+        "UI.openModalFromURL('/alignments/add/%s/%s');",
         h($field['scope']),
         h($extracted['id'])
     ),

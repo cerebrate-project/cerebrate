@@ -77,16 +77,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url' => '/organisations/view',
                 'url_params_data_paths' => ['id'],
                 'icon' => 'eye'
-            ],
-            [
-                'onclick' => 'populateAndLoadModal(\'/organisations/edit/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
-                'icon' => 'edit'
-            ],
-            [
-                'onclick' => 'populateAndLoadModal(\'/organisations/delete/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
-                'icon' => 'trash'
             ]
         ]
     ]

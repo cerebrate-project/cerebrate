@@ -12,6 +12,7 @@
            - use these to define dynamic form fields, or anything that will feed into the regular fields via JS population
      * - submit: The submit button itself. By default it will simply submit to the form as defined via the 'model' field
      */
+    $this->Form->setConfig('errorClass', 'is-invalid');
     $modelForForm = empty($data['model']) ?
         h(\Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::classify($this->request->getParam('controller')))) :
         h($data['model']);
@@ -35,11 +36,14 @@
         'select' => '<select name="{{name}}" {{attrs}}>{{content}}</select>',
         'checkbox' => '<input type="checkbox" name="{{name}}" value="{{value}}"{{attrs}}>',
         'checkboxFormGroup' => '{{label}}',
-        'formGroup' => '<div class="col-sm-2 col-form-label" {{attrs}}>{{label}}</div><div class="col-sm-10">{{input}}</div>',
+        'formGroup' => '<div class="col-sm-2 col-form-label" {{attrs}}>{{label}}</div><div class="col-sm-10">{{input}}{{error}}</div>',
         'nestingLabel' => '{{hidden}}<div class="col-sm-2 col-form-label">{{text}}</div><div class="col-sm-10">{{input}}</div>',
         'option' => '<option value="{{value}}"{{attrs}}>{{text}}</option>',
         'optgroup' => '<optgroup label="{{label}}"{{attrs}}>{{content}}</optgroup>',
-        'select' => '<select name="{{name}}"{{attrs}}>{{content}}</select>'
+        'select' => '<select name="{{name}}"{{attrs}}>{{content}}</select>',
+        'error' => '<div class="error-message invalid-feedback d-block">{{content}}</div>',
+        'errorList' => '<ul>{{content}}</ul>',
+        'errorItem' => '<li>{{text}}</li>',
     ];
     if (!empty($data['fields'])) {
         foreach ($data['fields'] as $fieldData) {
@@ -49,6 +53,7 @@
                 }
             }
             // we reset the template each iteration as individual fields might override the defaults.
+            $this->Form->setConfig($default_template);
             $this->Form->setTemplates($default_template);
             if (isset($fieldData['requirements']) && !$fieldData['requirements']) {
                 continue;
@@ -62,18 +67,13 @@
             );
         }
     }
-    $metaFieldString = '';
-    if (!empty($data['metaFields'])) {
-        foreach ($data['metaFields'] as $metaField) {
-            $metaField['label'] = \Cake\Utility\Inflector::humanize($metaField['field']);
-            $metaField['field'] = 'metaFields.' . $metaField['field'];
-            $metaFieldString .= $this->element(
-                'genericElements/Form/fieldScaffold', [
-                    'fieldData' => $metaField->toArray(),
-                    'form' => $this->Form
-                ]
-            );
-        }
+    if (!empty($data['metaTemplates']) && $data['metaTemplates']->count() > 0) {
+        $metaTemplateString = $this->element(
+            'genericElements/Form/metaTemplateScaffold', [
+                'metaTemplatesData' => $data['metaTemplates'],
+                'form' => $this->Form,
+            ]
+        );
     }
     $submitButtonData = ['model' => $modelForForm, 'formRandomValue' => $formRandomValue];
     if (!empty($data['submit'])) {
@@ -104,9 +104,9 @@
                 $ajaxFlashMessage,
                 $formCreate,
                 $fieldsString,
-                empty($metaFieldString) ? '' : $this->element(
+                empty($metaTemplateString) ? '' : $this->element(
                     'genericElements/accordion_scaffold', [
-                        'body' => $metaFieldString,
+                        'body' => $metaTemplateString,
                         'title' => 'Meta fields'
                     ]
                 ),
@@ -127,10 +127,11 @@
                 $data['description']
             ),
             $fieldsString,
-            empty($metaFieldString) ? '' : $this->element(
+            empty($metaTemplateString) ? '' : $this->element(
                 'genericElements/accordion_scaffold', [
-                    'body' => $metaFieldString,
-                    'title' => 'Meta fields'
+                    'body' => $metaTemplateString,
+                    'title' => 'Meta fields',
+                    'class' => 'mb-2'
                 ]
             ),
             $this->element('genericElements/Form/submitButton', $submitButtonData),

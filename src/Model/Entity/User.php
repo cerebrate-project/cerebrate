@@ -8,7 +8,7 @@ use Authentication\PasswordHasher\DefaultPasswordHasher;
 
 class User extends AppModel
 {
-    protected $_hidden = ['password'];
+    protected $_hidden = ['password', 'confirm_password'];
     protected function _setPassword(string $password) : ?string
     {
         if (strlen($password) > 0) {

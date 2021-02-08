@@ -23,8 +23,9 @@ class UsersController extends AppController
     public function add()
     {
         $this->CRUD->add();
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $dropdownData = [
             'role' => $this->Users->Roles->find('list', [
@@ -74,8 +75,9 @@ class UsersController extends AppController
             $params['fields'][] = 'role_id';
         }
         $this->CRUD->edit($id, $params);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $dropdownData = [
             'role' => $this->Users->Roles->find('list', [
@@ -90,11 +92,21 @@ class UsersController extends AppController
         $this->render('add');
     }
 
+    public function toggle($id, $fieldName = 'disabled')
+    {
+        $this->CRUD->toggle($id, $fieldName);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+    }
+
     public function delete($id)
     {
         $this->CRUD->delete($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }

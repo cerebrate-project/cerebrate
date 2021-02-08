@@ -4,6 +4,7 @@ namespace App\Controller\Component;
 
 use Cake\Controller\Component;
 use Cake\Core\Configure;
+use Cake\Utility\Inflector;
 
 class RestResponseComponent extends Component
 {
@@ -417,6 +418,33 @@ class RestResponseComponent extends Component
         $response['message'] = $response['name'];
         $response['url'] = $this->__generateURL($action, $controller, $id);
         return $this->__sendResponse($response, 200, $format);
+    }
+
+    public function ajaxSuccessResponse($ObjectAlias, $action, $entity, $message, $additionalData=[])
+    {
+        $action = $this->__dissectAdminRouting($action);
+        $response = [
+            'success' => true,
+            'message' => $message,
+            'data' => $entity->toArray(),
+            'url' =>  $this->__generateURL($action, $ObjectAlias, $entity->id)
+        ];
+        if (!empty($additionalData)) {
+            $response['additionalData'] = $additionalData;
+        }
+        return $this->viewData($response);
+    }
+
+    public function ajaxFailResponse($ObjectAlias, $action, $entity, $message, $errors = [])
+    {
+        $action = $this->__dissectAdminRouting($action);
+        $response = [
+            'success' => false,
+            'message' => $message,
+            'errors' => $errors,
+            'url' =>  $this->__generateURL($action, $ObjectAlias, $entity->id)
+        ];
+        return $this->viewData($response);
     }
 
     private function __sendResponse($response, $code, $format = false, $raw = false, $download = false, $headers = array())

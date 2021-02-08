@@ -14,6 +14,7 @@ class MetaTemplateFieldsTable extends AppTable
         $this->BelongsTo(
             'MetaTemplates'
         );
+        $this->hasMany('MetaFields');
         $this->setDisplayField('field');
     }
 

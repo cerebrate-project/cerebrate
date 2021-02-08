@@ -9,6 +9,7 @@ use \Cake\Database\Expression\QueryExpression;
 
 class MetaTemplatesController extends AppController
 {
+
     public function update()
     {
         if ($this->request->is('post')) {
@@ -33,13 +34,27 @@ class MetaTemplatesController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['name', 'uuid', 'scope'],
+            'filters' => ['name', 'uuid', 'scope', 'namespace'],
             'quickFilters' => ['name', 'uuid', 'scope'],
+            'contextFilters' => [
+                'fields' => ['scope'],
+                'custom' => [
+                    [
+                        'label' => __('Contact DB'),
+                        'filterCondition' => ['scope' => ['individual', 'organisation']]
+                    ],
+                    [
+                        'label' => __('Namespace CNW'),
+                        'filterCondition' => ['namespace' => 'cnw']
+                    ],
+                ]
+            ],
             'contain' => ['MetaTemplateFields']
         ]);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }
+        $this->set('defaultTemplatePerScope', $this->MetaTemplates->getDefaultTemplatePerScope());
         $this->set('alignmentScope', 'individuals');
         $this->set('metaGroup', 'Administration');
     }
@@ -55,25 +70,19 @@ class MetaTemplatesController extends AppController
         $this->set('metaGroup', 'Administration');
     }
 
-    public function toggle($id)
+    public function toggle($id, $fieldName = 'enabled')
     {
-        $template = $this->MetaTemplates->getTemplate($id);
-        $template['enabled'] = $template['enabled'] ? 0 : 1;
-        $result = $this->MetaTemplates->save($template);
-        if ($template['enabled']) {
-            $message = $result ? __('Template enabled.') : __('Could not enable template');
+        if ($this->request->is('POST') && $fieldName == 'is_default') {
+            $template = $this->MetaTemplates->get($id);
+            $this->MetaTemplates->removeDefaultFlag($template->scope);
+            $this->CRUD->toggle($id, $fieldName, ['force_state' => !$template->is_default]);
         } else {
-            $message = $result ? __('Template disabled.') : __('Could not disable template');
+            $this->CRUD->toggle($id, $fieldName);
         }
         if ($this->ParamHandler->isRest()) {
-            if ($result) {
-                return $this->RestResponse->saveSuccessResponse('MetaTemplates', 'toggle', $id, 'json', $message);
-            } else {
-                return $this->RestResponse->saveFailResponse('MetaTemplates', 'toggle', $id, 'json', $message);
-            }
-        } else {
-            if ($this->Flash->{$result ? 'success' : 'error'}($message));
-            $this->redirect($this->referer());
+            return $this->restResponsePayload;
+        } else if($this->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
+            return $this->ajaxResponsePayload;
         }
     }
 }

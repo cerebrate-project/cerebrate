@@ -13,10 +13,10 @@ if ($field['scope'] === 'individuals') {
                 h($alignment['organisation']['name'])
             ),
             !$canRemove ? '' : sprintf(
-                "populateAndLoadModal(%s);",
+                "UI.openModalFromURL(%s);",
                 sprintf(
                     "'/alignments/delete/%s'",
-                    $alignment['id']
+                    h($alignment['id'])
                 )
             )
         );
@@ -32,10 +32,10 @@ if ($field['scope'] === 'individuals') {
                 h($alignment['individual']['email'])
             ),
             !$canRemove ? '' : sprintf(
-                "populateAndLoadModal(%s);",
+                "UI.openModalFromURL(%s);",
                 sprintf(
                     "'/alignments/delete/%s'",
-                    $alignment['id']
+                    h($alignment['id'])
                 )
             )
         );
