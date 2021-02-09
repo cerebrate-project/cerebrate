@@ -21,6 +21,16 @@ echo $this->element(
                 'path' => 'description'
             ],
             [
+                'key' => __('Enabled'),
+                'path' => 'enabled',
+                'type' => 'boolean'
+            ],
+            [
+                'key' => __('is_default'),
+                'path' => 'is_default',
+                'type' => 'boolean'
+            ],
+            [
                 'key' => __('Version'),
                 'path' => 'version'
             ],

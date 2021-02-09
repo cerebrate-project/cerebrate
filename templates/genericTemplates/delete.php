@@ -7,13 +7,17 @@
             </button>
         </div>
         <div class="modal-body">
-            <p><?= __('Are you sure you want to delete {0} #{1}?', h(Cake\Utility\Inflector::singularize($this->request->getParam('controller'))), h($id)) ?></p>
+            <?php if (empty($deletionText)): ?>
+                <p><?= __('Are you sure you want to delete {0} #{1}?', h(Cake\Utility\Inflector::singularize($this->request->getParam('controller'))), h($id)) ?></p>
+            <?php else: ?>
+                <p><?= h($deletionText) ?></p>
+            <?php endif; ?>
         </div>
         <div class="modal-footer">
             <?= $this->Form->postLink(
                 'Delete',
-                ['action' => 'delete', $id],
-                ['class' => 'btn btn-primary button-execute']
+                (empty($postLinkParameters) ? ['action' => 'delete', $id] : $postLinkParameters),
+                ['class' => 'btn btn-primary button-execute', 'id' => 'submitButton']
                 )
             ?>
             <button type="button" class="btn btn-secondary cancel-button" data-dismiss="modal"><?= __('Cancel') ?></button>

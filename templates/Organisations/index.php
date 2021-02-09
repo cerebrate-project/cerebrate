@@ -3,7 +3,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $data,
         'top_bar' => [
-            'pull' => 'right',
             'children' => [
                 [
                     'type' => 'simple',
@@ -79,15 +78,15 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/organisations/edit/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/organisations/edit/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'edit'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/organisations/delete/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/organisations/delete/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'trash'
-            ]
+            ],
         ]
     ]
 ]);

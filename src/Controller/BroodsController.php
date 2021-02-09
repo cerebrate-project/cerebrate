@@ -12,12 +12,18 @@ class BroodsController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['name', 'uuid', 'url', 'description', 'Organisations.id', 'trusted', 'pull', 'authkey'],
-            'quickFilters' => ['name', 'uuid', 'description'],
+            'filters' => ['Broods.name', 'Broods.uuid', 'Broods.url', 'Broods.description', 'Organisations.id', 'Broods.trusted', 'pull', 'authkey'],
+            'quickFilters' => [['Broods.name' => true], 'Broods.uuid', ['Broods.description' => true]],
+            'contextFilters' => [
+                'fields' => [
+                    'pull',
+                ]
+            ],
             'contain' => ['Organisations']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
     }
@@ -25,8 +31,9 @@ class BroodsController extends AppController
     public function add()
     {
         $this->CRUD->add();
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
         $this->loadModel('Organisations');
@@ -41,8 +48,9 @@ class BroodsController extends AppController
     public function view($id)
     {
         $this->CRUD->view($id, ['contain' => ['Organisations']]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
     }
@@ -50,18 +58,27 @@ class BroodsController extends AppController
     public function edit($id)
     {
         $this->CRUD->edit($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
+        $this->loadModel('Organisations');
+        $dropdownData = [
+            'organisation' => $this->Organisations->find('list', [
+                'sort' => ['name' => 'asc']
+            ])
+        ];
+        $this->set(compact('dropdownData'));
         $this->render('add');
     }
 
     public function delete($id)
     {
         $this->CRUD->delete($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Sync');
     }

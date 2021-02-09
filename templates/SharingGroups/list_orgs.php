@@ -4,7 +4,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'data' => $sharing_group_orgs,
         'skip_pagination' => 1,
         'top_bar' => [
-            'pull' => 'right',
             'children' => [
                 [
                     'type' => 'simple',
@@ -12,8 +11,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         'data' => [
                             'type' => 'simple',
                             'text' => __('Add member'),
-                            'class' => 'btn btn-primary',
-                            'popover_url' => '/sharingGroups/addOrg/' . h($sharing_group_id)
+                            'popover_url' => '/sharingGroups/addOrg/' . h($sharing_group_id),
+                            'reload_url' => '/sharingGroups/listOrgs/' . h($sharing_group_id)
                         ]
                     ]
                 ],
@@ -53,10 +52,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/sharingGroups/removeOrg/' . h($sharing_group_id) . '/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/sharingGroups/removeOrg/' . h($sharing_group_id) . '/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'reload_url' => '/sharingGroups/listOrgs/' . h($sharing_group_id),
                 'icon' => 'trash'
-            ]
+            ],
         ]
     ]
 ]);

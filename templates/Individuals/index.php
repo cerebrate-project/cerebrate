@@ -3,7 +3,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $data,
         'top_bar' => [
-            'pull' => 'right',
             'children' => [
                 [
                     'type' => 'simple',
@@ -11,10 +10,13 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         'data' => [
                             'type' => 'simple',
                             'text' => __('Add individual'),
-                            'class' => 'btn btn-primary',
                             'popover_url' => '/individuals/add'
                         ]
                     ]
+                ],
+                [
+                    'type' => 'context_filters',
+                    'context_filters' => $filteringContexts
                 ],
                 [
                     'type' => 'search',
@@ -69,15 +71,15 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/individuals/edit/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/individuals/edit/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'edit'
             ],
             [
-                'onclick' => 'populateAndLoadModal(\'/individuals/delete/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/individuals/delete/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'trash'
-            ]
+            ],
         ]
     ]
 ]);

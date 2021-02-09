@@ -3,7 +3,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $data,
         'top_bar' => [
-            'pull' => 'right',
             'children' => [
                 [
                     'type' => 'simple',
@@ -11,7 +10,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         'data' => [
                             'type' => 'simple',
                             'text' => __('Add authentication key'),
-                            'class' => 'btn btn-primary',
                             'popover_url' => '/authKeys/add'
                         ]
                     ]
@@ -65,8 +63,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'pull' => 'right',
         'actions' => [
             [
-                'onclick' => 'populateAndLoadModal(\'/authKeys/delete/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
+                'open_modal' => '/authKeys/delete/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'icon' => 'trash'
             ]
         ]

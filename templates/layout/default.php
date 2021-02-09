@@ -39,9 +39,12 @@ $cakeDescription = 'Cerebrate';
     <?= $this->Html->script('popper.min.js') ?>
     <?= $this->Html->script('bootstrap.bundle.js') ?>
     <?= $this->Html->script('main.js') ?>
+    <?= $this->Html->script('bootstrap-helper.js') ?>
+    <?= $this->Html->script('api-helper.js') ?>
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
+    <?= $this->Html->css('bootstrap-additional.css') ?>
     <?= $this->Html->meta('favicon.ico', '/img/favicon.ico', ['type' => 'icon']); ?>
 </head>
 <body>
@@ -63,5 +66,10 @@ $cakeDescription = 'Cerebrate';
         </div>
     </main>
     <div id="mainModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel" aria-hidden="true"></div>
+    <div id="mainToastContainer" style="position: absolute; top: 15px; right: 15px; z-index: 1080"></div>
+    <div id="mainModalContainer"></div>
 </body>
+<script>
+    const darkMode = (<?= empty($darkMode) ? 'false' : 'true' ?>)
+</script>
 </html>

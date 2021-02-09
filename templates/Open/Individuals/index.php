@@ -56,16 +56,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url' => '/individuals/view',
                 'url_params_data_paths' => ['id'],
                 'icon' => 'eye'
-            ],
-            [
-                'onclick' => 'populateAndLoadModal(\'/individuals/edit/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
-                'icon' => 'edit'
-            ],
-            [
-                'onclick' => 'populateAndLoadModal(\'/individuals/delete/[onclick_params_data_path]\');',
-                'onclick_params_data_path' => 'id',
-                'icon' => 'trash'
             ]
         ]
     ]

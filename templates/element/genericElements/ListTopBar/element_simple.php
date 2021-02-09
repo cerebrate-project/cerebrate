@@ -2,31 +2,39 @@
     if (!isset($data['requirement']) || $data['requirement']) {
         if (!empty($data['popover_url'])) {
             $onClick = sprintf(
-                'onClick="populateAndLoadModal(%s)"',
-                sprintf("'%s'", h($data['popover_url']))
+                'onClick="openModalForButton(this, \'%s\', \'%s\')"',
+                h($data['popover_url']),
+                h(!empty($data['reload_url']) ? $data['reload_url'] : '')
             );
         }
-        if (empty($onClick) && (!empty($data['onClick']) || empty($data['url']))) {
-            $onClickParams = array();
-            if (!empty($data['onClickParams'])) {
-                foreach ($data['onClickParams'] as $param) {
-                    if ($param === 'this') {
-                        $onClickParams[] = h($param);
-                    } else {
-                        $onClickParams[] = '\'' . h($param) . '\'';
+        if (empty($onClick)) {
+            if (!empty($data['onClick']) || empty($data['url'])) {
+                $onClickParams = array();
+                if (!empty($data['onClickParams'])) {
+                    foreach ($data['onClickParams'] as $param) {
+                        if ($param === 'this') {
+                            $onClickParams[] = h($param);
+                        } else {
+                            $onClickParams[] = '\'' . h($param) . '\'';
+                        }
                     }
                 }
+                $onClickParams = implode(',', $onClickParams);
+                $onClick = sprintf(
+                    'onClick = "%s%s"',
+                    (empty($data['url'])) ? 'event.preventDefault();' : '',
+                    (!empty($data['onClick']) ? sprintf(
+                        '%s(%s)',
+                        h($data['onClick']),
+                        $onClickParams
+                    ) : '')
+                );
+            } else if(!empty($data['url'])) {
+                $onClick = sprintf(
+                    'onClick = "%s"',
+                    sprintf('window.location=\'%s\'', $data['url'])
+                );
             }
-            $onClickParams = implode(',', $onClickParams);
-            $onClick = sprintf(
-                'onClick = "%s%s"',
-                (empty($data['url'])) ? 'event.preventDefault();' : '',
-                (!empty($data['onClick']) ? sprintf(
-                    '%s(%s)',
-                    h($data['onClick']),
-                    $onClickParams
-                ) : '')
-            );
         }
         $dataFields = array();
         if (!empty($data['data'])) {
@@ -40,9 +48,9 @@
         }
         $dataFields = implode(' ', $dataFields);
         echo sprintf(
-            '<button class="btn btn-small %s %s" %s href="%s" %s %s %s %s %s>%s%s%s</button>',
+            '<button class="btn %s %s" %s href="%s" %s %s %s %s %s>%s%s%s</button>',
             empty($data['class']) ? '' : h($data['class']),
-            empty($data['active']) ? 'btn-inverse' : 'btn-primary',   // Change the default class for highlighted/active toggles here
+            empty($data['isFilter']) ? 'btn-primary' : (empty($data['active']) ? 'btn-light' : 'btn-secondary'),   // Change the default class for highlighted/active toggles here
             empty($data['id']) ? '' : 'id="' . h($data['id']) . '"',
             empty($data['url']) ? '#' : $baseurl . h($data['url']),    // prevent default is passed if the url is not set
             empty($onClick) ? '' : $onClick,    // pass $data['onClick'] for the function name to call and $data['onClickParams'] for the parameter list
@@ -53,10 +61,22 @@
             empty($data['fa-icon']) ? '' : sprintf(
                 '<i class="%s fa-%s"></i> ',
                 empty($data['fa-source']) ? 'fas' : h($data['fa-source']),
-                $data['fa-icon']
-            ),  // this has to be sanitised beforehand!
+                h($data['fa-icon'])
+            ),
             empty($data['html']) ? '' : $data['html'],  // this has to be sanitised beforehand!
             empty($data['text']) ? '' : h($data['text'])
         );
     }
 ?>
+
+<script>
+    function openModalForButton(clicked, url, reloadUrl='') {
+        const loadingOverlay = new OverlayFactory(clicked);
+        const fallbackReloadUrl = '<?= $this->Url->build(['action' => 'index']); ?>'
+        reloadUrl = reloadUrl != '' ? reloadUrl : fallbackReloadUrl
+        loadingOverlay.show()
+        UI.openModalFromURL(url, reloadUrl, '<?= $tableRandomValue ?>').finally(() => {
+            loadingOverlay.hide()
+        })
+    }
+</script>

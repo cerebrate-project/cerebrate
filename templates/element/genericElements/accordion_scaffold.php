@@ -1,7 +1,7 @@
 <?php
     $randomId = Cake\Utility\Security::randomString(8);
 ?>
-<div id="accordion">
+<div id="accordion" class="<?= !empty($class) ? $class : '' ?>">
     <div class="card">
         <div class="card-header" id="heading-<?= $randomId ?>">
             <h5 class="mb0"><a href="#" class="btn btn-link" data-toggle="collapse" data-target="#view-child-<?= $randomId ?>" aria-expanded="true" aria-controls="collapseOne"><?= h($title) ?></a></h5>

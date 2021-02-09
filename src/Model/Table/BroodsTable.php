@@ -44,6 +44,10 @@ class BroodsTable extends AppTable
                 'error' => __('Authentication failure'),
                 'reason' => __('Invalid user credentials.')
             ],
+            404 => [
+                'error' => __('Not found'),
+                'reason' => __('Incorrect URL or proxy error')
+            ],
             405 => [
                 'error' => __('Insufficient privileges'),
                 'reason' => __('The remote user account doesn\'t have the required privileges to synchronise.')

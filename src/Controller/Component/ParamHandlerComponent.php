@@ -61,4 +61,13 @@ class ParamHandlerComponent extends Component
     {
         return (json_decode($data) != null) ? true : false;
     }
+
+    public function isAjax()
+    {
+        if ($this->isAjax !== null) {
+            return $this->isAjax;
+        }
+        $this->isAjax = $this->request->is('ajax');
+        return $this->isAjax;
+    }
 }
