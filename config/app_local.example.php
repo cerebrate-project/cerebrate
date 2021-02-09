@@ -91,6 +91,7 @@ return [
     ],
     'Cerebrate' => [
 	'open' => [],
-    'dark' => 0
+    'dark' => 0,
+    'baseurl' => ''
     ]
 ];

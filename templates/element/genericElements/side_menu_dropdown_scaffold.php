@@ -27,7 +27,7 @@ if (isset($menu[$metaGroup])) {
             }
             $children .= sprintf(
                 '<a class="dropdown-item" href="%s">%s</a>',
-                empty($data['url']) ? '#' : h($data['url']),
+                empty($data['url']) ? '#' : $baseurl . h($data['url']),
                 empty($data['label']) ? h($action) : $data['label']
             );
         }

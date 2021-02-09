@@ -9,7 +9,7 @@
         foreach ($roles as $role) {
             $i++;
             echo sprintf(
-                '<a href="%s/roles/view/%s">%s</a>',
+                '<a href="%sroles/view/%s">%s</a>',
                 $baseurl,
                 h($role['id']),
                 h($role['name'])

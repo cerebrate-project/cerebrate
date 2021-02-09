@@ -24,7 +24,7 @@
         h($ageString),
         (!$enabled || !$isSiteAdmin) ? '' : sprintf(
             ' <a href="%s" aria-label="%s" title="%s"><span class="fa fa-memory"></span></a>',
-            $baseurl . '/feeds/cacheFeeds/' . h($primary),
+            $baseurl . 'feeds/cacheFeeds/' . h($primary),
             __('Cache feed'),
             __('Cache feed')
         )

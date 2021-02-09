@@ -5,7 +5,7 @@ if (isset($menu[$metaGroup])) {
     foreach ($menu[$metaGroup] as $scope => $scopeData) {
         $children .= sprintf(
             '<a href="%s" class="font-weight-bold list-group-item list-group-item-action %s %s pl-1 border-0">%s</a>',
-            empty($scopeData['url']) ? '#' : h($scopeData['url']),
+            empty($scopeData['url']) ? '#' : $baseurl . '/' . h($scopeData['url']),
             empty($scopeData['class']) ? '' : h($scopeData['class']),
             $backgroundColour,
             empty($scopeData['label']) ? h($scope) : $scopeData['label']
@@ -41,7 +41,7 @@ if (isset($menu[$metaGroup])) {
             }
             $children .= sprintf(
                 $link_template,
-                empty($data['url']) ? '#' : h($data['url']),
+                empty($data['url']) ? '#' : $baseurl . h($data['url']),
                 empty($data['class']) ? '' : h($data['class']),
                 $active ? 'active' : '',
                 $active ? '' : $backgroundColour,

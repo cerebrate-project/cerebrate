@@ -15,7 +15,8 @@
             $field['url'] = str_replace('{{url_data}}', $url_data_path, $field['url']);
         }
         echo sprintf(
-            '<a href="%s">%s</a>',
+            '<a href="%s%s">%s</a>',
+            $baseurl,
             h($field['url']),
             count($data)
         );

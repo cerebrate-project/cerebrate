@@ -35,7 +35,7 @@
             }
         }
         $url_param_data_paths = '';
-        $url = empty($action['url']) ? '#' : h($action['url']);
+        $url = empty($action['url']) ? '#' : $baseurl . '/' . h($action['url']);
         if (!empty($action['url_params_data_paths'])) {
             if (is_array($action['url_params_data_paths'])) {
                 $temp = array();
@@ -82,7 +82,8 @@
 
             }
             echo sprintf(
-                '<a href="%s" title="%s" aria-label="%s" %s %s class="link-unstyled"><i class="%s"></i></a> ',
+                '<a href="%s%s" title="%s" aria-label="%s" %s %s class="link-unstyled"><i class="%s"></i></a> ',
+                $baseurl,
                 $url,
                 empty($action['title']) ? '' : h($action['title']),
                 empty($action['title']) ? '' : h($action['title']),

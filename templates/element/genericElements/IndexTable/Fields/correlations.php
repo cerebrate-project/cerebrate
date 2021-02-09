@@ -6,7 +6,8 @@
     $correlations_html = array();
     foreach ($correlations as $id => $name) {
         $correlations_html[] = sprintf(
-            '<a href="%s" title="%s">%s</a>',
+            '<a href="%s%s" title="%s">%s</a>',
+            $baseurl,
             sprintf(
                 '%s/%s',
                 $scope_to_url[empty($scope) ? 'event' : $scope],

@@ -15,7 +15,8 @@ if (!empty($field['url'])) {
         }
     }
     $string = sprintf(
-        '<a href="%s">%s</a>',
+        '<a href="%s%s">%s</a>',
+        $baseurl,
         h($field['url']),
         $string
     );

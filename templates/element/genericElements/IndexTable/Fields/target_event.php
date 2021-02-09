@@ -11,7 +11,7 @@
                 } else {
                     if ($data['Feed.event_id']) {
                         echo sprintf(
-                            '<a href="%s/events/view/%s">%s</a>',
+                            '<a href="%sevents/view/%s">%s</a>',
                             $baseurl,
                             h($data['Feed.event_id']),
                             __('Fixed event %s', h($data['Feed.event_id']))

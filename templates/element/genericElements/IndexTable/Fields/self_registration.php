@@ -9,7 +9,8 @@
             (!empty($self_registration_flag[0])) ? 'check' : 'times',
             (empty($self_registration_flag[0])) ? '' :
             sprintf(
-                ' (<a href="%s/users/register">' . __('click here') . '</a>)',
+                ' (<a href="%s%s/users/register">' . __('click here') . '</a>)',
+                $baseurl,
                 h($url)
             )
         );

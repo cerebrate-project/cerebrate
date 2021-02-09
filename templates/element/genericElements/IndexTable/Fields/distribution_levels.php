@@ -5,7 +5,7 @@
         $distributionLevel == 0 ? 'red' : '',
         $distributionLevel != 4 ? $distributionLevels[$distributionLevel] :
             sprintf(
-                '<a href="%s/sharing_groups/view/%s">%s</a>',
+                '<a href="%ssharing_groups/view/%s">%s</a>',
                 $baseurl,
                 h($row['SharingGroup']['id']),
                 h($row['SharingGroup']['name'])

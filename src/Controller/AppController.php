@@ -112,7 +112,12 @@ class AppController extends Controller
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
         $this->set('darkMode', !empty(Configure::read('Cerebrate.dark')));
-        $this->set('baseurl', empty(Configure::read('baseurl')) ? '' : Configure::read('baseurl'));
+        if (!empty(Configure::read('baseurl'))) {
+            Configure::write('App.fullBaseUrl', Configure::read('baseurl'));
+        } else if (!empty(env('CEREBRATE_BASEURL'))) {
+            Configure::write('App.fullBaseUrl', env('CEREBRATE_BASEURL'));
+        }
+        $this->set('baseurl', Configure::read('App.fullBaseUrl'));
     }
 
     private function authApiUser(): void

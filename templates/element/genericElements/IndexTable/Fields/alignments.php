@@ -8,7 +8,8 @@ if ($field['scope'] === 'individuals') {
             '<div><span class="font-weight-bold">%s</span> @ %s <a href="#" class="fas fa-trash .text-reset .text-decoration-none" onClick="%s"></a></div>',
             h($alignment['type']),
             sprintf(
-                '<a href="/organisations/view/%s">%s</a>',
+                '<a href="%sorganisations/view/%s">%s</a>',
+                $baseurl,
                 h($alignment['organisation']['id']),
                 h($alignment['organisation']['name'])
             ),
@@ -27,7 +28,8 @@ if ($field['scope'] === 'individuals') {
             '<div>[<span class="font-weight-bold">%s</span>] %s <a href="#" class="fas fa-trash .text-reset .text-decoration-none" onClick="%s"></a></div>',
             h($alignment['type']),
             sprintf(
-                '<a href="/individuals/view/%s">%s</a>',
+                '<a href="%sindividuals/view/%s">%s</a>',
+                $baseurl,
                 h($alignment['individual']['id']),
                 h($alignment['individual']['email'])
             ),

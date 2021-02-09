@@ -8,8 +8,9 @@ foreach ($data['menu'] as $name => $menuElement) {
     }
     if (!empty($menuElement['type']) === 'single' && $menuElement['type'] === 'single') {
         $navdata .= sprintf(
-            '<li class="nav-item active"><a class="nav-link %s" href="%s">%s</a>',
+            '<li class="nav-item active"><a class="nav-link %s" href="%s%s">%s</a>',
             empty($menuElement['class']) ? '' : h($menuElement['class']),
+            $baseurl,
             empty($menuElement['url']) ? '' : h($menuElement['url']),
             empty($name) ? '' : h($name)
         );
@@ -29,8 +30,9 @@ foreach ($data['menu'] as $name => $menuElement) {
                     continue;
                 }
                 $navdataElements .= sprintf(
-                    '<a class="dropdown-item %s" href="%s">%s</a>',
+                    '<a class="dropdown-item %s" href="%s%s">%s</a>',
                     empty($child['class']) ? '' : h($child['class']),
+                    $baseurl,
                     empty($child['url']) ? '' : h($child['url']),
                     empty($child['label']) ? '' : h($child['label'])
                 );
@@ -51,7 +53,8 @@ foreach ($data['menu'] as $name => $menuElement) {
     }
 }
 $logoutButton = sprintf(
-    '<span class="nav-item"><a href="/users/logout" class="nav-link">%s</a></span>',
+    '<span class="nav-item"><a href="%susers/logout" class="nav-link">%s</a></span>',
+    $baseurl,
     __('Logout')
 );
 $navdata = sprintf(
@@ -60,8 +63,9 @@ $navdata = sprintf(
     $logoutButton
 );
 $homeButton = sprintf(
-    '<a class="navbar-brand %s" href="%s">%s</a>',
+    '<a class="navbar-brand %s" href="%s%s">%s</a>',
     empty($data['home']['class']) ? '' : h($data['home']['class']),
+    $baseurl,
     empty($data['home']['url']) ? '' : h($data['home']['url']),
     empty($data['home']['text']) ? '' : h($data['home']['text'])
 );

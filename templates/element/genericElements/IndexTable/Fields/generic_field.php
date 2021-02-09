@@ -36,7 +36,8 @@
             }
         }
         $data = sprintf(
-            '<a href="%s">%s</a>',
+            '<a href="%s%s">%s</a>',
+            $baseurl,
             h($field['url']),
             $data
         );
