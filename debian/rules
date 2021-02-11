@@ -1,0 +1,13 @@
+#!/usr/bin/make -f
+%:
+	dh $@ --with phpcomposer
+
+override_dh_auto_build:
+	composer install
+	find vendor -name .gitattributes -delete
+	find vendor -name .gitignore -delete
+	dh_auto_build
+
+override_dh_auto_clean:
+	rm -rf logs tmp vendor composer.lock
+	dh_auto_clean

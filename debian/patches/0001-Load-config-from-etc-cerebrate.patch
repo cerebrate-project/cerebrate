@@ -1,0 +1,27 @@
+From: Birger Schacht <schacht@cert.at>
+Date: Mon, 1 Feb 2021 09:13:45 +0100
+Subject: Load config from /etc/cerebrate
+
+---
+ config/bootstrap.php | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/config/bootstrap.php b/config/bootstrap.php
+index 615df3d..541f25f 100644
+--- a/config/bootstrap.php
++++ b/config/bootstrap.php
+@@ -89,6 +89,14 @@ if (file_exists(CONFIG . 'app_local.php')) {
+     Configure::load('app_local', 'default');
+ }
+ 
++/*
++ * Load global configuration file from /etc/cerebrate/config.php
++ */
++if (file_exists('/etc/cerebrate/config.php')) {
++    Configure::config('global', new PhpConfig('/etc/cerebrate/'));
++    Configure::load('config', 'global');
++}
++
+ /*
+  * When debug = true the metadata cache should only last
+  * for a short time.
