@@ -1,0 +1,30 @@
+#!/bin/sh -e
+
+. /usr/share/debconf/confmodule
+
+GENRAND () {
+    tr -dc $1 < /dev/urandom | head -c $2
+}
+
+if [ -f /usr/share/dbconfig-common/dpkg/postinst.mysql ]; then
+    . /usr/share/dbconfig-common/dpkg/postinst.mysql
+    dbc_generate_include_owner="root:www-data"
+    dbc_generate_include_perms="640"
+    dbc_generate_include=php:/etc/cerebrate/mysql.php
+    dbc_go php-cerebrate "$@"
+fi
+
+if [ "$1" = "configure" ] ; then
+    if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
+        . /usr/share/apache2/apache2-maintscript-helper
+        #apache2_invoke enconf php-cerebrate.conf || true
+	apache2_invoke ensite cerebrate.local.conf || true
+        apache2_invoke enmod rewrite || true
+    fi
+
+    sed -i "s/__SALT__/$(GENRAND A-Za-z0-9 64)/" /etc/cerebrate/config.php
+
+    sed -i "s/__SECRET__/$RET/" /etc/cerebrate/config.php
+fi
+
+#DEBHELPER#

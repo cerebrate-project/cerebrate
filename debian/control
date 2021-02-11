@@ -1,0 +1,36 @@
+Source: cerebrate
+Section: php
+Priority: optional
+Maintainer: Cerebrate Developers <info@circl.lu>
+Build-Depends: composer,
+               debhelper (>= 9),
+               dh-exec,
+               git,
+               php-intl,
+               php-zip,
+               pkg-php-tools (>= 1.7~)
+Standards-Version: 3.9.6
+Homepage: https://github.com/cerebrate-project/cerebrate
+Vcs-Git: git://anonscm.debian.org/pkg-php/php-foo.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-php/php-foo.git
+
+Package: php-cerebrate
+Architecture: all
+Depends: php-cli,
+         php-dom,
+         php-intl,
+         php-ldap,
+         php-mbstring,
+         php-mysql,
+         php-sqlite3,
+         php-xml,
+         sqlite,
+         unzip,
+         dbconfig-mysql | dbconfig-no-thanks,
+         ${misc:Depends}
+Recommends: apache2 | httpd,
+            libapache2-mod-php,
+            default-mysql-server | virtual-mysql-server
+Description: ${phpcomposer:description}
+ Cerebrate is an open-source platform meant to act as a trusted contact
+ information provider and interconnection orchestrator for other security tools.
