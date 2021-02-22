@@ -58,6 +58,12 @@ class BootstrapHelper extends Helper
         $bsAlert = new BoostrapAlert($options);
         return $bsAlert->alert();
     }
+
+    public function table($options, $data)
+    {
+        $bsTable = new BoostrapTable($options, $data);
+        return $bsTable->table();
+    }
 }
 
 class BootstrapGeneric
@@ -78,7 +84,7 @@ class BootstrapGeneric
         }
     }
 
-    protected static function genNode($node, $params)
+    protected static function genNode($node, $params=[])
     {
         return sprintf('<%s %s>', $node, BootstrapGeneric::genHTMLParams($params));
     }
@@ -382,7 +388,7 @@ class BoostrapAlert extends BootstrapGeneric {
                 'arial-hidden' => 'true'
             ]);
             $html .= '&times;';
-            $html .= '</div></div>';
+            $html .= '</span></button>';
         }
         return $html;
     }
@@ -399,3 +405,128 @@ class BoostrapAlert extends BootstrapGeneric {
     }
 }
 
+class BoostrapTable extends BootstrapGeneric {
+    private $defaultOptions = [
+        'striped' => true,
+        'bordered' => true,
+        'borderless' => false,
+        'hover' => true,
+        'small' => false,
+        'variant' => '',
+        'tableClass' => [],
+        'headerClass' => [],
+        'bodyClass' => [],
+    ];
+
+    private $bsClasses = null;
+
+    function __construct($options, $data) {
+        $this->allowedOptionValues = [
+            'variant' => array_merge(BootstrapGeneric::$variants, [''])
+        ];
+        $this->processOptions($options);
+        $this->fields = $data['fields'];
+        $this->items = $data['items'];
+        $this->caption = !empty($data['caption']) ? $data['caption'] : '';
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function table()
+    {
+        return $this->genTable();
+    }
+
+    private function genTable()
+    {
+        $html = BootstrapGeneric::genNode('table', [
+            'class' => [
+                'table',
+                "table-{$this->options['variant']}",
+                $this->options['striped'] ? 'table-striped' : '',
+                $this->options['bordered'] ? 'table-bordered' : '',
+                $this->options['borderless'] ? 'table-borderless' : '',
+                $this->options['hover'] ? 'table-hover' : '',
+                $this->options['small'] ? 'table-sm' : '',
+                !empty($this->options['variant']) ? "table-{$this->options['variant']}" : '',
+                !empty($this->options['tableClass']) ? $this->options['tableClass'] : ''
+            ],
+        ]);
+
+        $html .= $this->genCaption();
+        $html .= $this->genHeader();
+        $html .= $this->genBody();
+        
+        $html .= '</table>';
+        return $html;
+    }
+
+    private function genHeader()
+    {
+        $head =  BootstrapGeneric::genNode('thead', [
+            'class' => [
+                !empty($this->options['headerClass']) ? $this->options['headerClass'] : ''
+            ],
+        ]);
+        $head .= BootstrapGeneric::genNode('tr');
+        foreach ($this->fields as $i => $field) {
+            if (is_array($field)) {
+                $label = !empty($field['label']) ? $field['label'] : Inflector::humanize($field['key']);
+            } else {
+                $label = Inflector::humanize($field);
+            }
+            $head .= BootstrapGeneric::genNode('th', [
+            ]);
+            $head .= h($label);
+            $head .= '</th>';
+        }
+        $head .= '</tr>';
+        $head .= '</head>';
+        return $head;
+    }
+
+    private function genBody()
+    {
+        $body =  BootstrapGeneric::genNode('tbody', [
+            'class' => [
+                !empty($this->options['bodyClass']) ? $this->options['bodyClass'] : ''
+            ],
+        ]);
+        $body .= BootstrapGeneric::genNode('tr');
+        foreach ($this->items as $i => $row) {
+            if (array_keys($row) !== range(0, count($row) - 1)) { // associative array
+                foreach ($this->fields as $i => $field) {
+                    if (is_array($field)) {
+                        $key = $field['key'];
+                    } else {
+                        $key = $field;
+                    }
+                    $cellValue = $row[$key];
+                    $body .= BootstrapGeneric::genNode('td', [
+                    ]);
+                    $body .= h($cellValue);
+                    $body .= '</td>';
+                }
+            } else {
+                foreach ($row as $cellValue) {
+                    $body .= BootstrapGeneric::genNode('td', [
+                    ]);
+                    $body .= h($cellValue);
+                    $body .= '</td>';
+                }
+            }
+        }
+        $body .= '</tr>';
+        $body .= '</tbody';
+        return $body;
+    }
+
+    private function genCaption()
+    {
+        return "<caption>{$this->caption}</caption>";
+    }
+}
