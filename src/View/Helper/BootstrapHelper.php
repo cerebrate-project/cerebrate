@@ -52,9 +52,56 @@ class BootstrapHelper extends Helper
         $bsTabs = new BootstrapTabs($options);
         return $bsTabs->tabs();
     }
+
+    public function alert($options)
+    {
+        $bsAlert = new BoostrapAlert($options);
+        return $bsAlert->alert();
+    }
 }
 
-class BootstrapTabs extends Helper
+class BootstrapGeneric
+{
+    public static $variants = ['primary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'];
+    protected $allowedOptionValues = [];
+    protected $options = [];
+
+    protected function checkOptionValidity()
+    {
+        foreach ($this->allowedOptionValues as $option => $values) {
+            if (!isset($this->options[$option])) {
+                throw new InvalidArgumentException(__('Option `{0}` should have a value', $option));
+            }
+            if (!in_array($this->options[$option], $values)) {
+                throw new InvalidArgumentException(__('Option `{0}` is not a valid option for `{1}`. Accepted values: {2}', json_encode($this->options[$option]), $option, json_encode($values)));
+            }
+        }
+    }
+
+    protected static function genNode($node, $params)
+    {
+        return sprintf('<%s %s>', $node, BootstrapGeneric::genHTMLParams($params));
+    }
+
+    protected static function genHTMLParams($params)
+    {
+        $html = '';
+        foreach ($params as $k => $v) {
+            $html .= BootstrapGeneric::genHTMLParam($k, $v) . ' ';
+        }
+        return $html;
+    }
+
+    protected static function genHTMLParam($paramName, $values)
+    {
+        if (!is_array($values)) {
+            $values = [$values];
+        }
+        return sprintf('%s="%s"', $paramName, implode(' ', $values));
+    }
+}
+
+class BootstrapTabs extends BootstrapGeneric
 {
     private $defaultOptions = [
         'fill' => false,
@@ -73,17 +120,14 @@ class BootstrapTabs extends Helper
             'content' => [],
         ],
     ];
-
-    private $allowedOptionValues = [
-        'justify' => [false, 'center', 'end'],
-        'body-variant' => ['primary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent', ''],
-        'header-variant' => ['primary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'],
-    ];
-
-    private $options = null;
     private $bsClasses = null;
 
     function __construct($options) {
+        $this->allowedOptionValues = [
+            'justify' => [false, 'center', 'end'],
+            'body-variant' => array_merge(BootstrapGeneric::$variants, ['']),
+            'header-variant' => BootstrapGeneric::$variants,
+        ];
         $this->processOptions($options);
     }
 
@@ -97,6 +141,9 @@ class BootstrapTabs extends Helper
         $this->options = array_merge($this->defaultOptions, $options);
         $this->data = $this->options['data'];
         $this->checkOptionValidity();
+        if (empty($this->data['navs'])) {
+            throw new InvalidArgumentException(__('No navigation data provided'));
+        }
         $this->bsClasses = [
             'nav' => [],
             'nav-item' => $this->options['nav-item-class'],
@@ -159,21 +206,6 @@ class BootstrapTabs extends Helper
         }
         if (!is_array($this->options['content-class'])) {
             $this->options['content-class'] = [$this->options['content-class']];
-        }
-    }
-
-    private function checkOptionValidity()
-    {
-        foreach ($this->allowedOptionValues as $option => $values) {
-            if (!isset($this->options[$option])) {
-                throw new InvalidArgumentException(__('Option `{0}` should have a value', $option));
-            }
-            if (!in_array($this->options[$option], $values)) {
-                throw new InvalidArgumentException(__('Option `{0}` is not a valid option for `{1}`. Accepted values: {2}', json_encode($this->options[$option]), $option, json_encode($values)));
-            }
-        }
-        if (empty($this->data['navs'])) {
-            throw new InvalidArgumentException(__('No navigation data provided'));
         }
     }
 
@@ -287,27 +319,83 @@ class BootstrapTabs extends Helper
         $html .= '</div>';
         return $html;
     }
+}
 
-    private function genNode($node, $params)
-    {
-        return sprintf('<%s %s>', $node, $this->genHTMLParams($params));
+class BoostrapAlert extends BootstrapGeneric {
+    private $defaultOptions = [
+        'text' => '',
+        'html' => null,
+        'dismissible' => true,
+        'variant' => 'primary',
+        'fade' => true
+    ];
+
+    private $bsClasses = null;
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+        ];
+        $this->processOptions($options);
     }
 
-    private function genHTMLParams($params)
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function alert()
+    {
+        return $this->genAlert();
+    }
+
+    private function genAlert()
+    {
+        $html = BootstrapGeneric::genNode('div', [
+            'class' => [
+                'alert',
+                "alert-{$this->options['variant']}",
+                $this->options['dismissible'] ? 'alert-dismissible' : '',
+                $this->options['fade'] ? 'fade show' : '',
+            ],
+            'role' => "alert"
+        ]);
+
+        $html .= $this->genContent();
+        $html .= $this->genCloseButton();
+        $html .= '</div>';
+        return $html;
+    }
+
+    private function genCloseButton()
     {
         $html = '';
-        foreach ($params as $k => $v) {
-            $html .= $this->genHTMLParam($k, $v) . ' ';
+        if ($this->options['dismissible']) {
+            $html .= BootstrapGeneric::genNode('button', [
+                'type' => 'button',
+                'class' => 'close',
+                'data-dismiss' => 'alert',
+                'arial-label' => 'close'
+            ]);
+            $html .= BootstrapGeneric::genNode('span', [
+                'arial-hidden' => 'true'
+            ]);
+            $html .= '&times;';
+            $html .= '</div></div>';
         }
         return $html;
     }
 
-    private function genHTMLParam($paramName, $values)
+    private function genContent()
     {
-        if (!is_array($values)) {
-            $values = [$values];
+        $html = '';
+        if (!is_null($this->options['html'])) {
+            $html .= $this->options['html'];
+        } else {
+            $html .= h($this->options['text']);
         }
-        return sprintf('%s="%s"', $paramName, implode(' ', $values));
+        return $html;
     }
 }
 
