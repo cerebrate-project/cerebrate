@@ -64,6 +64,12 @@ class BootstrapHelper extends Helper
         $bsTable = new BoostrapTable($options, $data);
         return $bsTable->table();
     }
+
+    public function button($options)
+    {
+        $bsButton = new BoostrapButton($options);
+        return $bsButton->button();
+    }
 }
 
 class BootstrapGeneric
@@ -524,5 +530,84 @@ class BoostrapTable extends BootstrapGeneric {
     private function genCaption()
     {
         return $this->genNode('caption', [], h($this->caption));
+    }
+}
+
+class BoostrapButton extends BootstrapGeneric {
+    private $defaultOptions = [
+        'id' => '',
+        'text' => '',
+        'html' => null,
+        'variant' => 'primary',
+        'outline' => false,
+        'size' => '',
+        'block' => false,
+        'icon' => null,
+        'class' => [],
+        'type' => 'button',
+        'nodeType' => 'button',
+        'params' => []
+    ];
+
+    private $bsClasses = [];
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+            'size' => ['', 'sm', 'lg'],
+            'type' => ['button', 'submit', 'reset']
+        ];
+        $options['class'] = !is_array($options['class']) ? [$options['class']] : $options['class'];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+
+        $this->bsClasses[] = 'btn';
+        if ($this->options['outline']) {
+            $this->bsClasses[] = "btn-outline-{$this->options['variant']}";
+        } else {
+            $this->bsClasses[] = "btn-{$this->options['variant']}";
+        }
+        if (!empty($this->options['size'])) {
+            $this->bsClasses[] = "btn-$this->options['size']";
+        }
+        if ($this->options['block']) {
+            $this->bsClasses[] = 'btn-block';
+        }
+    }
+
+    public function button()
+    {
+        return $this->genButton();
+    }
+
+    private function genButton()
+    {
+        $html = $this->openNode($this->options['nodeType'], array_merge($this->options['params'], [
+            'class' => array_merge($this->options['class'], $this->bsClasses),
+            'role' => "alert",
+            'type' => $this->options['type']
+        ]));
+
+        $html .= $this->genIcon();
+        $html .= $this->genContent();
+        $html .= $this->closeNode($this->options['nodeType']);
+        return $html;
+    }
+
+    private function genIcon()
+    {
+        return $this->genNode('span', [
+            'class' => ['mr-1', "fa fa-{$this->options['icon']}"],
+        ]);
+    }
+
+    private function genContent()
+    {
+        return !is_null($this->options['html']) ? $this->options['html'] : $this->options['text'];
     }
 }
