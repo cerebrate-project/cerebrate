@@ -496,8 +496,12 @@ class BoostrapTable extends BootstrapGeneric {
                 !empty($this->options['bodyClass']) ? $this->options['bodyClass'] : ''
             ],
         ]);
-        $body .= BootstrapGeneric::genNode('tr');
         foreach ($this->items as $i => $row) {
+            $body .= BootstrapGeneric::genNode('tr',[
+                'class' => [
+                    !empty($row['_rowVariant']) ? "table-{$row['_rowVariant']}" : ''
+                ]
+            ]);
             if (array_keys($row) !== range(0, count($row) - 1)) { // associative array
                 foreach ($this->fields as $i => $field) {
                     if (is_array($field)) {
@@ -519,8 +523,8 @@ class BoostrapTable extends BootstrapGeneric {
                     $body .= '</td>';
                 }
             }
+            $body .= '</tr>';
         }
-        $body .= '</tr>';
         $body .= '</tbody';
         return $body;
     }
