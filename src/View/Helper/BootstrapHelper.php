@@ -501,30 +501,50 @@ class BoostrapTable extends BootstrapGeneric {
             ],
         ]);
         foreach ($this->items as $i => $row) {
-            $body .= $this->openNode('tr',[
-                'class' => [
-                    !empty($row['_rowVariant']) ? "table-{$row['_rowVariant']}" : ''
-                ]
-            ]);
-            if (array_keys($row) !== range(0, count($row) - 1)) { // associative array
-                foreach ($this->fields as $i => $field) {
-                    if (is_array($field)) {
-                        $key = $field['key'];
-                    } else {
-                        $key = $field;
-                    }
-                    $cellValue = $row[$key];
-                    $body .= $this->genNode('td', [], h($cellValue));
-                }
-            } else {
-                foreach ($row as $cellValue) {
-                    $body .= $this->genNode('td', [], h($cellValue));
-                }
-            }
-            $body .= $this->closeNode('tr');;
+            $body .= $this->genRow($row);
         }
-        $body .= $this->closeNode('tbody');;
+        $body .= $this->closeNode('tbody');
         return $body;
+    }
+
+    private function genRow($row)
+    {
+        $html = $this->openNode('tr',[
+            'class' => [
+                !empty($row['_rowVariant']) ? "table-{$row['_rowVariant']}" : ''
+            ]
+        ]);
+        if (array_keys($row) !== range(0, count($row) - 1)) { // associative array
+            foreach ($this->fields as $i => $field) {
+                if (is_array($field)) {
+                    $key = $field['key'];
+                } else {
+                    $key = $field;
+                }
+                $cellValue = $row[$key];
+                $html .= $this->genCell($cellValue, $field, $row);
+            }
+        } else { // indexed array
+            foreach ($row as $cellValue) {
+                $html .= $this->genCell($cellValue, $field, $row);
+            }
+        }
+        $html .= $this->closeNode('tr');
+        return $html;
+    }
+
+    private function genCell($value, $field=[], $row=[])
+    {
+        if (isset($field['formatter'])) {
+            $cellContent = $field['formatter']($value, $row);
+        } else {
+            $cellContent = h($value);
+        }
+        return $this->genNode('td', [
+            'class' => [
+                !empty($row['_cellVariant']) ? "bg-{$row['_cellVariant']}" : ''
+            ]
+        ], $cellContent);
     }
 
     private function genCaption()
