@@ -10,10 +10,10 @@
         $currentQuery = $this->request->getQuery();
         unset($currentQuery['page'], $currentQuery['limit'], $currentQuery['sort']);
         if (!empty($filteringContext['filterCondition'])) { // PHP replaces `.` by `_` when fetching the request parameter
-            $currentFilteringContextKey = array_key_first($filteringContext['filterCondition']);
-            $currentFilteringContext = [
-                str_replace('.', '_', $currentFilteringContextKey) => $filteringContext['filterCondition'][$currentFilteringContextKey]
-            ];
+            $currentFilteringContext = [];
+            foreach ($filteringContext['filterCondition'] as $currentFilteringContextKey => $value) {
+                $currentFilteringContext[str_replace('.', '_', $currentFilteringContextKey)] = $value;
+            }
         } else {
             $currentFilteringContext = $filteringContext['filterCondition'];
         }
@@ -23,7 +23,9 @@
             'onClick' => 'changeIndexContext',
             'onClickParams' => [
                 'this',
-                $this->Url->build($urlParams),
+                $this->Url->build($urlParams, [
+                    'escape' => false, // URL builder escape `&` when multiple ? arguments
+                ]),
                 "#table-container-${tableRandomValue}",
                 "#table-container-${tableRandomValue} table.table",
             ],
