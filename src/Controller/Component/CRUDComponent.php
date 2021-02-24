@@ -373,27 +373,48 @@ class CRUDComponent extends Component
                 if (is_array($filterValue)) {
                     $query->where([($filter . ' IN') => $filterValue]);
                 } else {
-                    if (strlen(trim($filterValue, '%')) === strlen($filterValue)) {
-                        $query->where([$filter => $filterValue]);
-                    } else {
-                        $query->like([$filter => $filterValue]);
-                    }
+                    $query = $this->setValueCondition($query, $filter, $filterValue);
                 }
             }
         }
         if (!empty($params['relatedFilters'])) {
             foreach ($params['relatedFilters'] as $filter => $filterValue) {
                 $filterParts = explode('.', $filter);
-                $query->matching($filterParts[0], function(\Cake\ORM\Query $q) use ($filterValue, $filter) {
-                    if (strlen(trim($filterValue, '%')) === strlen($filterValue)) {
-                        return $q->where([$filter => $filterValue]);
-                    } else {
-                        return $q->like([$filter => $filterValue]);
-                    }
-                });
+                $query = $this->setNestedRelatedCondition($query, $filterParts, $filterValue);
             }
         }
         return $query;
+    }
+
+    protected function setNestedRelatedCondition($query, $filterParts, $filterValue)
+    {
+        $modelName = $filterParts[0];
+        if (count($filterParts) == 2) {
+            $fieldName = implode('.', $filterParts);
+            $query = $this->setRelatedCondition($query, $modelName, $fieldName, $filterValue);
+        } else {
+            $filterParts = array_slice($filterParts, 1);
+            $query = $query->matching($modelName, function(\Cake\ORM\Query $q) use ($filterParts, $filterValue) {
+                return $this->setNestedRelatedCondition($q, $filterParts, $filterValue);
+            });
+        }
+        return $query;
+    }
+
+    protected function setRelatedCondition($query, $modelName, $fieldName, $filterValue)
+    {
+        return $query->matching($modelName, function(\Cake\ORM\Query $q) use ($fieldName, $filterValue) {
+            return $this->setValueCondition($q, $fieldName, $filterValue);
+        });
+    }
+
+    protected function setValueCondition($query, $fieldName, $value)
+    {
+        if (strlen(trim($value, '%')) === strlen($value)) {
+            return $query->where([$fieldName => $value]);
+        } else {
+            return $query->like([$fieldName => $value]);
+        }
     }
 
     protected function setFilteringContext($contextFilters, $params)
