@@ -252,7 +252,8 @@ class CRUDComponent extends Component
         $query->innerJoinWith('MetaTemplateFields', function ($q) {
             return $q->contain('MetaFields')->innerJoinWith('MetaFields');
         });
-        $query->group(['MetaTemplates.id'])->order(['MetaTemplates.is_default' => 'DESC']);
+        $query->group(['MetaTemplates.id', 'MetaTemplates.scope', 'MetaTemplates.name', 'MetaTemplates.namespace', 'MetaTemplates.description', 'MetaTemplates.version', 'MetaTemplates.uuid', 'MetaTemplates.source', 'MetaTemplates.enabled', 'MetaTemplates.is_default'])
+            ->order(['MetaTemplates.is_default' => 'DESC']);
         $metaTemplates = $query->all();
         $data['metaTemplates'] = $metaTemplates;
         return $data;
