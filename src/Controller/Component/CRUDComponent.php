@@ -30,9 +30,10 @@ class CRUDComponent extends Component
             }
             $options['filters'][] = 'quickFilter';
         }
+        $options['filters'][] = 'filteringLabel';
         $params = $this->Controller->ParamHandler->harvestParams(empty($options['filters']) ? [] : $options['filters']);
         $query = $this->Table->find();
-        $query = $this->setFilters($params, $query);
+        $query = $this->setFilters($params, $query, $options);
         $query = $this->setQuickFilters($params, $query, empty($options['quickFilters']) ? [] : $options['quickFilters']);
         if (!empty($options['contain'])) {
             $query->contain($options['contain']);
@@ -243,20 +244,33 @@ class CRUDComponent extends Component
         if (empty($this->Table->metaFields)) {
             return $data;
         }
-        $query = $this->MetaFields->MetaTemplates->find();
-        $metaFields = $this->Table->metaFields;
-        $query->contain('MetaTemplateFields', function ($q) use ($id, $metaFields) {
-            return $q->innerJoinWith('MetaFields')
-                ->where(['MetaFields.scope' => $metaFields, 'MetaFields.parent_id' => $id]);
-        });
-        $query->innerJoinWith('MetaTemplateFields', function ($q) {
-            return $q->contain('MetaFields')->innerJoinWith('MetaFields');
-        });
-        $query->group(['MetaTemplates.id', 'MetaTemplates.scope', 'MetaTemplates.name', 'MetaTemplates.namespace', 'MetaTemplates.description', 'MetaTemplates.version', 'MetaTemplates.uuid', 'MetaTemplates.source', 'MetaTemplates.enabled', 'MetaTemplates.is_default'])
-            ->order(['MetaTemplates.is_default' => 'DESC']);
-        $metaTemplates = $query->all();
+        $metaFieldScope = $this->Table->metaFields;
+        $query = $this->MetaTemplates->find()->where(['MetaTemplates.scope' => $metaFieldScope]);
+        $query->contain(['MetaTemplateFields.MetaFields' => function ($q) use ($id, $metaFieldScope) {
+            return $q->where(['MetaFields.scope' => $metaFieldScope, 'MetaFields.parent_id' => $id]);
+        }]);
+        $query
+            ->order(['MetaTemplates.is_default' => 'DESC'])
+            ->order(['MetaTemplates.name' => 'ASC']);
+        $metaTemplates = $query->all()->toArray();
+        $metaTemplates = $this->pruneEmptyMetaTemplates($metaTemplates);
         $data['metaTemplates'] = $metaTemplates;
         return $data;
+    }
+
+    public function pruneEmptyMetaTemplates($metaTemplates)
+    {
+        foreach ($metaTemplates as $i => $metaTemplate) {
+            foreach ($metaTemplate['meta_template_fields'] as $j => $metaTemplateField) {
+                if (empty($metaTemplateField['meta_fields'])) {
+                    unset($metaTemplates[$i]['meta_template_fields'][$j]);
+                }
+            }
+            if (empty($metaTemplates[$i]['meta_template_fields'])) {
+                unset($metaTemplates[$i]);
+            }
+        }
+        return $metaTemplates;
     }
 
     public function getMetaFields($id, $data)
@@ -361,28 +375,51 @@ class CRUDComponent extends Component
         return $query;
     }
 
-    protected function setFilters($params, \Cake\ORM\Query $query): \Cake\ORM\Query
+    protected function setFilters($params, \Cake\ORM\Query $query, array $options): \Cake\ORM\Query
     {
-        $params = $this->massageFilters($params);
-        $conditions = array();
-        if (!empty($params['simpleFilters'])) {
-            foreach ($params['simpleFilters'] as $filter => $filterValue) {
-                if ($filter === 'quickFilter') {
-                    continue;
-                }
-                if (is_array($filterValue)) {
-                    $query->where([($filter . ' IN') => $filterValue]);
-                } else {
-                    $query = $this->setValueCondition($query, $filter, $filterValue);
+        $filteringLabel = !empty($params['filteringLabel']) ? $params['filteringLabel'] : '';
+        unset($params['filteringLabel']);
+        $customFilteringFunction = '';
+        $chosenFilter = '';
+        if (!empty($options['contextFilters']['custom'])) {
+            foreach ($options['contextFilters']['custom'] as $filter) {
+                if ($filter['label'] == $filteringLabel) {
+                    $customFilteringFunction = $filter;
+                    $chosenFilter = $filter;
+                    break;
                 }
             }
         }
-        if (!empty($params['relatedFilters'])) {
-            foreach ($params['relatedFilters'] as $filter => $filterValue) {
-                $filterParts = explode('.', $filter);
-                $query = $this->setNestedRelatedCondition($query, $filterParts, $filterValue);
+
+        if (!empty($customFilteringFunction['filterConditionFunction'])) {
+            $query = $customFilteringFunction['filterConditionFunction']($query);
+        } else {
+            if (!empty($chosenFilter)) {
+                $params = $this->massageFilters($chosenFilter['filterCondition']);
+            } else {
+                $params = $this->massageFilters($params);
+            }
+            $conditions = array();
+            if (!empty($params['simpleFilters'])) {
+                foreach ($params['simpleFilters'] as $filter => $filterValue) {
+                    if ($filter === 'quickFilter') {
+                        continue;
+                    }
+                    if (is_array($filterValue)) {
+                        $query->where([($filter . ' IN') => $filterValue]);
+                    } else {
+                        $query = $this->setValueCondition($query, $filter, $filterValue);
+                    }
+                }
+            }
+            if (!empty($params['relatedFilters'])) {
+                foreach ($params['relatedFilters'] as $filter => $filterValue) {
+                    $filterParts = explode('.', $filter);
+                    $query = $this->setNestedRelatedCondition($query, $filterParts, $filterValue);
+                }
             }
         }
+
         return $query;
     }
 
@@ -445,6 +482,57 @@ class CRUDComponent extends Component
             $filteringContexts = array_merge($filteringContexts, $contextFilters['custom']);
         }
         $this->Controller->set('filteringContexts', $filteringContexts);
+    }
+
+    public function getParentsForMetaFields($query, array $metaConditions)
+    {
+        $metaTemplates = $this->MetaFields->MetaTemplates->find('list', [
+            'keyField' => 'name',
+            'valueField' => 'id'
+        ])->where(['name IN' => array_keys($metaConditions)])->all()->toArray();
+        $fieldsConditions = [];
+        foreach ($metaConditions as $templateName => $templateConditions) {
+            $metaTemplateID = isset($metaTemplates[$templateName]) ? $metaTemplates[$templateName] : -1;
+            foreach ($templateConditions as $conditions) {
+                $conditions['meta_template_id'] = $metaTemplateID;
+                $fieldsConditions[] = $conditions;
+            }
+        }
+        $matchingMetaQuery = $this->getParentIDQueryForMetaANDConditions($fieldsConditions);
+        return $query->where(['id IN' => $matchingMetaQuery]);
+    }
+
+    private function getParentIDQueryForMetaANDConditions(array $metaANDConditions)
+    {
+        if (empty($metaANDConditions)) {
+            throw new Exception('Invalid passed conditions');
+        }
+        foreach ($metaANDConditions as $i => $conditions) {
+            $metaANDConditions[$i]['scope'] = $this->Table->metaFields;
+        }
+        $firstCondition = $this->prefixConditions('MetaFields', $metaANDConditions[0]);
+        $conditionsToJoin = array_slice($metaANDConditions, 1);
+        $query = $this->MetaFields->find()
+            ->select('parent_id')
+            ->where($firstCondition);
+        foreach ($conditionsToJoin as $i => $conditions) {
+            $joinedConditions = $this->prefixConditions("m{$i}", $conditions);
+            $joinedConditions[] = "m{$i}.parent_id = MetaFields.parent_id";
+            $query->rightJoin(
+                ["m{$i}" => 'meta_fields'],
+                $joinedConditions
+            );
+        }
+        return $query;
+    }
+
+    private function prefixConditions(string $prefix, array $conditions)
+    {
+        $prefixedConditions = [];
+        foreach ($conditions as $condField => $condValue) {
+            $prefixedConditions["${prefix}.${condField}"] = $condValue;
+        }
+        return $prefixedConditions;
     }
 
     public function toggle(int $id, string $fieldName = 'enabled', array $params = []): void

@@ -15,8 +15,45 @@ class OrganisationsController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['name', 'uuid', 'nationality', 'sector', 'type', 'url', 'Alignments.id'],
-            'quickFilters' => ['name', 'uuid', 'nationality', 'sector', 'type', 'url'],
+            'filters' => ['name', 'uuid', 'nationality', 'sector', 'type', 'url', 'Alignments.id', 'MetaFields.field', 'MetaFields.value', 'MetaFields.MetaTemplates.name'],
+            'quickFilters' => [['name' => true], 'uuid', 'nationality', 'sector', 'type', 'url'],
+            'contextFilters' => [
+                'custom' => [
+                    [
+                        'label' => __('ENISA Accredited'),
+                        'filterCondition' => [
+                            'MetaFields.field' => 'enisa-tistatus',
+                            'MetaFields.value' => 'Accredited',
+                            'MetaFields.MetaTemplates.name' => 'ENISA CSIRT Network'
+                        ]
+                    ],
+                    [
+                        'label' => __('ENISA not-Accredited'),
+                        'filterCondition' => [
+                            'MetaFields.field' => 'enisa-tistatus',
+                            'MetaFields.value !=' => 'Accredited',
+                            'MetaFields.MetaTemplates.name' => 'ENISA CSIRT Network'
+                        ]
+                    ],
+                    [
+                        'label' => __('ENISA CSIRT Network (GOV)'),
+                        'filterConditionFunction' => function($query) {
+                            return $this->CRUD->getParentsForMetaFields($query, [
+                                'ENISA CSIRT Network' => [
+                                    [
+                                        'field' => 'constituency',
+                                        'value LIKE' => '%Government%',
+                                    ],
+                                    [
+                                        'field' => 'csirt-network-status',
+                                        'value' => 'Member',
+                                    ],
+                                ]
+                            ]);
+                        }
+                    ]
+                ],
+            ],
             'contain' => ['Alignments' => 'Individuals']
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
