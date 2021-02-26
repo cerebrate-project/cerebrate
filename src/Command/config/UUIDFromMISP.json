@@ -1,0 +1,19 @@
+{
+    "source": "/var/www/cerebrate/src/Command/misp_org.json",
+    "finder": {
+        "joinFields": {
+            "squashed": "name",
+            "squashing": "name"
+        },
+        "path": "{n}.Organisation",
+        "type": "exact"
+    },
+    "target": {
+        "model": "Organisations",
+        "squashedField": "uuid"
+    },
+    "squashingData": {
+        "squashingField": "uuid",
+        "massage": "validateUUID"
+    }
+}
