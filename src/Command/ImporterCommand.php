@@ -87,7 +87,7 @@ class ImporterCommand extends Command
         $data = $this->extractData($this->{$table}, $config, $sourceData);
         $entities = $this->marshalData($this->{$table}, $data, $config, $primary_key);
 
-        $entitiesSample = array_slice($entities, 0, min(10, count($entities)));
+        $entitiesSample = array_slice($entities, 0, min(5, count($entities)));
         $ioTable = $this->transformEntitiesIntoTable($entitiesSample);
         $io->helper('Table')->output($ioTable);
 
@@ -99,6 +99,7 @@ class ImporterCommand extends Command
 
     private function marshalData($table, $data, $config, $primary_key=null)
     {
+        $this->loadModel('MetaTemplates');
         $this->loadModel('MetaFields');
         $entities = [];
         if (is_null($primary_key)) {
@@ -121,33 +122,54 @@ class ImporterCommand extends Command
             }
         }
         $hasErrors = false;
+        $metaTemplate = $this->MetaTemplates->find()
+            ->where(['uuid' => $config['metaTemplateUUID']])
+            ->first();
+        if (!is_null($metaTemplate)) {
+            $metaTemplateFieldsMapping = $this->MetaTemplates->MetaTemplateFields->find('list', [
+                'keyField' => 'field',
+                'valueField' => 'id'
+            ])->where(['meta_template_id' => $metaTemplate->id])->toArray();
+        } else {
+            $this->io->error("Unkown template for UUID $metaTemplateUUID");
+        }
         foreach ($entities as $i => $entity) {
             if ($entity->hasErrors()) {
                 $hasErrors = true;
                 $this->io->error(json_encode(['entity' => $entity, 'errors' => $entity->getErrors()], JSON_PRETTY_PRINT));
             } else {
-                $metaFields = [];
-                foreach ($entity['metaFields'] as $fieldName => $fieldValue) {
-                    $metaEntity = null;
-                    if (!$entity->isNew()) {
-                        $query = $this->MetaFields->find('all')->where([
-                            'parent_id' => $entity->id,
-                            'field' => $fieldName
-                        ]);
-                        $metaEntity = $query->first();
+                if (!is_null($metaTemplate)) {
+                    $metaFields = [];
+                    foreach ($entity['metaFields'] as $fieldName => $fieldValue) {
+                        $metaEntity = null;
+                        if (!$entity->isNew()) {
+                            $query = $this->MetaFields->find('all')->where([
+                                'parent_id' => $entity->id,
+                                'field' => $fieldName,
+                                'meta_template_id' => $metaTemplate->id
+                            ]);
+                            $metaEntity = $query->first();
+                        }
+                        if (is_null($metaEntity)) {
+                            $metaEntity = $this->MetaFields->newEmptyEntity();
+                            $metaEntity->field = $fieldName;
+                            $metaEntity->scope = $table->metaFields;
+                            $metaEntity->meta_template_id = $metaTemplate->id;
+                            if (isset($metaTemplateFieldsMapping[$fieldName])) { // a meta field template must exists
+                                $metaEntity->meta_template_field_id = $metaTemplateFieldsMapping[$fieldName];
+                            } else {
+                                $hasErrors = true;
+                                $this->io->error("Field $fieldName is unkown for template {$metaTemplate->name}");
+                                break;
+                            }
+                        }
+                        if ($this->canBeOverriden($metaEntity)) {
+                            $metaEntity->value = $fieldValue;
+                        }
+                        $metaFields[] = $metaEntity;
                     }
-                    if (is_null($metaEntity)) {
-                        $metaEntity = $this->MetaFields->newEmptyEntity();
-                        $metaEntity->field = $fieldName;
-                        $metaEntity->scope = $table->metaFields;
-                        $metaEntity->parent_id = $entity->id;
-                    }
-                    if ($this->canBeOverriden($metaEntity)) {
-                        $metaEntity->value = $fieldValue;
-                    }
-                    $metaFields[] = $metaEntity;
+                    $entities[$i]->metaFields = $metaFields;
                 }
-                $entities[$i]->metaFields = $metaFields;
             }
         }
         if (!$hasErrors) {
@@ -188,6 +210,7 @@ class ImporterCommand extends Command
         foreach ($entity->metaFields as $i => $metaEntity) {
             $metaEntity->parent_id = $entity->id;
             if ($metaEntity->hasErrors() || is_null($metaEntity->value)) {
+                $this->io->error(json_encode(['entity' => $metaEntity, 'errors' => $metaEntity->getErrors()], JSON_PRETTY_PRINT));
                 unset($entity->metaFields[$i]);
             }
         }
@@ -453,5 +476,10 @@ class ImporterCommand extends Command
     private function genUUID($value)
     {
         return Text::uuid();
+    }
+
+    private function nullToEmptyString($value)
+    {
+        return is_null($value) ? '' : $value;
     }
 }
