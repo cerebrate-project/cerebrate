@@ -188,31 +188,7 @@ class FieldSquasherCommand extends Command
         $squashedJoinField = $config['finder']['joinFields']['squashed'];
         $closestMatchResults = [];
 
-        // Compute proximity score
-        foreach ($squashingObjects as $i => $squashingObject) {
-            $squashingJoinValue = Hash::get($squashingObject, $squashingJoinField);
-            foreach ($allCanditates as $candidate) {
-                $squashedJoinValue = Hash::get($candidate, $squashedJoinField);
-                $proximityScore = $this->getProximityScore($squashingJoinValue, $squashedJoinValue);
-                $closestMatchResults[$candidate['id']][$proximityScore][] = $squashingObject;
-                $squashingObjects[$i]['__scores'][$proximityScore][] = $candidate;
-            }
-        }
-
-        // sort by score
-        foreach ($squashingObjects as $i => $squashingObject) {
-            ksort($squashingObjects[$i]['__scores'], SORT_NUMERIC);
-        }
-        foreach ($closestMatchResults as $i => $proximityScore) {
-            ksort($closestMatchResults[$i], SORT_NUMERIC);
-        }
-
-        // remove best occurence in other matching sets
-        foreach ($allCanditates as $candidate) {
-            $bestScore = array_key_first($closestMatchResults[$candidate['id']]);
-            $bestMatch = $closestMatchResults[$candidate['id']][$bestScore][0];
-            $squashingObjects = $this->removeCandidatesFromSquashingSet($squashingObjects, $bestMatch, $candidate['id']);
-        }
+        $squashingObjects = $this->getBestOccurenceSet($squashingObjects, $allCanditates, $squashingJoinField, $squashedJoinField);
 
         // pick the best match
         foreach ($squashingObjects as $i => $squashingObject) {
@@ -248,7 +224,7 @@ class FieldSquasherCommand extends Command
                 $squashedTarget["{$config['target']['squashedField']}_original_value"] = $squashedTarget[$config['target']['squashedField']];
                 $squashedTarget['match_score'] = $bestScore;
                 $squashedTarget['based_on_best_match_joinFields'] = Hash::get($squashingObject, $squashingJoinField);
-                $squashedTarget['based_on_best_match'] = json_encode($squashingObject);
+                // $squashedTarget['based_on_best_match'] = json_encode($squashingObject);
                 $squashedTarget[$config['target']['squashedField']] = $squashingData;
                 if ($bestScore > 0) {
                     $notExactCandidates[] = $squashedTarget;
@@ -290,24 +266,34 @@ class FieldSquasherCommand extends Command
         return $squashingObjects;
     }
 
-    private function removeMatchFromOtherMatches(&$closestMatchResults, $match, $currentIndex)
+    private function getBestOccurenceSet($squashingObjects, $allCanditates, $squashingJoinField, $squashedJoinField)
     {
-        // remove squashingObject from all other matches
-        foreach ($closestMatchResults as $i => $proximityScore) {
-            if ($i == $currentIndex) {
-                continue;
-            }
-            foreach ($proximityScore as $score => $squashingObjects) {
-                foreach ($squashingObjects as $j => $squashingObject) {
-                    if ($squashingObject == $match) {
-                        unset($closestMatchResults[$i][$score][$j]);
-                    }
-                }
-                if (empty($closestMatchResults[$i][$score])) {
-                    unset($closestMatchResults[$i][$score]);
-                }
+        // Compute proximity score
+        foreach ($squashingObjects as $i => $squashingObject) {
+            $squashingJoinValue = Hash::get($squashingObject, $squashingJoinField);
+            foreach ($allCanditates as $candidate) {
+                $squashedJoinValue = Hash::get($candidate, $squashedJoinField);
+                $proximityScore = $this->getProximityScore($squashingJoinValue, $squashedJoinValue);
+                $closestMatchResults[$candidate['id']][$proximityScore][] = $squashingObject;
+                $squashingObjects[$i]['__scores'][$proximityScore][] = $candidate;
             }
         }
+
+        // sort by score
+        foreach ($squashingObjects as $i => $squashingObject) {
+            ksort($squashingObjects[$i]['__scores'], SORT_NUMERIC);
+        }
+        foreach ($closestMatchResults as $i => $proximityScore) {
+            ksort($closestMatchResults[$i], SORT_NUMERIC);
+        }
+
+        // remove best occurence in other matching sets
+        foreach ($allCanditates as $candidate) {
+            $bestScore = array_key_first($closestMatchResults[$candidate['id']]);
+            $bestMatch = $closestMatchResults[$candidate['id']][$bestScore][0];
+            $squashingObjects = $this->removeCandidatesFromSquashingSet($squashingObjects, $bestMatch, $candidate['id']);
+        }
+        return $squashingObjects;
     }
 
     private function getProximityScore($value1, $value2)

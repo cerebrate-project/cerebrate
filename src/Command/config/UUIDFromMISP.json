@@ -6,7 +6,8 @@
             "squashing": "name"
         },
         "path": "{n}.Organisation",
-        "type": "exact"
+        "type": "closest",
+        "levenshteinScore": 1
     },
     "target": {
         "model": "Organisations",
