@@ -41,8 +41,13 @@ class FieldSquasherCommand extends Command
         $sourceData = $this->getDataFromSource($source);
         $candidateResult = $this->findCanditates($this->{$table}, $config, $sourceData);
         $entitiesSample = array_slice($candidateResult['candidates'], 0, min(10, count($candidateResult['candidates'])));
+        $entitiesSample = array_slice($candidateResult['candidates'], 0, min(100, count($candidateResult['candidates'])));
         $noCandidatesSample = array_slice($candidateResult['noCandidatesFound'], 0, min(10, count($candidateResult['noCandidatesFound'])));
+        $notExactCandidates = array_slice($candidateResult['notExactCandidates'], 0, min(10, count($candidateResult['notExactCandidates'])));
         $totalNotFound = count($candidateResult['noCandidatesFound']);
+        $totalClosestFound = count($candidateResult['notExactCandidates']);
+        $totalFound = count($candidateResult['candidates']);
+
         $this->io->out("Sample of no candidates found (total: {$totalNotFound}):");
         $ioTable = $this->transformEntitiesIntoTable($noCandidatesSample);
         $io->helper('Table')->output($ioTable);
@@ -51,13 +56,30 @@ class FieldSquasherCommand extends Command
         if ($selection == 'Y') {
             $this->saveDataOnDisk($filename, $candidateResult['noCandidatesFound']);
         }
-
         $this->io->out('');
+
+        if (!empty($notExactCandidates)) {
+            $this->io->out("Sample of closest candidates found (total not strictly matching: {$totalClosestFound}):");
+            $ioTable = $this->transformEntitiesIntoTable($notExactCandidates);
+            $io->helper('Table')->output($ioTable);
+            $filename = 'closest_candidates_found_' . time() . '.json';
+            $selection = $io->askChoice("Would you like to save these entries on the disk as `{$filename}`", ['Y', 'N'], 'Y');
+            if ($selection == 'Y') {
+                $this->saveDataOnDisk($filename, $candidateResult['notExactCandidates']);
+            }
+            $this->io->out('');
+        }
+
+        $this->io->out("Sample of exact candidates found (total striclty matching: {$totalFound}):");
         $ioTable = $this->transformEntitiesIntoTable($entitiesSample, [
             'id',
             $config['finder']['joinFields']['squashed'],
             $config['target']['squashedField'],
             "{$config['target']['squashedField']}_original_value",
+            'based_on_best_match',
+            'best_candidates_found',
+            'match_score'
+            
         ]);
         $io->helper('Table')->output($ioTable);
         $filename = 'replacement_done_' . time() . '.json';
@@ -102,6 +124,8 @@ class FieldSquasherCommand extends Command
         $this->io->verbose('Finding candidates');
         if ($config['finder']['type'] == 'exact') {
             $candidateResult = $this->findCanditatesByStrictMatching($table, $config, $source);
+        } else if ($config['finder']['type'] == 'closest') {
+            $candidateResult = $this->findCanditatesByClosestMatch($table, $config, $source);
         } else {
             $this->io->error('Unsupported search type');
             die(1);
@@ -129,15 +153,15 @@ class FieldSquasherCommand extends Command
         $candidates = [];
         $noCandidatesFound = [];
 
-        foreach ($squashingObjects as $i => $squashingObject) {
-            $squashingData = Hash::get($squashingObject, $config['squashingData']['squashingField']);
-            if (isset($this->{$config['squashingData']['massage']})) {
-                $squashingData = $this->{$config['squashingData']['massage']}($squashingData);
-            }
+        foreach ($squashingObjects as $squashingObject) {
             $squashingJoinField = Hash::get($squashingObject, $config['finder']['joinFields']['squashing']);
             if (empty($potentialCanditates[$squashingJoinField])) {
                 $noCandidatesFound[] = $squashingObject;
             } else {
+                $squashingData = Hash::get($squashingObject, $config['squashingData']['squashingField']);
+                if (isset($this->{$config['squashingData']['massage']})) {
+                    $squashingData = $this->{$config['squashingData']['massage']}($squashingData);
+                }
                 $squashedTarget = $potentialCanditates[$squashingJoinField];
                 $squashedTarget->{"{$config['target']['squashedField']}_original_value"} = $squashedTarget->{$config['target']['squashedField']};
                 $squashedTarget->{$config['target']['squashedField']} = $squashingData;
@@ -146,31 +170,153 @@ class FieldSquasherCommand extends Command
         }
         return [
             'candidates' => $candidates,
+            'notExactCandidates' => [],
+            'noCandidatesFound' => $noCandidatesFound,
+        ];
+    }
+
+    private function findCanditatesByClosestMatch($table, $config, $source)
+    {
+        $squashingObjects = Hash::extract($source, $config['finder']['path']);
+        if (empty($squashingObjects)) {
+            $this->io->error('finder.path returned nothing');
+            return [];
+        }
+        $query = $table->find();
+        $allCanditates = $query->toArray();
+        $squashingJoinField = $config['finder']['joinFields']['squashing'];
+        $squashedJoinField = $config['finder']['joinFields']['squashed'];
+        $closestMatchResults = [];
+
+        // Compute proximity score
+        foreach ($squashingObjects as $i => $squashingObject) {
+            $squashingJoinValue = Hash::get($squashingObject, $squashingJoinField);
+            foreach ($allCanditates as $candidate) {
+                $squashedJoinValue = Hash::get($candidate, $squashedJoinField);
+                $proximityScore = $this->getProximityScore($squashingJoinValue, $squashedJoinValue);
+                $closestMatchResults[$candidate['id']][$proximityScore][] = $squashingObject;
+                $squashingObjects[$i]['__scores'][$proximityScore][] = $candidate;
+            }
+        }
+
+        // sort by score
+        foreach ($squashingObjects as $i => $squashingObject) {
+            ksort($squashingObjects[$i]['__scores'], SORT_NUMERIC);
+        }
+        foreach ($closestMatchResults as $i => $proximityScore) {
+            ksort($closestMatchResults[$i], SORT_NUMERIC);
+        }
+
+        // remove best occurence in other matching sets
+        foreach ($allCanditates as $candidate) {
+            $bestScore = array_key_first($closestMatchResults[$candidate['id']]);
+            $bestMatch = $closestMatchResults[$candidate['id']][$bestScore][0];
+            $squashingObjects = $this->removeCandidatesFromSquashingSet($squashingObjects, $bestMatch, $candidate['id']);
+        }
+
+        // pick the best match
+        foreach ($squashingObjects as $i => $squashingObject) {
+            if (empty($squashingObjects[$i]['__scores'])) {
+                continue;
+            }
+            ksort($squashingObjects[$i]['__scores'], SORT_NUMERIC);
+            $squashingObjects[$i]['__scores'] = array_slice($squashingObjects[$i]['__scores'], 0, 1, true);
+            $bestScore = array_key_first($squashingObjects[$i]['__scores']);
+            $squashingObjects[$i]['__scores'][$bestScore] = array_values($squashingObjects[$i]['__scores'][$bestScore])[0];
+        }
+
+        $candidates = [];
+        $noCandidatesFound = [];
+        $notExactCandidates = [];
+        $scoreThreshold = !empty($config['finder']['levenshteinScore']) ? $config['finder']['levenshteinScore'] : 10;
+
+        foreach ($squashingObjects as $i => $squashingObject) {
+            if (empty($squashingObjects[$i]['__scores'])) {
+                $noCandidatesFound[] = $squashingObject;
+                continue;
+            }
+            $bestScore = array_key_first($squashingObject['__scores']);
+            $bestMatch = $squashingObject['__scores'][$bestScore];
+
+            $squashingData = Hash::get($squashingObject, $config['squashingData']['squashingField']);
+            if (isset($this->{$config['squashingData']['massage']})) {
+                $squashingData = $this->{$config['squashingData']['massage']}($squashingData);
+            }
+
+            $squashedTarget = $bestMatch;
+            if ($bestScore <= $scoreThreshold) {
+                $squashedTarget["{$config['target']['squashedField']}_original_value"] = $squashedTarget[$config['target']['squashedField']];
+                $squashedTarget['match_score'] = $bestScore;
+                $squashedTarget['based_on_best_match_joinFields'] = Hash::get($squashingObject, $squashingJoinField);
+                $squashedTarget['based_on_best_match'] = json_encode($squashingObject);
+                $squashedTarget[$config['target']['squashedField']] = $squashingData;
+                if ($bestScore > 0) {
+                    $notExactCandidates[] = $squashedTarget;
+                } else {
+                    $candidates[] = $squashedTarget;
+                }
+            } else {
+                $squashingObjectBestMatchInfo = "[{$bestMatch[$squashingJoinField]}, {$bestScore}]";
+                $squashingObject['__scores'] = $squashingObjectBestMatchInfo;
+                $noCandidatesFound[] = $squashingObject;
+            }
+        }
+
+        return [
+            'candidates' => $candidates,
+            'notExactCandidates' => $notExactCandidates,
             'noCandidatesFound' => $noCandidatesFound
         ];
     }
 
-    private function extractDataFromJSON($defaultFields, $config, $source)
+    private function removeCandidatesFromSquashingSet($squashingObjects, $bestMatch, $candidateID)
     {
-        $data = [];
-        foreach ($config['mapping'] as $key => $fieldConfig) {
-            $values = null;
-            if (!is_array($fieldConfig)) {
-                $fieldConfig = ['path' =>  $fieldConfig];
-            }
-            if (!empty($fieldConfig['path'])) {
-                $values = Hash::extract($source, $fieldConfig['path']);
-            }
-            if (!empty($fieldConfig['massage'])) {
-                $values = array_map("self::{$fieldConfig['massage']}", $values);
-            }
-            if (isset($defaultFields[$key])) {
-                $data[$key] = $values;
+        foreach ($squashingObjects as $i => $squashingObject) {
+            if (Hash::remove($squashingObject, '__scores') == $bestMatch) {
+                continue;
             } else {
-                $data['metaFields'][$key] = $values;
+                foreach ($squashingObject['__scores'] as $score => $candidates) {
+                    foreach ($candidates as $j => $candidate) {
+                        if ($candidate['id'] == $candidateID) {
+                            unset($squashingObjects[$i]['__scores'][$score][$j]);
+                        }
+                    }
+                    if (empty($squashingObjects[$i]['__scores'][$score])) {
+                        unset($squashingObjects[$i]['__scores'][$score]);
+                    }
+                }
             }
         }
-        return $this->invertArray($data);
+        return $squashingObjects;
+    }
+
+    private function removeMatchFromOtherMatches(&$closestMatchResults, $match, $currentIndex)
+    {
+        // remove squashingObject from all other matches
+        foreach ($closestMatchResults as $i => $proximityScore) {
+            if ($i == $currentIndex) {
+                continue;
+            }
+            foreach ($proximityScore as $score => $squashingObjects) {
+                foreach ($squashingObjects as $j => $squashingObject) {
+                    if ($squashingObject == $match) {
+                        unset($closestMatchResults[$i][$score][$j]);
+                    }
+                }
+                if (empty($closestMatchResults[$i][$score])) {
+                    unset($closestMatchResults[$i][$score]);
+                }
+            }
+        }
+    }
+
+    private function getProximityScore($value1, $value2)
+    {
+        if ($value1 == $value2) {
+            return -1;
+        } else {
+            return levenshtein(strtolower($value1), strtolower($value2));
+        }
     }
 
     private function getDataFromSource($source)
@@ -251,7 +397,7 @@ class FieldSquasherCommand extends Command
     private function processConfig($config)
     {
         $allowedModels = ['Organisations', 'Individuals'];
-        $allowedFinderType = ['exact', 'bestMatch'];
+        $allowedFinderType = ['exact', 'closest'];
         if (empty($config['source']) || empty($config['finder']) || empty($config['target']) || empty($config['squashingData'])) {
             $this->io->error('Error while parsing the configuration file, some of these fields are missing: `source`, `finder`, `target`, `squashingData`');
             die(1);
