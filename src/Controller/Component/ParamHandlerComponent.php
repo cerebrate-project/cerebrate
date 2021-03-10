@@ -24,6 +24,7 @@ class ParamHandlerComponent extends Component
         $parsedParams = array();
         foreach ($filterList as $k => $filter) {
             $queryString = str_replace('.', '_', $filter);
+            $queryString = str_replace(' ', '_', $queryString);
             if ($this->request->getQuery($queryString) !== null) {
                 $parsedParams[$filter] = $this->request->getQuery($queryString);
                 continue;
