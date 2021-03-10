@@ -396,17 +396,19 @@ class CRUDComponent extends Component
             }
         }
 
+        $activeFilters = [];
         if (!empty($customFilteringFunction['filterConditionFunction'])) {
             $query = $customFilteringFunction['filterConditionFunction']($query);
+            $activeFilters['filteringLabel'] = $filteringLabel;
         } else {
             if (!empty($chosenFilter)) {
                 $params = $this->massageFilters($chosenFilter['filterCondition']);
             } else {
                 $params = $this->massageFilters($params);
             }
-            $conditions = array();
             if (!empty($params['simpleFilters'])) {
                 foreach ($params['simpleFilters'] as $filter => $filterValue) {
+                    $activeFilters[$filter] = $filterValue;
                     if ($filter === 'quickFilter') {
                         continue;
                     }
@@ -419,12 +421,13 @@ class CRUDComponent extends Component
             }
             if (!empty($params['relatedFilters'])) {
                 foreach ($params['relatedFilters'] as $filter => $filterValue) {
+                    $activeFilters[$filter] = $filterValue;
                     $filterParts = explode('.', $filter);
                     $query = $this->setNestedRelatedCondition($query, $filterParts, $filterValue);
                 }
             }
         }
-
+        $this->Controller->set('activeFilters', $activeFilters);
         return $query;
     }
 
