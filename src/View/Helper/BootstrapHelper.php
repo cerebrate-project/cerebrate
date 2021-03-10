@@ -78,6 +78,11 @@ class BootstrapHelper extends Helper
         return $bsBadge->badge();
     }
 
+    public function modal($options)
+    {
+        $bsButton = new BoostrapModal($options);
+        return $bsButton->modal();
+    }
 }
 
 class BootstrapGeneric
@@ -694,5 +699,159 @@ class BoostrapBadge extends BootstrapGeneric {
             'title' => $this->options['title']
         ], h($this->options['text']));
         return $html;
+    }
+}
+
+class BoostrapModal extends BootstrapGeneric {
+    private $defaultOptions = [
+        'size' => '',
+        'centered' => true,
+        'scrollable' => true,
+        'backdropStatic' => false,
+        'title' => '',
+        'titleHtml' => false,
+        'body' => '',
+        'bodyHtml' => false,
+        'footerHtml' => false,
+        'confirmText' => 'Confirm',
+        'cancelText' => 'Cancel',
+        'modalClass' => [''],
+        'headerClass' => [''],
+        'bodyClass' => [''],
+        'footerClass' => [''],
+        'type' => 'ok-only',
+        'variant' => '',
+        'confirmFunction' => '',
+        'cancelFunction' => ''
+    ];
+
+    private $bsClasses = null;
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'size' => ['sm', 'lg', 'xl', ''],
+            'type' => ['ok-only','confirm','confirm-success','confirm-warning','confirm-danger'],
+            'variant' =>  array_merge(BootstrapGeneric::$variants, ['']),
+        ];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function modal()
+    {
+        return $this->genModal();
+    }
+
+    private function genModal()
+    {
+        $dialog = $this->openNode('div', [
+            'class' => array_merge(
+                ['modal-dialog', (!empty($this->options['size'])) ? "modal-{$this->options['size']}" : ''],
+                $this->options['modalClass']
+            ),
+        ]);
+        $content = $this->openNode('div', [
+            'class' => ['modal-content'],
+        ]);
+        $header = $this->genHeader();
+        $body = $this->genBody();
+        $footer = $this->genFooter();
+        $closedDiv = $this->closeNode('div');
+
+        $html = "{$dialog}{$content}{$header}{$body}{$footer}{$closedDiv}{$closedDiv}";
+        return $html;
+    }
+
+    private function genHeader()
+    {
+        $header = $this->openNode('div', ['class' => array_merge(['modal-header'], $this->options['headerClass'])]);
+        if (!empty($this->options['titleHtml'])) {
+            $header .= $this->options['titleHtml'];
+        } else {
+            $header .= $this->genNode('h5', ['class' => ['modal-title']], h($this->options['title']));
+        }
+        if (empty($this->options['backdropStatic'])) {
+            $header .= $this->genericCloseButton('modal');
+        }
+        $header .= $this->closeNode('div');
+        return $header;
+    }
+
+    private function genBody()
+    {
+        $body = $this->openNode('div', ['class' => array_merge(['modal-body'], $this->options['bodyClass'])]);
+        if (!empty($this->options['bodyHtml'])) {
+            $body .= $this->options['bodyHtml'];
+        } else {
+            $body .= h($this->options['body']);
+        }
+        $body .= $this->closeNode('div');
+        return $body;
+    }
+
+    private function genFooter()
+    {
+        $footer = $this->openNode('div', ['class' => array_merge(['modal-footer'], $this->options['footerClass'])]);
+        if (!empty($this->options['footerHtml'])) {
+            $footer .= $this->options['footerHtml'];
+        } else {
+            $footer .= $this->getFooterBasedOnType();
+        }
+        $footer .= $this->closeNode('div');
+        return $footer;
+    }
+
+    private function getFooterBasedOnType() {
+        if ($this->options['type'] == 'ok-only') {
+            return $this->getFooterOkOnly();
+        } else if (str_contains($this->options['type'], 'confirm')) {
+            return $this->getFooterConfirm();
+        } else {
+            return $this->getFooterOkOnly();
+        }
+    }
+
+    private function getFooterOkOnly()
+    {
+        return (new BoostrapButton([
+            'variant' => 'primary',
+            'text' => __('Ok'),
+            'params' => [
+                'data-dismiss' => 'modal',
+                'onclick' => $this->options['confirmFunction']
+            ]
+        ]))->button();
+    }
+
+    private function getFooterConfirm()
+    {
+        if ($this->options['type'] == 'confirm') {
+            $variant = 'primary';
+        } else {
+            $variant = explode('-', $this->options['type'])[1];
+        }
+        $buttonCancel = (new BoostrapButton([
+            'variant' => 'secondary',
+            'text' => h($this->options['cancelText']),
+            'params' => [
+                'data-dismiss' => 'modal',
+                'onclick' => $this->options['cancelFunction']
+            ]
+        ]))->button();
+
+        $buttonConfirm = (new BoostrapButton([
+            'variant' => $variant,
+            'text' => h($this->options['confirmText']),
+            'params' => [
+                'data-dismiss' => 'modal',
+                'onclick' => $this->options['confirmFunction']
+            ]
+        ]))->button();
+        return $buttonCancel . $buttonConfirm;
     }
 }
