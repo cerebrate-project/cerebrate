@@ -31,7 +31,12 @@ class CRUDComponent extends Component
             $options['filters'][] = 'quickFilter';
         }
         $options['filters'][] = 'filteringLabel';
-        $params = $this->Controller->ParamHandler->harvestParams(empty($options['filters']) ? [] : $options['filters']);
+
+        $optionFilters = empty($options['filters']) ? [] : $options['filters'];
+        foreach ($optionFilters as $i => $filter) {
+            $optionFilters[] = "{$filter} !=";
+        }
+        $params = $this->Controller->ParamHandler->harvestParams($optionFilters);
         $query = $this->Table->find();
         $query = $this->setFilters($params, $query, $options);
         $query = $this->setQuickFilters($params, $query, empty($options['quickFilters']) ? [] : $options['quickFilters']);
