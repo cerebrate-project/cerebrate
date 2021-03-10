@@ -38,7 +38,7 @@ class UIFactory {
                 POSTSuccessCallback: POSTSuccessCallback !== undefined ? POSTSuccessCallback : () => {},
                 POSTFailCallback: POSTFailCallback !== undefined ? POSTFailCallback : (errorMessage) => {},
             });
-            theModal.makeModal(modalHTML)
+            theModal.makeModal()
             theModal.show()
             theModal.$modal.data('modalObject', theModal)
             return theModal
@@ -73,7 +73,7 @@ class UIFactory {
             }
         }
         if ($reloadedElement.length == 0) {
-            UI.Toaster({
+            UI.toast({
                 variant: 'danger',
                 title: 'Could not find element to be reloaded',
                 body: 'The content of this page may have changed and has not been reflected. Reloading the page is advised.'
@@ -98,7 +98,7 @@ class UIFactory {
             if (currentModel.length > 0) {
                 reloadUrl = `/${currentModel}/index`
             } else {
-                UI.Toaster({
+                UI.toast({
                     variant: 'danger',
                     title: 'Could not find URL for the reload',
                     body: 'The content of this page may have changed and has not been reflected. Reloading the page is advised.'
@@ -121,7 +121,7 @@ class UIFactory {
             }
         }
         if ($reloadedElement.length == 0) {
-            UI.Toaster({
+            UI.toast({
                 variant: 'danger',
                 title: 'Could not find element to be reloaded',
                 body: 'The content of this page may have changed and has not been reflected. Reloading the page is advised.'
@@ -320,7 +320,7 @@ class Toaster {
         if (options.body !== false || options.bodyHtml !== false) {
             var $toastBody
             if (options.bodyHtml !== false) {
-                $toastBody = $('<div class="toast-body"/>').html(options.mutedHtml)
+                $toastBody = $('<div class="toast-body"/>').html(options.bodyHtml)
             } else {
                 $toastBody = $('<div class="toast-body"/>').text(options.body)
             }
@@ -338,8 +338,15 @@ class ModalFactory {
      */
     constructor(options) {
         this.options = Object.assign({}, ModalFactory.defaultOptions, options)
-        if (this.options.rawHtml && options.POSTSuccessCallback !== undefined) {
-            this.attachSubmitButtonListener = true
+        if (options.POSTSuccessCallback !== undefined) {
+            if (this.options.rawHtml) {
+                this.attachSubmitButtonListener = true
+            } else {
+                UI.toast({
+                    variant: 'danger',
+                    bodyHtml: '<b>POSTSuccessCallback</b> can only be used in conjuction with the <i>rawHtml</i> option. Instead, use the promise instead returned by the API call in <b>APIConfirm</b>.'
+                })
+            }
         }
         if (options.type === undefined && options.cancel !== undefined) {
             this.options.type = 'confirm'
@@ -414,14 +421,14 @@ class ModalFactory {
      * @property {string} confirmText                      - The text to be placed in the confirm button
      * @property {string} cancelText                       - The text to be placed in the cancel button
      * @property {boolean} closeManually                   - If true, the modal will be closed automatically whenever a footer's button is pressed
-     * @property {boolean} closeOnSuccess                  - If true, the modal will be closed if the $FILL_ME operation is successful
+     * @property {boolean} closeOnSuccess                  - If true, the modal will be closed if the operation is successful
      * @property {ModalFactory~confirm} confirm                         - The callback that should be called if the user confirm the modal
      * @property {ModalFactory~cancel} cancel                           - The callback that should be called if the user cancel the modal
      * @property {ModalFactory~APIConfirm} APIConfirm                   - The callback that should be called if the user confirm the modal. Behaves like the confirm option but provides an AJAXApi object that can be used to issue requests
      * @property {ModalFactory~APIError} APIError                       - The callback called if the APIConfirm callback fails.
      * @property {ModalFactory~shownCallback} shownCallback             - The callback that should be called whenever the modal is shown
      * @property {ModalFactory~hiddenCallback} hiddenCallback           - The callback that should be called whenever the modal is hiddenAPIConfirm
-     * @property {ModalFactory~POSTSuccessCallback} POSTSuccessCallback - The callback that should be called if the POST operation has been a success
+     * @property {ModalFactory~POSTSuccessCallback} POSTSuccessCallback - The callback that should be called if the POST operation has been a success. Works in confunction with the `rawHtml`
      * @property {ModalFactory~POSTFailCallback} POSTFailCallback       - The callback that should be called if the POST operation has been a failure (Either the request failed or the form validation did not pass)
      */
     static defaultOptions = {
