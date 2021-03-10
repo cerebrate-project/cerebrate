@@ -144,11 +144,7 @@
         }
 
         function openFilteringModal(clicked, url, reloadUrl, tableId) {
-            const loadingOverlay = new OverlayFactory(clicked);
-            loadingOverlay.show()
-            UI.openModalFromURL(url, reloadUrl, tableId).finally(() => {
-                loadingOverlay.hide()
-            })
+            UI.overlayUntilResolve(clicked, UI.submissionModalForIndex(url, reloadUrl, tableId))
         }
     });
 </script>

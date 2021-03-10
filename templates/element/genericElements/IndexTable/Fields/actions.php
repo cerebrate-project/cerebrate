@@ -87,7 +87,7 @@
                     $action['open_modal']
                 );
                 $reload_url = !empty($action['reload_url']) ? $action['reload_url'] : $this->Url->build(['action' => 'index']);
-                $action['onclick'] = sprintf('UI.openModalFromURL(\'%s\', \'%s\', \'%s\')', $modal_url, $reload_url, $tableRandomValue);
+                $action['onclick'] = sprintf('UI.submissionModalForIndex(\'%s\', \'%s\', \'%s\')', $modal_url, $reload_url, $tableRandomValue);
             }
             echo sprintf(
                 '<a href="%s%s" title="%s" aria-label="%s" %s %s class="link-unstyled"><i class="%s"></i></a> ',

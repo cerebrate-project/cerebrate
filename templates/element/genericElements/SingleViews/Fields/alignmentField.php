@@ -20,7 +20,7 @@ if ($field['scope'] === 'individuals') {
                 h($alignment['organisation']['name'])
             ),
             sprintf(
-                "UI.openModalFromURL(%s);",
+                "UI.submissionModalForSinglePage(%s);",
                 sprintf(
                     "'/alignments/delete/%s'",
                     $alignment['id']
@@ -40,7 +40,7 @@ if ($field['scope'] === 'individuals') {
                 h($alignment['individual']['email'])
             ),
             sprintf(
-                "UI.openModalFromURL(%s);",
+                "UI.submissionModalForSinglePage(%s);",
                 sprintf(
                     "'/alignments/delete/%s'",
                     $alignment['id']
@@ -53,7 +53,7 @@ echo sprintf(
     '<div class="alignments-list">%s</div><div class="alignments-add-container"><button class="alignments-add-button btn btn-primary btn-sm" onclick="%s">%s</button></div>',
     $alignments,
     sprintf(
-        "UI.openModalFromURL('/alignments/add/%s/%s');",
+        "UI.submissionModalForSinglePage('/alignments/add/%s/%s');",
         h($field['scope']),
         h($extracted['id'])
     ),

@@ -25,13 +25,13 @@ class UIFactory {
     }
 
     /**
-     * Create and display a modal where the modal's content is fetched from the provided URL.
+     * Create and display a modal where the modal's content is fetched from the provided URL. Link an AJAXApi to the submission button
      * @param  {string} url - The URL from which the modal's content should be fetched
      * @param  {ModalFactory~POSTSuccessCallback} POSTSuccessCallback - The callback that handles successful form submission
      * @param  {ModalFactory~POSTFailCallback} POSTFailCallback - The callback that handles form submissions errors and validation errors.
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
-    modalFromURL(url, POSTSuccessCallback, POSTFailCallback) {
+    submissionModal(url, POSTSuccessCallback, POSTFailCallback) {
         return AJAXApi.quickFetchURL(url).then((modalHTML) => {
             const theModal = new ModalFactory({
                 rawHtml: modalHTML,
@@ -46,45 +46,110 @@ class UIFactory {
     }
 
     /**
-     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the table after a successful operation and handles displayOnSuccess option
+     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the single page view after a successful operation.
+     * Supports `displayOnSuccess` option to show another modal after the submission
      * @param  {string} url - The URL from which the modal's content should be fetched
-     * @param  {string} reloadUrl - The URL from which the data should be fetched after confirming
-     * @param  {string} tableId - The table ID which should be reloaded on success
+     * @param  {(boolean|string)} [reloadUrl=false] - The URL from which the data should be fetched after confirming
+     * @param  {(jQuery|string)} [$table=false] - The table ID which should be reloaded on success
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
-    openModalFromURL(url, reloadUrl=false, tableId=false) {
-        return UI.modalFromURL(url, (data) => {
-            let reloaded = false
-            if (reloadUrl === false || tableId === false) { // Try to get information from the DOM
-                let $elligibleTable = $('table.table')
-                let currentModel = location.pathname.split('/')[1]
-                if ($elligibleTable.length == 1 && currentModel.length > 0) {
-                    let $container = $elligibleTable.closest('div[id^="table-container-"]')
-                    if ($container.length == 1) {
-                        UI.reload(`/${currentModel}/index`, $container, $elligibleTable)
-                        reloaded = true
-                    } else {
-                        $container = $elligibleTable.closest('div[id^="single-view-table-container-"]')
-                        if ($container.length == 1) {
-                            UI.reload(location.pathname, $container, $elligibleTable)
-                            reloaded = true
-                        }
-                    }
-                }
+    submissionModalForSinglePage(url, reloadUrl=false, $table=false) {
+        let $statusNode, $reloadedElement
+        if (reloadUrl === false) {
+            reloadUrl = location.pathname
+        }
+        if ($table === false) { // Try to get information from the DOM
+            const $elligibleTable = $('table[id^="single-view-table-"]')
+            const $container = $elligibleTable.closest('div[id^="single-view-table-container-"]')
+            $reloadedElement = $container
+            $statusNode = $elligibleTable
+        } else {
+            if ($table instanceof jQuery) {
+                $reloadedElement = $table
+                $statusNode = $table.find('table[id^="single-view-table-"]')
             } else {
-                UI.reload(reloadUrl, $(`#table-container-${tableId}`), $(`#table-container-${tableId} table.table`))
-                reloaded = true
+                $reloadedElement = $(`single-view-table-container-${$table}`)
+                $statusNode = $(`single-view-table-${$table}`)
             }
+        }
+        if ($reloadedElement.length == 0) {
+            UI.Toaster({
+                variant: 'danger',
+                title: 'Could not find element to be reloaded',
+                body: 'The content of this page may have changed and has not been reflected. Reloading the page is advised.'
+            })
+            return
+        }
+        return UI.submissionReloaderModal(url, reloadUrl, $reloadedElement, $statusNode);
+    }
+
+    /**
+     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the index table after a successful operation.
+     * Supports `displayOnSuccess` option to show another modal after the submission
+     * @param  {string} url - The URL from which the modal's content should be fetched
+     * @param  {(boolean|string)} [reloadUrl=false] - The URL from which the data should be fetched after confirming
+     * @param  {(jQuery|string)} [$table=false] - The table ID which should be reloaded on success
+     * @return {Promise<Object>} Promise object resolving to the ModalFactory object
+     */
+    submissionModalForIndex(url, reloadUrl=false, $table=false) {
+        let $statusNode, $reloadedElement
+        if (reloadUrl === false) {
+            const currentModel = location.pathname.split('/')[1]
+            if (currentModel.length > 0) {
+                reloadUrl = `/${currentModel}/index`
+            } else {
+                UI.Toaster({
+                    variant: 'danger',
+                    title: 'Could not find URL for the reload',
+                    body: 'The content of this page may have changed and has not been reflected. Reloading the page is advised.'
+                })
+                return
+            }
+        }
+        if ($table === false) { // Try to get information from the DOM
+            const $elligibleTable = $('table.table')
+            const $container = $elligibleTable.closest('div[id^="table-container-"]')
+            $reloadedElement = $container
+            $statusNode = $elligibleTable
+        } else {
+            if ($table instanceof jQuery) {
+                $reloadedElement = $table
+                $statusNode = $table.find('table.table')
+            } else {
+                $reloadedElement = $(`#table-container-${$table}`)
+                $statusNode = $(`#table-container-${$table} table.table`)
+            }
+        }
+        if ($reloadedElement.length == 0) {
+            UI.Toaster({
+                variant: 'danger',
+                title: 'Could not find element to be reloaded',
+                body: 'The content of this page may have changed and has not been reflected. Reloading the page is advised.'
+            })
+            return
+        }
+        return UI.submissionReloaderModal(url, reloadUrl, $reloadedElement, $statusNode);
+    }
+
+    /**
+     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the provided element after a successful operation.
+     * Supports `displayOnSuccess` option to show another modal after the submission
+     * @param  {string} url - The URL from which the modal's content should be fetched
+     * @param  {string} reloadUrl - The URL from which the data should be fetched after confirming
+     * @param  {(jQuery|string)} $reloadedElement - The element which should be reloaded on success
+     * @param  {(jQuery|string)} [$statusNode=null] - A reference to a HTML node on which the loading animation should be displayed. If not provided, $container will be used
+     * @return {Promise<Object>} Promise object resolving to the ModalFactory object
+     */
+    submissionReloaderModal(url, reloadUrl, $reloadedElement, $statusNode=null) {
+        const successCallback = function (data) {
+            UI.reload(reloadUrl, $reloadedElement, $statusNode)
             if (data.additionalData !== undefined && data.additionalData.displayOnSuccess !== undefined) {
                 UI.modal({
                     rawHtml: data.additionalData.displayOnSuccess
                 })
-            } else {
-                if (!reloaded) {
-                    location.reload()
-                }
             }
-        })
+        }
+        return UI.submissionModal(url, successCallback)
     }
 
     /**
