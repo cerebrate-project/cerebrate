@@ -71,6 +71,13 @@ class BootstrapHelper extends Helper
         $bsButton = new BoostrapButton($options);
         return $bsButton->button();
     }
+
+    public function badge($options)
+    {
+        $bsBadge = new BoostrapBadge($options);
+        return $bsBadge->badge();
+    }
+
 }
 
 class BootstrapGeneric
@@ -642,5 +649,45 @@ class BoostrapButton extends BootstrapGeneric {
     private function genContent()
     {
         return !is_null($this->options['html']) ? $this->options['html'] : $this->options['text'];
+    }
+}
+
+class BoostrapBadge extends BootstrapGeneric {
+    private $defaultOptions = [
+        'text' => '',
+        'variant' => 'primary',
+        'pill' => false,
+        'title' => ''
+    ];
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+        ];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function badge()
+    {
+        return $this->genBadge();
+    }
+
+    private function genBadge()
+    {
+        $html = $this->genNode('span', [
+            'class' => [
+                'badge',
+                "badge-{$this->options['variant']}",
+                $this->options['pill'] ? 'badge-pill' : '',
+            ],
+            'title' => $this->options['title']
+        ], h($this->options['text']));
+        return $html;
     }
 }
