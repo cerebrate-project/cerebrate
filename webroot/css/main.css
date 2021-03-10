@@ -1,3 +1,8 @@
+.pagination li.page-item > a.page-link > .ellipsis {
+    line-height: 12px;
+    vertical-align: top;
+}
+
 .footer {
   position: absolute;
   bottom: 0;
