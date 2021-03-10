@@ -458,7 +458,9 @@ class CRUDComponent extends Component
         if (strlen(trim($value, '%')) === strlen($value)) {
             return $query->where([$fieldName => $value]);
         } else {
-            return $query->like([$fieldName => $value]);
+            return $query->where(function ($exp, \Cake\ORM\Query $q) use ($fieldName, $value) {
+                return $exp->like($fieldName, $value);
+            });
         }
     }
 
