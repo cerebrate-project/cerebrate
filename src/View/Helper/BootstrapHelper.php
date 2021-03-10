@@ -42,6 +42,7 @@
 namespace App\View\Helper;
 
 use Cake\View\Helper;
+use Cake\Utility\Inflector;
 use Cake\Utility\Security;
 use InvalidArgumentException;
 
@@ -74,7 +75,7 @@ class BootstrapHelper extends Helper
 
 class BootstrapGeneric
 {
-    public static $variants = ['primary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'];
+    public static $variants = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'];
     protected $allowedOptionValues = [];
     protected $options = [];
 
@@ -120,6 +121,18 @@ class BootstrapGeneric
             $values = [$values];
         }
         return sprintf('%s="%s"', $paramName, implode(' ', $values));
+    }
+
+    protected static function genericCloseButton($dismissTarget)
+    {
+        return BootstrapGeneric::genNode('button', [
+            'type' => 'button',
+            'class' => 'close',
+            'data-dismiss' => $dismissTarget,
+            'arial-label' => __('Close')
+        ], BootstrapGeneric::genNode('span', [
+            'arial-hidden' => 'true'
+        ], '&times;'));
     }
 }
 
@@ -392,16 +405,7 @@ class BoostrapAlert extends BootstrapGeneric {
     {
         $html = '';
         if ($this->options['dismissible']) {
-            $html .= $this->openNode('button', [
-                'type' => 'button',
-                'class' => 'close',
-                'data-dismiss' => 'alert',
-                'arial-label' => 'close'
-            ]);
-            $html .= $this->genNode('span', [
-                'arial-hidden' => 'true'
-            ], '&times;');
-            $html .= $this->closeNode('button');
+            $html .= $this->genericCloseButton('alert');
         }
         return $html;
     }
@@ -460,7 +464,7 @@ class BoostrapTable extends BootstrapGeneric {
                 $this->options['hover'] ? 'table-hover' : '',
                 $this->options['small'] ? 'table-sm' : '',
                 !empty($this->options['variant']) ? "table-{$this->options['variant']}" : '',
-                !empty($this->options['tableClass']) ? $this->options['tableClass'] : ''
+                !empty($this->options['tableClass']) ? (is_array($this->options['tableClass']) ? implode(' ', $this->options['tableClass']) : $this->options['tableClass']) : ''
             ],
         ]);
 
@@ -482,11 +486,17 @@ class BoostrapTable extends BootstrapGeneric {
         $head .= $this->openNode('tr');
         foreach ($this->fields as $i => $field) {
             if (is_array($field)) {
-                $label = !empty($field['label']) ? $field['label'] : Inflector::humanize($field['key']);
+                if (!empty($field['labelHtml'])) {
+                    $label = $field['labelHtml'];
+                } else {
+                    $label = !empty($field['label']) ? $field['label'] : Inflector::humanize($field['key']);
+                    $label = h($label);
+                }
             } else {
                 $label = Inflector::humanize($field);
+                $label = h($label);
             }
-            $head .= $this->genNode('th', [], h($label));
+            $head .= $this->genNode('th', [], $label);
         }
         $head .= $this->closeNode('tr');
         $head .= $this->closeNode('thead');
@@ -497,7 +507,7 @@ class BoostrapTable extends BootstrapGeneric {
     {
         $body =  $this->openNode('tbody', [
             'class' => [
-                !empty($this->options['bodyClass']) ? $this->options['bodyClass'] : ''
+                !empty($this->options['bodyClass']) ? (is_array($this->options['bodyClass']) ? implode(' ', $this->options['bodyClass']) : $this->options['bodyClass']) : ''
             ],
         ]);
         foreach ($this->items as $i => $row) {
@@ -577,6 +587,9 @@ class BoostrapButton extends BootstrapGeneric {
             'size' => ['', 'sm', 'lg'],
             'type' => ['button', 'submit', 'reset']
         ];
+        if (empty($options['class'])) {
+            $options['class'] = '';
+        }
         $options['class'] = !is_array($options['class']) ? [$options['class']] : $options['class'];
         $this->processOptions($options);
     }
