@@ -494,7 +494,7 @@ class CRUDComponent extends Component
         $this->Controller->set('filteringContexts', $filteringContexts);
     }
 
-    public function getParentsForMetaFields($query, array $metaConditions)
+    public function setParentConditionsForMetaFields($query, array $metaConditions)
     {
         $metaTemplates = $this->MetaFields->MetaTemplates->find('list', [
             'keyField' => 'name',

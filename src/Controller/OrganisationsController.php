@@ -38,7 +38,7 @@ class OrganisationsController extends AppController
                     [
                         'label' => __('ENISA CSIRT Network (GOV)'),
                         'filterConditionFunction' => function($query) {
-                            return $this->CRUD->getParentsForMetaFields($query, [
+                            return $this->CRUD->setParentConditionsForMetaFields($query, [
                                 'ENISA CSIRT Network' => [
                                     [
                                         'field' => 'constituency',
