@@ -42,6 +42,9 @@ class ImporterCommand extends Command
     protected $modelClass = 'Organisations';
     private $fieldsNoOverride = [];
     private $format = 'json';
+    private $noMetaTemplate = false;
+    private $autoYes = false;
+    private $updateOnly = false;
 
     protected function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {
@@ -64,6 +67,18 @@ class ImporterCommand extends Command
             'help' => 'The target cerebrate model for the import',
             'default' => 'Organisations',
             'choices' => ['Organisations', 'Individuals', 'AuthKeys']
+            ]);
+        $parser->addOption('yes', [
+            'short' => 'y',
+            'help' => 'Automatically assume yes to any prompts',
+            'default' => false,
+            'boolean' => true
+        ]);
+        $parser->addOption('update-only', [
+            'short' => 'u',
+            'help' => 'Only update existing record. No new record will be created. primary_key MUST be supplied',
+            'default' => false,
+            'boolean' => true
         ]);
         return $parser;
     }
@@ -78,12 +93,18 @@ class ImporterCommand extends Command
         if (!is_null($model_class)) {
             $this->modelClass = $model_class;
         }
+        $this->autoYes = $args->getOption('yes');
+        $this->updateOnly = $args->getOption('update-only');
+        if ($this->updateOnly && is_null($primary_key)) {
+            $io->error('A `primary_key` must be supplied when using `--update-only` mode.');
+            die(1);
+        }
 
         $table = $this->modelClass;
         $this->loadModel($table);
         $config = $this->getConfigFromFile($configPath);
         $this->processConfig($config);
-        $sourceData = $this->getDataFromSource($source);
+        $sourceData = $this->getDataFromSource($source, $config);
         $data = $this->extractData($this->{$table}, $config, $sourceData);
         $entities = $this->marshalData($this->{$table}, $data, $config, $primary_key);
 
@@ -91,9 +112,13 @@ class ImporterCommand extends Command
         $ioTable = $this->transformEntitiesIntoTable($entitiesSample);
         $io->helper('Table')->output($ioTable);
 
-        $selection = $io->askChoice('A sample of the data you are about to save is provided above. Would you like to proceed?', ['Y', 'N'], 'N');
-        if ($selection == 'Y') {
+        if ($this->autoYes)  {
             $this->saveData($this->{$table}, $entities);
+        } else {
+            $selection = $io->askChoice('A sample of the data you about to be saved is provided above. Would you like to proceed?', ['Y', 'N'], 'N');
+            if ($selection == 'Y') {
+                $this->saveData($this->{$table}, $entities);
+            }
         }
     }
 
@@ -113,32 +138,40 @@ class ImporterCommand extends Command
                     $entity = $query->first();
                 }
                 if (is_null($entity)) {
-                    $entity = $table->newEmptyEntity();
+                    if (!$this->updateOnly) {
+                        $entity = $table->newEmptyEntity();
+                    }
                 } else {
                     $this->lockAccess($entity);
                 }
-                $entity = $table->patchEntity($entity, $item);
-                $entities[] = $entity;
+                if (!is_null($entity)) {
+                    $entity = $table->patchEntity($entity, $item);
+                    $entities[] = $entity;
+                }
             }
         }
         $hasErrors = false;
-        $metaTemplate = $this->MetaTemplates->find()
-            ->where(['uuid' => $config['metaTemplateUUID']])
-            ->first();
-        if (!is_null($metaTemplate)) {
-            $metaTemplateFieldsMapping = $this->MetaTemplates->MetaTemplateFields->find('list', [
-                'keyField' => 'field',
-                'valueField' => 'id'
-            ])->where(['meta_template_id' => $metaTemplate->id])->toArray();
-        } else {
-            $this->io->error("Unkown template for UUID $metaTemplateUUID");
+        if (!$this->noMetaTemplate) {
+            $metaTemplate = $this->MetaTemplates->find()
+                ->where(['uuid' => $config['metaTemplateUUID']])
+                ->first();
+            if (!is_null($metaTemplate)) {
+                $metaTemplateFieldsMapping = $this->MetaTemplates->MetaTemplateFields->find('list', [
+                    'keyField' => 'field',
+                    'valueField' => 'id'
+                ])->where(['meta_template_id' => $metaTemplate->id])->toArray();
+            } else {
+                $this->io->error("Unkown template for UUID $metaTemplateUUID");
+                die(1);
+            }
         }
+
         foreach ($entities as $i => $entity) {
             if ($entity->hasErrors()) {
                 $hasErrors = true;
                 $this->io->error(json_encode(['entity' => $entity, 'errors' => $entity->getErrors()], JSON_PRETTY_PRINT));
             } else {
-                if (!is_null($metaTemplate)) {
+                if (!$this->noMetaTemplate && !is_null($metaTemplate)) {
                     $metaFields = [];
                     foreach ($entity['metaFields'] as $fieldName => $fieldValue) {
                         $metaEntity = null;
@@ -198,7 +231,9 @@ class ImporterCommand extends Command
             'length' => 20
         ]);
         foreach ($entities as $i => $entity) {
-            $this->saveMetaFields($entity);
+            if (!$this->noMetaTemplate) {
+                $this->saveMetaFields($entity);
+            }
             $progress->increment(1);
             $progress->draw();
         }
@@ -293,16 +328,16 @@ class ImporterCommand extends Command
         return !in_array($metaEntity->field, $this->fieldsNoOverride);
     }
 
-    private function getDataFromSource($source)
+    private function getDataFromSource($source, $config)
     {
         $data = $this->getDataFromFile($source);
         if ($data === false) {
-            $data = $this->getDataFromURL($source);
+            $data = $this->getDataFromURL($source, $config);
         }
         return $data;
     }
 
-    private function getDataFromURL($url)
+    private function getDataFromURL($url, $config)
     {
         $validator = new Validator();
         $validator
@@ -316,7 +351,11 @@ class ImporterCommand extends Command
         }
         $http = new Client();
         $this->io->verbose('Downloading file');
-        $response = $http->get($url);
+        $httpConfig = [
+            'headers' => !empty($config['sourceHeaders']) ? $config['sourceHeaders'] : []
+        ];
+        $query = [];
+        $response = $http->get($url, $query, $httpConfig);
         if ($this->format == 'json') {
             return $response->getJson();
         } else if ($this->format == 'csv') {
@@ -377,6 +416,10 @@ class ImporterCommand extends Command
         if (empty($config['mapping'])) {
             $this->io->error('Error while parsing the configuration file, mapping missing');
             die(1);
+        }
+        if (empty($config['metaTemplateUUID'])) {
+            $this->io->warning('No `metaTemplateUUID` provided. No meta fields will be created.');
+            $this->noMetaTemplate = true;
         }
         if (!empty($config['format'])) {
             $this->format = $config['format'];
