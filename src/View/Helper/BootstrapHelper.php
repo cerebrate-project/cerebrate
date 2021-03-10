@@ -583,7 +583,8 @@ class BoostrapButton extends BootstrapGeneric {
         'class' => [],
         'type' => 'button',
         'nodeType' => 'button',
-        'params' => []
+        'params' => [],
+        'badge' => false
     ];
 
     private $bsClasses = [];
@@ -635,6 +636,10 @@ class BoostrapButton extends BootstrapGeneric {
 
         $html .= $this->genIcon();
         $html .= $this->genContent();
+        if (!empty($this->options['badge'])) {
+            $bsBadge = new BoostrapBadge($this->options['badge']);
+            $html .= $bsBadge->badge();
+        }
         $html .= $this->closeNode($this->options['nodeType']);
         return $html;
     }
