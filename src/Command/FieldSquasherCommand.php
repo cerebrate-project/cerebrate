@@ -105,18 +105,6 @@ class FieldSquasherCommand extends Command
         if ($entities === false) {
             $this->io->error('Error while saving data');
         }
-        $this->io->verbose('Saving meta fields');
-        $this->io->out('');
-        $progress->init([
-            'total' => count($entities),
-            'length' => 20
-        ]);
-        foreach ($entities as $i => $entity) {
-            $this->saveMetaFields($entity);
-            $progress->increment(1);
-            $progress->draw();
-        }
-        $this->io->out('');
     }
 
     private function findCanditates($table, $config, $source)
