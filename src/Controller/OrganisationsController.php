@@ -12,10 +12,13 @@ use Cake\Http\Exception\ForbiddenException;
 
 class OrganisationsController extends AppController
 {
+
+    public $filters = ['name', 'uuid', 'nationality', 'sector', 'type', 'url', 'Alignments.id', 'MetaFields.field', 'MetaFields.value', 'MetaFields.MetaTemplates.name'];
+
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['name', 'uuid', 'nationality', 'sector', 'type', 'url', 'Alignments.id', 'MetaFields.field', 'MetaFields.value', 'MetaFields.MetaTemplates.name'],
+            'filters' => $this->filters,
             'quickFilters' => [['name' => true], 'uuid', 'nationality', 'sector', 'type', 'url'],
             'contextFilters' => [
                 'custom' => [
@@ -62,6 +65,11 @@ class OrganisationsController extends AppController
         }
         $this->set('alignmentScope', 'individuals');
         $this->set('metaGroup', 'ContactDB');
+    }
+
+    public function filtering()
+    {
+        $this->CRUD->filtering();
     }
 
     public function add()

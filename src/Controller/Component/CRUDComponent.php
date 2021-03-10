@@ -55,6 +55,14 @@ class CRUDComponent extends Component
             $this->Controller->set('data', $data);
         }
     }
+
+    public function filtering(): void
+    {
+        $filters = !empty($this->Controller->filters) ? $this->Controller->filters : [];
+        $this->Controller->set('filters', $filters);
+        $this->Controller->viewBuilder()->setLayout('ajax');
+        $this->Controller->render('/genericTemplates/filters');
+    }
     
     /**
      * getResponsePayload Returns the adaquate response payload based on the request context

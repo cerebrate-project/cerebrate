@@ -13,7 +13,9 @@
         if (!empty($filteringContext['filterCondition'])) { // PHP replaces `.` by `_` when fetching the request parameter
             $currentFilteringContext = [];
             foreach ($filteringContext['filterCondition'] as $currentFilteringContextKey => $value) {
-                $currentFilteringContext[str_replace('.', '_', $currentFilteringContextKey)] = $value;
+                $currentFilteringContextKey = str_replace('.', '_', $currentFilteringContextKey);
+                $currentFilteringContextKey = str_replace(' ', '_', $currentFilteringContextKey);
+                $currentFilteringContext[$currentFilteringContextKey] = $value;
             }
         } else {
             $currentFilteringContext = $filteringContext['filterCondition'];
