@@ -15,7 +15,7 @@ $filteringForm = $this->Bootstrap->table(
         [
             'labelHtml' => sprintf('%s %s',
                 __('Value'),
-                sprintf('<span class="fa fa-info ml-1" title="%s"><span>', __('Supports strict match and LIKE match with the `%` character.&#10;Example: `%.com`'))
+                sprintf('<sup class="fa fa-info" title="%s"><sup>', __('Supports strict match and LIKE match with the `%` character.&#10;Example: `%.com`'))
             )
         ],
         __('Action')
