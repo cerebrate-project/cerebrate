@@ -642,6 +642,29 @@ class ACLComponent extends Component
                         ]
                     ]
                 ],
+                'Inbox' => [
+                    'label' => __('Inbox'),
+                    'url' => '/inbox/index',
+                    'children' => [
+                        'index' => [
+                            'url' => '/inbox/index',
+                            'label' => __('Inbox')
+                        ],
+                        'view' => [
+                            'url' => '/inbox/view/{{id}}',
+                            'label' => __('View Meta Template'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1
+                        ],
+                        'delete' => [
+                            'url' => '/inbox/delete/{{id}}',
+                            'label' => __('Delete Meta Template'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1,
+                            'popup' => 1
+                        ]
+                    ]
+                ],
                 'MetaTemplates' => [
                     'label' => __('Meta Field Templates'),
                     'url' => '/metaTemplates/index',

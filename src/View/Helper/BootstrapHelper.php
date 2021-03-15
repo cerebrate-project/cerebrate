@@ -822,7 +822,7 @@ class BoostrapModal extends BootstrapGeneric {
             'variant' => 'primary',
             'text' => __('Ok'),
             'params' => [
-                'data-dismiss' => 'modal',
+                'data-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
                 'onclick' => $this->options['confirmFunction']
             ]
         ]))->button();
@@ -848,8 +848,9 @@ class BoostrapModal extends BootstrapGeneric {
             'variant' => $variant,
             'text' => h($this->options['confirmText']),
             'params' => [
-                'data-dismiss' => 'modal',
-                'onclick' => $this->options['confirmFunction']
+                'data-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
+                // 'onclick' => sprintf('(function(clicked) { %s.finally( () => { $(clicked).closest(\'.modal\').data(\'modalObject\').hide() }) }(this))', $this->options['confirmFunction'])
+                'onclick' => sprintf('closeModalOnFunctionCompletion(this, function(clicked) { return %s })', $this->options['confirmFunction'])
             ]
         ]))->button();
         return $buttonCancel . $buttonConfirm;

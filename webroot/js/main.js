@@ -66,6 +66,17 @@ function attachTestConnectionResultHtml(result, $container) {
     return $testResultDiv
 }
 
+function closeModalOnFunctionCompletion(clicked, fun) {
+    const result = fun(clicked)
+    if (result === undefined) {
+        $(clicked).closest('.modal').data('modalObject').hide()
+    } else {
+        result.finally( () => {
+            $(clicked).closest('.modal').data('modalObject').hide()
+        })
+    }
+}
+
 var UI
 $(document).ready(() => {
     if (typeof UIFactory !== "undefined") {

@@ -286,6 +286,7 @@ class AJAXApi {
             let formData = new FormData()
             formData = AJAXApi.mergeFormData(formData, dataToPost)
             let requestConfig = AJAXApi.genericRequestConfigPOST
+            requestConfig.headers.append('AUTHORIZATION', '~HACKY-HACK~')
             let options = {
                 ...requestConfig,
                 body: formData,
@@ -307,8 +308,6 @@ class AJAXApi {
                     title: 'There has been a problem with the operation',
                     body: data.message
                 }, true, skipFeedback);
-                feedbackShown = true
-                this.injectFormValidationFeedback(form, data.errors)
                 toReturn = Promise.reject(data.errors);
             }
         } catch (error) {

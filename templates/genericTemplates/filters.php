@@ -30,7 +30,7 @@ echo $this->Bootstrap->modal([
     'type' => 'confirm',
     'bodyHtml' => $filteringForm,
     'confirmText' => __('Filter'),
-    'confirmFunction' => 'filterIndex(this)'
+    'confirmFunction' => 'filterIndex(clicked)'
 ]);
 ?>
 

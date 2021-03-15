@@ -30,7 +30,7 @@ class OrganisationsTable extends AppTable
             [
                 'dependent' => true,
                 'foreignKey' => 'owner_id',
-                'conditions' => ['owner_type' => 'organisation']
+                'conditions' => ['owner_model' => 'organisation']
             ]
         );
         $this->hasMany(

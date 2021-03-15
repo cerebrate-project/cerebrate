@@ -6,7 +6,7 @@ echo $this->element('genericElements/Form/genericForm', [
         'model' => 'Organisations',
         'fields' => [
             [
-                'field' => 'owner_type',
+                'field' => 'owner_model',
                 'label' => __('Owner type'),
                 'options' => array_combine(array_keys($dropdownData), array_keys($dropdownData)),
                 'type' => 'dropdown'
@@ -17,7 +17,7 @@ echo $this->element('genericElements/Form/genericForm', [
                 'options' => $dropdownData['organisation'] ?? [],
                 'type' => 'dropdown',
                 'stateDependence' => [
-                    'source' => '#owner_type-field',
+                    'source' => '#owner_model-field',
                     'option' => 'organisation'
                 ]
             ],
@@ -27,7 +27,7 @@ echo $this->element('genericElements/Form/genericForm', [
                 'options' => $dropdownData['individual'] ?? [],
                 'type' => 'dropdown',
                 'stateDependence' => [
-                    'source' => '#owner_type-field',
+                    'source' => '#owner_model-field',
                     'option' => 'individual'
                 ]
             ],

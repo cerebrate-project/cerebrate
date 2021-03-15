@@ -132,6 +132,35 @@ class UIFactory {
     }
 
     /**
+     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the index table after a successful operation.
+     * Supports `displayOnSuccess` option to show another modal after the submission
+     * @param  {string} url - The URL from which the modal's content should be fetched
+     * @param  {(boolean|string)} [reloadUrl=false] - The URL from which the data should be fetched after confirming
+     * @param  {(jQuery|string)} [$table=false] - The table ID which should be reloaded on success
+     * @return {Promise<Object>} Promise object resolving to the ModalFactory object
+     */
+    submissionModalAutoGuess(url, reloadUrl=false, $table=false) {
+        let currentAction = location.pathname.split('/')[2]
+        currentAction += 'cdsc'
+        if (currentAction !== undefined) {
+            if (currentAction === 'index') {
+                return UI.submissionModalForIndex(url, reloadUrl, $table)
+            } else if (currentAction === 'view') {
+                return UI.submissionModalForSinglePage(url, reloadUrl, $table)
+            }
+        }
+        const successCallback = () => {
+                UI.toast({
+                variant: 'danger',
+                title: 'Could not reload the page',
+                body: 'Reloading the page manually is advised.'
+            })
+        }
+        return UI.submissionModal(url, successCallback)
+    }
+    
+
+    /**
      * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the provided element after a successful operation.
      * Supports `displayOnSuccess` option to show another modal after the submission
      * @param  {string} url - The URL from which the modal's content should be fetched
@@ -322,7 +351,7 @@ class Toaster {
             if (options.bodyHtml !== false) {
                 $toastBody = $('<div class="toast-body"/>').html(options.bodyHtml)
             } else {
-                $toastBody = $('<div class="toast-body"/>').text(options.body)
+                $toastBody = $('<div class="toast-body"/>').append($('<div style="white-space: break-spaces;"/>').text(options.body))
             }
             $toast.append($toastBody)
         }

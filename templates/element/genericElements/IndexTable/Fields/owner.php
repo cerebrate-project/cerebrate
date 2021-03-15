@@ -1,5 +1,5 @@
 <?php
-    $type = $this->Hash->extract($row, $field['owner_type_path'])[0];
+    $type = $this->Hash->extract($row, $field['owner_model_path'])[0];
     $owner = $row[$type];
     $types = [
         'individual' => [
