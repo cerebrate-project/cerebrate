@@ -38,17 +38,13 @@ class RegistrationProcessor extends UserRequestProcessor implements GenericProce
     protected function addValidatorRules($validator)
     {
         return $validator
-            ->requirePresence('username')
-            ->notEmpty('name', 'A username must be provided.')
-            ->requirePresence('email')
+            ->notEmpty('username', 'A username must be provided.')
             ->add('email', 'validFormat', [
                 'rule' => 'email',
                 'message' => 'E-mail must be valid'
             ])
-            ->requirePresence('first_name')
-            ->notEmpty('name', 'A first name must be provided.')
-            ->requirePresence('last_name')
-            ->notEmpty('name', 'A last name must be provided.');
+            ->notEmpty('first_name', 'A first name must be provided')
+            ->notEmpty('last_name', 'A last name must be provided');
     }
     
     public function create($requestData) {

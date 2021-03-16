@@ -1,4 +1,40 @@
 <?php
+    $formUser = $this->element('genericElements/Form/genericForm', [
+        'entity' => $userEntity,
+        'ajax' => false,
+        'raw' => true,
+        'data' => [
+            'description' => __('Create user account'),
+            'model' => 'User',
+            'fields' => [
+                [
+                    'field' => 'individual_id',
+                    'type' => 'dropdown',
+                    'label' => __('Associated individual'),
+                    'options' => $dropdownData['individual'],
+                ],
+                [
+                    'field' => 'username',
+                    'autocomplete' => 'off',
+                ],
+                [
+                    'field' => 'role_id',
+                    'type' => 'dropdown',
+                    'label' => __('Role'),
+                    'options' => $dropdownData['role']
+                ],
+                [
+                    'field' => 'disabled',
+                    'type' => 'checkbox',
+                    'label' => 'Disable'
+                ]
+            ],
+            'submit' => [
+                'action' => $this->request->getParam('action')
+            ]
+        ]
+    ]);
+
     $formIndividual = $this->element('genericElements/Form/genericForm', [
         'entity' => $individualEntity,
         'ajax' => false,
@@ -36,51 +72,15 @@
         ]
     ]);
 
-    $formUser = $this->element('genericElements/Form/genericForm', [
-        'entity' => $userEntity,
-        'ajax' => false,
-        'raw' => true,
-        'data' => [
-            'description' => __('Create user account'),
-            'model' => 'User',
-            'fields' => [
-                [
-                    'field' => 'individual_id',
-                    'type' => 'dropdown',
-                    'label' => __('Associated individual'),
-                    'options' => $dropdownData['individual'],
-                ],
-                [
-                    'field' => 'username',
-                    'autocomplete' => 'off',
-                ],
-                [
-                    'field' => 'role_id',
-                    'type' => 'dropdown',
-                    'label' => __('Role'),
-                    'options' => $dropdownData['role']
-                ],
-                [
-                    'field' => 'disabled',
-                    'type' => 'checkbox',
-                    'label' => 'Disable'
-                ]
-            ],
-            'submit' => [
-                'action' => $this->request->getParam('action')
-            ]
-        ]
-    ]);
-
     echo $this->Bootstrap->modal([
         'title' => __('Register user'),
         'size' => 'lg',
         'type' => 'confirm',
-        'bodyHtml' => sprintf('<div class="individual-container">%s</div><div class="user-container">%s</div>',
-            $formIndividual,
-            $formUser
+        'bodyHtml' => sprintf('<div class="user-container">%s</div><div class="individual-container">%s</div>',
+            $formUser,
+            $formIndividual
         ),
-        'confirmText' => __('Submit'),
+        'confirmText' => __('Create user'),
         'confirmFunction' => 'submitRegistration(clicked)'
     ]);
 ?>
@@ -120,3 +120,9 @@
         }, {})
     }
 </script>
+
+<style>
+div.individual-container > div, div.user-container > div {
+    font-size: 1.5rem;
+}
+</style>
