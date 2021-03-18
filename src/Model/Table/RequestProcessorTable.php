@@ -9,6 +9,21 @@ class RequestProcessorTable extends AppTable
 {
     private $processorsDirectory = ROOT . '/libraries/RequestProcessors';
     private $requestProcessors;
+    private $enabledProcessors = [ // to be defined in config
+        'Brood' => [
+            'ToolInterconnection' => false,
+            'OneWaySynchronization' => false,
+        ],
+        'Proposal' => [
+            'ProposalEdit' => false,
+        ],
+        'Synchronisation' => [
+            'DataExchange' => false,
+        ],
+        'User' => [
+            'Registration' => true,
+        ],
+    ];
 
     public function initialize(array $config): void
     {
@@ -65,6 +80,14 @@ class RequestProcessorTable extends AppTable
             $processorMainClass = $this->getProcessorClass($processorDir->pwd() . DS . $processorFile, $processorMainClassName);
             if ($processorMainClass !== false) {
                 $this->requestProcessors[$processorMainClassNameShort] = $processorMainClass;
+                foreach ($this->requestProcessors[$processorMainClassNameShort]->getRegisteredActions() as $registeredAction) {
+                    $scope = $this->requestProcessors[$processorMainClassNameShort]->getScope();
+                    if (!empty($this->enabledProcessors[$scope][$registeredAction])) {
+                        $this->requestProcessors[$processorMainClassNameShort]->{$registeredAction}->enabled = true;
+                    } else {
+                        $this->requestProcessors[$processorMainClassNameShort]->{$registeredAction}->enabled = false;
+                    }
+                }
             }
         }
     }

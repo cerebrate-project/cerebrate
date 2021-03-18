@@ -102,6 +102,7 @@ class InboxController extends AppController
         foreach ($requestProcessors as $scope => $processors) {
             foreach ($processors as $processor) {
                 $data[] = [
+                    'enabled' => $processor->enabled,
                     'scope' => $scope,
                     'action' => $processor->action
                 ];
@@ -109,6 +110,11 @@ class InboxController extends AppController
         }
         $this->set('title', 'Available request processors');
         $this->set('fields', [
+            [
+                'name' => 'Enabled',
+                'data_path' => 'enabled',
+                'element' => 'boolean'
+            ],
             [
                 'name' => 'Processor scope',
                 'data_path' => 'scope',

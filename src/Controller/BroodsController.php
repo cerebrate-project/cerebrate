@@ -6,6 +6,7 @@ use App\Controller\AppController;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
+use Cake\ORM\TableRegistry;
 
 class BroodsController extends AppController
 {
@@ -153,5 +154,22 @@ class BroodsController extends AppController
             }
             $this->redirect($this->referer());
         }
+    }
+
+    public function interconnectTools()
+    {
+        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
+        $processor = $this->requestProcessor->getProcessor('Brood', 'ToolInterconnection');
+        $data = [
+            'origin' => '127.0.0.1',
+            'comment' => 'Test comment',
+            'data' => [
+                'foo' => 'foo',
+                'bar' => 'bar',
+                'baz' => 'baz',
+            ],
+        ];
+        $processorResult = $processor->create($data);
+        return $processor->genHTTPReply($this, $processorResult, ['scope' => 'Brood', 'action' => 'ToolInterconnection'], ['controller' => 'Broods', 'action' => 'index']);
     }
 }

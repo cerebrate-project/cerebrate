@@ -33,6 +33,15 @@ class GenericRequestProcessor
         $file->close();
     }
 
+    public function getRegisteredActions()
+    {
+        return $this->registeredActions;
+    }
+    public function getScope()
+    {
+        return $this->scope;
+    }
+
     private function getProcessingTemplatePath()
     {
         $class = str_replace('RequestProcessor', '', get_parent_class($this));
