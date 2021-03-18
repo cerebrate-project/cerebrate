@@ -721,7 +721,7 @@ class BoostrapModal extends BootstrapGeneric {
         'footerClass' => [''],
         'type' => 'ok-only',
         'variant' => '',
-        'confirmFunction' => '',
+        'confirmFunction' => '', // Will be called with the following arguments confirmFunction(modalObject, tmpApi)
         'cancelFunction' => ''
     ];
 
@@ -847,10 +847,10 @@ class BoostrapModal extends BootstrapGeneric {
         $buttonConfirm = (new BoostrapButton([
             'variant' => $variant,
             'text' => h($this->options['confirmText']),
+            'class' => 'modal-confirm-button',
             'params' => [
                 'data-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
-                // 'onclick' => sprintf('(function(clicked) { %s.finally( () => { $(clicked).closest(\'.modal\').data(\'modalObject\').hide() }) }(this))', $this->options['confirmFunction'])
-                'onclick' => sprintf('closeModalOnFunctionCompletion(this, function(clicked) { return %s })', $this->options['confirmFunction'])
+                'data-confirmFunction' => sprintf('%s', $this->options['confirmFunction'])
             ]
         ]))->button();
         return $buttonCancel . $buttonConfirm;

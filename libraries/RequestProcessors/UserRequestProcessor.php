@@ -18,7 +18,7 @@ class UserRequestProcessor extends GenericRequestProcessor
 
     public function create($requestData)
     {
-        parent::create($requestData);
+        return parent::create($requestData);
     }
 }
 
@@ -47,7 +47,7 @@ class RegistrationProcessor extends UserRequestProcessor implements GenericProce
     public function create($requestData) {
         $this->validateRequestData($requestData);
         $requestData['title'] = __('User account creation requested for {0}', $requestData['data']['email']);
-        parent::create($requestData);
+        return parent::create($requestData);
     }
 
     public function setViewVariables($controller, $request)
@@ -77,39 +77,42 @@ class RegistrationProcessor extends UserRequestProcessor implements GenericProce
         $controller->set(compact('dropdownData'));
     }
 
-    public function process($id, $serverRequest)
+    public function process($id, $requestData)
     {
-        $data = $serverRequest->getData();
-        if ($data['individual_id'] == -1) {
+        if ($requestData['individual_id'] == -1) {
             $individual = $this->Users->Individuals->newEntity([
-                'uuid' => $data['uuid'],
-                'email' => $data['email'],
-                'first_name' => $data['first_name'],
-                'last_name' => $data['last_name'],
-                'position' => $data['position'],
+                'uuid' => $requestData['uuid'],
+                'email' => $requestData['email'],
+                'first_name' => $requestData['first_name'],
+                'last_name' => $requestData['last_name'],
+                'position' => $requestData['position'],
             ]);
             $individual = $this->Users->Individuals->save($individual);
         } else {
-            $individual = $this->Users->Individuals->get($data['individual_id']);
+            $individual = $this->Users->Individuals->get($requestData['individual_id']);
         }
         $user = $this->Users->newEntity([
             'individual_id' => $individual->id,
-            'username' => $data['username'],
+            'username' => $requestData['username'],
             'password' => '~PASSWORD_TO_BE_REPLACED~',
-            'role_id' => $data['role_id'],
-            'disabled' => $data['disabled'],
+            'role_id' => $requestData['role_id'],
+            'disabled' => $requestData['disabled'],
         ]);
         $user = $this->Users->save($user);
-        return [
-            'data' => $user,
-            'success' => $user !== false,
-            'message' => $user !== false ? __('User `{0}` created', $user->username) : __('Could not create user `{0}`.', $user->username),
-            'errors' => $user->getErrors()
-        ];
+
+        if ($user !== false) {
+            $this->discard($id, $requestData);
+        }
+        return $this->genActionResult(
+            $user,
+            $user !== false,
+            $user !== false ? __('User `{0}` created', $user->username) : __('Could not create user `{0}`.', $user->username),
+            $user->getErrors()
+        );
     }
 
-    public function discard($id)
+    public function discard($id, $requestData)
     {
-        parent::discard($id);
+        return parent::discard($id, $requestData);
     }
 }

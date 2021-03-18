@@ -81,17 +81,14 @@
             $formIndividual
         ),
         'confirmText' => __('Create user'),
-        'confirmFunction' => 'submitRegistration(clicked)'
+        'confirmFunction' => 'submitRegistration'
     ]);
 ?>
 </div>
 
 <script>
-    function submitRegistration(clicked) {
-        const tmpApi = new AJAXApi({
-            statusNode: clicked
-        })
-        const $forms = $(clicked).closest('.modal').find('form')
+    function submitRegistration(modalObject, tmpApi) {
+        const $forms = modalObject.$modal.find('form')
         const url = $forms[0].action
         const data1 = getFormData($forms[0])
         const data2 = getFormData($forms[1])

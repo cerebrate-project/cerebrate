@@ -8,7 +8,7 @@ interface GenericProcessorActionI
 {
     public function create($requestData);
     public function process($requestID, $serverRequest);
-    public function discard($requestID);
+    public function discard($requestID ,$requestData);
     public function setViewVariables($controller, $request);
 }
 
@@ -88,12 +88,7 @@ class GenericRequestProcessor
             $this->{$action} = $reflection->newInstance();
         }
     }
-
-    public function checkLoading()
-    {
-        return 'Assimilation successful!';
-    }
-
+    
     protected function setViewVariablesConfirmModal($controller, $id, $title='', $question='', $actionName='')
     {
         $controller->set('title', !empty($title) ? $title : __('Process request {0}', $id));
@@ -102,6 +97,63 @@ class GenericRequestProcessor
         $controller->set('path', ['controller' => 'inbox', 'action' => 'process', $id]);
     }
 
+    protected function genActionResult($data, $success, $message, $errors=[])
+    {
+        return [
+            'data' => $data,
+            'success' => $success,
+            'message' => $message,
+            'errors' => $errors,
+        ];
+    }
+
+    public function genHTTPReply($controller, $processResult, $request, $redirect=null)
+    {
+        if (is_array($request)) {
+            $scope = $request['scope'];
+            $action = $request['action'];
+        } else {
+            $scope = $request->scope;
+            $action = $request->action;
+        }
+        if ($processResult['success']) {
+            $message = !empty($processResult['message']) ? $processResult['message'] : __('Request {0} successfully processed.', $id);
+            if ($controller->ParamHandler->isRest()) {
+                $response = $controller->RestResponse->viewData($processResult, 'json');
+            } else if ($controller->ParamHandler->isAjax()) {
+                $response = $controller->RestResponse->ajaxSuccessResponse('RequestProcessor', "{$scope}.{$action}", $processResult['data'], $message);
+            } else {
+                $controller->Flash->success($message);
+                if (!is_null($redirect)) {
+                    $response = $controller->redirect($redirect);
+                } else {
+                    $response = $controller->redirect(['action' => 'index']);
+                }
+            }
+        } else {
+            $message = !empty($processResult['message']) ? $processResult['message'] : __('Request {0} could not be processed.', $id);
+            if ($controller->ParamHandler->isRest()) {
+                $response = $controller->RestResponse->viewData($processResult, 'json');
+            } else if ($controller->ParamHandler->isAjax()) {
+                $response = $controller->RestResponse->ajaxFailResponse('RequestProcessor', "{$scope}.{$action}", $processResult['data'], $message, $processResult['errors']);
+            } else {
+                $controller->Flash->error($message);
+                if (!is_null($redirect)) {
+                    $response = $controller->redirect($redirect);
+                } else {
+                    $response = $controller->redirect(['action' => 'index']);
+                }
+            }
+        }
+
+        return $response;
+    }
+
+    public function checkLoading()
+    {
+        return 'Assimilation successful!';
+    }
+    
     public function create($requestData)
     {
         $requestData['scope'] = $this->scope;
@@ -109,17 +161,22 @@ class GenericRequestProcessor
         $requestData['description'] = $this->description;
         $request = $this->generateRequest($requestData);
         $savedRequest = $this->Inbox->save($request);
-        if ($savedRequest !== false) {
-            // log here
-        }
+        return $this->genActionResult(
+            $savedRequest,
+            $savedRequest !== false,
+            __('{0} request for {1} created', $this->scope, $this->action),
+            $request->getErrors()
+        );
     }
 
-    public function discard($requestData)
+    public function discard($id, $requestData)
     {
-        $request = $this->generateRequest($requestData);
-        $savedRequest = $this->Inbox->save($request);
-        if ($savedRequest !== false) {
-            // log here
-        }
+        $request = $this->Inbox->get($id);
+        $this->Inbox->delete($request);
+        return $this->genActionResult(
+            [],
+            true,
+            __('{0}.{1} request #{2} discarded', $this->scope, $this->action, $id)
+        );
     }
 }

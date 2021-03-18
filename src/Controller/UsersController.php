@@ -150,8 +150,7 @@ class UsersController extends AppController
                 'last_name' => 'bar',
             ],
         ];
-        $processor->create($data);
-        $this->Flash->success(__('Entry created'));
-        return $this->redirect(['controller' => 'Inbox', 'action' => 'index']);
+        $processorResult = $processor->create($data);
+        return $processor->genHTTPReply($this, $processorResult, ['scope' => 'User', 'action' => 'Registration'], ['controller' => 'Inbox', 'action' => 'index']);
     }
 }

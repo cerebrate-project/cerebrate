@@ -77,17 +77,20 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'url' => '/inbox/view',
                 'url_params_data_paths' => ['id'],
-                'icon' => 'eye'
+                'icon' => 'eye',
+                'title' => __('View request')
             ],
             [
                 'open_modal' => '/inbox/process/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'cogs'
+                'icon' => 'cogs',
+                'title' => __('Process request')
             ],
             [
                 'open_modal' => '/inbox/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'trash'
+                'icon' => 'trash',
+                'title' => __('Discard request')
             ],
         ]
     ]

@@ -59,6 +59,13 @@ class InboxController extends AppController
 
     public function delete($id)
     {
+        if ($this->request->is('post')) {
+            $request = $this->Inbox->get($id);
+            $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
+            $processor = $this->requestProcessor->getProcessor($request->scope, $request->action);
+            $discardResult = $processor->discard($id, $request);
+            return $processor->genHTTPReply($this, $discardResult, $request);
+        }
         $this->set('deletionTitle', __('Discard request'));
         $this->set('deletionText', __('Are you sure you want to discard request #{0}?', $id));
         $this->set('deletionConfirm', __('Discard'));
@@ -75,17 +82,10 @@ class InboxController extends AppController
         $scope = $request->scope;
         $action = $request->action;
         $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
-        $processor = $this->requestProcessor->getProcessor($scope, $action);
+        $processor = $this->requestProcessor->getProcessor($request->scope, $request->action);
         if ($this->request->is('post')) {
-            $processResult = $processor->process($id, $this->request);
-            if ($processResult['success']) {
-                $message = !empty($processResult['message']) ? $processResult['message'] : __('Request {0} processed.', $id);
-                $response = $this->RestResponse->ajaxSuccessResponse('RequestProcessor', "{$scope}.{$action}", $processResult['data'], $message);
-            } else {
-                $message = !empty($processResult['message']) ? $processResult['message'] : __('Request {0} could not be processed.', $id);
-                $response = $this->RestResponse->ajaxFailResponse('RequestProcessor', "{$scope}.{$action}", $processResult['data'], $message, $processResult['errors']);
-            }
-            return $response;
+            $processResult = $processor->process($id, $this->request->getData());
+            return $processor->genHTTPReply($this, $processResult, $request);
         } else {
             $this->requestProcessor->render($this, $processor, $request);
         }
