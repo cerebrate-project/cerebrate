@@ -6,8 +6,8 @@ require_once(ROOT . DS . 'libraries' . DS . 'RequestProcessors' . DS . 'GenericR
 class UserRequestProcessor extends GenericRequestProcessor
 {
     protected $scope = 'User';
-    protected $action = 'overridden-in-processor-action';
-    protected $description = 'overridden-in-processor-action';
+    protected $action = 'not-specified'; //overriden when extending
+    protected $description = ''; // overriden when extending
     protected $registeredActions = [
         'Registration'
     ];
@@ -18,15 +18,12 @@ class UserRequestProcessor extends GenericRequestProcessor
 
     public function create($requestData)
     {
-        $requestData['scope'] = $this->scope;
-        $requestData['action'] = $this->action;
-        $requestData['description'] = $this->description;
         parent::create($requestData);
     }
 }
 
 class RegistrationProcessor extends UserRequestProcessor implements GenericProcessorActionI {
-    protected $action = 'Registration';
+    public $action = 'Registration';
     protected $description;
 
     public function __construct() {

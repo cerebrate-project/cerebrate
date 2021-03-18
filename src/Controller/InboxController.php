@@ -3,10 +3,11 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
-use Cake\Utility\Hash;
-use Cake\Utility\Text;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Event\EventInterface;
+use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
+use Cake\Utility\Text;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\ForbiddenException;
@@ -47,15 +48,6 @@ class InboxController extends AppController
         $this->CRUD->filtering();
     }
 
-    // public function add()
-    // {
-    //     $this->CRUD->add();
-    //     $responsePayload = $this->CRUD->getResponsePayload();
-    //     if (!empty($responsePayload)) {
-    //         return $responsePayload;
-    //     }
-    // }
-
     public function view($id)
     {
         $this->CRUD->view($id);
@@ -79,7 +71,8 @@ class InboxController extends AppController
         $request = $this->Inbox->get($id);
         $scope = $request->scope;
         $action = $request->action;
-        $processor = $this->Inbox->getRequestProcessor($scope, $action);
+        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
+        $processor = $this->requestProcessor->getProcessor($scope, $action);
         if ($this->request->is('post')) {
             $processResult = $processor->process($id, $this->request);
             if ($processResult['success']) {
@@ -91,11 +84,38 @@ class InboxController extends AppController
             }
             return $response;
         } else {
-            $processor->setViewVariables($this, $request);
-            $processingTemplate = $processor->getProcessingTemplate();
-            $this->set('request', $request);
-            $this->viewBuilder()->setLayout('ajax');
-            $this->render($processingTemplate);
+            $this->requestProcessor->render($this, $processor, $request);
         }
+    }
+
+    public function listProcessors()
+    {
+        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
+        $requestProcessors = $this->requestProcessor->listProcessors();
+        if ($this->ParamHandler->isRest()) {
+            return $this->RestResponse->viewData($requestProcessors, 'json');
+        }
+        $data = [];
+        foreach ($requestProcessors as $scope => $processors) {
+            foreach ($processors as $processor) {
+                $data[] = [
+                    'scope' => $scope,
+                    'action' => $processor->action
+                ];
+            }
+        }
+        $this->set('title', 'Available request processors');
+        $this->set('fields', [
+            [
+                'name' => 'Processor scope',
+                'data_path' => 'scope',
+            ],
+            [
+                'name' => 'Processor action',
+                'data_path' => 'action',
+            ]
+        ]);
+        $this->set('data', $data);
+        $this->render('/genericTemplates/index_simple');
     }
 }

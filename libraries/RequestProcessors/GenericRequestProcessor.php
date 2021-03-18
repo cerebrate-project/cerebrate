@@ -14,7 +14,7 @@ interface GenericProcessorActionI
 
 class GenericRequestProcessor
 {
-    public $Inbox;
+    protected $Inbox;
     protected $registeredActions = [];
     protected $validator;
     private $processingTemplate = '/genericTemplates/confirm';
@@ -56,7 +56,7 @@ class GenericRequestProcessor
         $request = $this->Inbox->newEmptyEntity();
         $request = $this->Inbox->patchEntity($request, $requestData);
         if ($request->getErrors()) {
-            throw new MethodNotAllowed(__('Could not create request.{0}Reason: {1}', PHP_EOL, json_encode($request->getErrors())), 1);
+            throw new Exception(__('Could not create request.{0}Reason: {1}', PHP_EOL, json_encode($request->getErrors())), 1);
         }
         return $request;
     }
@@ -103,6 +103,18 @@ class GenericRequestProcessor
     }
 
     public function create($requestData)
+    {
+        $requestData['scope'] = $this->scope;
+        $requestData['action'] = $this->action;
+        $requestData['description'] = $this->description;
+        $request = $this->generateRequest($requestData);
+        $savedRequest = $this->Inbox->save($request);
+        if ($savedRequest !== false) {
+            // log here
+        }
+    }
+
+    public function discard($requestData)
     {
         $request = $this->generateRequest($requestData);
         $savedRequest = $this->Inbox->save($request);
