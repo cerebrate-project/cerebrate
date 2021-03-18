@@ -59,6 +59,9 @@ class InboxController extends AppController
 
     public function delete($id)
     {
+        $this->set('deletionTitle', __('Discard request'));
+        $this->set('deletionText', __('Are you sure you want to discard request #{0}?', $id));
+        $this->set('deletionConfirm', __('Discard'));
         $this->CRUD->delete($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

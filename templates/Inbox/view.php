@@ -43,6 +43,7 @@ echo $this->element(
             [
                 'key' => 'data',
                 'path' => 'data',
+                'type' => 'json'
             ],
         ],
         'children' => []

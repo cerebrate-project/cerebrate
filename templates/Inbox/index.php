@@ -75,12 +75,17 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'description' => __('A list of requests to be manually processed'),
         'actions' => [
             [
-                'open_modal' => '/inbox/process/[onclick_params_data_path]',
-                'modal_params_data_path' => 'id',
+                'url' => '/inbox/view',
+                'url_params_data_paths' => ['id'],
                 'icon' => 'eye'
             ],
             [
-                'open_modal' => '/individuals/delete/[onclick_params_data_path]',
+                'open_modal' => '/inbox/process/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'icon' => 'cogs'
+            ],
+            [
+                'open_modal' => '/inbox/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash'
             ],
