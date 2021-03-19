@@ -52,9 +52,78 @@ class BootstrapHelper extends Helper
         $bsTabs = new BootstrapTabs($options);
         return $bsTabs->tabs();
     }
+
+    public function alert($options)
+    {
+        $bsAlert = new BoostrapAlert($options);
+        return $bsAlert->alert();
+    }
+
+    public function table($options, $data)
+    {
+        $bsTable = new BoostrapTable($options, $data);
+        return $bsTable->table();
+    }
+
+    public function button($options)
+    {
+        $bsButton = new BoostrapButton($options);
+        return $bsButton->button();
+    }
 }
 
-class BootstrapTabs extends Helper
+class BootstrapGeneric
+{
+    public static $variants = ['primary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'];
+    protected $allowedOptionValues = [];
+    protected $options = [];
+
+    protected function checkOptionValidity()
+    {
+        foreach ($this->allowedOptionValues as $option => $values) {
+            if (!isset($this->options[$option])) {
+                throw new InvalidArgumentException(__('Option `{0}` should have a value', $option));
+            }
+            if (!in_array($this->options[$option], $values)) {
+                throw new InvalidArgumentException(__('Option `{0}` is not a valid option for `{1}`. Accepted values: {2}', json_encode($this->options[$option]), $option, json_encode($values)));
+            }
+        }
+    }
+
+    protected static function genNode($node, $params=[], $content="")
+    {
+        return sprintf('<%s %s>%s</%s>', $node, BootstrapGeneric::genHTMLParams($params), $content, $node);
+    }
+
+    protected static function openNode($node, $params=[])
+    {
+        return sprintf('<%s %s>', $node, BootstrapGeneric::genHTMLParams($params));
+    }
+
+    protected static function closeNode($node)
+    {
+        return sprintf('</%s>', $node);
+    }
+
+    protected static function genHTMLParams($params)
+    {
+        $html = '';
+        foreach ($params as $k => $v) {
+            $html .= BootstrapGeneric::genHTMLParam($k, $v) . ' ';
+        }
+        return $html;
+    }
+
+    protected static function genHTMLParam($paramName, $values)
+    {
+        if (!is_array($values)) {
+            $values = [$values];
+        }
+        return sprintf('%s="%s"', $paramName, implode(' ', $values));
+    }
+}
+
+class BootstrapTabs extends BootstrapGeneric
 {
     private $defaultOptions = [
         'fill' => false,
@@ -73,17 +142,14 @@ class BootstrapTabs extends Helper
             'content' => [],
         ],
     ];
-
-    private $allowedOptionValues = [
-        'justify' => [false, 'center', 'end'],
-        'body-variant' => ['primary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent', ''],
-        'header-variant' => ['primary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'],
-    ];
-
-    private $options = null;
     private $bsClasses = null;
 
     function __construct($options) {
+        $this->allowedOptionValues = [
+            'justify' => [false, 'center', 'end'],
+            'body-variant' => array_merge(BootstrapGeneric::$variants, ['']),
+            'header-variant' => BootstrapGeneric::$variants,
+        ];
         $this->processOptions($options);
     }
 
@@ -97,6 +163,9 @@ class BootstrapTabs extends Helper
         $this->options = array_merge($this->defaultOptions, $options);
         $this->data = $this->options['data'];
         $this->checkOptionValidity();
+        if (empty($this->data['navs'])) {
+            throw new InvalidArgumentException(__('No navigation data provided'));
+        }
         $this->bsClasses = [
             'nav' => [],
             'nav-item' => $this->options['nav-item-class'],
@@ -162,21 +231,6 @@ class BootstrapTabs extends Helper
         }
     }
 
-    private function checkOptionValidity()
-    {
-        foreach ($this->allowedOptionValues as $option => $values) {
-            if (!isset($this->options[$option])) {
-                throw new InvalidArgumentException(__('Option `{0}` should have a value', $option));
-            }
-            if (!in_array($this->options[$option], $values)) {
-                throw new InvalidArgumentException(__('Option `{0}` is not a valid option for `{1}`. Accepted values: {2}', json_encode($this->options[$option]), $option, json_encode($values)));
-            }
-        }
-        if (empty($this->data['navs'])) {
-            throw new InvalidArgumentException(__('No navigation data provided'));
-        }
-    }
-
     private function genTabs()
     {
         $html = '';
@@ -192,55 +246,55 @@ class BootstrapTabs extends Helper
     {
         $html = '';
         if ($this->options['card']) {
-            $html .= $this->genNode('div', ['class' => array_merge(['card'], ["border-{$this->options['header-border-variant']}"])]);
-            $html .= $this->genNode('div', ['class' => array_merge(['card-header'], ["bg-{$this->options['header-variant']}", "text-{$this->options['header-text-variant']}"])]);
+            $html .= $this->openNode('div', ['class' => array_merge(['card'], ["border-{$this->options['header-border-variant']}"])]);
+            $html .= $this->openNode('div', ['class' => array_merge(['card-header'], ["bg-{$this->options['header-variant']}", "text-{$this->options['header-text-variant']}"])]);
         }
         $html .= $this->genNav();
         if ($this->options['card']) {
-            $html .= '</div>';
-            $html .= $this->genNode('div', ['class' => array_merge(['card-body'], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
+            $html .= $this->closeNode('div');
+            $html .= $this->openNode('div', ['class' => array_merge(['card-body'], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
         }
         $html .= $this->genContent();
         if ($this->options['card']) {
-            $html .= '</div>';
-            $html .= '</div>';
+            $html .= $this->closeNode('div');
+            $html .= $this->closeNode('div');
         }
         return $html;
     }
 
     private function genVerticalTabs()
     {
-        $html = $this->genNode('div', ['class' => array_merge(['row', ($this->options['card'] ? 'card flex-row' : '')], ["border-{$this->options['header-border-variant']}"])]);
-            $html .= $this->genNode('div', ['class' => array_merge(['col-' . $this->options['vertical-size'], ($this->options['card'] ? 'card-header border-right' : '')], ["bg-{$this->options['header-variant']}", "text-{$this->options['header-text-variant']}", "border-{$this->options['header-border-variant']}"])]);
+        $html = $this->openNode('div', ['class' => array_merge(['row', ($this->options['card'] ? 'card flex-row' : '')], ["border-{$this->options['header-border-variant']}"])]);
+            $html .= $this->openNode('div', ['class' => array_merge(['col-' . $this->options['vertical-size'], ($this->options['card'] ? 'card-header border-right' : '')], ["bg-{$this->options['header-variant']}", "text-{$this->options['header-text-variant']}", "border-{$this->options['header-border-variant']}"])]);
                 $html .= $this->genNav();
-            $html .= '</div>';
-            $html .= $this->genNode('div', ['class' => array_merge(['col-' . (12 - $this->options['vertical-size']), ($this->options['card'] ? 'card-body2' : '')], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
+            $html .= $this->closeNode('div');
+            $html .= $this->openNode('div', ['class' => array_merge(['col-' . (12 - $this->options['vertical-size']), ($this->options['card'] ? 'card-body2' : '')], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
                 $html .= $this->genContent();
-            $html .= '</div>';
-        $html .= '</div>';
+            $html .= $this->closeNode('div');
+        $html .= $this->closeNode('div');
         return $html;
     }
 
     private function genNav()
     {
-        $html = $this->genNode('ul', [
+        $html = $this->openNode('ul', [
             'class' => array_merge(['nav'], $this->bsClasses['nav'], $this->options['nav-class']),
             'role' => 'tablist',
         ]);
         foreach ($this->data['navs'] as $navItem) {
             $html .= $this->genNavItem($navItem);
         }
-        $html .= '</ul>';
+        $html .= $this->closeNode('ul');
         return $html;
     }
 
     private function genNavItem($navItem)
     {
-        $html = $this->genNode('li', [
+        $html = $this->openNode('li', [
             'class' => array_merge(['nav-item'], $this->bsClasses['nav-item'], $this->options['nav-item-class']),
             'role' => 'presentation',
         ]);
-        $html .= $this->genNode('a', [
+        $html .= $this->openNode('a', [
             'class' => array_merge(
                 ['nav-link'],
                 [!empty($navItem['active']) ? 'active' : ''],
@@ -258,56 +312,322 @@ class BootstrapTabs extends Helper
         } else {
             $html .= h($navItem['text']);
         }
-        $html .= '</a></li>';
+        $html .= $this->closeNode('a');
+        $html .= $this->closeNode('li');
         return $html;
     }
 
     private function genContent()
     {
-        $html = $this->genNode('div', [
+        $html = $this->openNode('div', [
             'class' => array_merge(['tab-content'], $this->options['content-class']),
         ]);
         foreach ($this->data['content'] as $i => $content) {
             $navItem = $this->data['navs'][$i];
             $html .= $this->genContentItem($navItem, $content);
         }
-        $html .= '</div>';
+        $html .= $this->closeNode('div');
         return $html;
     }
 
     private function genContentItem($navItem, $content)
     {
-        $html = $this->genNode('div', [
+        return $this->genNode('div', [
             'class' => array_merge(['tab-pane', 'fade'], [!empty($navItem['active']) ? 'show active' : '']),
             'role' => 'tabpanel',
             'id' => $navItem['id'],
             'aria-labelledby' => $navItem['id'] . '-tab'
-        ]);
-        $html .= $content;
-        $html .= '</div>';
-        return $html;
-    }
-
-    private function genNode($node, $params)
-    {
-        return sprintf('<%s %s>', $node, $this->genHTMLParams($params));
-    }
-
-    private function genHTMLParams($params)
-    {
-        $html = '';
-        foreach ($params as $k => $v) {
-            $html .= $this->genHTMLParam($k, $v) . ' ';
-        }
-        return $html;
-    }
-
-    private function genHTMLParam($paramName, $values)
-    {
-        if (!is_array($values)) {
-            $values = [$values];
-        }
-        return sprintf('%s="%s"', $paramName, implode(' ', $values));
+        ], $content);
     }
 }
 
+class BoostrapAlert extends BootstrapGeneric {
+    private $defaultOptions = [
+        'text' => '',
+        'html' => null,
+        'dismissible' => true,
+        'variant' => 'primary',
+        'fade' => true
+    ];
+
+    private $bsClasses = null;
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+        ];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function alert()
+    {
+        return $this->genAlert();
+    }
+
+    private function genAlert()
+    {
+        $html = $this->openNode('div', [
+            'class' => [
+                'alert',
+                "alert-{$this->options['variant']}",
+                $this->options['dismissible'] ? 'alert-dismissible' : '',
+                $this->options['fade'] ? 'fade show' : '',
+            ],
+            'role' => "alert"
+        ]);
+
+        $html .= $this->genContent();
+        $html .= $this->genCloseButton();
+        $html .= $this->closeNode('div');
+        return $html;
+    }
+
+    private function genCloseButton()
+    {
+        $html = '';
+        if ($this->options['dismissible']) {
+            $html .= $this->openNode('button', [
+                'type' => 'button',
+                'class' => 'close',
+                'data-dismiss' => 'alert',
+                'arial-label' => 'close'
+            ]);
+            $html .= $this->genNode('span', [
+                'arial-hidden' => 'true'
+            ], '&times;');
+            $html .= $this->closeNode('button');
+        }
+        return $html;
+    }
+
+    private function genContent()
+    {
+        return !is_null($this->options['html']) ? $this->options['html'] : $this->options['text'];
+    }
+}
+
+class BoostrapTable extends BootstrapGeneric {
+    private $defaultOptions = [
+        'striped' => true,
+        'bordered' => true,
+        'borderless' => false,
+        'hover' => true,
+        'small' => false,
+        'variant' => '',
+        'tableClass' => [],
+        'headerClass' => [],
+        'bodyClass' => [],
+    ];
+
+    private $bsClasses = null;
+
+    function __construct($options, $data) {
+        $this->allowedOptionValues = [
+            'variant' => array_merge(BootstrapGeneric::$variants, [''])
+        ];
+        $this->processOptions($options);
+        $this->fields = $data['fields'];
+        $this->items = $data['items'];
+        $this->caption = !empty($data['caption']) ? $data['caption'] : '';
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function table()
+    {
+        return $this->genTable();
+    }
+
+    private function genTable()
+    {
+        $html = $this->openNode('table', [
+            'class' => [
+                'table',
+                "table-{$this->options['variant']}",
+                $this->options['striped'] ? 'table-striped' : '',
+                $this->options['bordered'] ? 'table-bordered' : '',
+                $this->options['borderless'] ? 'table-borderless' : '',
+                $this->options['hover'] ? 'table-hover' : '',
+                $this->options['small'] ? 'table-sm' : '',
+                !empty($this->options['variant']) ? "table-{$this->options['variant']}" : '',
+                !empty($this->options['tableClass']) ? $this->options['tableClass'] : ''
+            ],
+        ]);
+
+        $html .= $this->genCaption();
+        $html .= $this->genHeader();
+        $html .= $this->genBody();
+        
+        $html .= $this->closeNode('table');
+        return $html;
+    }
+
+    private function genHeader()
+    {
+        $head =  $this->openNode('thead', [
+            'class' => [
+                !empty($this->options['headerClass']) ? $this->options['headerClass'] : ''
+            ],
+        ]);
+        $head .= $this->openNode('tr');
+        foreach ($this->fields as $i => $field) {
+            if (is_array($field)) {
+                $label = !empty($field['label']) ? $field['label'] : Inflector::humanize($field['key']);
+            } else {
+                $label = Inflector::humanize($field);
+            }
+            $head .= $this->genNode('th', [], h($label));
+        }
+        $head .= $this->closeNode('tr');
+        $head .= $this->closeNode('thead');
+        return $head;
+    }
+
+    private function genBody()
+    {
+        $body =  $this->openNode('tbody', [
+            'class' => [
+                !empty($this->options['bodyClass']) ? $this->options['bodyClass'] : ''
+            ],
+        ]);
+        foreach ($this->items as $i => $row) {
+            $body .= $this->genRow($row);
+        }
+        $body .= $this->closeNode('tbody');
+        return $body;
+    }
+
+    private function genRow($row)
+    {
+        $html = $this->openNode('tr',[
+            'class' => [
+                !empty($row['_rowVariant']) ? "table-{$row['_rowVariant']}" : ''
+            ]
+        ]);
+        if (array_keys($row) !== range(0, count($row) - 1)) { // associative array
+            foreach ($this->fields as $i => $field) {
+                if (is_array($field)) {
+                    $key = $field['key'];
+                } else {
+                    $key = $field;
+                }
+                $cellValue = $row[$key];
+                $html .= $this->genCell($cellValue, $field, $row);
+            }
+        } else { // indexed array
+            foreach ($row as $cellValue) {
+                $html .= $this->genCell($cellValue, $field, $row);
+            }
+        }
+        $html .= $this->closeNode('tr');
+        return $html;
+    }
+
+    private function genCell($value, $field=[], $row=[])
+    {
+        if (isset($field['formatter'])) {
+            $cellContent = $field['formatter']($value, $row);
+        } else {
+            $cellContent = h($value);
+        }
+        return $this->genNode('td', [
+            'class' => [
+                !empty($row['_cellVariant']) ? "bg-{$row['_cellVariant']}" : ''
+            ]
+        ], $cellContent);
+    }
+
+    private function genCaption()
+    {
+        return $this->genNode('caption', [], h($this->caption));
+    }
+}
+
+class BoostrapButton extends BootstrapGeneric {
+    private $defaultOptions = [
+        'id' => '',
+        'text' => '',
+        'html' => null,
+        'variant' => 'primary',
+        'outline' => false,
+        'size' => '',
+        'block' => false,
+        'icon' => null,
+        'class' => [],
+        'type' => 'button',
+        'nodeType' => 'button',
+        'params' => []
+    ];
+
+    private $bsClasses = [];
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+            'size' => ['', 'sm', 'lg'],
+            'type' => ['button', 'submit', 'reset']
+        ];
+        $options['class'] = !is_array($options['class']) ? [$options['class']] : $options['class'];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+
+        $this->bsClasses[] = 'btn';
+        if ($this->options['outline']) {
+            $this->bsClasses[] = "btn-outline-{$this->options['variant']}";
+        } else {
+            $this->bsClasses[] = "btn-{$this->options['variant']}";
+        }
+        if (!empty($this->options['size'])) {
+            $this->bsClasses[] = "btn-$this->options['size']";
+        }
+        if ($this->options['block']) {
+            $this->bsClasses[] = 'btn-block';
+        }
+    }
+
+    public function button()
+    {
+        return $this->genButton();
+    }
+
+    private function genButton()
+    {
+        $html = $this->openNode($this->options['nodeType'], array_merge($this->options['params'], [
+            'class' => array_merge($this->options['class'], $this->bsClasses),
+            'role' => "alert",
+            'type' => $this->options['type']
+        ]));
+
+        $html .= $this->genIcon();
+        $html .= $this->genContent();
+        $html .= $this->closeNode($this->options['nodeType']);
+        return $html;
+    }
+
+    private function genIcon()
+    {
+        return $this->genNode('span', [
+            'class' => ['mr-1', "fa fa-{$this->options['icon']}"],
+        ]);
+    }
+
+    private function genContent()
+    {
+        return !is_null($this->options['html']) ? $this->options['html'] : $this->options['text'];
+    }
+}

@@ -142,7 +142,7 @@ class AJAXApi {
     static async quickFetchAndPostForm(url, dataToMerge={}, options={}) {
         const constAlteredOptions = Object.assign({}, {}, options)
         const tmpApi = new AJAXApi(constAlteredOptions)
-        return tmpApi.fetchAndPostForm(url, dataToMerge, constAlteredOptions.skipRequestHooks)
+        return tmpApi.fetchAndPostForm(url, dataToMerge, constAlteredOptions.skipRequestHooks, constAlteredOptions.skipFeedback)
     }
 
     /**
@@ -335,14 +335,14 @@ class AJAXApi {
      * @param {boolean} [skipRequestHooks=false] - If true, default request hooks will be skipped
      * @return {Promise<Object>} Promise object resolving to the result of the POST operation
      */
-    async fetchAndPostForm(url, dataToMerge={}, skipRequestHooks=false) {
+    async fetchAndPostForm(url, dataToMerge={}, skipRequestHooks=false, skipFeedback=false) {
         if (!skipRequestHooks) {
             this.beforeRequest()
         }
         let toReturn
         try {
             const form = await this.fetchForm(url, true, true);
-            toReturn = await this.postForm(form, dataToMerge, true, true)
+            toReturn = await this.postForm(form, dataToMerge, true, skipFeedback)
         } catch (error) {
             toReturn = Promise.reject(error);
         } finally {

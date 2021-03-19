@@ -704,6 +704,10 @@ class ACLComponent extends Component
                         'home' => [
                             'url' => '/instance/home',
                             'label' => __('Home')
+                        ],
+                        'migration' => [
+                            'url' => '/instance/migrationIndex',
+                            'label' => __('Database migration')
                         ]
                     ]
                 ],
