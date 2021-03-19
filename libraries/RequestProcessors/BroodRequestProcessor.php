@@ -44,10 +44,6 @@ class ToolInterconnectionProcessor extends BroodRequestProcessor implements Gene
         return parent::create($requestData);
     }
 
-    public function setViewVariables($controller, $request)
-    {
-    }
-
     public function process($id, $requestData)
     {
         $connectionSuccessfull = false;
@@ -88,10 +84,6 @@ class OneWaySynchronizationProcessor extends BroodRequestProcessor implements Ge
         $this->validateRequestData($requestData);
         $requestData['title'] = __('Cerebrate instance {0} requested interconnection', 'Insert cerebrate name');
         return parent::create($requestData);
-    }
-
-    public function setViewVariables($controller, $request)
-    {
     }
 
     public function process($id, $requestData)

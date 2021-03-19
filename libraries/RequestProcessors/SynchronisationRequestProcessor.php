@@ -43,10 +43,6 @@ class DataExchangeProcessor extends SynchronisationRequestProcessor implements G
         return parent::create($requestData);
     }
 
-    public function setViewVariables($controller, $request)
-    {
-    }
-
     public function process($id, $requestData)
     {
         $dataExchangeAccepted = false;

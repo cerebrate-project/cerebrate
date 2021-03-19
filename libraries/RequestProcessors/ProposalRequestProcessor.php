@@ -43,10 +43,6 @@ class ProposalEditProcessor extends ProposalRequestProcessor implements GenericP
         return parent::create($requestData);
     }
 
-    public function setViewVariables($controller, $request)
-    {
-    }
-
     public function process($id, $requestData)
     {
         $proposalAccepted = false;

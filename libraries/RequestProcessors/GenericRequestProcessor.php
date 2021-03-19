@@ -9,7 +9,6 @@ interface GenericProcessorActionI
     public function create($requestData);
     public function process($requestID, $serverRequest);
     public function discard($requestID ,$requestData);
-    public function setViewVariables($controller, $request);
 }
 
 class GenericRequestProcessor
@@ -104,6 +103,11 @@ class GenericRequestProcessor
         $controller->set('question', !empty($question) ? $question : __('Confirm request {0}', $id));
         $controller->set('actionName', !empty($actionName) ? $actionName : __('Confirm'));
         $controller->set('path', ['controller' => 'inbox', 'action' => 'process', $id]);
+    }
+
+    public function setViewVariables($controller, $request)
+    {
+        $this->setViewVariablesConfirmModal($controller, $request->id);
     }
 
     protected function genActionResult($data, $success, $message, $errors=[])
