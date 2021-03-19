@@ -14,6 +14,7 @@ class UserRequestProcessor extends GenericRequestProcessor
 
     public function __construct($loadFromAction=false) {
         parent::__construct($loadFromAction);
+        $this->Users = TableRegistry::getTableLocator()->get('Users');
     }
 
     public function create($requestData)
@@ -29,7 +30,6 @@ class RegistrationProcessor extends UserRequestProcessor implements GenericProce
     public function __construct() {
         parent::__construct();
         $this->description = __('Handle user account for this cerebrate instance');
-        $this->Users = TableRegistry::getTableLocator()->get('Users');
     }
 
     protected function addValidatorRules($validator)
