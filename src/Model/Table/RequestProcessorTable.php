@@ -47,10 +47,10 @@ class RequestProcessorTable extends AppTable
 
     public function render($controller, $processor, $request=[])
     {
-        $processor->setViewVariables($controller, $request);
         $controller->set('request', $request);
         $controller->viewBuilder()->setLayout('ajax');
         $processingTemplate = $processor->getProcessingTemplate();
+        $processor->setViewVariables($controller, $request);
         $controller->render($processingTemplate);
     }
 

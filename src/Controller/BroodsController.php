@@ -163,6 +163,7 @@ class BroodsController extends AppController
         $data = [
             'origin' => '127.0.0.1',
             'comment' => 'Test comment',
+            'user_id' => $this->ACL->getUser()->id,
             'data' => [
                 'foo' => 'foo',
                 'bar' => 'bar',
