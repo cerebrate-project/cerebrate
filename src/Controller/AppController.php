@@ -108,11 +108,10 @@ class AppController extends Controller
             throw new MethodNotAllowedException(__('Invalid user credentials.'));
         }
 
-        // if ($this->request->getParam('action') === 'index') {
-        //     $this->Security->setConfig('validatePost', false);
-        // }
+        if ($this->request->getParam('action') === 'index') {
+            $this->Security->setConfig('validatePost', false);
+        }
         $this->Security->setConfig('unlockedActions', ['index']);
-        $this->Security->setConfig('validatePost', false);
 
         $this->ACL->checkAccess();
         $this->set('menu', $this->ACL->getMenu());
