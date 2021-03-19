@@ -130,7 +130,8 @@
                 }
                 $searchType = $('<span/>')
                     .text(searchContain ? '<?= __('Contain') ?>' : '<?= __('Exact match') ?>')
-                    .attr('title', searchContain ? '<?= __('The search value will be used as a substring') ?>' : '<?= __('The search value must strictly match') ?>')
+                    .attr('title', searchContain ? '<?= __('The search value can be used as a substring with the wildcard operator `%`') ?>' : '<?= __('The search value must strictly match') ?>')
+                    .attr('style', 'cursor: help;')
                 tableData.push([fieldName, $searchType])
             });
             tableData.sort((a, b) => a[0] < b[0] ? -1 : 1)
