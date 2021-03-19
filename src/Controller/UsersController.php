@@ -151,6 +151,6 @@ class UsersController extends AppController
             ],
         ];
         $processorResult = $processor->create($data);
-        return $processor->genHTTPReply($this, $processorResult, ['scope' => 'User', 'action' => 'Registration'], ['controller' => 'Inbox', 'action' => 'index']);
+        return $processor->genHTTPReply($this, $processorResult, ['controller' => 'Inbox', 'action' => 'index']);
     }
 }

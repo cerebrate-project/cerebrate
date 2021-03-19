@@ -120,15 +120,10 @@ class GenericRequestProcessor
         ];
     }
 
-    public function genHTTPReply($controller, $processResult, $request, $redirect=null)
+    public function genHTTPReply($controller, $processResult, $redirect=null)
     {
-        if (is_array($request)) {
-            $scope = $request['scope'];
-            $action = $request['action'];
-        } else {
-            $scope = $request->scope;
-            $action = $request->action;
-        }
+        $scope = $this->scope;
+        $action = $this->action;
         if ($processResult['success']) {
             $message = !empty($processResult['message']) ? $processResult['message'] : __('Request {0} successfully processed.', $id);
             if ($controller->ParamHandler->isRest()) {

@@ -171,6 +171,6 @@ class BroodsController extends AppController
             ],
         ];
         $processorResult = $processor->create($data);
-        return $processor->genHTTPReply($this, $processorResult, ['scope' => 'Brood', 'action' => 'ToolInterconnection'], ['controller' => 'Broods', 'action' => 'index']);
+        return $processor->genHTTPReply($this, $processorResult, ['controller' => 'Broods', 'action' => 'index']);
     }
 }

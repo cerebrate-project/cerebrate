@@ -64,7 +64,7 @@ class InboxController extends AppController
             $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
             $processor = $this->requestProcessor->getProcessor($request->scope, $request->action);
             $discardResult = $processor->discard($id, $request);
-            return $processor->genHTTPReply($this, $discardResult, $request);
+            return $processor->genHTTPReply($this, $discardResult);
         }
         $this->set('deletionTitle', __('Discard request'));
         $this->set('deletionText', __('Are you sure you want to discard request #{0}?', $id));
@@ -85,7 +85,7 @@ class InboxController extends AppController
         $processor = $this->requestProcessor->getProcessor($request->scope, $request->action);
         if ($this->request->is('post')) {
             $processResult = $processor->process($id, $this->request->getData());
-            return $processor->genHTTPReply($this, $processResult, $request);
+            return $processor->genHTTPReply($this, $processResult);
         } else {
             $this->requestProcessor->render($this, $processor, $request);
         }
