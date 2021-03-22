@@ -3,6 +3,7 @@ use Cake\ORM\TableRegistry;
 use Cake\Filesystem\File;
 use Cake\Utility\Inflector;
 use Cake\Validation\Validator;
+use Cake\View\ViewBuilder;
 
 interface GenericProcessorActionI
 {
@@ -17,7 +18,7 @@ class GenericRequestProcessor
     protected $registeredActions = [];
     protected $validator;
     private $processingTemplate = '/genericTemplates/confirm';
-    private $processingTemplatesDirectory = ROOT . '/templates/RequestProcessors';
+    private $processingTemplatesDirectory = ROOT . '/libraries/default/RequestProcessors/templates';
 
     public function __construct($registerActions=false) {
         $this->Inbox = TableRegistry::getTableLocator()->get('Inbox');
@@ -27,7 +28,7 @@ class GenericRequestProcessor
         $processingTemplatePath = $this->getProcessingTemplatePath();
         $file = new File($this->processingTemplatesDirectory . DS . $processingTemplatePath);
         if ($file->exists()) {
-            $this->processingTemplate = $processingTemplatePath;
+            $this->processingTemplate = str_replace('.php', '', $processingTemplatePath);
         }
         $file->close();
     }
@@ -53,10 +54,19 @@ class GenericRequestProcessor
 
     public function getProcessingTemplate()
     {
-        if ($this->processingTemplate == '/genericTemplates/confirm') {
-            return '/genericTemplates/confirm';
-        }
-        return DS . 'RequestProcessors' . DS . str_replace('.php', '', $this->processingTemplate);
+        return $this->processingTemplate;
+    }
+
+    public function render($request=[])
+    {
+        $processingTemplate = $this->getProcessingTemplate();
+        $viewVariables = $this->getViewVariables($request);
+        $builder = new ViewBuilder();
+        $builder->disableAutoLayout()
+            ->setClassName('Monad')
+            ->setTemplate($processingTemplate);
+        $view = $builder->build($viewVariables);
+        return $view->render();
     }
 
     protected function generateRequest($requestData)
@@ -96,18 +106,20 @@ class GenericRequestProcessor
             $this->{$action} = $reflection->newInstance();
         }
     }
-    
-    protected function setViewVariablesConfirmModal($controller, $id, $title='', $question='', $actionName='')
+
+    protected function getViewVariablesConfirmModal($id, $title='', $question='', $actionName='')
     {
-        $controller->set('title', !empty($title) ? $title : __('Process request {0}', $id));
-        $controller->set('question', !empty($question) ? $question : __('Confirm request {0}', $id));
-        $controller->set('actionName', !empty($actionName) ? $actionName : __('Confirm'));
-        $controller->set('path', ['controller' => 'inbox', 'action' => 'process', $id]);
+        return [
+            'title' => !empty($title) ? $title : __('Process request {0}', $id),
+            'question' => !empty($question) ? $question : __('Confirm request {0}', $id),
+            'actionName' => !empty($actionName) ? $actionName : __('Confirm'),
+            'path' => ['controller' => 'inbox', 'action' => 'process', $id]
+        ];
     }
 
-    public function setViewVariables($controller, $request)
+    public function getViewVariables($request)
     {
-        $this->setViewVariablesConfirmModal($controller, $request->id);
+        return $this->getViewVariablesConfirmModal($request->id, '', '', '');
     }
 
     protected function genActionResult($data, $success, $message, $errors=[])

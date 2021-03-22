@@ -1,7 +1,7 @@
 <?php
 use Cake\ORM\TableRegistry;
 
-require_once(ROOT . DS . 'libraries' . DS . 'RequestProcessors' . DS . 'GenericRequestProcessor.php'); 
+require_once(ROOT . DS . 'libraries' . DS . 'default' . DS . 'RequestProcessors' . DS . 'GenericRequestProcessor.php'); 
 
 class UserRequestProcessor extends GenericRequestProcessor
 {
@@ -11,6 +11,7 @@ class UserRequestProcessor extends GenericRequestProcessor
     protected $registeredActions = [
         'Registration'
     ];
+    protected $Users;
 
     public function __construct($loadFromAction=false) {
         parent::__construct($loadFromAction);
@@ -50,7 +51,7 @@ class RegistrationProcessor extends UserRequestProcessor implements GenericProce
         return parent::create($requestData);
     }
 
-    public function setViewVariables($controller, $request)
+    public function getViewVariables($request)
     {
         $dropdownData = [
             'role' => $this->Users->Roles->find('list', [
@@ -72,9 +73,11 @@ class RegistrationProcessor extends UserRequestProcessor implements GenericProce
             'role_id' => !empty($request['data']['role_id']) ? $request['data']['role_id'] : '',
             'disabled' => !empty($request['data']['disabled']) ? $request['data']['disabled'] : '',
         ]);
-        $controller->set('individualEntity', $individualEntity);
-        $controller->set('userEntity', $userEntity);
-        $controller->set(compact('dropdownData'));
+        return [
+            'dropdownData' => $dropdownData,
+            'userEntity' => $userEntity,
+            'individualEntity' => $individualEntity
+        ];
     }
 
     public function process($id, $requestData)

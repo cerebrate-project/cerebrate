@@ -7,7 +7,7 @@ use Cake\Filesystem\Folder;
 
 class RequestProcessorTable extends AppTable
 {
-    private $processorsDirectory = ROOT . '/libraries/RequestProcessors';
+    private $processorsDirectory = ROOT . '/libraries/default/RequestProcessors';
     private $requestProcessors;
     private $enabledProcessors = [ // to be defined in config
         'Brood' => [
@@ -43,15 +43,6 @@ class RequestProcessorTable extends AppTable
             }
         }
         throw new \Exception(__('Processor not found'), 1);
-    }
-
-    public function render($controller, $processor, $request=[])
-    {
-        $controller->set('request', $request);
-        $controller->viewBuilder()->setLayout('ajax');
-        $processingTemplate = $processor->getProcessingTemplate();
-        $processor->setViewVariables($controller, $request);
-        $controller->render($processingTemplate);
     }
 
     public function listProcessors($scope=null)

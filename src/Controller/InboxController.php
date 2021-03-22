@@ -87,7 +87,8 @@ class InboxController extends AppController
             $processResult = $processor->process($id, $this->request->getData());
             return $processor->genHTTPReply($this, $processResult);
         } else {
-            $this->requestProcessor->render($this, $processor, $request);
+            $renderedView = $processor->render($request);
+            return $this->response->withStringBody($renderedView);
         }
     }
 
