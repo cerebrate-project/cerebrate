@@ -17,9 +17,7 @@ declare(strict_types=1);
 namespace App\View;
 
 /**
- * A view class that is used for AJAX responses.
- * Currently only switches the default layout and sets the response type -
- * which just maps to text/html by default.
+ * A view class that supports rendering view file belonging to directories outside of the main application template folder.
  */
 class MonadView extends AppView
 {
