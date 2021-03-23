@@ -30,7 +30,7 @@ echo $this->Bootstrap->modal([
     'type' => 'confirm',
     'bodyHtml' => $filteringForm,
     'confirmText' => __('Filter'),
-    'confirmFunction' => 'filterIndex(clicked)'
+    'confirmFunction' => 'filterIndex'
 ]);
 ?>
 
@@ -40,11 +40,10 @@ echo $this->Bootstrap->modal([
         initFilteringTable($filteringTable)
     })
 
-    function filterIndex(clicked) {
+    function filterIndex(modalObject, tmpApi) {
         const controller = '<?= $this->request->getParam('controller') ?>';
         const action = 'index';
-        const $clicked = $(clicked)
-        const $tbody = $clicked.closest('div.modal-content').find('table.indexFilteringTable tbody')
+        const $tbody = modalObject.$modal.find('table.indexFilteringTable tbody')
         const $rows = $tbody.find('tr:not(#controlRow)')
         const activeFilters = {}
         $rows.each(function() {

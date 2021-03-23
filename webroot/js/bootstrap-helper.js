@@ -704,19 +704,22 @@ class ModalFactory {
             if ($submitButton.data('confirmfunction') !== undefined && $submitButton.data('confirmfunction') !== '') {
                 const clickHandler = window[$submitButton.data('confirmfunction')]
                 this.options.APIConfirm = (tmpApi) => {
-                    return clickHandler(this, tmpApi)
-                        .then((data) => {
-                            if (data.success) {
-                                this.options.POSTSuccessCallback(data)
-                            } else { // Validation error
-                                this.injectFormValidationFeedback(form, data.errors)
-                                return Promise.reject('Validation error');
-                            }
-                        })
-                        .catch((errorMessage) => {
-                            this.options.POSTFailCallback(errorMessage)
-                            return Promise.reject(errorMessage);
-                        })
+                    let clickResult = clickHandler(this, tmpApi)
+                    if (clickResult !== undefined) {
+                        return clickResult
+                            .then((data) => {
+                                if (data.success) {
+                                    this.options.POSTSuccessCallback(data)
+                                } else { // Validation error
+                                    this.injectFormValidationFeedback(form, data.errors)
+                                    return Promise.reject('Validation error');
+                                }
+                            })
+                            .catch((errorMessage) => {
+                                this.options.POSTFailCallback(errorMessage)
+                                return Promise.reject(errorMessage);
+                            })
+                    }
                 }
             } else {
                 $submitButton[0].removeAttribute('onclick')
