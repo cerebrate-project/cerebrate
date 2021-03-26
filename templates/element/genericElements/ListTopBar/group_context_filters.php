@@ -5,25 +5,37 @@
         $urlParams = [
             'controller' => $this->request->getParam('controller'),
             'action' => 'index',
-            '?' => $filteringContext['filterCondition']
+            '?' => array_merge($filteringContext['filterCondition'], ['filteringLabel' => $filteringContext['label']])
         ];
         $currentQuery = $this->request->getQuery();
-        unset($currentQuery['page'], $currentQuery['limit'], $currentQuery['sort']);
+        $filteringLabel = !empty($currentQuery['filteringLabel']) ? $currentQuery['filteringLabel'] : '';
+        unset($currentQuery['page'], $currentQuery['limit'], $currentQuery['sort'], $currentQuery['filteringLabel']);
         if (!empty($filteringContext['filterCondition'])) { // PHP replaces `.` by `_` when fetching the request parameter
-            $currentFilteringContextKey = array_key_first($filteringContext['filterCondition']);
-            $currentFilteringContext = [
-                str_replace('.', '_', $currentFilteringContextKey) => $filteringContext['filterCondition'][$currentFilteringContextKey]
-            ];
+            $currentFilteringContext = [];
+            foreach ($filteringContext['filterCondition'] as $currentFilteringContextKey => $value) {
+                $currentFilteringContextKey = str_replace('.', '_', $currentFilteringContextKey);
+                $currentFilteringContextKey = str_replace(' ', '_', $currentFilteringContextKey);
+                $currentFilteringContext[$currentFilteringContextKey] = $value;
+            }
         } else {
             $currentFilteringContext = $filteringContext['filterCondition'];
         }
         $contextArray[] = [
-            'active' => $currentQuery == $currentFilteringContext,
+            'active' => (
+                (
+                    $currentQuery == $currentFilteringContext &&                // query conditions match
+                    !isset($filteringContext['filterConditionFunction']) &&     // not a custom filtering
+                    empty($filteringLabel)                                // do not check `All` by default
+                ) ||
+                $filteringContext['label'] == $filteringLabel             // labels should not be duplicated
+            ),
             'isFilter' => true,
             'onClick' => 'changeIndexContext',
             'onClickParams' => [
                 'this',
-                $this->Url->build($urlParams),
+                $this->Url->build($urlParams, [
+                    'escape' => false, // URL builder escape `&` when multiple ? arguments
+                ]),
                 "#table-container-${tableRandomValue}",
                 "#table-container-${tableRandomValue} table.table",
             ],

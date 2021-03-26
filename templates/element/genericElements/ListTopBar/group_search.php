@@ -12,12 +12,32 @@
      *  - id: element ID for the input field - defaults to quickFilterField
      */
     if (!isset($data['requirement']) || $data['requirement']) {
+        $filteringButton = '';
+        if (!empty($data['allowFilering'])) {
+            $activeFilters = !empty($activeFilters) ? $activeFilters : [];
+            $buttonConfig = [
+                'icon' => 'filter',
+                'params' => [
+                    'title' => __('Filter index'),
+                    'id' => sprintf('toggleFilterButton-%s', h($tableRandomValue))
+                ]
+            ];
+            if (count($activeFilters) > 0) {
+                $buttonConfig['badge'] = [
+                    'variant' => 'light',
+                    'text' => count($activeFilters),
+                    'title' => __n('There is {0} active filter', 'There are {0} active filters', count($activeFilters), count($activeFilters))
+                ];
+            }
+            $filteringButton = $this->Bootstrap->button($buttonConfig);
+        }
         $button = empty($data['button']) && empty($data['fa-icon']) ? '' : sprintf(
-            '<div class="input-group-append"><button class="btn btn-primary" %s id="quickFilterButton-%s">%s%s</button></div>',
+            '<div class="input-group-append"><button class="btn btn-primary" %s id="quickFilterButton-%s">%s%s</button>%s</div>',
             empty($data['data']) ? '' : h($data['data']),
             h($tableRandomValue),
             empty($data['fa-icon']) ? '' : sprintf('<i class="fa fa-%s"></i>', h($data['fa-icon'])),
-            empty($data['button']) ? '' : h($data['button'])
+            empty($data['button']) ? '' : h($data['button']),
+            $filteringButton
         );
         if (!empty($data['cancel'])) {
             $button .= $this->element('/genericElements/ListTopBar/element_simple', array('data' => $data['cancel']));
@@ -45,6 +65,7 @@
         var action = '<?= $this->request->getParam('action') ?>';
         var additionalUrlParams = '';
         var quickFilter = <?= json_encode(!empty($quickFilter) ? $quickFilter : []) ?>;
+        var activeFilters = <?= json_encode(!empty($activeFilters) ? $activeFilters : []) ?>;
         <?php
             if (!empty($data['additionalUrlParams'])) {
                 echo sprintf(
@@ -74,6 +95,14 @@
         }).on('focusout', (e) => {
             $(`#quickFilterField-${randomValue}`).popover('hide')
         });
+
+        $(`#toggleFilterButton-${randomValue}`)
+            .data('activeFilters', activeFilters)
+            .click(function() {
+                const url = `/${controller}/filtering`
+                const reloadUrl = `/${controller}/index${additionalUrlParams}`
+                openFilteringModal(this, url, reloadUrl, $(`#table-container-${randomValue}`));
+            })
 
         function doFilter($button) {
             $(`#quickFilterField-${randomValue}`).popover('hide')
@@ -114,5 +143,12 @@
             return $table[0].outerHTML
         }
 
+        function openFilteringModal(clicked, url, reloadUrl, tableId) {
+            const loadingOverlay = new OverlayFactory(clicked);
+            loadingOverlay.show()
+            UI.openModalFromURL(url, reloadUrl, tableId).finally(() => {
+                loadingOverlay.hide()
+            })
+        }
     });
 </script>

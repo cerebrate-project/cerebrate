@@ -16,11 +16,16 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     ]
                 ],
                 [
+                    'type' => 'context_filters',
+                    'context_filters' => $filteringContexts
+                ],
+                [
                     'type' => 'search',
-                    'button' => __('Filter'),
+                    'button' => __('Search'),
                     'placeholder' => __('Enter value to search'),
                     'data' => '',
-                    'searchKey' => 'value'
+                    'searchKey' => 'value',
+                    'allowFilering' => true
                 ]
             ]
         ],

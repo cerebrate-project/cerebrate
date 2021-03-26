@@ -27,6 +27,8 @@ class MetaFieldsTable extends AppTable
             ->notEmptyString('meta_template_id')
             ->notEmptyString('meta_template_field_id')
             ->requirePresence(['scope', 'field', 'value', 'uuid', 'meta_template_id', 'meta_template_field_id'], 'create');
+
+        // add validation regex
         return $validator;
     }
 }

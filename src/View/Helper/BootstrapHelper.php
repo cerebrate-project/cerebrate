@@ -42,6 +42,7 @@
 namespace App\View\Helper;
 
 use Cake\View\Helper;
+use Cake\Utility\Inflector;
 use Cake\Utility\Security;
 use InvalidArgumentException;
 
@@ -70,11 +71,23 @@ class BootstrapHelper extends Helper
         $bsButton = new BoostrapButton($options);
         return $bsButton->button();
     }
+
+    public function badge($options)
+    {
+        $bsBadge = new BoostrapBadge($options);
+        return $bsBadge->badge();
+    }
+
+    public function modal($options)
+    {
+        $bsButton = new BoostrapModal($options);
+        return $bsButton->modal();
+    }
 }
 
 class BootstrapGeneric
 {
-    public static $variants = ['primary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'];
+    public static $variants = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'];
     protected $allowedOptionValues = [];
     protected $options = [];
 
@@ -120,6 +133,18 @@ class BootstrapGeneric
             $values = [$values];
         }
         return sprintf('%s="%s"', $paramName, implode(' ', $values));
+    }
+
+    protected static function genericCloseButton($dismissTarget)
+    {
+        return BootstrapGeneric::genNode('button', [
+            'type' => 'button',
+            'class' => 'close',
+            'data-dismiss' => $dismissTarget,
+            'arial-label' => __('Close')
+        ], BootstrapGeneric::genNode('span', [
+            'arial-hidden' => 'true'
+        ], '&times;'));
     }
 }
 
@@ -392,16 +417,7 @@ class BoostrapAlert extends BootstrapGeneric {
     {
         $html = '';
         if ($this->options['dismissible']) {
-            $html .= $this->openNode('button', [
-                'type' => 'button',
-                'class' => 'close',
-                'data-dismiss' => 'alert',
-                'arial-label' => 'close'
-            ]);
-            $html .= $this->genNode('span', [
-                'arial-hidden' => 'true'
-            ], '&times;');
-            $html .= $this->closeNode('button');
+            $html .= $this->genericCloseButton('alert');
         }
         return $html;
     }
@@ -460,7 +476,7 @@ class BoostrapTable extends BootstrapGeneric {
                 $this->options['hover'] ? 'table-hover' : '',
                 $this->options['small'] ? 'table-sm' : '',
                 !empty($this->options['variant']) ? "table-{$this->options['variant']}" : '',
-                !empty($this->options['tableClass']) ? $this->options['tableClass'] : ''
+                !empty($this->options['tableClass']) ? (is_array($this->options['tableClass']) ? implode(' ', $this->options['tableClass']) : $this->options['tableClass']) : ''
             ],
         ]);
 
@@ -482,11 +498,17 @@ class BoostrapTable extends BootstrapGeneric {
         $head .= $this->openNode('tr');
         foreach ($this->fields as $i => $field) {
             if (is_array($field)) {
-                $label = !empty($field['label']) ? $field['label'] : Inflector::humanize($field['key']);
+                if (!empty($field['labelHtml'])) {
+                    $label = $field['labelHtml'];
+                } else {
+                    $label = !empty($field['label']) ? $field['label'] : Inflector::humanize($field['key']);
+                    $label = h($label);
+                }
             } else {
                 $label = Inflector::humanize($field);
+                $label = h($label);
             }
-            $head .= $this->genNode('th', [], h($label));
+            $head .= $this->genNode('th', [], $label);
         }
         $head .= $this->closeNode('tr');
         $head .= $this->closeNode('thead');
@@ -497,7 +519,7 @@ class BoostrapTable extends BootstrapGeneric {
     {
         $body =  $this->openNode('tbody', [
             'class' => [
-                !empty($this->options['bodyClass']) ? $this->options['bodyClass'] : ''
+                !empty($this->options['bodyClass']) ? (is_array($this->options['bodyClass']) ? implode(' ', $this->options['bodyClass']) : $this->options['bodyClass']) : ''
             ],
         ]);
         foreach ($this->items as $i => $row) {
@@ -566,7 +588,8 @@ class BoostrapButton extends BootstrapGeneric {
         'class' => [],
         'type' => 'button',
         'nodeType' => 'button',
-        'params' => []
+        'params' => [],
+        'badge' => false
     ];
 
     private $bsClasses = [];
@@ -577,6 +600,9 @@ class BoostrapButton extends BootstrapGeneric {
             'size' => ['', 'sm', 'lg'],
             'type' => ['button', 'submit', 'reset']
         ];
+        if (empty($options['class'])) {
+            $options['class'] = '';
+        }
         $options['class'] = !is_array($options['class']) ? [$options['class']] : $options['class'];
         $this->processOptions($options);
     }
@@ -615,6 +641,10 @@ class BoostrapButton extends BootstrapGeneric {
 
         $html .= $this->genIcon();
         $html .= $this->genContent();
+        if (!empty($this->options['badge'])) {
+            $bsBadge = new BoostrapBadge($this->options['badge']);
+            $html .= $bsBadge->badge();
+        }
         $html .= $this->closeNode($this->options['nodeType']);
         return $html;
     }
@@ -629,5 +659,199 @@ class BoostrapButton extends BootstrapGeneric {
     private function genContent()
     {
         return !is_null($this->options['html']) ? $this->options['html'] : $this->options['text'];
+    }
+}
+
+class BoostrapBadge extends BootstrapGeneric {
+    private $defaultOptions = [
+        'text' => '',
+        'variant' => 'primary',
+        'pill' => false,
+        'title' => ''
+    ];
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+        ];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function badge()
+    {
+        return $this->genBadge();
+    }
+
+    private function genBadge()
+    {
+        $html = $this->genNode('span', [
+            'class' => [
+                'badge',
+                "badge-{$this->options['variant']}",
+                $this->options['pill'] ? 'badge-pill' : '',
+            ],
+            'title' => $this->options['title']
+        ], h($this->options['text']));
+        return $html;
+    }
+}
+
+class BoostrapModal extends BootstrapGeneric {
+    private $defaultOptions = [
+        'size' => '',
+        'centered' => true,
+        'scrollable' => true,
+        'backdropStatic' => false,
+        'title' => '',
+        'titleHtml' => false,
+        'body' => '',
+        'bodyHtml' => false,
+        'footerHtml' => false,
+        'confirmText' => 'Confirm',
+        'cancelText' => 'Cancel',
+        'modalClass' => [''],
+        'headerClass' => [''],
+        'bodyClass' => [''],
+        'footerClass' => [''],
+        'type' => 'ok-only',
+        'variant' => '',
+        'confirmFunction' => '',
+        'cancelFunction' => ''
+    ];
+
+    private $bsClasses = null;
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'size' => ['sm', 'lg', 'xl', ''],
+            'type' => ['ok-only','confirm','confirm-success','confirm-warning','confirm-danger'],
+            'variant' =>  array_merge(BootstrapGeneric::$variants, ['']),
+        ];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function modal()
+    {
+        return $this->genModal();
+    }
+
+    private function genModal()
+    {
+        $dialog = $this->openNode('div', [
+            'class' => array_merge(
+                ['modal-dialog', (!empty($this->options['size'])) ? "modal-{$this->options['size']}" : ''],
+                $this->options['modalClass']
+            ),
+        ]);
+        $content = $this->openNode('div', [
+            'class' => ['modal-content'],
+        ]);
+        $header = $this->genHeader();
+        $body = $this->genBody();
+        $footer = $this->genFooter();
+        $closedDiv = $this->closeNode('div');
+
+        $html = "{$dialog}{$content}{$header}{$body}{$footer}{$closedDiv}{$closedDiv}";
+        return $html;
+    }
+
+    private function genHeader()
+    {
+        $header = $this->openNode('div', ['class' => array_merge(['modal-header'], $this->options['headerClass'])]);
+        if (!empty($this->options['titleHtml'])) {
+            $header .= $this->options['titleHtml'];
+        } else {
+            $header .= $this->genNode('h5', ['class' => ['modal-title']], h($this->options['title']));
+        }
+        if (empty($this->options['backdropStatic'])) {
+            $header .= $this->genericCloseButton('modal');
+        }
+        $header .= $this->closeNode('div');
+        return $header;
+    }
+
+    private function genBody()
+    {
+        $body = $this->openNode('div', ['class' => array_merge(['modal-body'], $this->options['bodyClass'])]);
+        if (!empty($this->options['bodyHtml'])) {
+            $body .= $this->options['bodyHtml'];
+        } else {
+            $body .= h($this->options['body']);
+        }
+        $body .= $this->closeNode('div');
+        return $body;
+    }
+
+    private function genFooter()
+    {
+        $footer = $this->openNode('div', ['class' => array_merge(['modal-footer'], $this->options['footerClass'])]);
+        if (!empty($this->options['footerHtml'])) {
+            $footer .= $this->options['footerHtml'];
+        } else {
+            $footer .= $this->getFooterBasedOnType();
+        }
+        $footer .= $this->closeNode('div');
+        return $footer;
+    }
+
+    private function getFooterBasedOnType() {
+        if ($this->options['type'] == 'ok-only') {
+            return $this->getFooterOkOnly();
+        } else if (str_contains($this->options['type'], 'confirm')) {
+            return $this->getFooterConfirm();
+        } else {
+            return $this->getFooterOkOnly();
+        }
+    }
+
+    private function getFooterOkOnly()
+    {
+        return (new BoostrapButton([
+            'variant' => 'primary',
+            'text' => __('Ok'),
+            'params' => [
+                'data-dismiss' => 'modal',
+                'onclick' => $this->options['confirmFunction']
+            ]
+        ]))->button();
+    }
+
+    private function getFooterConfirm()
+    {
+        if ($this->options['type'] == 'confirm') {
+            $variant = 'primary';
+        } else {
+            $variant = explode('-', $this->options['type'])[1];
+        }
+        $buttonCancel = (new BoostrapButton([
+            'variant' => 'secondary',
+            'text' => h($this->options['cancelText']),
+            'params' => [
+                'data-dismiss' => 'modal',
+                'onclick' => $this->options['cancelFunction']
+            ]
+        ]))->button();
+
+        $buttonConfirm = (new BoostrapButton([
+            'variant' => $variant,
+            'text' => h($this->options['confirmText']),
+            'params' => [
+                'data-dismiss' => 'modal',
+                'onclick' => $this->options['confirmFunction']
+            ]
+        ]))->button();
+        return $buttonCancel . $buttonConfirm;
     }
 }

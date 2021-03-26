@@ -38,7 +38,7 @@ class OrganisationsTable extends AppTable
             [
                 'dependent' => true,
                 'foreignKey' => 'parent_id',
-                'conditions' => ['scope' => 'organisation']
+                'conditions' => ['MetaFields.scope' => 'organisation']
             ]
         );
         $this->setDisplayField('name');

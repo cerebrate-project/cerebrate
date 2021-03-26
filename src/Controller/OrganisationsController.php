@@ -12,11 +12,51 @@ use Cake\Http\Exception\ForbiddenException;
 
 class OrganisationsController extends AppController
 {
+
+    public $filters = ['name', 'uuid', 'nationality', 'sector', 'type', 'url', 'Alignments.id', 'MetaFields.field', 'MetaFields.value', 'MetaFields.MetaTemplates.name'];
+
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['name', 'uuid', 'nationality', 'sector', 'type', 'url', 'Alignments.id'],
-            'quickFilters' => ['name', 'uuid', 'nationality', 'sector', 'type', 'url'],
+            'filters' => $this->filters,
+            'quickFilters' => [['name' => true], 'uuid', 'nationality', 'sector', 'type', 'url'],
+            'contextFilters' => [
+                'custom' => [
+                    [
+                        'label' => __('ENISA Accredited'),
+                        'filterCondition' => [
+                            'MetaFields.field' => 'enisa-tistatus',
+                            'MetaFields.value' => 'Accredited',
+                            'MetaFields.MetaTemplates.name' => 'ENISA CSIRT Network'
+                        ]
+                    ],
+                    [
+                        'label' => __('ENISA not-Accredited'),
+                        'filterCondition' => [
+                            'MetaFields.field' => 'enisa-tistatus',
+                            'MetaFields.value !=' => 'Accredited',
+                            'MetaFields.MetaTemplates.name' => 'ENISA CSIRT Network'
+                        ]
+                    ],
+                    [
+                        'label' => __('ENISA CSIRT Network (GOV)'),
+                        'filterConditionFunction' => function($query) {
+                            return $this->CRUD->setParentConditionsForMetaFields($query, [
+                                'ENISA CSIRT Network' => [
+                                    [
+                                        'field' => 'constituency',
+                                        'value LIKE' => '%Government%',
+                                    ],
+                                    [
+                                        'field' => 'csirt-network-status',
+                                        'value' => 'Member',
+                                    ],
+                                ]
+                            ]);
+                        }
+                    ]
+                ],
+            ],
             'contain' => ['Alignments' => 'Individuals']
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
@@ -25,6 +65,11 @@ class OrganisationsController extends AppController
         }
         $this->set('alignmentScope', 'individuals');
         $this->set('metaGroup', 'ContactDB');
+    }
+
+    public function filtering()
+    {
+        $this->CRUD->filtering();
     }
 
     public function add()
