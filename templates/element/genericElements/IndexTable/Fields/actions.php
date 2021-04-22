@@ -35,7 +35,7 @@
             }
         }
         $url_param_data_paths = '';
-        $url = empty($action['url']) ? '#' : $baseurl . '/' . h($action['url']);
+        $url = empty($action['url']) ? '#' : h($action['url']);
         if (!empty($action['url_params_data_paths'])) {
             if (is_array($action['url_params_data_paths'])) {
                 $temp = array();
