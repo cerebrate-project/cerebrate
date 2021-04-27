@@ -36,7 +36,7 @@ The installation is documented at the following location [INSTALL/INSTALL.md](IN
 
 Hardware requirements:
 
-A webserver with 4GB of memory and a single CPU core should be plenty for the current scope of Cerebrate. This might increase over the time with additional features being added, but the goal is to keep Cerebrate as lean as possible.
+A webserver with 4GB of memory and a single CPU core should be plenty for the current scope of Cerebrate. This might increase over the time with additional features being added, but the goal is to keep Cerebrate as lean as possible. Expect to have at least 40GB of disk space, depending on your log rotation strategy you might want to go higher.
 
 # License
 
