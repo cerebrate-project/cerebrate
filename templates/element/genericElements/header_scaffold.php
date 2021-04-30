@@ -53,7 +53,7 @@ foreach ($data['menu'] as $name => $menuElement) {
     }
 }
 $logoutButton = sprintf(
-    '<span class="nav-item"><a href="%susers/logout" class="nav-link">%s</a></span>',
+    '<span class="nav-item"><a href="%s/users/logout" class="nav-link">%s</a></span>',
     $baseurl,
     __('Logout')
 );

@@ -45,10 +45,24 @@ class CRUDComponent extends Component
         }
         if ($this->Controller->ParamHandler->isRest()) {
             $data = $query->all();
+            if (isset($options['afterFind'])) {
+                if (is_callable($options['afterFind'])) {
+                    $data = $options['afterFind']($data);
+                } else {
+                    $data = $this->Table->{$options['afterFind']}($data);
+                }
+            }
             $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData($data, 'json');
         } else {
             $this->Controller->loadComponent('Paginator');
             $data = $this->Controller->Paginator->paginate($query);
+            if (isset($options['afterFind'])) {
+                if (is_callable($options['afterFind'])) {
+                    $data = $options['afterFind']($data);
+                } else {
+                    $data = $this->Table->{$options['afterFind']}($data);
+                }
+            }
             if (!empty($options['contextFilters'])) {
                 $this->setFilteringContext($options['contextFilters'], $params);
             }
@@ -63,7 +77,7 @@ class CRUDComponent extends Component
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/filters');
     }
-    
+
     /**
      * getResponsePayload Returns the adaquate response payload based on the request context
      *

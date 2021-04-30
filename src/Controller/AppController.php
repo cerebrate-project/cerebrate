@@ -99,7 +99,7 @@ class AppController extends Controller
             if (!empty($user['disabled'])) {
                 $this->Authentication->logout();
                 $this->Flash->error(__('The user account is disabled.'));
-                return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+                return $this->redirect(\Cake\Routing\Router::url('/users/login'));
             }
             unset($user['password']);
             $this->ACL->setUser($user);
@@ -112,11 +112,6 @@ class AppController extends Controller
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
         $this->set('darkMode', !empty(Configure::read('Cerebrate.dark')));
-        if (!empty(Configure::read('baseurl'))) {
-            Configure::write('App.fullBaseUrl', Configure::read('baseurl'));
-        } else if (!empty(env('CEREBRATE_BASEURL'))) {
-            Configure::write('App.fullBaseUrl', env('CEREBRATE_BASEURL'));
-        }
         $this->set('baseurl', Configure::read('App.fullBaseUrl'));
     }
 
