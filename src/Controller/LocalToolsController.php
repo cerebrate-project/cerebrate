@@ -20,11 +20,12 @@ class LocalToolsController extends AppController
         if ($this->request->is('ajax')) {
             $this->viewBuilder()->disableAutoLayout();
         }
-        $this->set('metaGroup', 'LocalTools');
+        $this->set('metaGroup', 'Administration');
     }
 
     public function connectorIndex()
     {
+        $this->set('metaGroup', 'Admin');
         $this->CRUD->index([
             'filters' => ['name', 'connector'],
             'quickFilters' => ['name', 'connector'],
@@ -38,17 +39,67 @@ class LocalToolsController extends AppController
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }
-        $this->set('metaGroup', 'LocalTools');
+        $this->set('metaGroup', 'Administration');
     }
 
-    public function action()
+    public function action($connectionId, $actionName)
     {
-        $params = [];
-        $results = $this->LocalTools->runAction();
-        $this->render('add');
+        $connection = $this->LocalTools->query()->where(['id' => $connectionId])->first();
+        if (empty($connection)) {
+            throw new NotFoundException(__('Invalid connector.'));
+        }
+        $params = $this->ParamHandler->harvestParams($this->LocalTools->getActionFilterOptions($connection->connector, $actionName));
+        $actionDetails = $this->LocalTools->getActionDetails($actionName);
+        $params['connection'] = $connection;
+        $results = $this->LocalTools->action($this->ACL->getUser()['id'], $connection->connector, $actionName, $params, $this->request);
+        if (!empty($results['redirect'])) {
+            $this->redirect($results['redirect']);
+        }
+        if (!empty($results['restResponse'])) {
+            return $results['restResponse'];
+        }
+        if ($this->ParamHandler->isRest()) {
+            return $results['data']['data'];
+        }
+        $this->set('data', $results);
+        $this->set('metaGroup', 'Administration');
+        if ($actionDetails['type'] === 'formAction') {
+            if ($this->request->is(['post', 'put'])) {
+                if ($this->ParamHandler->isAjax()) {
+                    if (!empty($results['success'])) {
+                        return $this->RestResponse->ajaxSuccessResponse(
+                            'LocalTools',
+                            'action',
+                            $connection,
+                            empty($results['message']) ? __('Success.') : $results['message']
+                        );
+                    } else {
+                        return $this->RestResponse->ajaxSuccessResponse(
+                            'LocalTools',
+                            'action',
+                            false,
+                            empty($results['message']) ? __('Success.') : $results['message']
+                            //['displayOnSuccess' => $displayOnSuccess]
+                        );
+                    }
+                } else {
+                    if (!empty($results['success'])) {
+                        $this->Flash->success(empty($results['message']) ? __('Success.') : $results['message']);
+                        $this->redirect(['controller' => 'localTools', 'action' => 'action', $connectionId, $actionDetails['redirect']]);
+                    } else {
+                        $this->Flash->error(empty($results['message']) ? __('Could not execute the requested action.') : $results['message']);
+                        $this->redirect(['controller' => 'localTools', 'action' => 'action', $connectionId, $actionDetails['redirect']]);
+                    }
+                }
+            } else {
+                $this->render('/Common/getForm');
+            }
+        } else {
+            $this->render('/Common/' . $actionDetails['type']);
+        }
     }
 
-    public function add()
+    public function add($connector = false)
     {
         $this->CRUD->add();
         if ($this->ParamHandler->isRest()) {
@@ -60,7 +111,7 @@ class LocalToolsController extends AppController
             $dropdownData['connectors'][$connector['connector']] = $connector['name'];
         }
         $this->set(compact('dropdownData'));
-        $this->set('metaGroup', 'LocalTools');
+        $this->set('metaGroup', 'Administration');
     }
 
     public function viewConnector($connector_name)
@@ -73,10 +124,10 @@ class LocalToolsController extends AppController
             }
         }
         if ($this->ParamHandler->isRest()) {
-            $this->restResponsePayload = $this->Controller->RestResponse->viewData($connector, 'json');
+            return $this->RestResponse->viewData($connector, 'json');
         }
         $this->set('entity', $connector);
-        $this->set('metaGroup', 'LocalTools');
+        $this->set('metaGroup', 'Administration');
     }
 
     public function edit($id)
@@ -85,13 +136,16 @@ class LocalToolsController extends AppController
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }
+        if ($this->ParamHandler->isAjax() && !empty($this->ajaxResponsePayload)) {
+            return $this->ajaxResponsePayload;
+        }
         $connectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
         $dropdownData = ['connectors' => []];
         foreach ($connectors as $connector) {
             $dropdownData['connectors'][$connector['connector']] = $connector['name'];
         }
         $this->set(compact('dropdownData'));
-        $this->set('metaGroup', 'LocalTools');
+        $this->set('metaGroup', 'Administration');
         $this->render('add');
     }
 
@@ -101,22 +155,60 @@ class LocalToolsController extends AppController
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
         }
-        $this->set('metaGroup', 'LocalTools');
+        $this->set('metaGroup', 'Administration');
     }
 
     public function view($id)
     {
-        $this->CRUD->view($id);
+        $localTools = $this->LocalTools;
+        $this->CRUD->view($id, [
+            'afterFind' => function ($data) use($id, $localTools) {
+                $data['children'] = $localTools->getChildParameters($id);
+                return $data;
+            }
+        ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'LocalTools');
+        $this->set('metaGroup', 'Administration');
     }
 
-    public function test()
+    public function exposedTools()
     {
-        $connectors = $this->LocalTools->getConnectors();
-        $connectors['MispConnector']->test();
+        $this->CRUD->index([
+            'filters' => ['name', 'connector'],
+            'quickFilters' => ['name', 'connector'],
+            'fields' => ['id', 'name', 'connector', 'description'],
+            'filterFunction' => function($query) {
+                $query->where(['exposed' => 1]);
+                return $query;
+            },
+            'afterFind' => function($data) {
+                foreach ($data as $connector) {
+                    $connector = [
+                        'id' => $connector['id'],
+                        'name' => $connector['name'],
+                        'connector' => $connector['connector']
+                    ];
+                }
+                return $data;
+            }
+        ]);
+        if ($this->ParamHandler->isRest()) {
+            return $this->restResponsePayload;
+        }
+        $this->set('metaGroup', 'Administration');
+    }
+
+    public function broodTools($id)
+    {
+        $this->loadModel('Broods');
+        $tools = $this->Broods->queryLocalTools($id);
+        if ($this->ParamHandler->isRest()) {
+            return $this->RestResponse->viewData($tools, 'json');
+        }
+        $this->set('data', $tools);
+        $this->set('metaGroup', 'Administration');
     }
 }
