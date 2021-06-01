@@ -18,7 +18,7 @@ class EncryptionKeysController extends AppController
     {
         $this->CRUD->index([
             'quickFilters' => ['encryption_key'],
-            'filters' => ['owner_type', 'organisation_id', 'individual_id', 'encryption_key'],
+            'filters' => ['owner_model', 'organisation_id', 'individual_id', 'encryption_key'],
             'contextFilters' => [
                 'fields' => [
                     'type'

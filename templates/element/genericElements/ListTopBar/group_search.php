@@ -12,6 +12,7 @@
      *  - id: element ID for the input field - defaults to quickFilterField
      */
     if (!isset($data['requirement']) || $data['requirement']) {
+        $filterEffective = !empty($quickFilter); // No filters will be picked up, thus rendering the filtering useless
         $filteringButton = '';
         if (!empty($data['allowFilering'])) {
             $activeFilters = !empty($activeFilters) ? $activeFilters : [];
@@ -32,9 +33,10 @@
             $filteringButton = $this->Bootstrap->button($buttonConfig);
         }
         $button = empty($data['button']) && empty($data['fa-icon']) ? '' : sprintf(
-            '<div class="input-group-append"><button class="btn btn-primary" %s id="quickFilterButton-%s">%s%s</button>%s</div>',
+            '<div class="input-group-append"><button class="btn btn-primary" %s id="quickFilterButton-%s" %s>%s%s</button>%s</div>',
             empty($data['data']) ? '' : h($data['data']),
             h($tableRandomValue),
+            $filterEffective ? '' : 'disabled="disabled"',
             empty($data['fa-icon']) ? '' : sprintf('<i class="fa fa-%s"></i>', h($data['fa-icon'])),
             empty($data['button']) ? '' : h($data['button']),
             $filteringButton
@@ -43,13 +45,14 @@
             $button .= $this->element('/genericElements/ListTopBar/element_simple', array('data' => $data['cancel']));
         }
         $input = sprintf(
-            '<input id="quickFilterField-%s" type="text" class="form-control" placeholder="%s" aria-label="%s" style="padding: 2px 6px;" id="%s" data-searchkey="%s" value="%s">',
+            '<input id="quickFilterField-%s" type="text" class="form-control" placeholder="%s" aria-label="%s" style="padding: 2px 6px;" id="%s" data-searchkey="%s" value="%s" %s>',
             h($tableRandomValue),
             empty($data['placeholder']) ? '' : h($data['placeholder']),
             empty($data['placeholder']) ? '' : h($data['placeholder']),
             empty($data['id']) ? 'quickFilterField' : h($data['id']),
             empty($data['searchKey']) ? 'searchall' : h($data['searchKey']),
-            empty($data['value']) ? (!empty($quickFilterValue) ? h($quickFilterValue) : '') : h($data['value'])
+            empty($data['value']) ? (!empty($quickFilterValue) ? h($quickFilterValue) : '') : h($data['value']),
+            $filterEffective ? '' : 'disabled="disabled"'
         );
         echo sprintf(
             '<div class="input-group" data-table-random-value="%s" style="margin-left: auto;">%s%s</div>',
@@ -127,7 +130,8 @@
                 }
                 $searchType = $('<span/>')
                     .text(searchContain ? '<?= __('Contain') ?>' : '<?= __('Exact match') ?>')
-                    .attr('title', searchContain ? '<?= __('The search value will be used as a substring') ?>' : '<?= __('The search value must strictly match') ?>')
+                    .attr('title', searchContain ? '<?= __('The search value can be used as a substring with the wildcard operator `%`') ?>' : '<?= __('The search value must strictly match') ?>')
+                    .attr('style', 'cursor: help;')
                 tableData.push([fieldName, $searchType])
             });
             tableData.sort((a, b) => a[0] < b[0] ? -1 : 1)
@@ -144,11 +148,7 @@
         }
 
         function openFilteringModal(clicked, url, reloadUrl, tableId) {
-            const loadingOverlay = new OverlayFactory(clicked);
-            loadingOverlay.show()
-            UI.openModalFromURL(url, reloadUrl, tableId).finally(() => {
-                loadingOverlay.hide()
-            })
+            UI.overlayUntilResolve(clicked, UI.submissionModalForIndex(url, reloadUrl, tableId))
         }
     });
 </script>

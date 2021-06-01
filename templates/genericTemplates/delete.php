@@ -1,7 +1,13 @@
 <div class="modal-dialog" role="document">
     <div class="modal-content">
         <div class="modal-header">
-            <h5 class="modal-title"><?= __('Delete {0}', h(Cake\Utility\Inflector::singularize(Cake\Utility\Inflector::humanize($this->request->getParam('controller'))))) ?></h5>
+            <h5 class="modal-title">
+                <?php if (empty($deletionTitle)): ?>
+                    <p><?= __('Delete {0}', h(Cake\Utility\Inflector::singularize(Cake\Utility\Inflector::humanize($this->request->getParam('controller'))))) ?></p>
+                <?php else: ?>
+                    <p><?= h($deletionTitle) ?></p>
+                <?php endif; ?>
+            </h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -15,9 +21,9 @@
         </div>
         <div class="modal-footer">
             <?= $this->Form->postLink(
-                'Delete',
+                !empty($deletionConfirm) ? h($deletionConfirm) : __('Delete'),
                 (empty($postLinkParameters) ? ['action' => 'delete', $id] : $postLinkParameters),
-                ['class' => 'btn btn-primary button-execute', 'id' => 'submitButton']
+                ['class' => 'btn btn-danger button-execute', 'id' => 'submitButton']
                 )
             ?>
             <button type="button" class="btn btn-secondary cancel-button" data-dismiss="modal"><?= __('Cancel') ?></button>

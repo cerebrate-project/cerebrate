@@ -71,12 +71,8 @@
 
 <script>
     function openModalForButton(clicked, url, reloadUrl='') {
-        const loadingOverlay = new OverlayFactory(clicked);
         const fallbackReloadUrl = '<?= $this->Url->build(['action' => 'index']); ?>'
         reloadUrl = reloadUrl != '' ? reloadUrl : fallbackReloadUrl
-        loadingOverlay.show()
-        UI.openModalFromURL(url, reloadUrl, '<?= $tableRandomValue ?>').finally(() => {
-            loadingOverlay.hide()
-        })
+        UI.overlayUntilResolve(clicked, UI.submissionModalForIndex(url, reloadUrl, '<?= $tableRandomValue ?>'))
     }
 </script>

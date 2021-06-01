@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Controller\AppController;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
+use Cake\ORM\TableRegistry;
 use \Cake\Database\Expression\QueryExpression;
 
 class UsersController extends AppController
@@ -133,5 +134,23 @@ class UsersController extends AppController
             $this->Flash->success(__('Goodbye.'));
             return $this->redirect(\Cake\Routing\Router::url('/users/login'));
         }
+    }
+
+    public function register()
+    {
+        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
+        $processor = $this->requestProcessor->getProcessor('User', 'Registration');
+        $data = [
+            'origin' => '127.0.0.1',
+            'comment' => 'Hi there!, please create an account',
+            'data' => [
+                'username' => 'foobar',
+                'email' => 'foobar@admin.test',
+                'first_name' => 'foo',
+                'last_name' => 'bar',
+            ],
+        ];
+        $processorResult = $processor->create($data);
+        return $processor->genHTTPReply($this, $processorResult, ['controller' => 'Inbox', 'action' => 'index']);
     }
 }

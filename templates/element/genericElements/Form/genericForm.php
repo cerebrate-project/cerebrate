@@ -115,6 +115,24 @@
             'actionButton' => $this->element('genericElements/Form/submitButton', $submitButtonData),
             'class' => 'modal-lg'
         ]);
+    } else if (!empty($raw)) {
+        echo sprintf(
+            '%s%s%s%s%s%s',
+            empty($data['description']) ? '' : sprintf(
+                '<div class="pb-2">%s</div>',
+                $data['description']
+            ),
+            $ajaxFlashMessage,
+            $formCreate,
+            $fieldsString,
+            empty($metaTemplateString) ? '' : $this->element(
+                'genericElements/accordion_scaffold', [
+                    'body' => $metaTemplateString,
+                    'title' => 'Meta fields'
+                ]
+            ),
+            $formEnd
+        );
     } else {
         echo sprintf(
             '%s<h2>%s</h2>%s%s%s%s%s%s%s%s%s',

@@ -25,7 +25,7 @@ class IndividualsTable extends AppTable
             'EncryptionKeys',
             [
                 'foreignKey' => 'owner_id',
-                'conditions' => ['owner_type' => 'individual']
+                'conditions' => ['owner_model' => 'individual']
             ]
         );
         $this->hasOne(

@@ -51,7 +51,7 @@ function runAllUpdate() {
         type: 'confirm-success',
         confirmText: '<?= __n('Run update', 'Run all updates', count($updateAvailables)) ?>',
         APIConfirm: (tmpApi) => {
-            tmpApi.fetchAndPostForm(url, {}).then(() => {
+            return tmpApi.fetchAndPostForm(url, {}).then(() => {
                 location.reload()
             })
         },
