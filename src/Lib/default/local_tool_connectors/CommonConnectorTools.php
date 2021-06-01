@@ -1,6 +1,7 @@
 <?php
 
 namespace CommonConnectorTools;
+use Cake\ORM\Locator\LocatorAwareTrait;
 
 class CommonConnectorTools
 {
@@ -26,6 +27,26 @@ class CommonConnectorTools
     public function health(Object $connection): array
     {
         return 0;
+    }
+
+    public function captureOrganisation($input): bool
+    {
+        if (empty($input['uuid'])) {
+            return false;
+        }
+        $organisations = \Cake\ORM\TableRegistry::getTableLocator()->get('Organisations');
+        $organisations->captureOrg($input);
+        return true;
+    }
+
+    public function captureSharingGroup($input): bool
+    {
+        if (empty($input['uuid'])) {
+            return false;
+        }
+        $sharing_groups = \Cake\ORM\TableRegistry::getTableLocator()->get('SharingGroups');
+        $sharing_groups->captureSharingGroup($input);
+        return true;
     }
 }
 
