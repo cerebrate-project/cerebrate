@@ -196,6 +196,8 @@ CREATE TABLE `local_tools` (
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `connector` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `settings` text COLLATE utf8mb4_unicode_ci,
+  `exposed` tinyint(1) NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`),
   KEY `name` (`name`),
   KEY `connector` (`connector`)
@@ -364,6 +366,7 @@ CREATE TABLE `meta_templates` (
   `uuid` varchar(40) CHARACTER SET ascii,
   `source` varchar(191),
   `enabled` tinyint(1) DEFAULT 0,
+  `is_default` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `scope` (`scope`),
   KEY `source` (`source`),
