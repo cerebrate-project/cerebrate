@@ -426,8 +426,8 @@ class RestResponseComponent extends Component
         $response = [
             'success' => true,
             'message' => $message,
-            'data' => $entity->toArray(),
-            'url' =>  $this->__generateURL($action, $ObjectAlias, $entity->id)
+            'data' => $entity->toArray()
+            //'url' =>  $this->__generateURL($action, $ObjectAlias, $entity->id)
         ];
         if (!empty($additionalData)) {
             $response['additionalData'] = $additionalData;

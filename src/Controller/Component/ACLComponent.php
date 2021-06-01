@@ -671,6 +671,34 @@ class ACLComponent extends Component
                             'popup' => 1
                         ]
                     ]
+                ],
+                'LocalTools' => [
+                    'label' => __('Local Tools'),
+                    'url' => '/localTools/index',
+                    'children' => [
+                        'index' => [
+                            'url' => '/localTools/index',
+                            'label' => __('List Connectors')
+                        ],
+                        'viewConnector' => [
+                            'url' => '/localTools/viewConnector/{{connector}}',
+                            'label' => __('View Connector'),
+                            'actions' => ['view'],
+                            'skipTopMenu' => 1
+                        ],
+                        'add' => [
+                            'url' => '/localTools/add/{{connector}}',
+                            'label' => __('Add connection'),
+                            'actions' => ['viewConnector'],
+                            'skipTopMenu' => 1
+                        ],
+                        'view' => [
+                            'url' => '/localTools/view/{{id}}',
+                            'label' => __('View Connection'),
+                            'actions' => ['view'],
+                            'skipTopMenu' => 1
+                        ]
+                    ]
                 ]
             ],
             'Cerebrate' => [
