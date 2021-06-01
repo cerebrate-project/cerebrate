@@ -187,6 +187,21 @@ CREATE TABLE `individuals` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `local_tools`
+--
+
+DROP TABLE IF EXISTS `local_tools`;
+CREATE TABLE `local_tools` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `connector` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `settings` text COLLATE utf8mb4_unicode_ci,
+  PRIMARY KEY (`id`),
+  KEY `name` (`name`),
+  KEY `connector` (`connector`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
 -- Table structure for table `organisation_encryption_keys`
 --
 
@@ -326,12 +341,17 @@ CREATE TABLE `meta_fields` (
   `field` varchar(191) NOT NULL,
   `value` varchar(191) NOT NULL,
   `uuid` varchar(40) CHARACTER SET ascii DEFAULT NULL,
+  `meta_template_id` int(10) unsigned NOT NULL,
+  `meta_template_field_id` int(10) unsigned NOT NULL,
+  `is_default` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `scope` (`scope`),
   KEY `uuid` (`uuid`),
   KEY `parent_id` (`parent_id`),
   KEY `field` (`field`),
-  KEY `value` (`value`)
+  KEY `value` (`value`),
+  KEY `meta_template_id` (`meta_template_id`),
+  KEY `meta_template_field_id` (`meta_template_field_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `meta_templates` (

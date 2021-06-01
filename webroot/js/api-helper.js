@@ -77,7 +77,7 @@ class AJAXApi {
     }
 
     /**
-     * 
+     *
      * @param  {FormData} formData       - The data of a form
      * @param  {Object}   dataToMerge    - Data to be merge into formData
      * @return {FormData} The form data merged with the additional dataToMerge data
@@ -91,7 +91,7 @@ class AJAXApi {
 
     /**
      * @param {string} url           - The URL to fetch
-     * @param {Object} [options={}]  - The options supported by AJAXApi#defaultOptions 
+     * @param {Object} [options={}]  - The options supported by AJAXApi#defaultOptions
      * @return {Promise<string>} Promise object resolving to the fetched HTML
      */
     static async quickFetchURL(url, options={}) {
@@ -102,7 +102,7 @@ class AJAXApi {
 
     /**
      * @param {string} url           - The URL to fetch
-     * @param {Object} [options={}]  - The options supported by AJAXApi#defaultOptions 
+     * @param {Object} [options={}]  - The options supported by AJAXApi#defaultOptions
      * @return {Promise<Object>} Promise object resolving to the fetched HTML
      */
     static async quickFetchJSON(url, options={}) {
@@ -113,7 +113,7 @@ class AJAXApi {
 
     /**
      * @param {string} url          - The URL to fetch
-     * @param {Object} [options={}] - The options supported by AJAXApi#defaultOptions 
+     * @param {Object} [options={}] - The options supported by AJAXApi#defaultOptions
      * @return {Promise<HTMLFormElement>} Promise object resolving to the fetched form
      */
     static async quickFetchForm(url, options={}) {
@@ -125,7 +125,7 @@ class AJAXApi {
     /**
      * @param {HTMLFormElement} form    - The form to be posted
      * @param {Object} [dataToMerge={}] - Additional data to be integrated or modified in the form
-     * @param {Object} [options={}]     - The options supported by AJAXApi#defaultOptions 
+     * @param {Object} [options={}]     - The options supported by AJAXApi#defaultOptions
      * @return {Promise<Object>} Promise object resolving to the result of the POST operation
      */
     static async quickPostForm(form, dataToMerge={}, options={}) {
@@ -395,7 +395,7 @@ class AJAXApi {
         }
         return toReturn
     }
-    
+
     /**
      * @param {string} url                       - The URL from which to fetch the form
      * @param {Object} [dataToMerge={}]          - Additional data to be integrated or modified in the form
@@ -452,8 +452,7 @@ class AJAXApi {
             this.loadingOverlay.show()
         } else {
             this.loadingOverlay.hide()
-            
+
         }
     }
 }
-

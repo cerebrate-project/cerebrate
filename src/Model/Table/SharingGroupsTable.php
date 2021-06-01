@@ -43,4 +43,55 @@ class SharingGroupsTable extends AppTable
     {
         return $rules;
     }
+
+    public function captureSharingGroup($input, int $user_id = 0): ?int
+    {
+        if (!empty($input['id'])) {
+            unset($input['id']);
+        }
+        if (!empty($input['uuid'])) {
+            $existingSG = $this->find()->where([
+                'uuid' => $input['uuid']
+            ])->first();
+        } else {
+            return null;
+        }
+        if (empty($existingSG)) {
+            $data = $this->newEmptyEntity();
+            $input['organisation_id'] = $this->Organisations->captureOrg($input['organisation']);
+            $input['user_id'] = $user_id;
+            $data = $this->patchEntity($data, $input, ['associated' => []]);
+            if (!$this->save($data)) {
+                return null;
+            }
+            $savedSG = $data;
+        } else {
+            $reserved = ['id', 'uuid', 'metaFields'];
+            foreach ($input as $field => $value) {
+                if (in_array($field, $reserved)) {
+                    continue;
+                }
+                $existingSG->$field = $value;
+            }
+            if (!$this->save($existingSG)) {
+                return null;
+            }
+            $savedSG = $existingSG;
+        }
+        $this->postCaptureActions($savedSG->id, $input);
+        return $savedSG->id;
+    }
+
+    public function postCaptureActions($id, $input): void
+    {
+        $sharingGroup = $this->find()->where([
+            'id' => $id
+        ])->first();
+        $orgs = [];
+        foreach ($input['sharing_group_orgs'] as $sgo) {
+            $organisation_id = $this->Organisations->captureOrg($sgo);
+            $orgs[] = $this->SharingGroupOrgs->get($organisation_id);
+        }
+        $this->SharingGroupOrgs->link($sharingGroup, $orgs);
+    }
 }

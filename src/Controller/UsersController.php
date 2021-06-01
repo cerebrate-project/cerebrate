@@ -132,7 +132,7 @@ class UsersController extends AppController
         if ($result->isValid()) {
             $this->Authentication->logout();
             $this->Flash->success(__('Goodbye.'));
-            return $this->redirect(['controller' => 'Users', 'action' => 'login']);
+            return $this->redirect(\Cake\Routing\Router::url('/users/login'));
         }
     }
 

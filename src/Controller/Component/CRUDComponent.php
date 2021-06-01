@@ -38,17 +38,37 @@ class CRUDComponent extends Component
         }
         $params = $this->Controller->ParamHandler->harvestParams($optionFilters);
         $query = $this->Table->find();
+        if (!empty($options['filterFunction'])) {
+            $query = $options['filterFunction']($query);
+        }
         $query = $this->setFilters($params, $query, $options);
         $query = $this->setQuickFilters($params, $query, empty($options['quickFilters']) ? [] : $options['quickFilters']);
         if (!empty($options['contain'])) {
             $query->contain($options['contain']);
         }
+        if (!empty($options['fields'])) {
+            $query->select($options['fields']);
+        }
         if ($this->Controller->ParamHandler->isRest()) {
             $data = $query->all();
+            if (isset($options['afterFind'])) {
+                if (is_callable($options['afterFind'])) {
+                    $data = $options['afterFind']($data);
+                } else {
+                    $data = $this->Table->{$options['afterFind']}($data);
+                }
+            }
             $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData($data, 'json');
         } else {
             $this->Controller->loadComponent('Paginator');
             $data = $this->Controller->Paginator->paginate($query);
+            if (isset($options['afterFind'])) {
+                if (is_callable($options['afterFind'])) {
+                    $data = $options['afterFind']($data);
+                } else {
+                    $data = $this->Table->{$options['afterFind']}($data);
+                }
+            }
             if (!empty($options['contextFilters'])) {
                 $this->setFilteringContext($options['contextFilters'], $params);
             }
@@ -63,7 +83,7 @@ class CRUDComponent extends Component
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/filters');
     }
-    
+
     /**
      * getResponsePayload Returns the adaquate response payload based on the request context
      *
@@ -309,6 +329,9 @@ class CRUDComponent extends Component
 
         $data = $this->Table->get($id, $params);
         $data = $this->attachMetaData($id, $data);
+        if (isset($params['afterFind'])) {
+            $data = $params['afterFind']($data);
+        }
         if ($this->Controller->ParamHandler->isRest()) {
             $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData($data, 'json');
         }

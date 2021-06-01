@@ -2,6 +2,7 @@
 if (isset($field['raw'])) {
     $string = $field['raw'];
 } else {
+    $value = 1;
     $value = Cake\Utility\Hash::extract($data, $field['path']);
     $string = empty($value[0]) ? '' : $value[0];
 }
