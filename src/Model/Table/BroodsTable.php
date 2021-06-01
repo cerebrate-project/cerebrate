@@ -171,4 +171,25 @@ class BroodsTable extends AppTable
             return false;
         }
     }
+
+    public function queryLocalTools($brood_id)
+    {
+        $query = $this->find();
+        $brood = $query->where(['id' => $brood_id])->first();
+        if (empty($brood)) {
+            throw new NotFoundException(__('Brood not found'));
+        }
+        $http = new Client();
+        $response = $http->get($brood['url'] . '/localTools/exposedTools' , [], [
+            'headers' => [
+                'Authorization' => $brood['authkey']
+            ],
+            'type' => 'json'
+        ]);
+        if ($response->isOk()) {
+            return $response->getJson();
+        } else {
+            return false;
+        }
+    }
 }

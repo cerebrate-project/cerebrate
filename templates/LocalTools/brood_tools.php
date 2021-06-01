@@ -1,0 +1,49 @@
+<?php
+echo $this->element('genericElements/IndexTable/index_table', [
+    'data' => [
+        'data' => $data,
+        'top_bar' => [
+            'children' => [
+                [
+                    'type' => 'search',
+                    'button' => __('Filter'),
+                    'placeholder' => __('Enter value to search'),
+                    'data' => '',
+                    'searchKey' => 'value'
+                ]
+            ]
+        ],
+        'fields' => [
+            [
+                'name' => __('Id'),
+                'data_path' => 'id',
+            ],
+            [
+                'name' => __('Name'),
+                'data_path' => 'name',
+            ],
+            [
+                'name' => 'Connector',
+                'data_path' => 'connector'
+            ],
+            [
+                'name' => __('Description'),
+                'data_path' => 'description',
+            ]
+        ],
+        'title' => __('Local tools made available by the remote Cerebrate'),
+        'description' => __('Cerebrate can connect to local tools via individual connectors and administrators can choose to expose a subset of their tools to other members of their Cerebrate in order for their peers to be able to issue interconnection requests. '),
+        'pull' => 'right',
+        'skip_pagination' => 1,
+        'actions' => [
+            [
+                'url' => '/localTools/connectionRequest',
+                'url_params_data_paths' => ['id'],
+                'title' => 'Issue a connection request',
+                'icon' => 'plug'
+            ]
+        ]
+    ]
+]);
+echo '</div>';
+?>

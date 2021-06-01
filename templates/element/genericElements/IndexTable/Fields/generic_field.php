@@ -16,7 +16,6 @@
             '<i class="fa fa-%s"></i>',
             $data ? 'check' : 'times'
         );
-        $data = '';
     } else {
         $data = h($data);
         if (!empty($field['privacy'])) {

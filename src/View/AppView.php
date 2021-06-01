@@ -40,6 +40,7 @@ class AppView extends View
     {
         parent::initialize();
         $this->loadHelper('Hash');
+        $this->loadHelper('PrettyPrint');
         $this->loadHelper('FormFieldMassage');
         $this->loadHelper('Paginator', ['templates' => 'cerebrate-pagination-templates']);
     }

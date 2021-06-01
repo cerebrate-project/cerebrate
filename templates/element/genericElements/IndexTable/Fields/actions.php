@@ -81,11 +81,21 @@
                 );
 
             } else if (!empty($action['open_modal']) && !empty($action['modal_params_data_path'])) {
-                $modal_url = str_replace(
-                    '[onclick_params_data_path]',
-                    h(Cake\Utility\Hash::extract($row, $action['modal_params_data_path'])[0]),
-                    $action['open_modal']
-                );
+                if (is_array($action['modal_params_data_path'])) {
+                    foreach ($action['modal_params_data_path'] as $k => $v) {
+                        $modal_url = str_replace(
+                            sprintf('{{%s}}', $k),
+                            h(Cake\Utility\Hash::extract($row, $v)[0]),
+                            $action['open_modal']
+                        );
+                    }
+                } else {
+                    $modal_url = str_replace(
+                        '[onclick_params_data_path]',
+                        h(Cake\Utility\Hash::extract($row, $action['modal_params_data_path'])[0]),
+                        $action['open_modal']
+                    );
+                }
                 $reload_url = !empty($action['reload_url']) ? $action['reload_url'] : $this->Url->build(['action' => 'index']);
                 $action['onclick'] = sprintf('UI.openModalFromURL(\'%s\', \'%s\', \'%s\')', $modal_url, $reload_url, $tableRandomValue);
             }

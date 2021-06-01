@@ -66,7 +66,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'url' => '/broods/view',
                 'url_params_data_paths' => ['id'],
+                'title' => __('View details'),
                 'icon' => 'eye'
+            ],
+            [
+                'url' => '/localTools/broodTools',
+                'url_params_data_paths' => ['id'],
+                'title' => __('List available local tools'),
+                'icon' => 'wrench'
             ],
             [
                 'open_modal' => '/broods/edit/[onclick_params_data_path]',
