@@ -30,10 +30,19 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'connector',
             ],
             [
+                'name' => 'Exposed',
+                'data_path' => 'exposed',
+                'element' => 'boolean'
+            ],
+            [
                 'name' => 'settings',
                 'data_path' => 'settings',
                 'isJson' => 1,
                 'element' => 'array'
+            ],
+            [
+                'name' => 'description',
+                'data_path' => 'description'
             ],
             [
                 'name' => 'health',

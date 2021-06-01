@@ -13,13 +13,22 @@
                     'type' => 'dropdown'
                 ],
                 [
+                    'field' => 'exposed',
+                    'type' => 'checkbox'
+                ],
+                [
                     'field' => 'settings',
                     'type' => 'textarea'
-                ]
+                ],
+                [
+                    'field' => 'description',
+                    'type' => 'textarea'
+                ],
             ],
             'submit' => [
                 'action' => $this->request->getParam('action')
-            ]
+            ],
+            'url' => empty($redirect) ? null : $redirect
         ]
     ]);
 ?>
