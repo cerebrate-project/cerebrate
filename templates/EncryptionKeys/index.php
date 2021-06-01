@@ -45,7 +45,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'name' => __('Owner'),
                 'data_path' => 'owner_id',
-                'owner_type_path' => 'owner_type',
+                'owner_model_path' => 'owner_model',
                 'element' => 'owner'
             ],
             [

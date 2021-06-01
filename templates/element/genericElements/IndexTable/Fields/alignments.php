@@ -14,7 +14,7 @@ if ($field['scope'] === 'individuals') {
                 h($alignment['organisation']['name'])
             ),
             !$canRemove ? '' : sprintf(
-                "UI.openModalFromURL(%s);",
+                "UI.submissionModalForIndex(%s);",
                 sprintf(
                     "'/alignments/delete/%s'",
                     h($alignment['id'])
@@ -34,7 +34,7 @@ if ($field['scope'] === 'individuals') {
                 h($alignment['individual']['email'])
             ),
             !$canRemove ? '' : sprintf(
-                "UI.openModalFromURL(%s);",
+                "UI.submissionModalForIndex(%s);",
                 sprintf(
                     "'/alignments/delete/%s'",
                     h($alignment['id'])

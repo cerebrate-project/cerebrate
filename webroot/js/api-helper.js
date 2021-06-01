@@ -135,6 +135,18 @@ class AJAXApi {
     }
 
     /**
+     * @param {string} url              - The URL to on which to execute the POST
+     * @param {Object} [data={}]        - The data to be posted
+     * @param {Object} [options={}]     - The options supported by AJAXApi#defaultOptions 
+     * @return {Promise<Object>} Promise object resolving to the result of the POST operation
+     */
+    static async quickPostData(url, data={}, options={}) {
+        const constAlteredOptions = Object.assign({}, {}, options)
+        const tmpApi = new AJAXApi(constAlteredOptions)
+        return tmpApi.postData(url, data, constAlteredOptions.skipRequestHooks)
+    }
+
+    /**
      * @param {string} url              - The URL from which to fetch the form
      * @param {Object} [dataToMerge={}] - Additional data to be integrated or modified in the form
      * @return {Promise<Object>} Promise object resolving to the result of the POST operation
@@ -243,6 +255,61 @@ class AJAXApi {
                 throw new Error('The server did not return a form element')
             }
             toReturn = form[0];
+        } catch (error) {
+            this.provideFeedback({
+                variant: 'danger',
+                title: 'There has been a problem with the operation',
+                body: error.message
+            }, true, skipFeedback);
+            toReturn = Promise.reject(error);
+        } finally {
+            if (!skipRequestHooks) {
+                this.afterRequest()
+            }
+        }
+        return toReturn
+    }
+
+    /**
+     * @param {string}  url                      - The URL to fetch
+     * @param {Object}  dataToPost               - data to be posted
+     * @param {boolean} [skipRequestHooks=false] - If true, default request hooks will be skipped
+     * @param {boolean} [skipFeedback=false]     - Pass this value to the AJAXApi.provideFeedback function
+     * @return {Promise<string>} Promise object resolving to the result of the POST
+     */
+    async postData(url, dataToPost, skipRequestHooks=false, skipFeedback=false) {
+        if (!skipRequestHooks) {
+            this.beforeRequest()
+        }
+        let toReturn
+        try {
+            let formData = new FormData()
+            formData = AJAXApi.mergeFormData(formData, dataToPost)
+            let requestConfig = AJAXApi.genericRequestConfigPOST
+            requestConfig.headers.append('AUTHORIZATION', '~HACKY-HACK~')
+            let options = {
+                ...requestConfig,
+                body: formData,
+            };
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error(`Network response was not ok. \`${response.statusText}\``)
+            }
+            const data = await response.json()
+            if (data.success) {
+                this.provideFeedback({
+                    variant: 'success',
+                    body: data.message
+                }, false, skipFeedback);
+                toReturn = data;
+            } else {
+                this.provideFeedback({
+                    variant: 'danger',
+                    title: 'There has been a problem with the operation',
+                    body: data.message
+                }, true, skipFeedback);
+                toReturn = Promise.reject(data.errors);
+            }
         } catch (error) {
             this.provideFeedback({
                 variant: 'danger',

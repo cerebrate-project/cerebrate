@@ -25,20 +25,20 @@ class UIFactory {
     }
 
     /**
-     * Create and display a modal where the modal's content is fetched from the provided URL.
+     * Create and display a modal where the modal's content is fetched from the provided URL. Link an AJAXApi to the submission button
      * @param  {string} url - The URL from which the modal's content should be fetched
      * @param  {ModalFactory~POSTSuccessCallback} POSTSuccessCallback - The callback that handles successful form submission
      * @param  {ModalFactory~POSTFailCallback} POSTFailCallback - The callback that handles form submissions errors and validation errors.
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
-    modalFromURL(url, POSTSuccessCallback, POSTFailCallback) {
+    submissionModal(url, POSTSuccessCallback, POSTFailCallback) {
         return AJAXApi.quickFetchURL(url).then((modalHTML) => {
             const theModal = new ModalFactory({
                 rawHtml: modalHTML,
                 POSTSuccessCallback: POSTSuccessCallback !== undefined ? POSTSuccessCallback : () => {},
                 POSTFailCallback: POSTFailCallback !== undefined ? POSTFailCallback : (errorMessage) => {},
             });
-            theModal.makeModal(modalHTML)
+            theModal.makeModal()
             theModal.show()
             theModal.$modal.data('modalObject', theModal)
             return theModal
@@ -46,45 +46,139 @@ class UIFactory {
     }
 
     /**
-     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the table after a successful operation and handles displayOnSuccess option
+     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the single page view after a successful operation.
+     * Supports `displayOnSuccess` option to show another modal after the submission
      * @param  {string} url - The URL from which the modal's content should be fetched
-     * @param  {string} reloadUrl - The URL from which the data should be fetched after confirming
-     * @param  {string} tableId - The table ID which should be reloaded on success
+     * @param  {(boolean|string)} [reloadUrl=false] - The URL from which the data should be fetched after confirming
+     * @param  {(jQuery|string)} [$table=false] - The table ID which should be reloaded on success
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
-    openModalFromURL(url, reloadUrl=false, tableId=false) {
-        return UI.modalFromURL(url, (data) => {
-            let reloaded = false
-            if (reloadUrl === false || tableId === false) { // Try to get information from the DOM
-                let $elligibleTable = $('table.table')
-                let currentModel = location.pathname.split('/')[1]
-                if ($elligibleTable.length == 1 && currentModel.length > 0) {
-                    let $container = $elligibleTable.closest('div[id^="table-container-"]')
-                    if ($container.length == 1) {
-                        UI.reload(`/${currentModel}/index`, $container, $elligibleTable)
-                        reloaded = true
-                    } else {
-                        $container = $elligibleTable.closest('div[id^="single-view-table-container-"]')
-                        if ($container.length == 1) {
-                            UI.reload(location.pathname, $container, $elligibleTable)
-                            reloaded = true
-                        }
-                    }
-                }
+    submissionModalForSinglePage(url, reloadUrl=false, $table=false) {
+        let $statusNode, $reloadedElement
+        if (reloadUrl === false) {
+            reloadUrl = location.pathname
+        }
+        if ($table === false) { // Try to get information from the DOM
+            const $elligibleTable = $('table[id^="single-view-table-"]')
+            const $container = $elligibleTable.closest('div[id^="single-view-table-container-"]')
+            $reloadedElement = $container
+            $statusNode = $elligibleTable
+        } else {
+            if ($table instanceof jQuery) {
+                $reloadedElement = $table
+                $statusNode = $table.find('table[id^="single-view-table-"]')
             } else {
-                UI.reload(reloadUrl, $(`#table-container-${tableId}`), $(`#table-container-${tableId} table.table`))
-                reloaded = true
+                $reloadedElement = $(`single-view-table-container-${$table}`)
+                $statusNode = $(`single-view-table-${$table}`)
             }
+        }
+        if ($reloadedElement.length == 0) {
+            UI.toast({
+                variant: 'danger',
+                title: 'Could not find element to be reloaded',
+                body: 'The content of this page may have changed and has not been reflected. Reloading the page is advised.'
+            })
+            return
+        }
+        return UI.submissionReloaderModal(url, reloadUrl, $reloadedElement, $statusNode);
+    }
+
+    /**
+     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the index table after a successful operation.
+     * Supports `displayOnSuccess` option to show another modal after the submission
+     * @param  {string} url - The URL from which the modal's content should be fetched
+     * @param  {(boolean|string)} [reloadUrl=false] - The URL from which the data should be fetched after confirming
+     * @param  {(jQuery|string)} [$table=false] - The table ID which should be reloaded on success
+     * @return {Promise<Object>} Promise object resolving to the ModalFactory object
+     */
+    submissionModalForIndex(url, reloadUrl=false, $table=false) {
+        let $statusNode, $reloadedElement
+        if (reloadUrl === false) {
+            const currentModel = location.pathname.split('/')[1]
+            if (currentModel.length > 0) {
+                reloadUrl = `/${currentModel}/index`
+            } else {
+                UI.toast({
+                    variant: 'danger',
+                    title: 'Could not find URL for the reload',
+                    body: 'The content of this page may have changed and has not been reflected. Reloading the page is advised.'
+                })
+                return
+            }
+        }
+        if ($table === false) { // Try to get information from the DOM
+            const $elligibleTable = $('table.table')
+            const $container = $elligibleTable.closest('div[id^="table-container-"]')
+            $reloadedElement = $container
+            $statusNode = $elligibleTable
+        } else {
+            if ($table instanceof jQuery) {
+                $reloadedElement = $table
+                $statusNode = $table.find('table.table')
+            } else {
+                $reloadedElement = $(`#table-container-${$table}`)
+                $statusNode = $(`#table-container-${$table} table.table`)
+            }
+        }
+        if ($reloadedElement.length == 0) {
+            UI.toast({
+                variant: 'danger',
+                title: 'Could not find element to be reloaded',
+                body: 'The content of this page may have changed and has not been reflected. Reloading the page is advised.'
+            })
+            return
+        }
+        return UI.submissionReloaderModal(url, reloadUrl, $reloadedElement, $statusNode);
+    }
+
+    /**
+     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the index table after a successful operation.
+     * Supports `displayOnSuccess` option to show another modal after the submission
+     * @param  {string} url - The URL from which the modal's content should be fetched
+     * @param  {(boolean|string)} [reloadUrl=false] - The URL from which the data should be fetched after confirming
+     * @param  {(jQuery|string)} [$table=false] - The table ID which should be reloaded on success
+     * @return {Promise<Object>} Promise object resolving to the ModalFactory object
+     */
+    submissionModalAutoGuess(url, reloadUrl=false, $table=false) {
+        let currentAction = location.pathname.split('/')[2]
+        currentAction += 'cdsc'
+        if (currentAction !== undefined) {
+            if (currentAction === 'index') {
+                return UI.submissionModalForIndex(url, reloadUrl, $table)
+            } else if (currentAction === 'view') {
+                return UI.submissionModalForSinglePage(url, reloadUrl, $table)
+            }
+        }
+        const successCallback = () => {
+                UI.toast({
+                variant: 'danger',
+                title: 'Could not reload the page',
+                body: 'Reloading the page manually is advised.'
+            })
+        }
+        return UI.submissionModal(url, successCallback)
+    }
+    
+
+    /**
+     * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the provided element after a successful operation.
+     * Supports `displayOnSuccess` option to show another modal after the submission
+     * @param  {string} url - The URL from which the modal's content should be fetched
+     * @param  {string} reloadUrl - The URL from which the data should be fetched after confirming
+     * @param  {(jQuery|string)} $reloadedElement - The element which should be reloaded on success
+     * @param  {(jQuery|string)} [$statusNode=null] - A reference to a HTML node on which the loading animation should be displayed. If not provided, $container will be used
+     * @return {Promise<Object>} Promise object resolving to the ModalFactory object
+     */
+    submissionReloaderModal(url, reloadUrl, $reloadedElement, $statusNode=null) {
+        const successCallback = function (data) {
+            UI.reload(reloadUrl, $reloadedElement, $statusNode)
             if (data.additionalData !== undefined && data.additionalData.displayOnSuccess !== undefined) {
                 UI.modal({
                     rawHtml: data.additionalData.displayOnSuccess
                 })
-            } else {
-                if (!reloaded) {
-                    location.reload()
-                }
             }
-        })
+        }
+        return UI.submissionModal(url, successCallback)
     }
 
     /**
@@ -255,9 +349,9 @@ class Toaster {
         if (options.body !== false || options.bodyHtml !== false) {
             var $toastBody
             if (options.bodyHtml !== false) {
-                $toastBody = $('<div class="toast-body"/>').html(options.mutedHtml)
+                $toastBody = $('<div class="toast-body"/>').html(options.bodyHtml)
             } else {
-                $toastBody = $('<div class="toast-body"/>').text(options.body)
+                $toastBody = $('<div class="toast-body"/>').append($('<div style="white-space: break-spaces;"/>').text(options.body))
             }
             $toast.append($toastBody)
         }
@@ -273,8 +367,15 @@ class ModalFactory {
      */
     constructor(options) {
         this.options = Object.assign({}, ModalFactory.defaultOptions, options)
-        if (this.options.rawHtml && options.POSTSuccessCallback !== undefined) {
-            this.attachSubmitButtonListener = true
+        if (options.POSTSuccessCallback !== undefined) {
+            if (this.options.rawHtml) {
+                this.attachSubmitButtonListener = true
+            } else {
+                UI.toast({
+                    variant: 'danger',
+                    bodyHtml: '<b>POSTSuccessCallback</b> can only be used in conjuction with the <i>rawHtml</i> option. Instead, use the promise instead returned by the API call in <b>APIConfirm</b>.'
+                })
+            }
         }
         if (options.type === undefined && options.cancel !== undefined) {
             this.options.type = 'confirm'
@@ -349,14 +450,14 @@ class ModalFactory {
      * @property {string} confirmText                      - The text to be placed in the confirm button
      * @property {string} cancelText                       - The text to be placed in the cancel button
      * @property {boolean} closeManually                   - If true, the modal will be closed automatically whenever a footer's button is pressed
-     * @property {boolean} closeOnSuccess                  - If true, the modal will be closed if the $FILL_ME operation is successful
+     * @property {boolean} closeOnSuccess                  - If true, the modal will be closed if the operation is successful
      * @property {ModalFactory~confirm} confirm                         - The callback that should be called if the user confirm the modal
      * @property {ModalFactory~cancel} cancel                           - The callback that should be called if the user cancel the modal
      * @property {ModalFactory~APIConfirm} APIConfirm                   - The callback that should be called if the user confirm the modal. Behaves like the confirm option but provides an AJAXApi object that can be used to issue requests
      * @property {ModalFactory~APIError} APIError                       - The callback called if the APIConfirm callback fails.
      * @property {ModalFactory~shownCallback} shownCallback             - The callback that should be called whenever the modal is shown
      * @property {ModalFactory~hiddenCallback} hiddenCallback           - The callback that should be called whenever the modal is hiddenAPIConfirm
-     * @property {ModalFactory~POSTSuccessCallback} POSTSuccessCallback - The callback that should be called if the POST operation has been a success
+     * @property {ModalFactory~POSTSuccessCallback} POSTSuccessCallback - The callback that should be called if the POST operation has been a success. Works in confunction with the `rawHtml`
      * @property {ModalFactory~POSTFailCallback} POSTFailCallback       - The callback that should be called if the POST operation has been a failure (Either the request failed or the form validation did not pass)
      */
     static defaultOptions = {
@@ -587,8 +688,11 @@ class ModalFactory {
     }
 
     /** Attach the submission click listener for modals that have been generated by raw HTML */
-    findSubmitButtonAndAddListener(clearOnclick=true) {
-        const $submitButton = this.$modal.find('.modal-footer #submitButton')
+    findSubmitButtonAndAddListener() {
+        let $submitButton = this.$modal.find('.modal-footer #submitButton')
+        if (!$submitButton[0]) {
+            $submitButton = this.$modal.find('.modal-footer .modal-confirm-button')
+        }
         if ($submitButton[0]) {
             const formID = $submitButton.data('form-id')
             let $form
@@ -597,26 +701,46 @@ class ModalFactory {
             } else {
                 $form = this.$modal.find('form')
             }
-            if (clearOnclick) {
+            if ($submitButton.data('confirmfunction') !== undefined && $submitButton.data('confirmfunction') !== '') {
+                const clickHandler = window[$submitButton.data('confirmfunction')]
+                this.options.APIConfirm = (tmpApi) => {
+                    let clickResult = clickHandler(this, tmpApi)
+                    if (clickResult !== undefined) {
+                        return clickResult
+                            .then((data) => {
+                                if (data.success) {
+                                    this.options.POSTSuccessCallback(data)
+                                } else { // Validation error
+                                    this.injectFormValidationFeedback(form, data.errors)
+                                    return Promise.reject('Validation error');
+                                }
+                            })
+                            .catch((errorMessage) => {
+                                this.options.POSTFailCallback(errorMessage)
+                                return Promise.reject(errorMessage);
+                            })
+                    }
+                }
+            } else {
                 $submitButton[0].removeAttribute('onclick')
-            }
-    
-            this.options.APIConfirm = (tmpApi) => {
-                return tmpApi.postForm($form[0])
-                    .then((data) => {
-                        if (data.success) {
-                            this.options.POSTSuccessCallback(data)
-                        } else { // Validation error
-                            this.injectFormValidationFeedback(form, data.errors)
-                            return Promise.reject('Validation error');
-                        }
-                    })
-                    .catch((errorMessage) => {
-                        this.options.POSTFailCallback(errorMessage)
-                        return Promise.reject(errorMessage);
-                    })
+                this.options.APIConfirm = (tmpApi) => {
+                    return tmpApi.postForm($form[0])
+                        .then((data) => {
+                            if (data.success) {
+                                this.options.POSTSuccessCallback(data)
+                            } else { // Validation error
+                                this.injectFormValidationFeedback(form, data.errors)
+                                return Promise.reject('Validation error');
+                            }
+                        })
+                        .catch((errorMessage) => {
+                            this.options.POSTFailCallback(errorMessage)
+                            return Promise.reject(errorMessage);
+                        })
+                }
             }
             $submitButton.click(this.getConfirmationHandlerFunction())
+    
         }
     }
 }

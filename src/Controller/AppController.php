@@ -107,6 +107,12 @@ class AppController extends Controller
         } else if ($this->ParamHandler->isRest()) {
             throw new MethodNotAllowedException(__('Invalid user credentials.'));
         }
+
+        if ($this->request->getParam('action') === 'index') {
+            $this->Security->setConfig('validatePost', false);
+        }
+        $this->Security->setConfig('unlockedActions', ['index']);
+
         $this->ACL->checkAccess();
         $this->set('menu', $this->ACL->getMenu());
         $this->set('ajax', $this->request->is('ajax'));

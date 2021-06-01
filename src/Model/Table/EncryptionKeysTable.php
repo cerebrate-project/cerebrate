@@ -18,14 +18,14 @@ class EncryptionKeysTable extends AppTable
             'Individuals',
             [
                 'foreignKey' => 'owner_id',
-                'conditions' => ['owner_type' => 'individual']
+                'conditions' => ['owner_model' => 'individual']
             ]
         );
         $this->belongsTo(
             'Organisations',
             [
                 'foreignKey' => 'owner_id',
-                'conditions' => ['owner_type' => 'organisation']
+                'conditions' => ['owner_model' => 'organisation']
             ]
         );
         $this->setDisplayField('encryption_key');
@@ -34,13 +34,13 @@ class EncryptionKeysTable extends AppTable
     public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options)
     {
         if (empty($data['owner_id'])) {
-            if (empty($data['owner_type'])) {
+            if (empty($data['owner_model'])) {
                 return false;
             }
-            if (empty($data[$data['owner_type'] . '_id'])) {
+            if (empty($data[$data['owner_model'] . '_id'])) {
                 return false;
             }
-            $data['owner_id'] = $data[$data['owner_type'] . '_id'];
+            $data['owner_id'] = $data[$data['owner_model'] . '_id'];
         }
     }
 
@@ -50,8 +50,8 @@ class EncryptionKeysTable extends AppTable
             ->notEmptyString('type')
             ->notEmptyString('encryption_key')
             ->notEmptyString('owner_id')
-            ->notEmptyString('owner_type')
-            ->requirePresence(['type', 'encryption_key', 'owner_id', 'owner_type'], 'create');
+            ->notEmptyString('owner_model')
+            ->requirePresence(['type', 'encryption_key', 'owner_id', 'owner_model'], 'create');
         return $validator;
     }
 }

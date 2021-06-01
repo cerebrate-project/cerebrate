@@ -165,7 +165,7 @@ class CRUDComponent extends Component
                 $message = __(
                     '{0} could not be added.{1}',
                     $this->ObjectAlias,
-                    empty($validationMessage) ? '' : ' ' . __('Reason:{0}', $validationMessage)
+                    empty($validationMessage) ? '' : PHP_EOL . __('Reason:{0}', $validationMessage)
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
@@ -508,7 +508,7 @@ class CRUDComponent extends Component
                     if (is_bool($contextFromField)) {
                         $contextFromFieldText = sprintf('%s: %s', $field, $contextFromField ? 'true' : 'false');
                     } else {
-                        $contextFromFieldText = $contextFromField;
+                        $contextFromFieldText = sprintf('%s: %s', $field, $contextFromField);
                     }
                     $filteringContexts[] = [
                         'label' => Inflector::humanize($contextFromFieldText),
