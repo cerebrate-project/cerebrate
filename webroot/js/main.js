@@ -66,6 +66,32 @@ function attachTestConnectionResultHtml(result, $container) {
     return $testResultDiv
 }
 
+function syntaxHighlightJson(json, indent) {
+    if (indent === undefined) {
+        indent = 2;
+    }
+    if (typeof json == 'string') {
+        json = JSON.parse(json);
+    }
+    json = JSON.stringify(json, undefined, indent);
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/(?:\r\n|\r|\n)/g, '<br>').replace(/ /g, '&nbsp;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        var cls = 'text-info';
+        if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                        cls = 'text-primary';
+                } else {
+                        cls = '';
+                }
+        } else if (/true|false/.test(match)) {
+                cls = 'text-info';
+        } else if (/null/.test(match)) {
+                cls = 'text-danger';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+}
+
 var UI
 $(document).ready(() => {
     if (typeof UIFactory !== "undefined") {
