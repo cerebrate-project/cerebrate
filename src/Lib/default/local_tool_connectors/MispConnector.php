@@ -143,6 +143,9 @@ class MispConnector extends CommonConnectorTools
         if ($response->isOk()) {
             return $response;
         } else {
+            if (!empty($params['softError'])) {
+                return $response;
+            }
             throw new NotFoundException(__('Could not retrieve the requested resource.'));
         }
     }
@@ -537,11 +540,82 @@ class MispConnector extends CommonConnectorTools
             if ($response->getStatusCode() == 200) {
                 return ['success' => 1, 'message' => __('Setting saved.')];
             } else {
-                return ['success' => 0, 'message' => __('Could not fetch the remote sharing group.')];
+                return ['success' => 0, 'message' => __('Could not save the setting.')];
             }
         }
         throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
+    }
 
+    public function encodeConnectionAction(array $params): array
+    {
+        if (empty($params['org_uuid'])) {
+            throw new MethodNotAllowedException(__('No org uuid passed, cannot encode connection.'));
+        }
+        return [];
+    }
+
+    private function getSetOrg(array $params): array
+    {
+        $params['softError'] = 1;
+        $response = $this->getData('/organisations/view/' . $params['remote_org']['uuid'], $params);
+        if ($response->isOk()) {
+            $organisation = $response->getJson()['Organisation'];
+            if (!$organisation['local']) {
+                $organisation['local'] = 1;
+                $response = $this->postData('/admin/organisations/edit/' . $organisation['id'], $params);
+                if (!$response->isOk()) {
+                    throw new MethodNotAllowedException(__('Could not update the organisation in MISP.'));
+                }
+            }
+        } else {
+            $params['body'] = [
+                'uuid' => $params['remote_org']['uuid'],
+                'name' => $params['remote_org']['name'],
+                'local' => 1
+            ];
+            $response = $this->postData('/admin/organisations/add', $params);
+            if ($response->isOk()) {
+                $organisation = $response->getJson()['Organisation'];
+            } else {
+                throw new MethodNotAllowedException(__('Could not create the organisation in MISP.'));
+            }
+        }
+        return $organisation;
+    }
+
+    private function createSyncUser(array $params): array
+    {
+        $params['softError'] = 1;
+        $username = sprintf(
+            'sync_%s@%s',
+            \Cake\Utility\Security::randomString(8),
+            parse_url($params['remote_cerebrate']['url'])['host']
+        );
+        $params['body'] = [
+            'email' => $username,
+            'org_id' => $params['misp_organisation']['id'],
+            'role_id' => empty($params['connection_settings']['role_id']) ? 5 : $params['connection_settings']['role_id'],
+            'disabled' => 1,
+            'change_pw' => 0,
+            'termsaccepted' => 1
+        ];
+        $response = $this->postData('/admin/users/add', $params);
+        if (!$response->isOk()) {
+            throw new MethodNotAllowedException(__('Could not update the organisation in MISP.'));
+        }
+        return $response->getJson()['User'];
+    }
+
+    public function connectToRemoteTool(array $params): array
+    {
+        $params['connection_settings'] = json_decode($params['connection']['settings'], true);
+        $params['misp_organisation'] = $this->getSetOrg($params);
+        $params['sync_user'] = $this->createSyncUser($params);
+        return [
+            'email' => $params['sync_user']['email'],
+            'authkey' => $params['sync_user']['authkey'],
+            'url' => $params['connection_settings']['url']
+        ];
     }
 }
 

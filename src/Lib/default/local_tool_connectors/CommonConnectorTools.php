@@ -48,6 +48,12 @@ class CommonConnectorTools
         $sharing_groups->captureSharingGroup($input);
         return true;
     }
+
+    public function encodeConnection(array $params): array
+    {
+        $result = $this->encodeConnection($params);
+        return $result;
+    }
 }
 
 ?>
