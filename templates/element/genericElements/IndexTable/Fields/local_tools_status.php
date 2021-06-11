@@ -3,7 +3,7 @@
     $output = [];
     foreach ($tools as $tool) {
         $output[] = sprintf(
-            '<a href="/localTools/view/%s">%s</a>: %s',
+            '<span class="text-nowrap"><a href="/localTools/view/%s">%s</a>: %s</span>',
             h($tool['id']),
             h($tool['name']),
             h($tool['status'])
