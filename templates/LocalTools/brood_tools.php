@@ -29,6 +29,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'name' => __('Description'),
                 'data_path' => 'description',
+            ],
+            [
+                'name' => __('Connected Local Tools'),
+                'data_path' => 'local_tool',
+                'element' => 'local_tools_status'
             ]
         ],
         'title' => __('Local tools made available by the remote Cerebrate'),

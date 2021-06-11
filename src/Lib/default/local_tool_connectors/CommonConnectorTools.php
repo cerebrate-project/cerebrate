@@ -76,7 +76,6 @@ class CommonConnectorTools
                 'created' => time(),
                 'modified' => time()
             ];
-            debug($entry);
             $data = $remoteToolConnections->patchEntity($data, $entry);
             $remoteToolConnections->save($data);
         } else {

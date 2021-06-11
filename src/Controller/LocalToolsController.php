@@ -205,6 +205,9 @@ class LocalToolsController extends AppController
     {
         $this->loadModel('Broods');
         $tools = $this->Broods->queryLocalTools($id);
+        foreach ($tools as $k => $tool) {
+            $tools[$k]['local_tools'] = $this->LocalTools->appendLocalToolConnections($id, $tool);
+        }
         if ($this->ParamHandler->isRest()) {
             return $this->RestResponse->viewData($tools, 'json');
         }

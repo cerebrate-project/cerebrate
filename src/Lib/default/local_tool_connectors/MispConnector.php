@@ -579,6 +579,12 @@ class MispConnector extends CommonConnectorTools
 
     public function finaliseConnection(array $params): bool
     {
+        $params['sync_connection'] = $this->addServer([
+            'authkey' => $params['remote_tool']['authkey'],
+            'url' => $params['remote_tool']['url'],
+            'name' => $params['remote_tool']['name'],
+            'remote_org_id' => $params['misp_organisation']['id']
+        ]);
         return true;
     }
 

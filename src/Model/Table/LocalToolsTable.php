@@ -223,4 +223,17 @@ class LocalToolsTable extends AppTable
             //'message' =>
         ];
     }
+
+    public function appendLocalToolConnections(int $brood_id, array $tool): array
+    {
+        $remoteToolConnections = \Cake\ORM\TableRegistry::getTableLocator()->get('RemoteToolConnections');
+        $connections = $remoteToolConnections->find()->where(['remote_tool_id' => $tool['id'], 'brood_id' => $brood_id])->toArray();
+        $local_tools = [];
+        foreach ($connections as $k => $connection) {
+            $temp = $this->find()->where(['id' => $connection['local_tool_id']])->select(['id', 'name'])->enableHydration(false)->first();
+            $temp['status'] = $connection['status'];
+            $local_tools[] = $temp;
+        }
+        return $local_tools;
+    }
 }
