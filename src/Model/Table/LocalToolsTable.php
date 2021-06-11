@@ -198,6 +198,13 @@ class LocalToolsTable extends AppTable
 
     public function encodeConnection(array $params): array
     {
+        $params = $this->buildConnectionParams($params);
+        $result = $params['connector'][$params['remote_tool']['connector']]->initiateConnectionWrapper($params);
+        return $result;
+    }
+
+    public function buildConnectionParams(array $params): array
+    {
         $remote_tool = $this->getRemoteToolById($params);
         $broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
         $remote_cerebrate = $broods->find()->where(['id' => $params['cerebrate_id']])->first();
@@ -207,13 +214,13 @@ class LocalToolsTable extends AppTable
         if (empty($connector[$remote_tool['connector']])) {
             throw new NotFoundException(__('No valid connector found for the remote tool.'));
         }
-        $result = $connector[$remote_tool['connector']]->connectToRemoteTool([
+        return [
             'remote_cerebrate' => $remote_cerebrate,
             'remote_org' => $remote_org,
             'remote_tool' => $remote_tool,
             'connector' => $connector,
-            'connection' => $connection
-        ]);
-        return $result;
+            'connection' => $connection,
+            //'message' =>
+        ];
     }
 }

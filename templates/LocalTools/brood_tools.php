@@ -37,8 +37,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'skip_pagination' => 1,
         'actions' => [
             [
-                'url' => '/localTools/connectionRequest',
-                'url_params_data_paths' => ['id'],
+                'open_modal' => sprintf('/localTools/connectionRequest/%s/[onclick_params_data_path]', h($id)),
+                'modal_params_data_path' => 'id',
                 'title' => 'Issue a connection request',
                 'icon' => 'plug'
             ]

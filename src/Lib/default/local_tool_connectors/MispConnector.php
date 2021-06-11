@@ -540,18 +540,46 @@ class MispConnector extends CommonConnectorTools
             if ($response->getStatusCode() == 200) {
                 return ['success' => 1, 'message' => __('Setting saved.')];
             } else {
-                return ['success' => 0, 'message' => __('Could not save the setting.')];
+                return ['success' => 0, 'message' => __('Could not update.')];
             }
         }
         throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
     }
 
-    public function encodeConnectionAction(array $params): array
+    public function initiateConnection(array $params): array
     {
-        if (empty($params['org_uuid'])) {
-            throw new MethodNotAllowedException(__('No org uuid passed, cannot encode connection.'));
-        }
-        return [];
+        $params['connection_settings'] = json_decode($params['connection']['settings'], true);
+        $params['misp_organisation'] = $this->getSetOrg($params);
+        $params['sync_user'] = $this->createSyncUser($params);
+        return [
+            'email' => $params['sync_user']['email'],
+            'authkey' => $params['sync_user']['authkey'],
+            'url' => $params['connection_settings']['url']
+        ];
+    }
+
+    public function acceptConnection(array $params): array
+    {
+        $params['sync_user_enabled'] = true;
+        $params['connection_settings'] = json_decode($params['connection']['settings'], true);
+        $params['misp_organisation'] = $this->getSetOrg($params);
+        $params['sync_user'] = $this->createSyncUser($params);
+        $params['sync_connection'] = $this->addServer([
+            'authkey' => $params['remote_tool']['authkey'],
+            'url' => $params['remote_tool']['url'],
+            'name' => $params['remote_tool']['name'],
+            'remote_org_id' => $params['misp_organisation']['id']
+        ]);
+        return [
+            'email' => $params['sync_user']['email'],
+            'authkey' => $params['sync_user']['authkey'],
+            'url' => $params['connection_settings']['url']
+        ];
+    }
+
+    public function finaliseConnection(array $params): bool
+    {
+        return true;
     }
 
     private function getSetOrg(array $params): array
@@ -586,36 +614,48 @@ class MispConnector extends CommonConnectorTools
     private function createSyncUser(array $params): array
     {
         $params['softError'] = 1;
-        $username = sprintf(
-            'sync_%s@%s',
-            \Cake\Utility\Security::randomString(8),
-            parse_url($params['remote_cerebrate']['url'])['host']
-        );
-        $params['body'] = [
-            'email' => $username,
+        $user = [
+            'email' => 'sync_%s@' . parse_url($params['remote_cerebrate']['url'])['host'],
             'org_id' => $params['misp_organisation']['id'],
             'role_id' => empty($params['connection_settings']['role_id']) ? 5 : $params['connection_settings']['role_id'],
             'disabled' => 1,
             'change_pw' => 0,
             'termsaccepted' => 1
         ];
-        $response = $this->postData('/admin/users/add', $params);
-        if (!$response->isOk()) {
-            throw new MethodNotAllowedException(__('Could not update the organisation in MISP.'));
-        }
-        return $response->getJson()['User'];
+        return $this->createUser($user, $params);
     }
 
-    public function connectToRemoteTool(array $params): array
+    private function addServer(array $params): array
     {
-        $params['connection_settings'] = json_decode($params['connection']['settings'], true);
-        $params['misp_organisation'] = $this->getSetOrg($params);
-        $params['sync_user'] = $this->createSyncUser($params);
-        return [
-            'email' => $params['sync_user']['email'],
-            'authkey' => $params['sync_user']['authkey'],
-            'url' => $params['connection_settings']['url']
-        ];
+        if (
+            empty($params['authkey']) ||
+            empty($params['url']) ||
+            empty($params['remote_org_id']) ||
+            empty($params['name'])
+        ) {
+            throw new MethodNotAllowedException(__('Required data missing from the sync connection object. The following fields are required: [name, url, authkey, org_id].'));
+        }
+        $response = $this->postData('/servers/add', $params);
+        if (!$response->isOk()) {
+            throw new MethodNotAllowedException(__('Could not add Server in MISP.'));
+        }
+        return $response->getJson()['Server'];
+    }
+
+    private function createUser(array $user, array $params): array
+    {
+        if (strpos($user['email'], '%s') !== false) {
+            $user['email'] = sprintf(
+                $user['email'],
+                \Cake\Utility\Security::randomString(8)
+            );
+        }
+        $params['body'] = $user;
+        $response = $this->postData('/admin/users/add', $params);
+        if (!$response->isOk()) {
+            throw new MethodNotAllowedException(__('Could not add the user in MISP.'));
+        }
+        return $response->getJson()['User'];
     }
 }
 
