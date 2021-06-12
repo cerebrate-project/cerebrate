@@ -82,7 +82,7 @@ class InboxController extends AppController
         $action = $request->action;
         $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
         if ($scope == 'LocalTool') {
-            $processor = $this->requestProcessor->getLocalToolProcessor($action, $request->data['toolName']);
+            $processor = $this->requestProcessor->getLocalToolProcessor($action, $request->local_tool_name);
         } else {
             $processor = $this->requestProcessor->getProcessor($scope, $action);
         }

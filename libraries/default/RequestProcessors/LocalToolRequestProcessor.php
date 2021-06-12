@@ -84,7 +84,7 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
     public function create($requestData) {
         $this->validateToolName($requestData);
         $this->validateRequestData($requestData);
-        $requestData['title'] = __('Request for {0} Inter-connection', $requestData['data']['toolName']);
+        $requestData['title'] = __('Request for {0} Inter-connection', $requestData['local_tool_name']);
         return parent::create($requestData);
     }
 
@@ -107,7 +107,7 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
         return $this->genActionResult(
             $interConnectionResult,
             $connectionSuccessfull,
-            $connectionSuccessfull ? __('Interconnection for `{0}`\'s {1} created',$requestData['origin'], '[toolname]') : __('Could not inter-connect `{0}`\'s {1}', $requestData['origin'], '[toolname]'),
+            $connectionSuccessfull ? __('Interconnection for `{0}`\'s {1} created',$requestData['origin'], $requestData['local_tool_name']) : __('Could not inter-connect `{0}`\'s {1}', $requestData['origin'], $requestData['local_tool_name']),
             []
         );
     }
@@ -137,7 +137,7 @@ class AcceptedRequestProcessor extends LocalToolRequestProcessor implements Gene
     public function create($requestData) {
         $this->validateToolName($requestData);
         $this->validateRequestData($requestData);
-        $requestData['title'] = __('Inter-connection for {0} has been accepted', $requestData['data']['toolName']);
+        $requestData['title'] = __('Inter-connection for {0} has been accepted', $requestData['local_tool_name']);
         return parent::create($requestData);
     }
 
@@ -160,7 +160,7 @@ class AcceptedRequestProcessor extends LocalToolRequestProcessor implements Gene
         return $this->genActionResult(
             $interConnectionResult,
             $connectionSuccessfull,
-            $connectionSuccessfull ? __('Interconnection for `{0}`\'s {1} finalized', $requestData['origin'], '[toolname]') : __('Could not inter-connect `{0}`\'s {1}', $requestData['origin'], '[toolname]'),
+            $connectionSuccessfull ? __('Interconnection for `{0}`\'s {1} finalized', $requestData['origin'], $requestData['local_tool_name']) : __('Could not inter-connect `{0}`\'s {1}', $requestData['origin'], $requestData['local_tool_name']),
             []
         );
     }
@@ -188,7 +188,7 @@ class DeclinedRequestProcessor extends LocalToolRequestProcessor implements Gene
     public function create($requestData) {
         $this->validateToolName($requestData);
         $this->validateRequestData($requestData);
-        $requestData['title'] = __('Declined inter-connection for {0}', $requestData['data']['toolName']);
+        $requestData['title'] = __('Declined inter-connection for {0}', $requestData['local_tool_name']);
         return parent::create($requestData);
     }
 
@@ -216,7 +216,7 @@ class DeclinedRequestProcessor extends LocalToolRequestProcessor implements Gene
         return $this->genActionResult(
             $interConnectionResult,
             $connectionSuccessfull,
-            $connectionSuccessfull ? __('Interconnection for `{0}`\'s {1} finalized', $requestData['origin'], '[toolname]') : __('Could not inter-connect `{0}`\'s {1}', $requestData['origin'], '[toolname]'),
+            $connectionSuccessfull ? __('Interconnection for `{0}`\'s {1} finalized', $requestData['origin'], $requestData['local_tool_name']) : __('Could not inter-connect `{0}`\'s {1}', $requestData['origin'], $requestData['local_tool_name']),
             []
         );
     }
