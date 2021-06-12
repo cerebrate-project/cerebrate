@@ -16,11 +16,13 @@ class LocalToolRequestProcessor extends GenericRequestProcessor
     ];
     protected $processingTemplate = 'LocalTool/GenericRequest';
     protected $Broods;
+    protected $LocalTools;
 
     public function __construct($loadFromAction=false)
     {
         parent::__construct($loadFromAction);
         $this->Broods = TableRegistry::getTableLocator()->get('Broods');
+        $this->LocalTools = TableRegistry::getTableLocator()->get('LocalTools');
     }
 
     public function create($requestData)
@@ -51,6 +53,19 @@ class LocalToolRequestProcessor extends GenericRequestProcessor
             ->where(['url' => $request['origin']])
             ->first();
         return $brood;
+    }
+
+    protected function getConnector($request)
+    {
+        try {
+            $connectorClasses = $this->LocalTools->getConnectorByToolName($request->local_tool_name);
+            if (!empty($connectorClasses)) {
+                $connector = $this->LocalTools->extractMeta($connectorClasses)[0];
+            }
+        } catch (Cake\Http\Exception\NotFoundException $e) {
+            $connector = null;
+        }
+        return $connector;
     }
 
     protected function addBaseValidatorRules($validator)
@@ -91,6 +106,7 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
     public function getViewVariables($request)
     {
         $request->brood = $this->getIssuerBrood($request);
+        $request->connector = $this->getConnector($request);
         return [
             'request' => $request,
             'progressStep' => 0,
@@ -144,6 +160,7 @@ class AcceptedRequestProcessor extends LocalToolRequestProcessor implements Gene
     public function getViewVariables($request)
     {
         $request->brood = $this->getIssuerBrood($request);
+        $request->connector = $this->getConnector($request);
         return [
             'request' => $request,
             'progressStep' => 1,
@@ -195,6 +212,7 @@ class DeclinedRequestProcessor extends LocalToolRequestProcessor implements Gene
     public function getViewVariables($request)
     {
         $request->brood = $this->getIssuerBrood($request);
+        $request->connector = $this->getConnector($request);
         return [
             'request' => $request,
             'progressStep' => 1,

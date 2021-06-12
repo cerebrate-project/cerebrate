@@ -73,6 +73,12 @@ class LocalToolsTable extends AppTable
         throw new NotFoundException(__('Invalid connector module action requested.'));
     }
 
+    public function getConnectorByToolName($toolName): array
+    {
+        $toolName = sprintf('%sConnector', ucfirst(strtolower($toolName)));
+        return $this->getConnectors($toolName);
+    }
+
     public function getConnectors(string $name = null): array
     {
         $connectors = [];

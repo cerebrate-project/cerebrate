@@ -30,13 +30,21 @@ $progress = $this->Bootstrap->progressTimeline([
 
 $table = $this->Bootstrap->table(['small' => true, 'bordered' => false, 'striped' => false, 'hover' => false], [
     'fields' => [
-        ['key' => 'data.toolName', 'label' => __('Tool Name')],
+        ['key' => 'connector', 'label' => __('Tool Name'), 'formatter' => function($connector, $row) {
+            return sprintf('<a href="%s" target="_blank">%s</a>',
+                $this->Url->build(['controller' => 'localTools', 'action' => 'viewConnector', $connector['name']]),
+                sprintf('%s (v%s)', h($connector['name']), h($connector['connector_version']))
+            );
+        }],
         ['key' => 'created', 'label' => __('Date'), 'formatter' => function($value, $row) {
             return $value->i18nFormat('yyyy-MM-dd HH:mm:ss');
         }],
         ['key' => 'origin', 'label' => __('Origin')],
         ['key' => 'brood', 'label' => __('Brood'), 'formatter' => function($brood, $row) {
-            return sprintf('<a href="%s" target="_blank">%s</a>',  $this->Url->build(['controller' => 'broods', 'action' => 'view', $brood['id']]), h($brood['name']));
+            return sprintf('<a href="%s" target="_blank">%s</a>',
+                $this->Url->build(['controller' => 'broods', 'action' => 'view', $brood['id']]),
+                h($brood['name'])
+            );
         }]
     ],
     'items' => [$request->toArray()],
