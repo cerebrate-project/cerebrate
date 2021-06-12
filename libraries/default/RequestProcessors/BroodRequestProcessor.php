@@ -10,7 +10,6 @@ class BroodRequestProcessor extends GenericRequestProcessor
     protected $description = ''; // overriden when extending
     protected $registeredActions = [
         'ToolInterconnection',
-        'OneWaySynchronization',
     ];
 
     public function __construct($loadFromAction=false) {
@@ -55,48 +54,6 @@ class ToolInterconnectionProcessor extends BroodRequestProcessor implements Gene
             $interConnectionResult,
             $connectionSuccessfull,
             $connectionSuccessfull ? __('Interconnection for `{0}` created', 'Insert tool name') : __('Could interconnect tool `{0}`.', 'Insert tool name'),
-            []
-        );
-    }
-
-    public function discard($id, $requestData)
-    {
-        return parent::discard($id, $requestData);
-    }
-}
-
-class OneWaySynchronizationProcessor extends BroodRequestProcessor implements GenericProcessorActionI {
-    public $action = 'OneWaySynchronization';
-    protected $description;
-
-    public function __construct() {
-        parent::__construct();
-        $this->description = __('Handle cerebrate connection request for another cerebrate instance');
-        $this->Broods = TableRegistry::getTableLocator()->get('Broods');
-    }
-
-    protected function addValidatorRules($validator)
-    {
-        return $validator;
-    }
-    
-    public function create($requestData) {
-        $this->validateRequestData($requestData);
-        $requestData['title'] = __('Cerebrate instance {0} requested interconnection', 'Insert cerebrate name');
-        return parent::create($requestData);
-    }
-
-    public function process($id, $requestData)
-    {
-        $connectionSuccessfull = false;
-        $interConnectionResult = [];
-        if ($connectionSuccessfull) {
-            $this->discard($id, $requestData);
-        }
-        return $this->genActionResult(
-            $interConnectionResult,
-            $connectionSuccessfull,
-            $connectionSuccessfull ? __('Interconnection with `{0}` created', 'Insert cerebrate name') : __('Could interconnect with `{0}`.', 'Insert cerebrate name'),
             []
         );
     }
