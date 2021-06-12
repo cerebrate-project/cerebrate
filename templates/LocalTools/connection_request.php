@@ -16,7 +16,12 @@
                     'field' => 'local_tool_id',
                     'options' => $dropdown,
                     'type' => 'dropdown'
-                ]
+                ],
+                [
+                    'field' => 'tool_name',
+                    'default' => $data['remoteTool']['toolName'],
+                    'type' => 'hidden'
+                ],
             ],
             'submit' => [
                 'action' => $this->request->getParam('action')

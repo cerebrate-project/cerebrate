@@ -117,6 +117,14 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
     {
         $connectionSuccessfull = false;
         $interConnectionResult = [];
+
+        $remoteCerebrate = $this->getIssuerBrood($request);
+        $connector = $this->getConnector($request);
+        $connectorResult = $connector->acceptConnection($requestData['data']);
+        $connectorResult['toolName'] = $requestData->local_tool_name;
+        $urlPath = '/inbox/createInboxEntry/LocalTool/AcceptedRequest';
+        $response = $this->Inbox->sendRequest($remoteCerebrate, $urlPath, true, $connectorResult);
+
         if ($connectionSuccessfull) {
             $this->discard($id, $requestData);
         }

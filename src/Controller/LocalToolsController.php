@@ -186,11 +186,8 @@ class LocalToolsController extends AppController
             },
             'afterFind' => function($data) {
                 foreach ($data as $connector) {
-                    $connector = [
-                        'id' => $connector['id'],
-                        'name' => $connector['name'],
-                        'connector' => $connector['connector']
-                    ];
+                    $connectorClass = array_values($this->LocalTools->getConnectorByConnectionId($connector['id']))[0];
+                    $connector['toolName'] = $connectorClass->name;
                 }
                 return $data;
             }
@@ -222,18 +219,23 @@ class LocalToolsController extends AppController
             'cerebrate_id' => $cerebrate_id,
             'remote_tool_id' => $remote_tool_id
         ];
+        $this->loadModel('Broods');
+        $remoteCerebrate = $this->Broods->find()->where(['id' => $params['cerebrate_id']])->first();
         if ($this->request->is(['post', 'put'])) {
-            $postParams = $this->ParamHandler->harvestParams(['local_tool_id']);
+            $postParams = $this->ParamHandler->harvestParams(['local_tool_id', 'tool_name']);
             if (empty($postParams['local_tool_id'])) {
                 throw new MethodNotAllowedException(__('No local tool ID supplied.'));
             }
+            if (empty($postParams['tool_name'])) {
+                throw new MethodNotAllowedException(__('No local tool name supplied.'));
+            }
             $params['local_tool_id'] = $postParams['local_tool_id'];
-            $result = $this->LocalTools->encodeConnection($params);
-            // Send message to remote inbox
-            debug($result);
+            $encodingResult = $this->LocalTools->encodeConnection($params);
+            $encodingResult['toolName'] = $tool_name;
+            $urlPath = '/inbox/createInboxEntry/LocalTool/IncomingConnectionRequest';
+            $response = $this->Inbox->sendRequest($remoteCerebrate, $urlPath, true, $encodingResult);
+            $this->redirect();
         } else {
-            $this->loadModel('Broods');
-            $remoteCerebrate = $this->Broods->find()->where(['id' => $params['cerebrate_id']])->first();
             $remoteTool = $this->LocalTools->getRemoteToolById($params);
             $local_tools = $this->LocalTools->encodeConnectionChoice($params);
             if (empty($local_tools)) {

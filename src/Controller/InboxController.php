@@ -118,7 +118,7 @@ class InboxController extends AppController
         $this->set('data', $data);
     }
 
-    public function createProcessorInboxEntry($scope, $action)
+    public function createInboxEntry($scope, $action)
     {
         if (!$this->request->is('post')) {
             throw new MethodNotAllowedException(__('Only POST method is accepted'));

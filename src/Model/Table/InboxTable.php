@@ -62,4 +62,27 @@ class InboxTable extends AppTable
 
         return $rules;
     }
+
+    public function sendRequest($brood, $urlPath, $methodPost = true, $data = []): boolean
+    {
+        $http = new Client();
+        $config = [
+            'headers' => [
+                'AUTHORIZATION' => $brood->authkey,
+                'Accept' => 'application/json'
+            ],
+            'type' => 'json'
+        ];
+        $url = $brood->url . $urlPath;
+        if ($methodPost) {
+            $response = $http->post($url, json_encode(data), $config);
+        } else {
+            $response = $http->get($brood->url, json_encode(data), $config);
+        }
+        if ($response->isOk()) {
+            return $response;
+        } else {
+            throw new NotFoundException(__('Could not post to the requested resource.'));
+        }
+    }
 }
