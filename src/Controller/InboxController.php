@@ -32,7 +32,6 @@ class InboxController extends AppController
             'contextFilters' => [
                 'fields' => [
                     'scope',
-                    'action',
                 ]
             ],
             'contain' => ['Users']
@@ -82,12 +81,16 @@ class InboxController extends AppController
         $scope = $request->scope;
         $action = $request->action;
         $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
-        $processor = $this->requestProcessor->getProcessor($request->scope, $request->action);
+        if ($scope == 'LocalTool') {
+            $processor = $this->requestProcessor->getLocalToolProcessor($action, $request->data['toolName']);
+        } else {
+            $processor = $this->requestProcessor->getProcessor($scope, $action);
+        }
         if ($this->request->is('post')) {
             $processResult = $processor->process($id, $this->request->getData());
             return $processor->genHTTPReply($this, $processResult);
         } else {
-            $renderedView = $processor->render($request);
+            $renderedView = $processor->render($request, $this->request);
             return $this->response->withStringBody($renderedView);
         }
     }
@@ -113,5 +116,35 @@ class InboxController extends AppController
             }
         }
         $this->set('data', $data);
+    }
+
+    public function createProcessorInboxEntry($scope, $action)
+    {
+        if (!$this->request->is('post')) {
+            throw new MethodNotAllowedException(__('Only POST method is accepted'));
+        }
+        $entryData = [
+            'origin' => $this->request->clientIp(),
+            'user_id' => $this->ACL->getUser()['id'],
+        ];
+        $entryData['data'] = $this->request->data ?? [];
+        // $entryData['data'] = [
+        //     'toolName' => 'MISP',
+        //     'url' => 'http://localhost:8000',
+        //     'email' => 'admin@admin.test',
+        //     'authkey' => 'DkM9fEfwrG8Bg3U0ncKamocIutKt5YaUFuxzsB6b',
+        // ];
+        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
+        if ($scope == 'LocalTool') {
+            if (empty($entryData['data']['toolName']) || empty($entryData['data']['url'])) {
+                throw new MethodNotAllowedException(__('Could not create entry. Tool name or URL is missing'));
+            }
+            $entryData['origin'] = $entryData['data']['url'];
+            $processor = $this->requestProcessor->getLocalToolProcessor($action, $entryData['data']['toolName']);
+        } else {
+            $processor = $this->requestProcessor->getProcessor($scope, $action);
+        }
+        $creationResult = $this->requestProcessor->createInboxEntry($processor, $entryData);
+        return $processor->genHTTPReply($this, $creationResult);
     }
 }
