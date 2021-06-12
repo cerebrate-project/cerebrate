@@ -64,7 +64,7 @@ class GenericRequestProcessor
         return $this->processingTemplate;
     }
 
-    public function render($request=[])
+    public function render($request=[], Cake\Http\ServerRequest $serverRequest)
     {
         $processingTemplate = $this->getProcessingTemplate();
         $viewVariables = $this->getViewVariables($request);
@@ -73,6 +73,7 @@ class GenericRequestProcessor
             ->setClassName('Monad')
             ->setTemplate($processingTemplate);
         $view = $builder->build($viewVariables);
+        $view->setRequest($serverRequest);
         return $view->render();
     }
 
