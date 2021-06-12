@@ -105,27 +105,13 @@ class InboxController extends AppController
                 $data[] = [
                     'enabled' => $processor->enabled,
                     'scope' => $scope,
-                    'action' => $processor->action
+                    'action' => $processor->action,
+                    'description' => isset($processor->getDescription) ? $processor->getDescription() : null,
+                    'notice' => $processor->notice ?? null,
+                    'error' => $processor->error ?? null,
                 ];
             }
         }
-        $this->set('title', 'Available request processors');
-        $this->set('fields', [
-            [
-                'name' => 'Enabled',
-                'data_path' => 'enabled',
-                'element' => 'boolean'
-            ],
-            [
-                'name' => 'Processor scope',
-                'data_path' => 'scope',
-            ],
-            [
-                'name' => 'Processor action',
-                'data_path' => 'action',
-            ]
-        ]);
         $this->set('data', $data);
-        $this->render('/genericTemplates/index_simple');
     }
 }

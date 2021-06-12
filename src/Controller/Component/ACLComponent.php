@@ -662,6 +662,11 @@ class ACLComponent extends Component
                             'actions' => ['delete', 'edit', 'view'],
                             'skipTopMenu' => 1,
                             'popup' => 1
+                        ],
+                        'listProcessors' => [
+                            'url' => '/inbox/listProcessors',
+                            'label' => __('List Request Processors'),
+                            'skipTopMenu' => 1
                         ]
                     ]
                 ],
