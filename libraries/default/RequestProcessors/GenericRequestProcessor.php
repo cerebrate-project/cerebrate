@@ -17,14 +17,19 @@ class GenericRequestProcessor
     protected $Inbox;
     protected $registeredActions = [];
     protected $validator;
-    private $processingTemplate = '/genericTemplates/confirm';
-    private $processingTemplatesDirectory = ROOT . '/libraries/default/RequestProcessors/templates';
+    protected $processingTemplate = '/genericTemplates/confirm';
+    protected $processingTemplatesDirectory = ROOT . '/libraries/default/RequestProcessors/templates';
 
     public function __construct($registerActions=false) {
         $this->Inbox = TableRegistry::getTableLocator()->get('Inbox');
         if ($registerActions) {
             $this->registerActionInProcessor();
         }
+        $this->assignProcessingTemplate();
+    }
+
+    private function assignProcessingTemplate()
+    {
         $processingTemplatePath = $this->getProcessingTemplatePath();
         $file = new File($this->processingTemplatesDirectory . DS . $processingTemplatePath);
         if ($file->exists()) {
@@ -41,14 +46,16 @@ class GenericRequestProcessor
     {
         return $this->scope;
     }
-
-    private function getProcessingTemplatePath()
+    public function getDescription()
     {
-        $class = str_replace('RequestProcessor', '', get_parent_class($this));
-        $action = strtolower(str_replace('Processor', '', get_class($this)));
+        return $this->description ?? '';
+    }
+
+    protected function getProcessingTemplatePath()
+    {
         return sprintf('%s/%s.php',
-            $class,
-            $action
+            $this->scope,
+            $this->action
         );
     }
 
