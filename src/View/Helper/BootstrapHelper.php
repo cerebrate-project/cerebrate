@@ -42,12 +42,15 @@
 namespace App\View\Helper;
 
 use Cake\View\Helper;
+use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 use Cake\Utility\Security;
 use InvalidArgumentException;
 
 class BootstrapHelper extends Helper
 {
+    public $helpers = ['FontAwesome'];
+
     public function tabs($options)
     {
         $bsTabs = new BootstrapTabs($options);
@@ -80,14 +83,44 @@ class BootstrapHelper extends Helper
 
     public function modal($options)
     {
-        $bsButton = new BoostrapModal($options);
-        return $bsButton->modal();
+        $bsModal = new BoostrapModal($options);
+        return $bsModal->modal();
+    }
+
+    public function progress($options)
+    {
+        $bsProgress = new BoostrapProgress($options);
+        return $bsProgress->progress();
+    }
+
+    public function collapse($options, $content)
+    {
+        $bsCollapse = new BoostrapCollapse($options, $content, $this);
+        return $bsCollapse->collapse();
+    }
+
+    public function progressTimeline($options)
+    {
+        $bsProgressTimeline = new BoostrapProgressTimeline($options, $this);
+        return $bsProgressTimeline->progressTimeline();
     }
 }
 
 class BootstrapGeneric
 {
     public static $variants = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'];
+    public static $textClassByVariants = [
+        'primary' => 'text-white',
+        'secondary' => 'text-white',
+        'success' => 'text-white',
+        'danger' => 'text-white',
+        'warning' => 'text-black',
+        'info' => 'text-white',
+        'light' => 'text-black',
+        'dark' => 'text-white',
+        'white' => 'text-black',
+        'transparent' => 'text-black'
+    ];
     protected $allowedOptionValues = [];
     protected $options = [];
 
@@ -145,6 +178,11 @@ class BootstrapGeneric
         ], BootstrapGeneric::genNode('span', [
             'arial-hidden' => 'true'
         ], '&times;'));
+    }
+
+    protected static function getTextClassForVariant($variant)
+    {
+        return !empty(self::$textClassByVariants[$variant]) ? self::$textClassByVariants[$variant] : 'text-black';
     }
 }
 
@@ -543,7 +581,7 @@ class BoostrapTable extends BootstrapGeneric {
                 } else {
                     $key = $field;
                 }
-                $cellValue = $row[$key];
+                $cellValue = Hash::get($row, $key);
                 $html .= $this->genCell($cellValue, $field, $row);
             }
         } else { // indexed array
@@ -854,5 +892,236 @@ class BoostrapModal extends BootstrapGeneric {
             ]
         ]))->button();
         return $buttonCancel . $buttonConfirm;
+    }
+}
+
+class BoostrapProgress extends BootstrapGeneric {
+    private $defaultOptions = [
+        'value' => 0,
+        'total' => 100,
+        'text' => '',
+        'title' => '',
+        'variant' => 'primary',
+        'height' => '',
+        'striped' => false,
+        'animated' => false,
+        'label' => true
+    ];
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+        ];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function progress()
+    {
+        return $this->genProgress();
+    }
+
+    private function genProgress()
+    {
+        $percentage = round(100 * $this->options['value'] / $this->options['total']);
+        $heightStyle = !empty($this->options['height']) ? sprintf('height: %s;', h($this->options['height'])) : '';
+        $widthStyle = sprintf('width: %s%%;', $percentage);
+        $label = $this->options['label'] ? "{$percentage}%" : '';
+        $pb  = $this->genNode('div', [
+            'class' => [
+                'progress-bar',
+                "bg-{$this->options['variant']}",
+                $this->options['striped'] ? 'progress-bar-striped' : '',
+                $this->options['animated'] ? 'progress-bar-animated' : '',
+            ],
+            'role' => "progressbar",
+            'aria-valuemin' => "0", 'aria-valuemax' => "100",'aria-valuenow' => $percentage,
+            'style' => "${widthStyle}",
+            'title' => $this->options['title']
+        ], $label);
+        $container = $this->genNode('div', [
+            'class' => [
+                'progress',
+            ],
+            'style' => "${heightStyle}",
+            'title' => h($this->options['title']),
+        ], $pb);
+        return $container;
+    }
+}
+
+class BoostrapCollapse extends BootstrapGeneric {
+    private $defaultOptions = [
+        'text' => '',
+        'open' => false,
+    ];
+
+    function __construct($options, $content, $btHelper) {
+        $this->allowedOptionValues = [];
+        $this->processOptions($options);
+        $this->content = $content;
+        $this->btHelper = $btHelper;
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function collapse()
+    {
+        return $this->genCollapse();
+    }
+
+    private function genControl()
+    {
+        $html = $this->genNode('a', [
+            'class' => ['text-decoration-none'],
+            'data-toggle' => 'collapse',
+            'href' => '#collapseExample',
+            'role' => 'button',
+            'aria-expanded' => 'false',
+            'aria-controls' => 'collapseExample',
+        ], h($this->options['title']));
+        return $html;
+    }
+
+    private function genContent()
+    {
+        $content = $this->genNode('div', [
+            'class' => 'card',
+        ], $this->content);
+        $container = $this->genNode('div', [
+            'class' => ['collapse', $this->options['open'] ? 'show' : ''],
+            'id' => 'collapseExample',
+        ], $content);
+        return $container;
+    }
+
+    private function genCollapse()
+    {
+        $html = $this->genControl();
+        $html .= $this->genContent();
+        return $html;
+    }
+}
+
+class BoostrapProgressTimeline extends BootstrapGeneric {
+    private $defaultOptions = [
+        'steps' => [],
+        'selected' => 0,
+        'variant' => 'info',
+        'variantInactive' => 'secondary',
+    ];
+
+    function __construct($options, $btHelper) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+            'variantInactive' => BootstrapGeneric::$variants,
+        ];
+        $this->processOptions($options);
+        $this->btHelper = $btHelper;
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function progressTimeline()
+    {
+        return $this->genProgressTimeline();
+    }
+
+    private function getStepIcon($step, $i, $nodeActive, $lineActive)
+    {
+        $icon = $this->genNode('b', [
+            'class' => [
+                !empty($step['icon']) ? h($this->btHelper->FontAwesome->getClass($step['icon'])) : '',
+                $this->getTextClassForVariant($this->options['variant'])
+            ],
+        ], empty($step['icon']) ? h($i+1) : '');
+        $iconContainer = $this->genNode('span', [
+            'class' => [
+                'd-flex', 'align-items-center', 'justify-content-center',
+                'rounded-circle',
+                $nodeActive ? "bg-{$this->options['variant']}" : "bg-{$this->options['variantInactive']}"
+            ],
+            'style' => 'width:50px; height:50px'
+        ], $icon);
+        $li = $this->genNode('li', [
+            'class' => [
+                'd-flex', 'flex-column',
+                $nodeActive ? 'progress-active' : 'progress-inactive',
+            ],
+        ], $iconContainer);
+        $html = $li . $this->getHorizontalLine($i, $nodeActive, $lineActive);
+        return $html;
+    }
+
+    private function getHorizontalLine($i, $nodeActive, $lineActive)
+    {
+        $stepCount = count($this->options['steps']);
+        if ($i == $stepCount-1) {
+            return '';
+        }
+        $progressBar = (new BoostrapProgress([
+            'label' => false,
+            'value' => $nodeActive ? ($lineActive ? 100 : 50) : 0,
+            'height' => '2px',
+            'variant' => $this->options['variant']
+        ]))->progress();
+        $line = $this->genNode('span', [
+            'class' => [
+                'progress-line',
+                'flex-grow-1', 'align-self-center',
+                $lineActive ? "bg-{$this->options['variant']}" : ''
+            ],
+        ], $progressBar);
+        return $line;
+    }
+
+    private function getStepText($step, $isActive)
+    {
+        return $this->genNode('li', [
+            'class' => [
+                'text-center',
+                'font-weight-bold',
+                $isActive ? 'progress-active' : 'progress-inactive',
+            ],
+        ], h($step['text'] ?? ''));
+    }
+
+    private function genProgressTimeline()
+    {
+        $iconLis = '';
+        $textLis = '';
+        foreach ($this->options['steps'] as $i => $step) {
+            $nodeActive = $i <= $this->options['selected'];
+            $lineActive = $i < $this->options['selected'];
+            $iconLis .= $this->getStepIcon($step, $i, $nodeActive, $lineActive);
+            $textLis .= $this->getStepText($step, $nodeActive);
+        }
+        $ulIcons = $this->genNode('ul', [
+            'class' => [
+                'd-flex', 'justify-content-around',
+            ],
+        ], $iconLis);
+        $ulText = $this->genNode('ul', [
+            'class' => [
+                'd-flex', 'justify-content-between',
+            ],
+        ], $textLis);
+        $html = $this->genNode('div', [
+            'class' => ['progress-timeline']
+        ], $ulIcons . $ulText);
+        return $html;
     }
 }

@@ -42,6 +42,12 @@ class UIFactory {
             theModal.show()
             theModal.$modal.data('modalObject', theModal)
             return theModal
+        }).catch((error) => {
+            UI.toast({
+                variant: 'danger',
+                title: 'Error while loading the processor',
+                body: error.message
+            })
         })
     }
 
