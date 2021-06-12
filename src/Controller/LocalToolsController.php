@@ -205,10 +205,45 @@ class LocalToolsController extends AppController
     {
         $this->loadModel('Broods');
         $tools = $this->Broods->queryLocalTools($id);
+        foreach ($tools as $k => $tool) {
+            $tools[$k]['local_tools'] = $this->LocalTools->appendLocalToolConnections($id, $tool);
+        }
         if ($this->ParamHandler->isRest()) {
             return $this->RestResponse->viewData($tools, 'json');
         }
+        $this->set('id', $id);
         $this->set('data', $tools);
         $this->set('metaGroup', 'Administration');
+    }
+
+    public function connectionRequest($cerebrate_id, $remote_tool_id)
+    {
+        $params = [
+            'cerebrate_id' => $cerebrate_id,
+            'remote_tool_id' => $remote_tool_id
+        ];
+        if ($this->request->is(['post', 'put'])) {
+            $postParams = $this->ParamHandler->harvestParams(['local_tool_id']);
+            if (empty($postParams['local_tool_id'])) {
+                throw new MethodNotAllowedException(__('No local tool ID supplied.'));
+            }
+            $params['local_tool_id'] = $postParams['local_tool_id'];
+            $result = $this->LocalTools->encodeConnection($params);
+            // Send message to remote inbox
+            debug($result);
+        } else {
+            $this->loadModel('Broods');
+            $remoteCerebrate = $this->Broods->find()->where(['id' => $params['cerebrate_id']])->first();
+            $remoteTool = $this->LocalTools->getRemoteToolById($params);
+            $local_tools = $this->LocalTools->encodeConnectionChoice($params);
+            if (empty($local_tools)) {
+                throw new NotFoundException(__('No local equivalent tool found.'));
+            }
+            $this->set('data', [
+                'remoteCerebrate' => $remoteCerebrate,
+                'remoteTool' => $remoteTool,
+                'local_tools' => $local_tools
+            ]);
+        }
     }
 }

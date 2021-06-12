@@ -29,6 +29,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'name' => __('Description'),
                 'data_path' => 'description',
+            ],
+            [
+                'name' => __('Connected Local Tools'),
+                'data_path' => 'local_tool',
+                'element' => 'local_tools_status'
             ]
         ],
         'title' => __('Local tools made available by the remote Cerebrate'),
@@ -37,8 +42,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'skip_pagination' => 1,
         'actions' => [
             [
-                'url' => '/localTools/connectionRequest',
-                'url_params_data_paths' => ['id'],
+                'open_modal' => sprintf('/localTools/connectionRequest/%s/[onclick_params_data_path]', h($id)),
+                'modal_params_data_path' => 'id',
                 'title' => 'Issue a connection request',
                 'icon' => 'plug'
             ]

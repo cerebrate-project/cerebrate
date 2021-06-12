@@ -166,4 +166,74 @@ class LocalToolsTable extends AppTable
         }
         return $children;
     }
+
+    public function getRemoteToolById($params) {
+        $broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
+        $tools = $broods->queryLocalTools($params['cerebrate_id']);
+        $remoteTool = [];
+        foreach ($tools as $tool) {
+            if ($tool['id'] === intval($params['remote_tool_id'])) {
+                $remoteTool = $tool;
+            }
+        }
+        if (empty($remoteTool)) {
+            throw new NotFoundException(__('Invalid remote tool specified.'));
+        }
+        return $remoteTool;
+    }
+
+    public function encodeConnectionChoice(array $params): array
+    {
+        $remoteTool = $this->getRemoteToolById($params);
+        $connections = $this->find()->where(['connector' => $remoteTool['connector']])->toArray();
+        $results = [];
+        foreach ($connections as $connection) {
+            $results[] = [
+                'id' => $connection->id,
+                'name' => $connection->name
+            ];
+        }
+        return $results;
+    }
+
+    public function encodeConnection(array $params): array
+    {
+        $params = $this->buildConnectionParams($params);
+        $result = $params['connector'][$params['remote_tool']['connector']]->initiateConnectionWrapper($params);
+        return $result;
+    }
+
+    public function buildConnectionParams(array $params): array
+    {
+        $remote_tool = $this->getRemoteToolById($params);
+        $broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
+        $remote_cerebrate = $broods->find()->where(['id' => $params['cerebrate_id']])->first();
+        $connector = $this->getConnectors($remote_tool['connector']);
+        $connection = $this->find()->where(['id' => $params['local_tool_id']])->first();
+        $remote_org = $broods->Organisations->find()->where(['id' => $remote_cerebrate['organisation_id']])->first();
+        if (empty($connector[$remote_tool['connector']])) {
+            throw new NotFoundException(__('No valid connector found for the remote tool.'));
+        }
+        return [
+            'remote_cerebrate' => $remote_cerebrate,
+            'remote_org' => $remote_org,
+            'remote_tool' => $remote_tool,
+            'connector' => $connector,
+            'connection' => $connection,
+            //'message' =>
+        ];
+    }
+
+    public function appendLocalToolConnections(int $brood_id, array $tool): array
+    {
+        $remoteToolConnections = \Cake\ORM\TableRegistry::getTableLocator()->get('RemoteToolConnections');
+        $connections = $remoteToolConnections->find()->where(['remote_tool_id' => $tool['id'], 'brood_id' => $brood_id])->toArray();
+        $local_tools = [];
+        foreach ($connections as $k => $connection) {
+            $temp = $this->find()->where(['id' => $connection['local_tool_id']])->select(['id', 'name'])->enableHydration(false)->first();
+            $temp['status'] = $connection['status'];
+            $local_tools[] = $temp;
+        }
+        return $local_tools;
+    }
 }
