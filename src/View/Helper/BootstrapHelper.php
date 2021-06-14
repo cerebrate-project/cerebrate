@@ -768,7 +768,7 @@ class BoostrapModal extends BootstrapGeneric {
     function __construct($options) {
         $this->allowedOptionValues = [
             'size' => ['sm', 'lg', 'xl', ''],
-            'type' => ['ok-only','confirm','confirm-success','confirm-warning','confirm-danger'],
+            'type' => ['ok-only','confirm','confirm-success','confirm-warning','confirm-danger', 'custom'],
             'variant' =>  array_merge(BootstrapGeneric::$variants, ['']),
         ];
         $this->processOptions($options);
@@ -834,7 +834,10 @@ class BoostrapModal extends BootstrapGeneric {
 
     private function genFooter()
     {
-        $footer = $this->openNode('div', ['class' => array_merge(['modal-footer'], $this->options['footerClass'])]);
+        $footer = $this->openNode('div', [
+            'class' => array_merge(['modal-footer'], $this->options['footerClass']),
+            'data-custom-footer' => $this->options['type'] == 'custom'
+        ]);
         if (!empty($this->options['footerHtml'])) {
             $footer .= $this->options['footerHtml'];
         } else {
@@ -849,6 +852,8 @@ class BoostrapModal extends BootstrapGeneric {
             return $this->getFooterOkOnly();
         } else if (str_contains($this->options['type'], 'confirm')) {
             return $this->getFooterConfirm();
+        } else if ($this->options['type'] == 'custom') {
+            return $this->getFooterCustom();
         } else {
             return $this->getFooterOkOnly();
         }
@@ -892,6 +897,23 @@ class BoostrapModal extends BootstrapGeneric {
             ]
         ]))->button();
         return $buttonCancel . $buttonConfirm;
+    }
+
+    private function getFooterCustom()
+    {
+        $buttons = [];
+        foreach ($this->options['footerButtons'] as $buttonConfig) {
+            $buttons[] = (new BoostrapButton([
+                'variant' => h($buttonConfig['variant'] ?? 'primary'),
+                'text' => h($buttonConfig['text']),
+                'class' => 'modal-confirm-button',
+                'params' => [
+                    'data-dismiss' => !empty($buttonConfig['clickFunction']) ? '' : 'modal',
+                    'data-clickFunction' => sprintf('%s', $buttonConfig['clickFunction'])
+                ]
+            ]))->button();
+        }
+        return implode('', $buttons);
     }
 }
 
