@@ -18,6 +18,12 @@
         );
     } else {
         $data = h($data);
+        if (!empty($field['options'])) {
+            $options = $this->Hash->extract($row, $field['options']);
+            if (!empty($options)) {
+                $data = h($options[$data]);
+            }
+        }
         if (!empty($field['privacy'])) {
             $data = sprintf(
                 '<span class="privacy-value" data-hidden-value="%s">****************************************</span> <i class="privacy-toggle fas fa-eye useCursorPointer"></i>',
