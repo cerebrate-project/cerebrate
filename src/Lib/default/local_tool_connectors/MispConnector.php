@@ -104,13 +104,20 @@ class MispConnector extends CommonConnectorTools
     {
         $settings = json_decode($connection->settings, true);
         $http = new Client();
-        $response = $http->post($settings['url'] . '/users/view/me.json', '{}', [
-            'headers' => [
-                'AUTHORIZATION' => $settings['authkey'],
-                'Accept' => 'Application/json',
-                'Content-type' => 'Application/json'
-             ]
-        ]);
+        try {
+            $response = $http->post($settings['url'] . '/users/view/me.json', '{}', [
+                'headers' => [
+                    'AUTHORIZATION' => $settings['authkey'],
+                    'Accept' => 'Application/json',
+                    'Content-type' => 'Application/json'
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return [
+                'status' => 0,
+                'message' => __('Connection issue.')
+            ];
+        }
         $responseCode = $response->getStatusCode();
         if ($response->isOk()) {
             $status = 1;
