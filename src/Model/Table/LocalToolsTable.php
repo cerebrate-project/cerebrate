@@ -206,6 +206,7 @@ class LocalToolsTable extends AppTable
     {
         $params = $this->buildConnectionParams($params);
         $result = $params['connector'][$params['remote_tool']['connector']]->initiateConnectionWrapper($params);
+        $this->sendEncodedConnection($params['remote_cerebrate'], $params['remote_tool']['connector'], $result);
         return $result;
     }
 
@@ -241,5 +242,14 @@ class LocalToolsTable extends AppTable
             $local_tools[] = $temp;
         }
         return $local_tools;
+    }
+
+    public function sendEncodedConnection($remoteCerebrate, $connectorName, $encodedConnection)
+    {
+        $encodedConnection['connectorName'] = $connectorName;
+        $encodedConnection['cerebrateURL'] = Configure::read('App.fullBaseUrl');
+        $urlPath = '/inbox/createInboxEntry/LocalTool/IncomingConnectionRequest';
+        $response = $this->Inbox->sendRequest($remoteCerebrate, $urlPath, true, $encodedConnection);
+        // If sending failed: Modify state + add entry in outbox
     }
 }

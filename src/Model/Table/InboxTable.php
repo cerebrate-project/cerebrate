@@ -7,6 +7,7 @@ use Cake\Database\Type;
 use Cake\ORM\Table;
 use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
+use Cake\Http\Exception\NotFoundException;
 
 Type::map('json', 'Cake\Database\Type\JsonType');
 
@@ -44,7 +45,7 @@ class InboxTable extends AppTable
             ->notEmptyString('title')
             ->notEmptyString('origin')
             ->datetime('created')
- 
+
             ->requirePresence([
                 'scope' => ['message' => __('The field `scope` is required')],
                 'action' => ['message' => __('The field `action` is required')],
@@ -84,5 +85,28 @@ class InboxTable extends AppTable
         } else {
             throw new NotFoundException(__('Could not post to the requested resource.'));
         }
+    }
+
+    public function checkUserBelongsToBroodOwnerOrg($user, $entryData) {
+        $this->Broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
+        $this->Individuals = \Cake\ORM\TableRegistry::getTableLocator()->get('Individuals');
+        $errors = [];
+        $brood = $this->Broods->find()
+            ->where(['url' => $entryData['origin']])
+            ->first();
+        if (empty($brood)) {
+            $errors[] = __('Unkown brood `{0}`', $entryData['data']['cerebrateURL']);
+        }
+        
+        $found = false;
+        foreach ($user->individual->organisations as $organisations) {
+            if ($organisations->id == $brood->organisation_id) {
+                $found = true;
+            }
+        }
+        if (!$found) {
+            $errors[] = __('User is not part of the brood organisation');
+        }
+        return $errors;
     }
 }

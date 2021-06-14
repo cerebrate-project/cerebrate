@@ -6,6 +6,7 @@ use App\Controller\AppController;
 use Cake\Database\Expression\QueryExpression;
 use Cake\Event\EventInterface;
 use Cake\ORM\TableRegistry;
+use Cake\Utility\Inflector;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use Cake\Http\Exception\NotFoundException;
@@ -59,7 +60,7 @@ class InboxController extends AppController
     public function delete($id)
     {
         if ($this->request->is('post')) {
-            $request = $this->Inbox->get($id);
+            $request = $this->Inbox->get($id, ['contain' => ['Users' => ['Individuals' => ['Alignments' => 'Organisations']]]]);
             $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
             $processor = $this->requestProcessor->getProcessor($request->scope, $request->action);
             $discardResult = $processor->discard($id, $request);
@@ -77,7 +78,7 @@ class InboxController extends AppController
 
     public function process($id)
     {
-        $request = $this->Inbox->get($id);
+        $request = $this->Inbox->get($id, ['contain' => ['Users' => ['Individuals' => ['Alignments' => 'Organisations']]]]);
         $scope = $request->scope;
         $action = $request->action;
         $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
@@ -129,22 +130,33 @@ class InboxController extends AppController
         ];
         $entryData['data'] = $this->request->data ?? [];
         // $entryData['data'] = [
-        //     'toolName' => 'MISP',
-        //     'url' => 'http://localhost:8000',
+        //     'connectorName' => 'MispConnector',
+        //     'cerebrateURL' => 'http://localhost:8000',
+        //     'url' => 'https://localhost:8443',
         //     'email' => 'admin@admin.test',
         //     'authkey' => 'DkM9fEfwrG8Bg3U0ncKamocIutKt5YaUFuxzsB6b',
         // ];
         $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
         if ($scope == 'LocalTool') {
-            if (empty($entryData['data']['toolName']) || empty($entryData['data']['url'])) {
-                throw new MethodNotAllowedException(__('Could not create entry. Tool name or URL is missing'));
+            $this->validateLocalToolRequestEntry($entryData);
+            $entryData['origin'] = $entryData['data']['cerebrateURL'];
+            $processor = $this->requestProcessor->getLocalToolProcessor($action, $entryData['data']['connectorName']);
+            $errors = $this->Inbox->checkUserBelongsToBroodOwnerOrg($this->ACL->getUser(), $entryData);
+            if (!empty($errors)) {
+                $message = __('Could not create inbox message');
+                return $this->RestResponse->ajaxFailResponse(Inflector::singularize($this->Inbox->getAlias()), 'createInboxEntry', [], $message, $errors);
             }
-            $entryData['origin'] = $entryData['data']['url'];
-            $processor = $this->requestProcessor->getLocalToolProcessor($action, $entryData['data']['toolName']);
         } else {
             $processor = $this->requestProcessor->getProcessor($scope, $action);
         }
         $creationResult = $this->requestProcessor->createInboxEntry($processor, $entryData);
         return $processor->genHTTPReply($this, $creationResult);
+    }
+
+    private function validateLocalToolRequestEntry($entryData)
+    {
+        if (empty($entryData['data']['connectorName']) || empty($entryData['data']['cerebrateURL'])) {
+            throw new MethodNotAllowedException(__('Could not create entry. Tool name or URL is missing'));
+        }
     }
 }

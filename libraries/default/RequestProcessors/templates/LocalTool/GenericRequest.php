@@ -50,22 +50,38 @@ $footerButtons[] = [
 
 $table = $this->Bootstrap->table(['small' => true, 'bordered' => false, 'striped' => false, 'hover' => false], [
     'fields' => [
+        ['key' => 'created', 'label' => __('Date'), 'formatter' => function($value, $row) {
+            return $value->i18nFormat('yyyy-MM-dd HH:mm:ss');
+        }],
         ['key' => 'connector', 'label' => __('Tool Name'), 'formatter' => function($connector, $row) {
             return sprintf('<a href="%s" target="_blank">%s</a>',
                 $this->Url->build(['controller' => 'localTools', 'action' => 'viewConnector', $connector['name']]),
                 sprintf('%s (v%s)', h($connector['name']), h($connector['connector_version']))
             );
         }],
-        ['key' => 'created', 'label' => __('Date'), 'formatter' => function($value, $row) {
-            return $value->i18nFormat('yyyy-MM-dd HH:mm:ss');
-        }],
-        ['key' => 'origin', 'label' => __('Origin')],
         ['key' => 'brood', 'label' => __('Brood'), 'formatter' => function($brood, $row) {
             return sprintf('<a href="%s" target="_blank">%s</a>',
                 $this->Url->build(['controller' => 'broods', 'action' => 'view', $brood['id']]),
                 h($brood['name'])
             );
-        }]
+        }],
+        ['key' => 'individual', 'label' => __('Individual'), 'formatter' => function($individual, $row) {
+            return sprintf('<a href="%s" target="_blank">%s</a>',
+                $this->Url->build(['controller' => 'users', 'action' => 'view', $individual['id']]),
+                h($individual['email'])
+            );
+        }],
+        ['key' => 'individual.alignments', 'label' => __('Alignment'), 'formatter' => function($alignments, $row) {
+            $html = '';
+            foreach ($alignments as $alignment) {
+                $html .= sprintf('<div class="text-nowrap"><b>%s</b> @ <a href="%s" target="_blank">%s</a></div>',
+                    h($alignment['type']),
+                    $this->Url->build(['controller' => 'users', 'action' => 'view', $alignment['organisation']['id']]),
+                    h($alignment['organisation']['name'])
+                );
+            }
+            return $html;
+        }],
     ],
     'items' => [$request->toArray()],
 ]);
@@ -103,8 +119,8 @@ $bodyHtml = sprintf('<div class="py-2"><div>%s</div>%s</div><div class="d-none">
 );
 
 echo $this->Bootstrap->modal([
-    'title' => __('Interconnection Request for {0}', h($request->data['toolName'])),
-    'size' => 'lg',
+    'title' => __('Interconnection Request for {0}', h($request->local_tool_connector_name)),
+    'size' => 'xl',
     'type' => 'custom',
     'bodyHtml' => sprintf('<div class="p-3">%s</div><div class="description-container">%s</div>',
         $progress,

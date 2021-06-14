@@ -186,8 +186,9 @@ class LocalToolsController extends AppController
             },
             'afterFind' => function($data) {
                 foreach ($data as $connector) {
-                    $connectorClass = array_values($this->LocalTools->getConnectorByConnectionId($connector['id']))[0];
-                    $connector['toolName'] = $connectorClass->name;
+                    $connectorById = $this->LocalTools->getConnectorByConnectionId($connector['id'])
+                    $className = array_keys($connectorById)[0];
+                    $connector['connectorName'] = $className;
                 }
                 return $data;
             }
@@ -222,18 +223,12 @@ class LocalToolsController extends AppController
         $this->loadModel('Broods');
         $remoteCerebrate = $this->Broods->find()->where(['id' => $params['cerebrate_id']])->first();
         if ($this->request->is(['post', 'put'])) {
-            $postParams = $this->ParamHandler->harvestParams(['local_tool_id', 'tool_name']);
+            $postParams = $this->ParamHandler->harvestParams(['local_tool_id']);
             if (empty($postParams['local_tool_id'])) {
                 throw new MethodNotAllowedException(__('No local tool ID supplied.'));
             }
-            if (empty($postParams['tool_name'])) {
-                throw new MethodNotAllowedException(__('No local tool name supplied.'));
-            }
             $params['local_tool_id'] = $postParams['local_tool_id'];
             $encodingResult = $this->LocalTools->encodeConnection($params);
-            $encodingResult['toolName'] = $tool_name;
-            $urlPath = '/inbox/createInboxEntry/LocalTool/IncomingConnectionRequest';
-            $response = $this->Inbox->sendRequest($remoteCerebrate, $urlPath, true, $encodingResult);
             $this->redirect();
         } else {
             $remoteTool = $this->LocalTools->getRemoteToolById($params);

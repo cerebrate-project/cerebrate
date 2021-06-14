@@ -1,6 +1,7 @@
 <?php
 use Cake\ORM\TableRegistry;
 use Cake\Filesystem\File;
+use Cake\Http\Exception\NotFoundException;
 
 require_once(ROOT . DS . 'libraries' . DS . 'default' . DS . 'RequestProcessors' . DS . 'GenericRequestProcessor.php'); 
 
@@ -30,9 +31,9 @@ class LocalToolRequestProcessor extends GenericRequestProcessor
         return parent::create($requestData);
     }
 
-    protected function assignProcessingTemplate($toolName)
+    protected function assignProcessingTemplate($connectorName)
     {
-        $processingTemplatePath = sprintf('%s/%s/%s.php', $this->scope, $toolName, $this->action);
+        $processingTemplatePath = sprintf('%s/%s/%s.php', $this->scope, $connectorName, $this->action);
         $file = new File($this->processingTemplatesDirectory . DS . $processingTemplatePath);
         if ($file->exists()) {
             $this->processingTemplate = str_replace('.php', '', $processingTemplatePath);
@@ -40,10 +41,14 @@ class LocalToolRequestProcessor extends GenericRequestProcessor
         $file->close();
     }
 
-    protected function validateToolName($requestData)
+    protected function validateConnectorName($requestData)
     {
-        if (empty($requestData['data']['toolName'])) {
-            throw new Exception('Error while validating request data. Tool name is missing.');
+        if (empty($requestData['data']['connectorName'])) {
+            throw new NotFoundException('Error while validating request data. Connector name is missing.');
+        }
+        $connector = $this->getConnectorFromClassname($requestData['data']['connectorName']);
+        if (is_null($connector)) {
+            throw new NotFoundException(__('Error while validating request data. Unkown connector `{0}`', $requestData['data']['connectorName']));
         }
     }
 
@@ -55,14 +60,24 @@ class LocalToolRequestProcessor extends GenericRequestProcessor
         return $brood;
     }
 
+    protected function filterAlignmentsForBrood($individual, $brood)
+    {
+        foreach ($individual->alignments as $i => $alignment) {
+            if ($alignment->organisation_id != $brood->organisation_id) {
+                unset($individual->alignments[$i]);
+            }
+        }
+        return $individual;
+    }
+
     protected function getConnector($request)
     {
         try {
-            $connectorClasses = $this->LocalTools->getConnectorByToolName($request->local_tool_name);
+            $connectorClasses = $this->LocalTools->getConnectors($request->local_tool_connector_name);
             if (!empty($connectorClasses)) {
                 $connector = array_values($connectorClasses)[0];
             }
-        } catch (Cake\Http\Exception\NotFoundException $e) {
+        } catch (NotFoundException $e) {
             $connector = null;
         }
         return $connector;
@@ -71,23 +86,55 @@ class LocalToolRequestProcessor extends GenericRequestProcessor
     protected function getConnectorMeta($request)
     {
         try {
-            $connectorClasses = $this->LocalTools->getConnectorByToolName($request->local_tool_name);
-            if (!empty($connectorClasses)) {
-                $connectorMeta = $this->LocalTools->extractMeta($connectorClasses)[0];
-            }
-        } catch (Cake\Http\Exception\NotFoundException $e) {
-            $connectorMeta = null;
+            $className = $request->local_tool_connector_name;
+            $connector = $this->getConnectorFromClassname($className);
+            $connectorMeta = $this->LocalTools->extractMeta([$className => $connector])[0];
+        } catch (NotFoundException $e) {
+            $connectorMeta = [];
         }
-        return !is_null($connectorMeta) ? $connectorMeta : [];
+        return $connectorMeta;
+    }
+
+    protected function getConnectorFromClassname($className)
+    {
+        try {
+            $connectorClasses = $this->LocalTools->getConnectors($className);
+            if (!empty($connectorClasses)) {
+                $connector = array_values($connectorClasses)[0];
+            }
+        } catch (NotFoundException $e) {
+            $connector = null;
+        }
+        return $connector;
+    }
+
+    protected function getConnectorMetaFromClassname($className)
+    {
+        try {
+            $connector = $this->getConnectorFromClassname($className);
+            $connectorMeta = $this->LocalTools->extractMeta([$className => $connector])[0];
+        } catch (NotFoundException $e) {
+            $connectorMeta = [];
+        }
+        return $connectorMeta;
+    }
+
+    protected function attachRequestAssociatedData($request)
+    {
+        $request->brood = $this->getIssuerBrood($request);
+        $request->connector = $this->getConnectorMeta($request);
+        $request->individual = $request->user->individual;
+        $request->individual = $this->filterAlignmentsForBrood($request->individual, $request->brood);
+        return $request;
     }
 
     protected function addBaseValidatorRules($validator)
     {
         return $validator
-            ->requirePresence('toolName')
-            ->notEmpty('toolName', 'A url must be provided')
-            ->requirePresence('url') // url -> cerebrate_url
-            ->notEmpty('url', 'A url must be provided');
+            ->requirePresence('connectorName')
+            ->notEmpty('connectorName', 'The connector name must be provided')
+            ->requirePresence('cerebrateURL')
+            ->notEmpty('cerebrateURL', 'A url must be provided');
             // ->add('url', 'validFormat', [
             //     'rule' => 'url',
             //     'message' => 'URL must be valid'
@@ -110,16 +157,16 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
     }
     
     public function create($requestData) {
-        $this->validateToolName($requestData);
+        $this->validateConnectorName($requestData);
         $this->validateRequestData($requestData);
-        $requestData['title'] = __('Request for {0} Inter-connection', $requestData['local_tool_name']);
+        $connectorMeta = $this->getConnectorMetaFromClassname($requestData['data']['connectorName']);
+        $requestData['title'] = __('Request for {0} Inter-connection', $connectorMeta['name']);
         return parent::create($requestData);
     }
 
     public function getViewVariables($request)
     {
-        $request->brood = $this->getIssuerBrood($request);
-        $request->connector = $this->getConnectorMeta($request);
+        $request = $this->attachRequestAssociatedData($request);
         return [
             'request' => $request,
             'progressStep' => 0,
@@ -170,7 +217,7 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
     protected function acceptConnection($connector, $remoteCerebrate, $requestData)
     {
         $connectorResult = $connector->acceptConnection($requestData['data']);
-        $connectorResult['toolName'] = $requestData->local_tool_name;
+        $connectorResult['connectorName'] = $requestData->local_tool_name;
         $response = $this->sendAcceptedRequestToRemote($remoteCerebrate, $connectorResult);
         // change state if sending fails
         // add the entry to the outbox if sending fails.
@@ -180,7 +227,7 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
     protected function declineConnection($connector, $remoteCerebrate, $requestData)
     {
         $connectorResult = $connector->declineConnection($requestData['data']);
-        $connectorResult['toolName'] = $requestData->local_tool_name;
+        $connectorResult['connectorName'] = $requestData->local_tool_name;
         $response = $this->sendDeclinedRequestToRemote($remoteCerebrate, $connectorResult);
         return $response;
     }
@@ -216,16 +263,16 @@ class AcceptedRequestProcessor extends LocalToolRequestProcessor implements Gene
     }
     
     public function create($requestData) {
-        $this->validateToolName($requestData);
+        $this->validateConnectorName($requestData);
         $this->validateRequestData($requestData);
-        $requestData['title'] = __('Inter-connection for {0} has been accepted', $requestData['local_tool_name']);
+        $connectorMeta = $this->getConnectorMetaFromClassname($requestData['data']['connectorName']);
+        $requestData['title'] = __('Inter-connection for {0} has been accepted', $connectorMeta['name']);
         return parent::create($requestData);
     }
 
     public function getViewVariables($request)
     {
-        $request->brood = $this->getIssuerBrood($request);
-        $request->connector = $this->getConnectorMeta($request);
+        $request = $this->attachRequestAssociatedData($request);
         return [
             'request' => $request,
             'progressStep' => 1,
@@ -280,16 +327,16 @@ class DeclinedRequestProcessor extends LocalToolRequestProcessor implements Gene
     }
     
     public function create($requestData) {
-        $this->validateToolName($requestData);
+        $this->validateConnectorName($requestData);
         $this->validateRequestData($requestData);
-        $requestData['title'] = __('Declined inter-connection for {0}', $requestData['local_tool_name']);
+        $connectorMeta = $this->getConnectorMetaFromClassname($requestData['data']['connectorName']);
+        $requestData['title'] = __('Declined inter-connection for {0}', $connectorMeta['name']);
         return parent::create($requestData);
     }
 
     public function getViewVariables($request)
     {
-        $request->brood = $this->getIssuerBrood($request);
-        $request->connector = $this->getConnectorMeta($request);
+        $request = $this->attachRequestAssociatedData($request);
         return [
             'request' => $request,
             'progressStep' => 1,

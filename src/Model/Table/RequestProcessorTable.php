@@ -52,10 +52,10 @@ class RequestProcessorTable extends AppTable
         throw new MissingRequestProcessorException(__('Processor not found'));
     }
 
-    public function getLocalToolProcessor($action, $toolName)
+    public function getLocalToolProcessor($action, $connectorName)
     {
         $scope = "LocalTool";
-        $specificScope = "{$toolName}LocalTool";
+        $specificScope = "{$connectorName}LocalTool";
         try { // try to get specific processor for module name or fall back to generic local tool processor
             $processor = $this->getProcessor($specificScope, $action);
         } catch (MissingRequestProcessorException $e) {
