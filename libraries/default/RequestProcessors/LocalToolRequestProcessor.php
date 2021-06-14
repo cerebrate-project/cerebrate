@@ -113,7 +113,7 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
         ];
     }
 
-    public function process($id, $requestData)
+    public function process($id, $requestData, $inboxRequest)
     {
         $connectionSuccessfull = false;
         $interConnectionResult = [];
@@ -175,7 +175,7 @@ class AcceptedRequestProcessor extends LocalToolRequestProcessor implements Gene
         ];
     }
 
-    public function process($id, $requestData)
+    public function process($id, $requestData, $inboxRequest)
     {
         $connectionSuccessfull = false;
         $interConnectionResult = [];
@@ -232,7 +232,7 @@ class DeclinedRequestProcessor extends LocalToolRequestProcessor implements Gene
         ];
     }
 
-    public function process($id, $requestData)
+    public function process($id, $requestData, $inboxRequest)
     {
         $connectionSuccessfull = false;
         $interConnectionResult = [];

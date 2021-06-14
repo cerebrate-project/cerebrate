@@ -43,7 +43,7 @@ class ToolInterconnectionProcessor extends BroodRequestProcessor implements Gene
         return parent::create($requestData);
     }
 
-    public function process($id, $requestData)
+    public function process($id, $requestData, $inboxRequest)
     {
         $connectionSuccessfull = false;
         $interConnectionResult = [];

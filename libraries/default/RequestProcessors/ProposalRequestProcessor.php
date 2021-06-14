@@ -43,7 +43,7 @@ class ProposalEditProcessor extends ProposalRequestProcessor implements GenericP
         return parent::create($requestData);
     }
 
-    public function process($id, $requestData)
+    public function process($id, $requestData, $inboxRequest)
     {
         $proposalAccepted = false;
         $saveResult = [];

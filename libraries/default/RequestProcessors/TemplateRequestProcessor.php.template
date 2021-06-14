@@ -43,7 +43,7 @@ class SCOPE_ACTION_Processor extends ProposalRequestProcessor implements Generic
         return parent::create($requestData);
     }
 
-    public function process($id, $requestData)
+    public function process($id, $requestData, $inboxRequest)
     {
         $proposalAccepted = false;
         $saveResult = [];

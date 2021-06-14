@@ -80,7 +80,7 @@ class RegistrationProcessor extends UserRequestProcessor implements GenericProce
         ];
     }
 
-    public function process($id, $requestData)
+    public function process($id, $requestData, $inboxRequest)
     {
         if ($requestData['individual_id'] == -1) {
             $individual = $this->Users->Individuals->newEntity([

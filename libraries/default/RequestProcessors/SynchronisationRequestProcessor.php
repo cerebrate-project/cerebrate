@@ -43,7 +43,7 @@ class DataExchangeProcessor extends SynchronisationRequestProcessor implements G
         return parent::create($requestData);
     }
 
-    public function process($id, $requestData)
+    public function process($id, $requestData, $inboxRequest)
     {
         $dataExchangeAccepted = false;
         $saveResult = [];

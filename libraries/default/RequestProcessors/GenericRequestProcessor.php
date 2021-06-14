@@ -8,7 +8,7 @@ use Cake\View\ViewBuilder;
 interface GenericProcessorActionI
 {
     public function create($requestData);
-    public function process($requestID, $serverRequest);
+    public function process($requestID, $serverRequest, $inboxRequest);
     public function discard($requestID ,$requestData);
 }
 

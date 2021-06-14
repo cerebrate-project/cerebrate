@@ -87,7 +87,7 @@ class InboxController extends AppController
             $processor = $this->requestProcessor->getProcessor($scope, $action);
         }
         if ($this->request->is('post')) {
-            $processResult = $processor->process($id, $this->request->getData());
+            $processResult = $processor->process($id, $this->request->getData(), $request);
             return $processor->genHTTPReply($this, $processResult);
         } else {
             $renderedView = $processor->render($request, $this->request);
