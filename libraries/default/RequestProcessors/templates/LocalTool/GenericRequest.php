@@ -4,7 +4,8 @@ $defaultSteps = [
         'text' => __('Request Sent'),
         'icon' => 'paper-plane',
         'title' => __(''),
-        'confirmButton' => __('Accept Request')
+        'confirmButton' => __('Accept Request'),
+        'canDiscard' => true,
     ],
     [
         'text' => __('Request Accepted'),
@@ -19,6 +20,8 @@ $defaultSteps = [
     ]
 ];
 
+$footerButtons = [];
+
 $progressVariant = !empty($progressVariant) ? $progressVariant : 'info';
 $finalSteps = array_replace($defaultSteps, $steps ?? []);
 $currentStep = $finalSteps[$progressStep];
@@ -27,6 +30,23 @@ $progress = $this->Bootstrap->progressTimeline([
     'selected' => !empty($progressStep) ? $progressStep : 0,
     'steps' => $finalSteps,
 ]);
+
+$footerButtons[] = [
+    'clickFunction' => 'cancel',
+    'variant' => 'secondary',
+    'text' => __('Cancel'),
+];
+if (!empty($currentStep['canDiscard'])) {
+    $footerButtons[] = [
+        'clickFunction' => 'discard',
+        'variant' => 'danger',
+        'text' => __('Decline Request'),
+    ];
+}
+$footerButtons[] = [
+    'clickFunction' => 'accept',
+    'text' => $currentStep['confirmButton'] ??  __('Submit'),
+];
 
 $table = $this->Bootstrap->table(['small' => true, 'bordered' => false, 'striped' => false, 'hover' => false], [
     'fields' => [
@@ -55,7 +75,13 @@ $form = $this->element('genericElements/Form/genericForm', [
     'raw' => true,
     'data' => [
         'model' => 'Inbox',
-        'fields' => [],
+        'fields' => [
+            [
+                'field' => 'is_discard',
+                'type' => 'checkbox',
+                'default' => false
+            ]
+        ],
         'submit' => [
             'action' => $this->request->getParam('action')
         ]
@@ -70,7 +96,7 @@ $requestData = $this->Bootstrap->collapse(
     sprintf('<pre class="p-2 rounded mb-0" style="background: #eee;"><code>%s</code></pre>', json_encode($request['data'], JSON_PRETTY_PRINT))
 );
 
-$bodyHtml = sprintf('<div class="py-2"><div>%s</div>%s</div>%s',
+$bodyHtml = sprintf('<div class="py-2"><div>%s</div>%s</div><div class="d-none">%s</div>',
     $table,
     $requestData,
     $form
@@ -79,10 +105,27 @@ $bodyHtml = sprintf('<div class="py-2"><div>%s</div>%s</div>%s',
 echo $this->Bootstrap->modal([
     'title' => __('Interconnection Request for {0}', h($request->data['toolName'])),
     'size' => 'lg',
-    'type' => 'confirm',
+    'type' => 'custom',
     'bodyHtml' => sprintf('<div class="p-3">%s</div><div class="description-container">%s</div>',
         $progress,
         $bodyHtml
     ),
-    'confirmText' => $currentStep['confirmButton'] ??  __('Submit'),
+    'footerButtons' => $footerButtons
 ]);
+
+?>
+
+<script>
+    function accept(modalObject, tmpApi) {
+        const $form = modalObject.$modal.find('form')
+        return tmpApi.postForm($form[0])
+    }
+    function discard(modalObject, tmpApi) {
+        const $form = modalObject.$modal.find('form')
+        const $discardField = $form.find('input#is_discard-field')
+        $discardField.prop('checked', true)
+        return tmpApi.postForm($form[0])
+    }
+    function cancel(modalObject, tmpApi) {
+    }
+</script>

@@ -60,7 +60,7 @@ class LocalToolRequestProcessor extends GenericRequestProcessor
         try {
             $connectorClasses = $this->LocalTools->getConnectorByToolName($request->local_tool_name);
             if (!empty($connectorClasses)) {
-                $connector = $this->LocalTools->extractMeta($connectorClasses)[0];
+                $connector = array_values($connectorClasses)[0];
             }
         } catch (Cake\Http\Exception\NotFoundException $e) {
             $connector = null;
@@ -68,12 +68,25 @@ class LocalToolRequestProcessor extends GenericRequestProcessor
         return $connector;
     }
 
+    protected function getConnectorMeta($request)
+    {
+        try {
+            $connectorClasses = $this->LocalTools->getConnectorByToolName($request->local_tool_name);
+            if (!empty($connectorClasses)) {
+                $connectorMeta = $this->LocalTools->extractMeta($connectorClasses)[0];
+            }
+        } catch (Cake\Http\Exception\NotFoundException $e) {
+            $connectorMeta = null;
+        }
+        return !is_null($connectorMeta) ? $connectorMeta : [];
+    }
+
     protected function addBaseValidatorRules($validator)
     {
         return $validator
             ->requirePresence('toolName')
             ->notEmpty('toolName', 'A url must be provided')
-            ->requirePresence('url')
+            ->requirePresence('url') // url -> cerebrate_url
             ->notEmpty('url', 'A url must be provided');
             // ->add('url', 'validFormat', [
             //     'rule' => 'url',
@@ -106,7 +119,7 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
     public function getViewVariables($request)
     {
         $request->brood = $this->getIssuerBrood($request);
-        $request->connector = $this->getConnector($request);
+        $request->connector = $this->getConnectorMeta($request);
         return [
             'request' => $request,
             'progressStep' => 0,
@@ -115,31 +128,75 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
 
     public function process($id, $requestData, $inboxRequest)
     {
-        $connectionSuccessfull = false;
+        /**
+         * /!\ Should how should sent message be? be fire and forget? Only for delined?
+         */
         $interConnectionResult = [];
-
-        $remoteCerebrate = $this->getIssuerBrood($request);
-        $connector = $this->getConnector($request);
-        $connectorResult = $connector->acceptConnection($requestData['data']);
-        $connectorResult['toolName'] = $requestData->local_tool_name;
-        $urlPath = '/inbox/createInboxEntry/LocalTool/AcceptedRequest';
-        $response = $this->Inbox->sendRequest($remoteCerebrate, $urlPath, true, $connectorResult);
-
-        if ($connectionSuccessfull) {
-            $this->discard($id, $requestData);
+        $remoteCerebrate = $this->getIssuerBrood($inboxRequest);
+        $connector = $this->getConnector($inboxRequest);
+        if (!empty($requestData['is_discard'])) { // -> declined
+            $connectorResult = $this->declineConnection($connector, $remoteCerebrate, $inboxRequest['data']); // Fire-and-forget?
+            $connectionSuccessfull = true;
+            $resultTitle = __('Could not sent declined message to `{0}`\'s  for {1}', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
+            $errors = [];
+            if ($connectionSuccessfull) {
+                $resultTitle = __('Declined message successfully sent to `{0}`\'s for {1}', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
+                $this->discard($id, $inboxRequest);
+            }
+        } else {
+            $connectorResult = $this->acceptConnection($connector, $remoteCerebrate, $inboxRequest['data']);
+            $connectionSuccessfull = false;
+            $connectionData = [];
+            $resultTitle = __('Could not inter-connect `{0}`\'s {1}', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
+            $errors = [];
+            if ($connectionSuccessfull) {
+                $resultTitle = __('Interconnection for `{0}`\'s {1} created', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
+                $this->discard($id, $inboxRequest);
+            }
         }
         return $this->genActionResult(
-            $interConnectionResult,
+            $connectionData,
             $connectionSuccessfull,
-            $connectionSuccessfull ? __('Interconnection for `{0}`\'s {1} created',$requestData['origin'], $requestData['local_tool_name']) : __('Could not inter-connect `{0}`\'s {1}', $requestData['origin'], $requestData['local_tool_name']),
-            []
+            $resultTitle,
+            $errors
         );
     }
 
     public function discard($id, $requestData)
     {
-        // /!\ TODO: send decline message to remote cerebrate
         return parent::discard($id, $requestData);
+    }
+
+    protected function acceptConnection($connector, $remoteCerebrate, $requestData)
+    {
+        $connectorResult = $connector->acceptConnection($requestData['data']);
+        $connectorResult['toolName'] = $requestData->local_tool_name;
+        $response = $this->sendAcceptedRequestToRemote($remoteCerebrate, $connectorResult);
+        // change state if sending fails
+        // add the entry to the outbox if sending fails.
+        return $response;
+    }
+
+    protected function declineConnection($connector, $remoteCerebrate, $requestData)
+    {
+        $connectorResult = $connector->declineConnection($requestData['data']);
+        $connectorResult['toolName'] = $requestData->local_tool_name;
+        $response = $this->sendDeclinedRequestToRemote($remoteCerebrate, $connectorResult);
+        return $response;
+    }
+
+    protected function sendAcceptedRequestToRemote($remoteCerebrate, $connectorResult)
+    {
+        $urlPath = '/inbox/createInboxEntry/LocalTool/AcceptedRequest';
+        $response = $this->Inbox->sendRequest($remoteCerebrate, $urlPath, true, $connectorResult);
+        return $response;
+    }
+
+    protected function sendDeclinedRequestToRemote($remoteCerebrate, $connectorResult)
+    {
+        $urlPath = '/inbox/createInboxEntry/LocalTool/DeclinedRequest';
+        $response = $this->Inbox->sendRequest($remoteCerebrate, $urlPath, true, $connectorResult);
+        return $response;
     }
 }
 
@@ -168,7 +225,7 @@ class AcceptedRequestProcessor extends LocalToolRequestProcessor implements Gene
     public function getViewVariables($request)
     {
         $request->brood = $this->getIssuerBrood($request);
-        $request->connector = $this->getConnector($request);
+        $request->connector = $this->getConnectorMeta($request);
         return [
             'request' => $request,
             'progressStep' => 1,
@@ -177,22 +234,34 @@ class AcceptedRequestProcessor extends LocalToolRequestProcessor implements Gene
 
     public function process($id, $requestData, $inboxRequest)
     {
+        $connector = $this->getConnector($request);
+        $remoteCerebrate = $this->getIssuerBrood($request);
+        $connectorResult = $this->finalizeConnection($connector, $remoteCerebrate, $requestData['data']);
         $connectionSuccessfull = false;
-        $interConnectionResult = [];
+        $connectionData = [];
+        $resultTitle = __('Could not finalize inter-connection for `{0}`\'s {1}', $requestData['origin'], $requestData['local_tool_name']);
+        $errors = [];
         if ($connectionSuccessfull) {
+            $resultTitle = __('Interconnection for `{0}`\'s {1} finalized', $requestData['origin'], $requestData['local_tool_name']);
             $this->discard($id, $requestData);
         }
         return $this->genActionResult(
-            $interConnectionResult,
+            $connectionData,
             $connectionSuccessfull,
-            $connectionSuccessfull ? __('Interconnection for `{0}`\'s {1} finalized', $requestData['origin'], $requestData['local_tool_name']) : __('Could not inter-connect `{0}`\'s {1}', $requestData['origin'], $requestData['local_tool_name']),
-            []
+            $resultTitle,
+            $errors
         );
     }
 
     public function discard($id, $requestData)
     {
         return parent::discard($id, $requestData);
+    }
+
+    protected function finalizeConnection($connector, $remoteCerebrate, $requestData)
+    {
+        $connectorResult = $connector->finaliseConnection($requestData['data']);
+        return $connectorResult;
     }
 }
 
@@ -220,7 +289,7 @@ class DeclinedRequestProcessor extends LocalToolRequestProcessor implements Gene
     public function getViewVariables($request)
     {
         $request->brood = $this->getIssuerBrood($request);
-        $request->connector = $this->getConnector($request);
+        $request->connector = $this->getConnectorMeta($request);
         return [
             'request' => $request,
             'progressStep' => 1,
