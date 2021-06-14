@@ -71,6 +71,17 @@ class MispConnector extends CommonConnectorTools
                 'value'
             ],
             'redirect' => 'serverSettingsAction'
+        ],
+        'serversAction' => [
+            'type' => 'index',
+            'scope' => 'child',
+            'params' => [
+                'quickFilter',
+                'limit',
+                'page',
+                'sort',
+                'direction'
+            ]
         ]
     ];
     public $version = '0.1';
@@ -248,6 +259,7 @@ class MispConnector extends CommonConnectorTools
                             'name' => __('Value'),
                             'sort' => 'value',
                             'data_path' => 'value',
+                            'options' => 'options'
                         ],
                         [
                             'name' => __('Type'),
@@ -283,6 +295,96 @@ class MispConnector extends CommonConnectorTools
                 $finalSettings['data']['data'] = array_values($finalSettings['data']['data']);
             }
             return $finalSettings;
+        } else {
+            return [];
+        }
+    }
+
+    public function serversAction(array $params): array
+    {
+        $params['validParams'] = [
+            'limit' => 'limit',
+            'page' => 'page',
+            'quickFilter' => 'searchall'
+        ];
+        $urlParams = h($params['connection']['id']) . '/serversAction';
+        $response = $this->getData('/servers/index', $params);
+        $data = $response->getJson();
+        if (!empty($data)) {
+            return [
+                'type' => 'index',
+                'data' => [
+                    'data' => $data,
+                    'skip_pagination' => 1,
+                    'top_bar' => [
+                        'children' => [
+                            [
+                                'type' => 'search',
+                                'button' => __('Filter'),
+                                'placeholder' => __('Enter value to search'),
+                                'data' => '',
+                                'searchKey' => 'value',
+                                'additionalUrlParams' => $urlParams,
+                                'quickFilter' => 'value'
+                            ]
+                        ]
+                    ],
+                    'fields' => [
+                        [
+                            'name' => 'Id',
+                            'sort' => 'Server.id',
+                            'data_path' => 'Server.id',
+                        ],
+                        [
+                            'name' => 'Name',
+                            'sort' => 'Server.name',
+                            'data_path' => 'Server.name',
+                        ],
+                        [
+                            'name' => 'Url',
+                            'sort' => 'Server.url',
+                            'data_path' => 'Server.url'
+                        ],
+                        [
+                            'name' => 'Pull',
+                            'sort' => 'Server.pull',
+                            'element' => 'function',
+                            'function' => function($row, $context) {
+                                $pull = $context->Hash->extract($row, 'Server.pull')[0];
+                                $pull_rules = $context->Hash->extract($row, 'Server.pull_rules')[0];
+                                $pull_rules = json_encode(json_decode($pull_rules, true), JSON_PRETTY_PRINT);
+                                echo sprintf(
+                                    '<span title="%s" class="fa fa-%s"></span>',
+                                    h($pull_rules),
+                                    $pull ? 'check' : 'times'
+                                );
+                            }
+                        ],
+                        [
+                            'name' => 'Push',
+                            'element' => 'function',
+                            'function' => function($row, $context) {
+                                $push = $context->Hash->extract($row, 'Server.push')[0];
+                                $push_rules = $context->Hash->extract($row, 'Server.push_rules')[0];
+                                $push_rules = json_encode(json_decode($push_rules, true), JSON_PRETTY_PRINT);
+                                echo sprintf(
+                                    '<span title="%s" class="fa fa-%s"></span>',
+                                    h($push_rules),
+                                    $push ? 'check' : 'times'
+                                );
+                            }
+                        ],
+                        [
+                            'name' => 'Caching',
+                            'element' => 'boolean',
+                            'data_path' => 'Server.caching_enabled'
+                        ]
+                    ],
+                    'title' => false,
+                    'description' => false,
+                    'pull' => 'right'
+                ]
+            ];
         } else {
             return [];
         }
@@ -515,14 +617,27 @@ class MispConnector extends CommonConnectorTools
                 'boolean' => 'checkbox',
                 'numeric' => 'number'
             ];
-            $fields = [
-                [
-                    'field' => 'value',
-                    'label' => __('Value'),
-                    'default' => h($response['value']),
-                    'type' => $types[$response['type']]
-                ],
-            ];
+            if (!empty($response['options'])) {
+                $fields = [
+                    [
+                        'field' => 'value',
+                        'label' => __('Value'),
+                        'default' => h($response['value']),
+                        'type' => 'dropdown',
+                        'options' => $response['options'],
+
+                    ]
+                ];
+            } else {
+                $fields = [
+                    [
+                        'field' => 'value',
+                        'label' => __('Value'),
+                        'default' => h($response['value']),
+                        'type' => $types[$response['type']]
+                    ]
+                ];
+            }
             return [
                 'data' => [
                     'title' => __('Modify server setting'),

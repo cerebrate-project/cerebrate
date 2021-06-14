@@ -12,6 +12,9 @@
      *  - id: element ID for the input field - defaults to quickFilterField
      */
     if (!isset($data['requirement']) || $data['requirement']) {
+        if (!empty($data['quickFilter'])) {
+            $quickFilter = $data['quickFilter'];
+        }
         $filterEffective = !empty($quickFilter); // No filters will be picked up, thus rendering the filtering useless
         $filteringButton = '';
         if (!empty($data['allowFilering'])) {
