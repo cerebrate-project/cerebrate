@@ -98,3 +98,27 @@ $(document).ready(() => {
         UI = new UIFactory()
     }
 })
+
+class AppElement {
+    constructor(appData) {
+        if (appData.data !== undefined) {
+            for (const dataName in appData.data) {
+                this[dataName] = appData.data[dataName]
+            }
+        }
+        if (appData.methods !== undefined) {
+            for (const methodName in appData.methods) {
+                this[methodName] = appData.methods[methodName]
+            }
+        }
+        if (appData.mounted !== undefined) {
+            appData.mounted()
+        }
+        const $script = $(document.currentScript)
+        const seed = $(document.currentScript).attr('element-scoped').split('_')[1];
+        const $rootElement = $script.closest(`section[data-scoped="${seed}"]`)
+        this.el = $rootElement[0]
+        this.$el = $rootElement
+        $rootElement.data('appElement', this) // register app element on the root element node
+    }
+}

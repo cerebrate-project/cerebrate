@@ -43,5 +43,6 @@ class AppView extends View
         $this->loadHelper('PrettyPrint');
         $this->loadHelper('FormFieldMassage');
         $this->loadHelper('Paginator', ['templates' => 'cerebrate-pagination-templates']);
+        $this->loadHelper('ScopedElement');
     }
 }
