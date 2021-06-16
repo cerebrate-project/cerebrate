@@ -100,18 +100,33 @@ class MispConnector extends CommonConnectorTools
         }
     }
 
+    public function getHTTPClient(Object $connection): Object
+    {
+        $settings = json_decode($connection->settings, true);
+        $options = [
+            'headers' => [
+                'AUTHORIZATION' => $settings['authkey'],
+                'Accept' => 'Application/json',
+                'Content-type' => 'Application/json'
+            ],
+        ];
+        if (!empty($settings['skip_ssl'])) {
+            $options['ssl_verify_peer'] = false;
+            $options['ssl_verify_host'] = false;
+            $options['ssl_verify_peer_name'] = false;
+            $options['ssl_allow_self_signed'] = true;
+        }
+        $http = new Client($options);
+        return $http;
+    }
+
     public function health(Object $connection): array
     {
         $settings = json_decode($connection->settings, true);
-        $http = new Client();
+        $http = $this->getHTTPClient($connection);
+
         try {
-            $response = $http->post($settings['url'] . '/users/view/me.json', '{}', [
-                'headers' => [
-                    'AUTHORIZATION' => $settings['authkey'],
-                    'Accept' => 'Application/json',
-                    'Content-type' => 'Application/json'
-                ]
-            ]);
+            $response = $http->post($settings['url'] . '/users/view/me.json', '{}');
         } catch (\Exception $e) {
             return [
                 'status' => 0,
@@ -142,7 +157,7 @@ class MispConnector extends CommonConnectorTools
             throw new NotFoundException(__('No connection object received.'));
         }
         $settings = json_decode($params['connection']->settings, true);
-        $http = new Client();
+        $http = $this->getHTTPClient($params['connection']);
         if (!empty($params['sort'])) {
             $list = explode('.', $params['sort']);
             $params['sort'] = end($list);
@@ -174,7 +189,7 @@ class MispConnector extends CommonConnectorTools
             throw new NotFoundException(__('No connection object received.'));
         }
         $settings = json_decode($params['connection']->settings, true);
-        $http = new Client();
+        $http = $this->getHTTPClient($params['connection']);
         $url = $this->urlAppendParams($url, $params);
         $response = $http->post($settings['url'] . $url, json_encode($params['body']), [
             'headers' => [
