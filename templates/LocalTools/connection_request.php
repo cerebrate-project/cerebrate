@@ -19,7 +19,7 @@
                 ],
                 [
                     'field' => 'tool_name',
-                    'default' => $data['remoteTool']['toolName'],
+                    'default' => $data['remoteTool']['connectorName'],
                     'type' => 'hidden'
                 ],
             ],

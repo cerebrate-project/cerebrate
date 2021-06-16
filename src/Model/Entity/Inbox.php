@@ -11,10 +11,10 @@ class Inbox extends AppModel
 
     protected function _getLocalToolConnectorName()
     {
-        $localToolName = null;
+        $localConnectorName = null;
         if (!empty($this->data) && !empty($this->data['connectorName'])) {
-            $localToolName = $this->data['connectorName'];
+            $localConnectorName = $this->data['connectorName'];
         }
-        return $localToolName;
+        return $localConnectorName;
     }
 }

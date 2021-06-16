@@ -186,7 +186,7 @@ class LocalToolsController extends AppController
             },
             'afterFind' => function($data) {
                 foreach ($data as $connector) {
-                    $connectorById = $this->LocalTools->getConnectorByConnectionId($connector['id'])
+                    $connectorById = $this->LocalTools->getConnectorByConnectionId($connector['id']);
                     $className = array_keys($connectorById)[0];
                     $connector['connectorName'] = $className;
                 }
