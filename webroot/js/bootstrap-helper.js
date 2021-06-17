@@ -997,13 +997,17 @@ class FormValidationHelper {
         } else {
             $messageNode.addClass('invalid-feedback')
         }
-        const hasMultipleErrors = Object.keys(errors).length > 1
-        for (const [ruleName, error] of Object.entries(errors)) {
-            if (hasMultipleErrors) {
-                $messageNode.append($('<li></li>').text(error))
-            } else {
-                $messageNode.text(error)
+        if (typeof errors === 'object') {
+            const hasMultipleErrors = Object.keys(errors).length > 1
+            for (const [ruleName, error] of Object.entries(errors)) {
+                if (hasMultipleErrors) {
+                    $messageNode.append($('<li></li>').text(error))
+                } else {
+                    $messageNode.text(error)
+                }
             }
+        } else {
+            $messageNode.text(errors)
         }
         return $messageNode
     }

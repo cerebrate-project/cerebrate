@@ -205,9 +205,12 @@ class LocalToolsTable extends AppTable
     public function encodeConnection(array $params): array
     {
         $params = $this->buildConnectionParams($params);
-        $result = $params['connector'][$params['remote_tool']['connector']]->initiateConnectionWrapper($params);
-        $this->sendEncodedConnection($params['remote_cerebrate'], $params['remote_tool']['connector'], $result);
-        return $result;
+        $localResult = $params['connector'][$params['remote_tool']['connector']]->initiateConnectionWrapper($params);
+        $inboxResult = $this->sendEncodedConnection($params, $localResult);
+        return [
+            'inboxResult' => $inboxResult,
+            'localResult' => $localResult
+        ];
     }
 
     public function buildConnectionParams(array $params): array
@@ -244,12 +247,29 @@ class LocalToolsTable extends AppTable
         return $local_tools;
     }
 
-    public function sendEncodedConnection($remoteCerebrate, $connectorName, $encodedConnection)
+    public function sendEncodedConnection($params, $encodedConnection)
     {
-        $encodedConnection['connectorName'] = $connectorName;
-        $encodedConnection['cerebrateURL'] = Configure::read('App.fullBaseUrl');
-        $urlPath = '/inbox/createInboxEntry/LocalTool/IncomingConnectionRequest';
-        $response = $this->Inbox->sendRequest($remoteCerebrate, $urlPath, true, $encodedConnection);
-        // If sending failed: Modify state + add entry in outbox
+        $this->Broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
+        try {
+            $response = $this->Broods->sendLocalToolConnectionRequest($params, $encodedConnection);
+            $jsonReply = $response->getJson();
+            if (empty($jsonReply['success'])) {
+                $this->handleMessageNotCreated($response);
+            }
+        } catch (NotFoundException $e) {
+            return $this->handleSendingFailed($response);
+        }
+        return $jsonReply;
+    }
+
+    public function handleSendingFailed($response)
+    {
+        // debug('sending failed. Modify state and add entry in outbox');
+        throw new NotFoundException(__('sending failed. Modify state and add entry in outbox'));
+    }
+
+    public function handleMessageNotCreated($response)
+    {
+        // debug('Saving message failed. Modify state and add entry in outbox');
     }
 }

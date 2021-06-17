@@ -7,6 +7,7 @@ class CommonConnectorTools
 {
     public $description = '';
     public $name = '';
+    public $connectorName = '';
     public $exposedFunctions = [
         'diagnostics'
     ];

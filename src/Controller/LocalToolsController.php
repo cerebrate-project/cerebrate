@@ -229,7 +229,27 @@ class LocalToolsController extends AppController
             }
             $params['local_tool_id'] = $postParams['local_tool_id'];
             $encodingResult = $this->LocalTools->encodeConnection($params);
-            $this->redirect();
+            $inboxResult = $encodingResult['inboxResult'];
+            if ($inboxResult['success']) {
+                if ($this->ParamHandler->isRest()) {
+                    $response = $this->RestResponse->viewData($inboxResult, 'json');
+                } else if ($this->ParamHandler->isAjax()) {
+                    $response = $this->RestResponse->ajaxSuccessResponse('LocalTool', 'connectionRequest', [], $inboxResult['message']);
+                } else {
+                    $this->Flash->success($inboxResult['message']);
+                    $this->redirect(['action' => 'broodTools', $cerebrate_id]);
+                }
+            } else {
+                if ($this->ParamHandler->isRest()) {
+                    $response = $this->RestResponse->viewData($inboxResult, 'json');
+                } else if ($this->ParamHandler->isAjax()) {
+                    $response = $this->RestResponse->ajaxFailResponse('LocalTool', 'connectionRequest', [], $inboxResult['message'], $inboxResult['errors']);
+                } else {
+                    $this->Flash->error($inboxResult['message']);
+                    $this->redirect($this->referer());
+                }
+            }
+            return $response;
         } else {
             $remoteTool = $this->LocalTools->getRemoteToolById($params);
             $local_tools = $this->LocalTools->encodeConnectionChoice($params);

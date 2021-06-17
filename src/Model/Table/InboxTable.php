@@ -64,29 +64,6 @@ class InboxTable extends AppTable
         return $rules;
     }
 
-    public function sendRequest($brood, $urlPath, $methodPost = true, $data = []): boolean
-    {
-        $http = new Client();
-        $config = [
-            'headers' => [
-                'AUTHORIZATION' => $brood->authkey,
-                'Accept' => 'application/json'
-            ],
-            'type' => 'json'
-        ];
-        $url = $brood->url . $urlPath;
-        if ($methodPost) {
-            $response = $http->post($url, json_encode(data), $config);
-        } else {
-            $response = $http->get($brood->url, json_encode(data), $config);
-        }
-        if ($response->isOk()) {
-            return $response;
-        } else {
-            throw new NotFoundException(__('Could not post to the requested resource.'));
-        }
-    }
-
     public function checkUserBelongsToBroodOwnerOrg($user, $entryData) {
         $this->Broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
         $this->Individuals = \Cake\ORM\TableRegistry::getTableLocator()->get('Individuals');
@@ -105,7 +82,7 @@ class InboxTable extends AppTable
             }
         }
         if (!$found) {
-            $errors[] = __('User is not part of the brood organisation');
+            $errors[] = __('User `{0}` is not part of the brood\'s organisation. Make sure `{0}` is aligned with the organisation owning the brood.', $user->individual->email);
         }
         return $errors;
     }

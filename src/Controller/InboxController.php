@@ -128,14 +128,7 @@ class InboxController extends AppController
             'origin' => $this->request->clientIp(),
             'user_id' => $this->ACL->getUser()['id'],
         ];
-        $entryData['data'] = $this->request->data ?? [];
-        // $entryData['data'] = [
-        //     'connectorName' => 'MispConnector',
-        //     'cerebrateURL' => 'http://localhost:8000',
-        //     'url' => 'https://localhost:8443',
-        //     'email' => 'admin@admin.test',
-        //     'authkey' => 'DkM9fEfwrG8Bg3U0ncKamocIutKt5YaUFuxzsB6b',
-        // ];
+        $entryData['data'] = $this->request->getData() ?? [];
         $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
         if ($scope == 'LocalTool') {
             $this->validateLocalToolRequestEntry($entryData);

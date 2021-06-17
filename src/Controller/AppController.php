@@ -112,6 +112,10 @@ class AppController extends Controller
             $this->Security->setConfig('validatePost', false);
         }
         $this->Security->setConfig('unlockedActions', ['index']);
+        if ($this->ParamHandler->isRest()) {
+            $this->Security->setConfig('unlockedActions', [$this->request->getParam('action')]);
+            $this->Security->setConfig('validatePost', false);
+        }
 
         $this->ACL->checkAccess();
         $this->set('menu', $this->ACL->getMenu());

@@ -5,7 +5,10 @@ namespace App\Model\Table;
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Core\Configure;
 use Cake\Http\Client;
+use Cake\Http\Client\Response;
+use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\TableRegistry;
 use Cake\Error\Debugger;
 
@@ -191,5 +194,58 @@ class BroodsTable extends AppTable
         } else {
             return false;
         }
+    }
+
+    public function sendRequest($brood, $urlPath, $methodPost = true, $data = []): Response
+    {
+        $http = new Client();
+        $config = [
+            'headers' => [
+                'AUTHORIZATION' => $brood->authkey,
+                'Accept' => 'application/json'
+            ],
+            'type' => 'json'
+        ];
+        $url = $brood->url . $urlPath;
+        if ($methodPost) {
+            $response = $http->post($url, json_encode($data), $config);
+        } else {
+            $response = $http->get($brood->url, $data, $config);
+        }
+        if ($response->isOk()) {
+            return $response;
+        } else {
+            throw new NotFoundException(__('Could not send to the requested resource.'));
+        }
+    }
+
+    private function injectRequiredData($params, $data): Array
+    {
+        $data['connectorName'] = $params['remote_tool']['connector'];
+        $data['cerebrateURL'] = Configure::read('App.fullBaseUrl');
+        $data['local_tool_id'] = $params['connection']['id'];
+        $data['remote_tool_id'] = $params['remote_tool']['id'];
+        return $data;
+    }
+
+    public function sendLocalToolConnectionRequest($params, $data): Response
+    {
+        $url = '/inbox/createInboxEntry/LocalTool/IncomingConnectionRequest';
+        $data = $this->injectRequiredData($params, $data);
+        return $this->sendRequest($params['remote_cerebrate'], $url, true, $data);
+    }
+
+    public function sendLocalToolAcceptedRequest($params, $data): Response
+    {
+        $url = '/inbox/createInboxEntry/LocalTool/AcceptedRequest';
+        $data = $this->injectRequiredData($params, $data);
+        return $this->sendRequest($params['remote_cerebrate'], $url, true, $data);
+    }
+
+    public function sendLocalToolDeclinedRequest($params, $data): Response
+    {
+        $url = '/inbox/createInboxEntry/LocalTool/DeclinedRequest';
+        $data = $this->injectRequiredData($params, $data);
+        return $this->sendRequest($params['remote_cerebrate'], $url, true, $data);
     }
 }
