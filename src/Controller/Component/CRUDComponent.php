@@ -10,6 +10,7 @@ use Cake\View\ViewBuilder;
 
 class CRUDComponent extends Component
 {
+    protected $components = ['RestResponse'];
 
     public function initialize(array $config): void
     {
@@ -58,7 +59,7 @@ class CRUDComponent extends Component
                     $data = $this->Table->{$options['afterFind']}($data);
                 }
             }
-            $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData($data, 'json');
+            $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
         } else {
             $this->Controller->loadComponent('Paginator');
             $data = $this->Controller->Paginator->paginate($query);
@@ -147,9 +148,9 @@ class CRUDComponent extends Component
                 } else if ($this->Controller->ParamHandler->isAjax()) {
                     if (!empty($params['displayOnSuccess'])) {
                         $displayOnSuccess = $this->renderViewInVariable($params['displayOnSuccess'], ['entity' => $data]);
-                        $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message, ['displayOnSuccess' => $displayOnSuccess]);
+                        $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message, ['displayOnSuccess' => $displayOnSuccess]);
                     } else {
-                        $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message);
+                        $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message);
                     }
                 } else {
                     $this->Controller->Flash->success($message);
@@ -168,8 +169,9 @@ class CRUDComponent extends Component
                     empty($validationMessage) ? '' : PHP_EOL . __('Reason:{0}', $validationMessage)
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
+                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($message, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxFailResponse($this->ObjectAlias, 'add', $data, $message, $validationMessage);
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'add', $data, $message, $validationMessage);
                 } else {
                     $this->Controller->Flash->error($message);
                 }
@@ -246,7 +248,7 @@ class CRUDComponent extends Component
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($savedData, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'edit', $savedData, $message);
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'edit', $savedData, $message);
                 } else {
                     $this->Controller->Flash->success($message);
                     if (empty($params['redirect'])) {
@@ -263,7 +265,7 @@ class CRUDComponent extends Component
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxFailResponse($this->ObjectAlias, 'edit', $data, $message, $data->getErrors());
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'edit', $data, $message, $data->getErrors());
                 } else {
                     $this->Controller->Flash->error($message);
                 }
@@ -333,7 +335,7 @@ class CRUDComponent extends Component
             $data = $params['afterFind']($data);
         }
         if ($this->Controller->ParamHandler->isRest()) {
-            $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData($data, 'json');
+            $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
         }
         $this->Controller->set('entity', $data);
     }
@@ -350,7 +352,7 @@ class CRUDComponent extends Component
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'delete', $data, $message);
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'delete', $data, $message);
                 } else {
                     $this->Controller->Flash->success($message);
                     $this->Controller->redirect($this->Controller->referer());
@@ -600,7 +602,7 @@ class CRUDComponent extends Component
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'toggle', $savedData, $message);
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'toggle', $savedData, $message);
                 } else {
                     $this->Controller->Flash->success($message);
                     if (empty($params['redirect'])) {
@@ -618,7 +620,7 @@ class CRUDComponent extends Component
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->Controller->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $message, $validationMessage);
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $message, $validationMessage);
                 } else {
                     $this->Controller->Flash->error($message);
                     if (empty($params['redirect'])) {
@@ -644,10 +646,10 @@ class CRUDComponent extends Component
         if ($this->request->is('post')) {
             $data[$fieldName] = $data[$fieldName] ? true : false;
             $this->Table->save($data);
-            $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData(['value' => $data[$fieldName]], 'json');
+            $this->Controller->restResponsePayload = $this->RestResponse->viewData(['value' => $data[$fieldName]], 'json');
         } else {
             if ($this->Controller->ParamHandler->isRest()) {
-                $this->Controller->restResponsePayload = $this->Controller->RestResponse->viewData(['value' => $data[$fieldName]], 'json');
+                $this->Controller->restResponsePayload = $this->RestResponse->viewData(['value' => $data[$fieldName]], 'json');
             } else {
                 $this->Controller->set('fieldName', $fieldName);
                 $this->Controller->set('currentValue', $data[$fieldName]);

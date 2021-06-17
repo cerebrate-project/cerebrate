@@ -27,6 +27,7 @@ use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
 use Authentication\Middleware\AuthenticationMiddleware;
+use Cake\Http\Middleware\BodyParserMiddleware;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -87,7 +88,8 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // using it's second constructor argument:
             // `new RoutingMiddleware($this, '_cake_routes_')`
             ->add(new RoutingMiddleware($this))
-            ->add(new AuthenticationMiddleware($this));
+            ->add(new AuthenticationMiddleware($this))
+            ->add(new BodyParserMiddleware());
         return $middlewareQueue;
     }
 
