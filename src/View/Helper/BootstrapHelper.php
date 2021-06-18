@@ -1142,7 +1142,7 @@ class BoostrapProgressTimeline extends BootstrapGeneric {
             ],
         ], $textLis);
         $html = $this->genNode('div', [
-            'class' => ['progress-timeline']
+            'class' => ['progress-timeline', 'mw-75', 'mx-auto']
         ], $ulIcons . $ulText);
         return $html;
     }

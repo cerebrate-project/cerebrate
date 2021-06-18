@@ -109,7 +109,7 @@ $requestData = $this->Bootstrap->collapse(
         'title' => __('Inter-connection data'),
         'open' => true,
     ],
-    sprintf('<pre class="p-2 rounded mb-0" style="background: #eee;"><code>%s</code></pre>', json_encode($request['data'], JSON_PRETTY_PRINT))
+    sprintf('<pre class="p-2 rounded mb-0" style="background: #eeeeee55;"><code>%s</code></pre>', json_encode($request['data'], JSON_PRETTY_PRINT))
 );
 
 $bodyHtml = sprintf('<div class="py-2"><div>%s</div>%s</div><div class="d-none">%s</div>',
