@@ -81,11 +81,11 @@ class InboxController extends AppController
         $request = $this->Inbox->get($id, ['contain' => ['Users' => ['Individuals' => ['Alignments' => 'Organisations']]]]);
         $scope = $request->scope;
         $action = $request->action;
-        $this->inboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
+        $this->InboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
         if ($scope == 'LocalTool') {
-            $processor = $this->inboxProcessors->getLocalToolProcessor($action, $request->local_tool_name);
+            $processor = $this->InboxProcessors->getLocalToolProcessor($action, $request->local_tool_name);
         } else {
-            $processor = $this->inboxProcessors->getProcessor($scope, $action);
+            $processor = $this->InboxProcessors->getProcessor($scope, $action);
         }
         if ($this->request->is('post')) {
             $processResult = $processor->process($id, $this->request->getData(), $request);

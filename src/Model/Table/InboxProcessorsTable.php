@@ -12,7 +12,7 @@ class MissingInboxProcessorException extends Exception
     protected $_defaultCode = 404;
 }
 
-class InboxProcessors extends AppTable
+class InboxProcessorsTable extends AppTable
 {
     private $processorsDirectory = ROOT . '/libraries/default/InboxProcessors';
     private $inboxProcessors;

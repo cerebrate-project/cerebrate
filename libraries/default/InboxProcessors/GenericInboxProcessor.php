@@ -38,6 +38,10 @@ class GenericInboxProcessor
         $file->close();
     }
 
+    protected function updateProcessingTemplate($request)
+    {
+    }
+
     public function getRegisteredActions()
     {
         return $this->registeredActions;
