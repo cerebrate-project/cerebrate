@@ -1,9 +1,9 @@
 <?php
 use Cake\ORM\TableRegistry;
 
-require_once(ROOT . DS . 'libraries' . DS . 'default' . DS . 'RequestProcessors' . DS . 'GenericRequestProcessor.php'); 
+require_once(ROOT . DS . 'libraries' . DS . 'default' . DS . 'InboxProcessors' . DS . 'GenericInboxProcessor.php'); 
 
-class SynchronisationRequestProcessor extends GenericRequestProcessor
+class SynchronisationInboxProcessor extends GenericInboxProcessor
 {
     protected $scope = 'Synchronisation';
     protected $action = 'not-specified'; //overriden when extending
@@ -22,7 +22,7 @@ class SynchronisationRequestProcessor extends GenericRequestProcessor
     }
 }
 
-class DataExchangeProcessor extends SynchronisationRequestProcessor implements GenericProcessorActionI {
+class DataExchangeProcessor extends SynchronisationInboxProcessor implements GenericProcessorActionI {
     public $action = 'DataExchange';
     protected $description;
 

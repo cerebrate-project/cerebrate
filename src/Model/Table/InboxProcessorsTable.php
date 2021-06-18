@@ -7,15 +7,15 @@ use Cake\Filesystem\Folder;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Core\Exception\Exception;
 
-class MissingRequestProcessorException extends Exception
+class MissingInboxProcessorException extends Exception
 {
     protected $_defaultCode = 404;
 }
 
-class RequestProcessorTable extends AppTable
+class InboxProcessors extends AppTable
 {
-    private $processorsDirectory = ROOT . '/libraries/default/RequestProcessors';
-    private $requestProcessors;
+    private $processorsDirectory = ROOT . '/libraries/default/InboxProcessors';
+    private $inboxProcessors;
     private $enabledProcessors = [ // to be defined in config
         'Brood' => [
             'ToolInterconnection' => false,
@@ -40,16 +40,16 @@ class RequestProcessorTable extends AppTable
 
     public function getProcessor($scope, $action=null)
     {
-        if (isset($this->requestProcessors[$scope])) {
+        if (isset($this->inboxProcessors[$scope])) {
             if (is_null($action)) {
-                return $this->requestProcessors[$scope];
-            } else if (!empty($this->requestProcessors[$scope]->{$action})) {
-                return $this->requestProcessors[$scope]->{$action};
+                return $this->inboxProcessors[$scope];
+            } else if (!empty($this->inboxProcessors[$scope]->{$action})) {
+                return $this->inboxProcessors[$scope]->{$action};
             } else {
                 throw new \Exception(__('Processor {0}.{1} not found', $scope, $action));
             }
         }
-        throw new MissingRequestProcessorException(__('Processor not found'));
+        throw new MissingInboxProcessorException(__('Processor not found'));
     }
 
     public function getLocalToolProcessor($action, $connectorName)
@@ -58,7 +58,7 @@ class RequestProcessorTable extends AppTable
         $specificScope = "{$connectorName}LocalTool";
         try { // try to get specific processor for module name or fall back to generic local tool processor
             $processor = $this->getProcessor($specificScope, $action);
-        } catch (MissingRequestProcessorException $e) {
+        } catch (MissingInboxProcessorException $e) {
             $processor = $this->getProcessor($scope, $action);
         }
         return $processor;
@@ -67,12 +67,12 @@ class RequestProcessorTable extends AppTable
     public function listProcessors($scope=null)
     {
         if (is_null($scope)) {
-            return $this->requestProcessors;
+            return $this->inboxProcessors;
         } else {
-            if (isset($this->requestProcessors[$scope])) {
-                return $this->requestProcessors[$scope];
+            if (isset($this->inboxProcessors[$scope])) {
+                return $this->inboxProcessors[$scope];
             } else {
-                throw new MissingRequestProcessorException(__('Processors for {0} not found', $scope));
+                throw new MissingInboxProcessorException(__('Processors for {0} not found', $scope));
             }
         }
     }
@@ -80,30 +80,30 @@ class RequestProcessorTable extends AppTable
     private function loadProcessors()
     {
         $processorDir = new Folder($this->processorsDirectory);
-        $processorFiles = $processorDir->find('.*RequestProcessor\.php', true);
+        $processorFiles = $processorDir->find('.*InboxProcessor\.php', true);
         foreach ($processorFiles as $processorFile) {
-            if ($processorFile == 'GenericRequestProcessor.php') {
+            if ($processorFile == 'GenericInboxProcessor.php') {
                 continue;
             }
             $processorMainClassName = str_replace('.php', '', $processorFile);
-            $processorMainClassNameShort = str_replace('RequestProcessor.php', '', $processorFile);
+            $processorMainClassNameShort = str_replace('InboxProcessor.php', '', $processorFile);
             $processorMainClass = $this->getProcessorClass($processorDir->pwd() . DS . $processorFile, $processorMainClassName);
             if (is_object($processorMainClass)) {
-                $this->requestProcessors[$processorMainClassNameShort] = $processorMainClass;
-                foreach ($this->requestProcessors[$processorMainClassNameShort]->getRegisteredActions() as $registeredAction) {
-                    $scope = $this->requestProcessors[$processorMainClassNameShort]->getScope();
+                $this->inboxProcessors[$processorMainClassNameShort] = $processorMainClass;
+                foreach ($this->inboxProcessors[$processorMainClassNameShort]->getRegisteredActions() as $registeredAction) {
+                    $scope = $this->inboxProcessors[$processorMainClassNameShort]->getScope();
                     if (!empty($this->enabledProcessors[$scope][$registeredAction])) {
-                        $this->requestProcessors[$processorMainClassNameShort]->{$registeredAction}->enabled = true;
+                        $this->inboxProcessors[$processorMainClassNameShort]->{$registeredAction}->enabled = true;
                     } else {
-                        $this->requestProcessors[$processorMainClassNameShort]->{$registeredAction}->enabled = false;
+                        $this->inboxProcessors[$processorMainClassNameShort]->{$registeredAction}->enabled = false;
                     }
                 }
             } else {
-                $this->requestProcessors[$processorMainClassNameShort] = new \stdClass();
-                $this->requestProcessors[$processorMainClassNameShort]->{$registeredAction} = new \stdClass();
-                $this->requestProcessors[$processorMainClassNameShort]->{$registeredAction}->action = "N/A";
-                $this->requestProcessors[$processorMainClassNameShort]->{$registeredAction}->enabled = false;
-                $this->requestProcessors[$processorMainClassNameShort]->{$registeredAction}->error = $processorMainClass;
+                $this->inboxProcessors[$processorMainClassNameShort] = new \stdClass();
+                $this->inboxProcessors[$processorMainClassNameShort]->{$registeredAction} = new \stdClass();
+                $this->inboxProcessors[$processorMainClassNameShort]->{$registeredAction}->action = "N/A";
+                $this->inboxProcessors[$processorMainClassNameShort]->{$registeredAction}->enabled = false;
+                $this->inboxProcessors[$processorMainClassNameShort]->{$registeredAction}->error = $processorMainClass;
             }
         }
     }

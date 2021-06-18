@@ -61,8 +61,8 @@ class InboxController extends AppController
     {
         if ($this->request->is('post')) {
             $request = $this->Inbox->get($id, ['contain' => ['Users' => ['Individuals' => ['Alignments' => 'Organisations']]]]);
-            $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
-            $processor = $this->requestProcessor->getProcessor($request->scope, $request->action);
+            $this->inboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
+            $processor = $this->inboxProcessors->getProcessor($request->scope, $request->action);
             $discardResult = $processor->discard($id, $request);
             return $processor->genHTTPReply($this, $discardResult);
         }
@@ -81,11 +81,11 @@ class InboxController extends AppController
         $request = $this->Inbox->get($id, ['contain' => ['Users' => ['Individuals' => ['Alignments' => 'Organisations']]]]);
         $scope = $request->scope;
         $action = $request->action;
-        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
+        $this->inboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
         if ($scope == 'LocalTool') {
-            $processor = $this->requestProcessor->getLocalToolProcessor($action, $request->local_tool_name);
+            $processor = $this->inboxProcessors->getLocalToolProcessor($action, $request->local_tool_name);
         } else {
-            $processor = $this->requestProcessor->getProcessor($scope, $action);
+            $processor = $this->inboxProcessors->getProcessor($scope, $action);
         }
         if ($this->request->is('post')) {
             $processResult = $processor->process($id, $this->request->getData(), $request);
@@ -98,14 +98,14 @@ class InboxController extends AppController
 
     public function listProcessors()
     {
-        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
-        $requestProcessors = $this->requestProcessor->listProcessors();
+        $this->inboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
+        $processors = $this->inboxProcessors->listProcessors();
         if ($this->ParamHandler->isRest()) {
-            return $this->RestResponse->viewData($requestProcessors, 'json');
+            return $this->RestResponse->viewData($processors, 'json');
         }
         $data = [];
-        foreach ($requestProcessors as $scope => $processors) {
-            foreach ($processors as $processor) {
+        foreach ($processors as $scope => $scopedProcessors) {
+            foreach ($scopedProcessors as $processor) {
                 $data[] = [
                     'enabled' => $processor->enabled,
                     'scope' => $scope,
@@ -129,20 +129,20 @@ class InboxController extends AppController
             'user_id' => $this->ACL->getUser()['id'],
         ];
         $entryData['data'] = $this->request->getData() ?? [];
-        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
+        $this->inboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
         if ($scope == 'LocalTool') {
             $this->validateLocalToolRequestEntry($entryData);
             $entryData['origin'] = $entryData['data']['cerebrateURL'];
-            $processor = $this->requestProcessor->getLocalToolProcessor($action, $entryData['data']['connectorName']);
+            $processor = $this->inboxProcessors->getLocalToolProcessor($action, $entryData['data']['connectorName']);
             $errors = $this->Inbox->checkUserBelongsToBroodOwnerOrg($this->ACL->getUser(), $entryData);
             if (!empty($errors)) {
                 $message = __('Could not create inbox message');
                 return $this->RestResponse->ajaxFailResponse(Inflector::singularize($this->Inbox->getAlias()), 'createInboxEntry', [], $message, $errors);
             }
         } else {
-            $processor = $this->requestProcessor->getProcessor($scope, $action);
+            $processor = $this->inboxProcessors->getProcessor($scope, $action);
         }
-        $creationResult = $this->requestProcessor->createInboxEntry($processor, $entryData);
+        $creationResult = $this->inboxProcessors->createInboxEntry($processor, $entryData);
         return $processor->genHTTPReply($this, $creationResult);
     }
 

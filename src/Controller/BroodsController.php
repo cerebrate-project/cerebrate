@@ -158,8 +158,8 @@ class BroodsController extends AppController
 
     public function interconnectTools()
     {
-        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
-        $processor = $this->requestProcessor->getProcessor('Brood', 'ToolInterconnection');
+        $this->InboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
+        $processor = $this->InboxProcessors->getProcessor('Brood', 'ToolInterconnection');
         $data = [
             'origin' => '127.0.0.1',
             'comment' => 'Test comment',

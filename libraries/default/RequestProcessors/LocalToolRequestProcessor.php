@@ -3,9 +3,9 @@ use Cake\ORM\TableRegistry;
 use Cake\Filesystem\File;
 use Cake\Http\Exception\NotFoundException;
 
-require_once(ROOT . DS . 'libraries' . DS . 'default' . DS . 'RequestProcessors' . DS . 'GenericRequestProcessor.php'); 
+require_once(ROOT . DS . 'libraries' . DS . 'default' . DS . 'InboxProcessors' . DS . 'GenericInboxProcessor.php'); 
 
-class LocalToolRequestProcessor extends GenericRequestProcessor
+class LocalToolInboxProcessor extends GenericInboxProcessor
 {
     protected $scope = 'LocalTool';
     protected $action = 'not-specified'; //overriden when extending
@@ -171,7 +171,7 @@ class LocalToolRequestProcessor extends GenericRequestProcessor
     }
 }
 
-class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor implements GenericProcessorActionI {
+class IncomingConnectionRequestProcessor extends LocalToolInboxProcessor implements GenericProcessorActionI {
     public $action = 'IncomingConnectionRequest';
     protected $description;
 
@@ -283,7 +283,7 @@ class IncomingConnectionRequestProcessor extends LocalToolRequestProcessor imple
     }
 }
 
-class AcceptedRequestProcessor extends LocalToolRequestProcessor implements GenericProcessorActionI {
+class AcceptedRequestProcessor extends LocalToolInboxProcessor implements GenericProcessorActionI {
     public $action = 'AcceptedRequest';
     protected $description;
 
@@ -356,7 +356,7 @@ class AcceptedRequestProcessor extends LocalToolRequestProcessor implements Gene
     }
 }
 
-class DeclinedRequestProcessor extends LocalToolRequestProcessor implements GenericProcessorActionI {
+class DeclinedRequestProcessor extends LocalToolInboxProcessor implements GenericProcessorActionI {
     public $action = 'DeclinedRequest';
     protected $description;
 

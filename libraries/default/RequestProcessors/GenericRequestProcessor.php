@@ -12,13 +12,13 @@ interface GenericProcessorActionI
     public function discard($requestID ,$requestData);
 }
 
-class GenericRequestProcessor
+class GenericInboxProcessor
 {
     protected $Inbox;
     protected $registeredActions = [];
     protected $validator;
     protected $processingTemplate = '/genericTemplates/confirm';
-    protected $processingTemplatesDirectory = ROOT . '/libraries/default/RequestProcessors/templates';
+    protected $processingTemplatesDirectory = ROOT . '/libraries/default/InboxProcessors/templates';
 
     public function __construct($registerActions=false) {
         $this->Inbox = TableRegistry::getTableLocator()->get('Inbox');
@@ -150,7 +150,7 @@ class GenericRequestProcessor
             if ($controller->ParamHandler->isRest()) {
                 $response = $controller->RestResponse->viewData($processResult, 'json');
             } else if ($controller->ParamHandler->isAjax()) {
-                $response = $controller->RestResponse->ajaxSuccessResponse('RequestProcessor', "{$scope}.{$action}", $processResult['data'], $message);
+                $response = $controller->RestResponse->ajaxSuccessResponse('InboxProcessor', "{$scope}.{$action}", $processResult['data'], $message);
             } else {
                 $controller->Flash->success($message);
                 if (!is_null($redirect)) {
@@ -164,7 +164,7 @@ class GenericRequestProcessor
             if ($controller->ParamHandler->isRest()) {
                 $response = $controller->RestResponse->viewData($processResult, 'json');
             } else if ($controller->ParamHandler->isAjax()) {
-                $response = $controller->RestResponse->ajaxFailResponse('RequestProcessor', "{$scope}.{$action}", $processResult['data'], $message, $processResult['errors']);
+                $response = $controller->RestResponse->ajaxFailResponse('InboxProcessor', "{$scope}.{$action}", $processResult['data'], $message, $processResult['errors']);
             } else {
                 $controller->Flash->error($message);
                 if (!is_null($redirect)) {
