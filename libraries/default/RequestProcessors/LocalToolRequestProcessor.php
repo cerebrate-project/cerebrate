@@ -31,8 +31,9 @@ class LocalToolRequestProcessor extends GenericRequestProcessor
         return parent::create($requestData);
     }
 
-    protected function assignProcessingTemplate($connectorName)
+    protected function updateProcessingTemplate($request)
     {
+        $connectorName = $request->connector['connector'];
         $processingTemplatePath = sprintf('%s/%s/%s.php', $this->scope, $connectorName, $this->action);
         $file = new File($this->processingTemplatesDirectory . DS . $processingTemplatePath);
         if ($file->exists()) {

@@ -91,18 +91,13 @@ $form = $this->element('genericElements/Form/genericForm', [
     'raw' => true,
     'data' => [
         'model' => 'Inbox',
-        'fields' => [
-            [
-                'field' => 'is_discard',
-                'type' => 'checkbox',
-                'default' => false
-            ]
-        ],
+        'fields' => [],
         'submit' => [
             'action' => $this->request->getParam('action')
         ]
     ]
 ]);
+$localToolHTML = $this->fetch('content', sprintf('<div class="d-none">%s</div>', $form));
 
 $requestData = $this->Bootstrap->collapse(
     [
@@ -112,10 +107,10 @@ $requestData = $this->Bootstrap->collapse(
     sprintf('<pre class="p-2 rounded mb-0" style="background: #eeeeee55;"><code>%s</code></pre>', json_encode($request['data'], JSON_PRETTY_PRINT))
 );
 
-$bodyHtml = sprintf('<div class="py-2"><div>%s</div>%s</div><div class="d-none">%s</div>',
+$bodyHtml = sprintf('<div class="py-2"><div>%s</div>%s</div>%s',
     $table,
     $requestData,
-    $form
+    $localToolHTML
 );
 
 echo $this->Bootstrap->modal([
