@@ -250,26 +250,7 @@ class LocalToolsTable extends AppTable
     public function sendEncodedConnection($params, $encodedConnection)
     {
         $this->Broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
-        try {
-            $response = $this->Broods->sendLocalToolConnectionRequest($params, $encodedConnection);
-            $jsonReply = $response->getJson();
-            if (empty($jsonReply['success'])) {
-                $this->handleMessageNotCreated($response);
-            }
-        } catch (NotFoundException $e) {
-            return $this->handleSendingFailed($response);
-        }
+        $jsonReply = $this->Broods->sendLocalToolConnectionRequest($params, $encodedConnection);
         return $jsonReply;
-    }
-
-    public function handleSendingFailed($response)
-    {
-        // debug('sending failed. Modify state and add entry in outbox');
-        throw new NotFoundException(__('sending failed. Modify state and add entry in outbox'));
-    }
-
-    public function handleMessageNotCreated($response)
-    {
-        // debug('Saving message failed. Modify state and add entry in outbox');
     }
 }

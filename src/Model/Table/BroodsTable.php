@@ -228,11 +228,20 @@ class BroodsTable extends AppTable
         return $data;
     }
 
-    public function sendLocalToolConnectionRequest($params, $data): Response
+    public function sendLocalToolConnectionRequest($params, $data): array
     {
         $url = '/inbox/createInboxEntry/LocalTool/IncomingConnectionRequest';
         $data = $this->injectRequiredData($params, $data);
-        return $this->sendRequest($params['remote_cerebrate'], $url, true, $data);
+        $response = $this->sendRequest($params['remote_cerebrate'], $url, true, $data);
+        try {
+            $jsonReply = $response->getJson();
+            if (empty($jsonReply['success'])) {
+                $this->handleMessageNotCreated($response);
+            }
+        } catch (NotFoundException $e) {
+            $jsonReply = $this->handleSendingFailed($response);
+        }
+        return $jsonReply;
     }
 
     public function sendLocalToolAcceptedRequest($params, $data): Response
@@ -247,5 +256,28 @@ class BroodsTable extends AppTable
         $url = '/inbox/createInboxEntry/LocalTool/DeclinedRequest';
         $data = $this->injectRequiredData($params, $data);
         return $this->sendRequest($params['remote_cerebrate'], $url, true, $data);
+    }
+    
+    /**
+     * handleSendingFailed - Handle the case if the request could not be sent or if the remote rejected the connection request
+     *
+     * @param  Object $response
+     * @return array
+     */
+    private function handleSendingFailed(Object $response): array
+    {
+        // debug('sending failed. Modify state and add entry in outbox');
+        throw new NotFoundException(__('sending failed. Modify state and add entry in outbox'));
+    }
+    
+    /**
+     * handleMessageNotCreated - Handle the case if the request was sent but the remote brood did not save the message in the inbox
+     *
+     * @param  Object $response
+     * @return array
+     */
+    private function handleMessageNotCreated(Object $response): array
+    {
+        // debug('Saving message failed. Modify state and add entry in outbox');
     }
 }
