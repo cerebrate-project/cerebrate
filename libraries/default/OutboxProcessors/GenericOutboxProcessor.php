@@ -4,24 +4,25 @@ use Cake\Filesystem\File;
 use Cake\Utility\Inflector;
 use Cake\Validation\Validator;
 use Cake\View\ViewBuilder;
+use Cake\Routing\Router;
 
 interface GenericProcessorActionI
 {
     public function create($requestData);
-    public function process($requestID, $serverRequest, $inboxRequest);
+    public function process($requestID, $serverRequest, $outboxRequest);
     public function discard($requestID ,$requestData);
 }
 
-class GenericInboxProcessor
+class GenericOutboxProcessor
 {
-    protected $Inbox;
+    protected $Outbox;
     protected $registeredActions = [];
     protected $validator;
     protected $processingTemplate = '/genericTemplates/confirm';
-    protected $processingTemplatesDirectory = ROOT . '/libraries/default/InboxProcessors/templates';
+    protected $processingTemplatesDirectory = ROOT . '/libraries/default/OutboxProcessors/templates';
 
     public function __construct($registerActions=false) {
-        $this->Inbox = TableRegistry::getTableLocator()->get('Inbox');
+        $this->Outbox = TableRegistry::getTableLocator()->get('Outbox');
         if ($registerActions) {
             $this->registerActionInProcessor();
         }
@@ -84,8 +85,8 @@ class GenericInboxProcessor
 
     protected function generateRequest($requestData)
     {
-        $request = $this->Inbox->newEmptyEntity();
-        $request = $this->Inbox->patchEntity($request, $requestData);
+        $request = $this->Outbox->newEmptyEntity();
+        $request = $this->Outbox->patchEntity($request, $requestData);
         if ($request->getErrors()) {
             throw new Exception(__('Could not create request.{0}Reason: {1}', PHP_EOL, json_encode($request->getErrors())), 1);
         }
@@ -126,7 +127,7 @@ class GenericInboxProcessor
             'title' => !empty($title) ? $title : __('Process request {0}', $id),
             'question' => !empty($question) ? $question : __('Confirm request {0}', $id),
             'actionName' => !empty($actionName) ? $actionName : __('Confirm'),
-            'path' => ['controller' => 'inbox', 'action' => 'process', $id]
+            'path' => ['controller' => 'outbox', 'action' => 'process', $id]
         ];
     }
 
@@ -154,7 +155,7 @@ class GenericInboxProcessor
             if ($controller->ParamHandler->isRest()) {
                 $response = $controller->RestResponse->viewData($processResult, 'json');
             } else if ($controller->ParamHandler->isAjax()) {
-                $response = $controller->RestResponse->ajaxSuccessResponse('InboxProcessor', "{$scope}.{$action}", $processResult['data'], $message);
+                $response = $controller->RestResponse->ajaxSuccessResponse('OutboxProcessor', "{$scope}.{$action}", $processResult['data'], $message);
             } else {
                 $controller->Flash->success($message);
                 if (!is_null($redirect)) {
@@ -168,7 +169,7 @@ class GenericInboxProcessor
             if ($controller->ParamHandler->isRest()) {
                 $response = $controller->RestResponse->viewData($processResult, 'json');
             } else if ($controller->ParamHandler->isAjax()) {
-                $response = $controller->RestResponse->ajaxFailResponse('InboxProcessor', "{$scope}.{$action}", $processResult['data'], $message, $processResult['errors']);
+                $response = $controller->RestResponse->ajaxFailResponse('OutboxProcessor', "{$scope}.{$action}", $processResult['data'], $message, $processResult['errors']);
             } else {
                 $controller->Flash->error($message);
                 if (!is_null($redirect)) {
@@ -189,11 +190,13 @@ class GenericInboxProcessor
     
     public function create($requestData)
     {
+        $user_id = Router::getRequest()->getSession()->read('Auth.id');
         $requestData['scope'] = $this->scope;
         $requestData['action'] = $this->action;
         $requestData['description'] = $this->description;
+        $requestData['user_id'] = $user_id;
         $request = $this->generateRequest($requestData);
-        $savedRequest = $this->Inbox->createEntry($request);
+        $savedRequest = $this->Outbox->createEntry($request);
         return $this->genActionResult(
             $savedRequest,
             $savedRequest !== false,
@@ -204,8 +207,8 @@ class GenericInboxProcessor
 
     public function discard($id, $requestData)
     {
-        $request = $this->Inbox->get($id);
-        $this->Inbox->delete($request);
+        $request = $this->Outbox->get($id);
+        $this->Outbox->delete($request);
         return $this->genActionResult(
             [],
             true,

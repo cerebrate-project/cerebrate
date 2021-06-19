@@ -23,6 +23,7 @@ class MonadView extends AppView
 {
     private $additionalTemplatePaths = [
         ROOT . '/libraries/default/InboxProcessors/templates/',
+        ROOT . '/libraries/default/OutboxProcessors/templates/',
     ];
 
     protected function _paths(?string $plugin = null, bool $cached = true): array

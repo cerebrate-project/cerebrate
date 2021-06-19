@@ -237,7 +237,7 @@ class LocalToolsController extends AppController
                     $response = $this->RestResponse->ajaxSuccessResponse('LocalTool', 'connectionRequest', [], $inboxResult['message']);
                 } else {
                     $this->Flash->success($inboxResult['message']);
-                    $this->redirect(['action' => 'broodTools', $cerebrate_id]);
+                    $response = $this->redirect(['action' => 'broodTools', $cerebrate_id]);
                 }
             } else {
                 if ($this->ParamHandler->isRest()) {
@@ -246,7 +246,7 @@ class LocalToolsController extends AppController
                     $response = $this->RestResponse->ajaxFailResponse('LocalTool', 'connectionRequest', [], $inboxResult['message'], $inboxResult['errors']);
                 } else {
                     $this->Flash->error($inboxResult['message']);
-                    $this->redirect($this->referer());
+                    $response = $this->redirect($this->referer());
                 }
             }
             return $response;

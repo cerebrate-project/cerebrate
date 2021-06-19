@@ -14,9 +14,9 @@ use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\ForbiddenException;
 
 
-class InboxController extends AppController
+class OutboxController extends AppController
 {
-    public $filters = ['scope', 'action', 'title', 'origin', 'comment'];
+    public $filters = ['scope', 'action', 'title', 'comment'];
 
     public function beforeFilter(EventInterface $event)
     {
@@ -59,13 +59,6 @@ class InboxController extends AppController
 
     public function delete($id)
     {
-        if ($this->request->is('post')) {
-            $request = $this->Inbox->get($id, ['contain' => ['Users' => ['Individuals' => ['Alignments' => 'Organisations']]]]);
-            $this->inboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
-            $processor = $this->inboxProcessors->getProcessor($request->scope, $request->action);
-            $discardResult = $processor->discard($id, $request);
-            return $processor->genHTTPReply($this, $discardResult);
-        }
         $this->set('deletionTitle', __('Discard request'));
         $this->set('deletionText', __('Are you sure you want to discard request #{0}?', $id));
         $this->set('deletionConfirm', __('Discard'));
@@ -78,15 +71,11 @@ class InboxController extends AppController
 
     public function process($id)
     {
-        $request = $this->Inbox->get($id, ['contain' => ['Users' => ['Individuals' => ['Alignments' => 'Organisations']]]]);
+        $request = $this->Outbox->get($id, ['contain' => ['Users' => ['Individuals' => ['Alignments' => 'Organisations']]]]);
         $scope = $request->scope;
         $action = $request->action;
-        $this->InboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
-        if ($scope == 'LocalTool') {
-            $processor = $this->InboxProcessors->getLocalToolProcessor($action, $request->local_tool_name);
-        } else {
-            $processor = $this->InboxProcessors->getProcessor($scope, $action);
-        }
+        $this->outboxProcessors = TableRegistry::getTableLocator()->get('OutboxProcessors');
+        $processor = $this->outboxProcessors->getProcessor($scope, $action);
         if ($this->request->is('post')) {
             $processResult = $processor->process($id, $this->request->getData(), $request);
             return $processor->genHTTPReply($this, $processResult);
@@ -98,8 +87,8 @@ class InboxController extends AppController
 
     public function listProcessors()
     {
-        $this->inboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
-        $processors = $this->inboxProcessors->listProcessors();
+        $this->OutboxProcessors = TableRegistry::getTableLocator()->get('OutboxProcessors');
+        $processors = $this->OutboxProcessors->listProcessors();
         if ($this->ParamHandler->isRest()) {
             return $this->RestResponse->viewData($processors, 'json');
         }
@@ -125,31 +114,12 @@ class InboxController extends AppController
             throw new MethodNotAllowedException(__('Only POST method is accepted'));
         }
         $entryData = [
-            'origin' => $this->request->clientIp(),
             'user_id' => $this->ACL->getUser()['id'],
         ];
         $entryData['data'] = $this->request->getData() ?? [];
-        $this->inboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
-        if ($scope == 'LocalTool') {
-            $this->validateLocalToolRequestEntry($entryData);
-            $entryData['origin'] = $entryData['data']['cerebrateURL'];
-            $processor = $this->inboxProcessors->getLocalToolProcessor($action, $entryData['data']['connectorName']);
-            $errors = $this->Inbox->checkUserBelongsToBroodOwnerOrg($this->ACL->getUser(), $entryData);
-            if (!empty($errors)) {
-                $message = __('Could not create inbox message');
-                return $this->RestResponse->ajaxFailResponse(Inflector::singularize($this->Inbox->getAlias()), 'createEntry', [], $message, $errors);
-            }
-        } else {
-            $processor = $this->inboxProcessors->getProcessor($scope, $action);
-        }
-        $creationResult = $this->inboxProcessors->createInboxEntry($processor, $entryData);
+        $this->OutboxProcessors = TableRegistry::getTableLocator()->get('OutboxProcessors');
+        $processor = $this->OutboxProcessors->getProcessor($scope, $action);
+        $creationResult = $this->OutboxProcessors->createOutboxEntry($processor, $entryData);
         return $processor->genHTTPReply($this, $creationResult);
-    }
-
-    private function validateLocalToolRequestEntry($entryData)
-    {
-        if (empty($entryData['data']['connectorName']) || empty($entryData['data']['cerebrateURL'])) {
-            throw new MethodNotAllowedException(__('Could not create entry. Tool name or URL is missing'));
-        }
     }
 }

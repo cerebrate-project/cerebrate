@@ -212,11 +212,7 @@ class BroodsTable extends AppTable
         } else {
             $response = $http->get($brood->url, $data, $config);
         }
-        if ($response->isOk()) {
-            return $response;
-        } else {
-            throw new NotFoundException(__('Could not send to the requested resource.'));
-        }
+        return $response;
     }
 
     private function injectRequiredData($params, $data): Array
@@ -230,30 +226,30 @@ class BroodsTable extends AppTable
 
     public function sendLocalToolConnectionRequest($params, $data): array
     {
-        $url = '/inbox/createInboxEntry/LocalTool/IncomingConnectionRequest';
+        $url = '/inbox/createEntry/LocalTool/IncomingConnectionRequest';
         $data = $this->injectRequiredData($params, $data);
-        $response = $this->sendRequest($params['remote_cerebrate'], $url, true, $data);
         try {
+            $response = $this->sendRequest($params['remote_cerebrate'], $url, true, $data);
             $jsonReply = $response->getJson();
             if (empty($jsonReply['success'])) {
-                $this->handleMessageNotCreated($response);
+                $jsonReply = $this->handleMessageNotCreated($params['remote_cerebrate'], $url, $data, 'LocalTool', 'IncomingConnectionRequest', $response, $params);
             }
         } catch (NotFoundException $e) {
-            $jsonReply = $this->handleSendingFailed($response);
+            $jsonReply = $this->handleSendingFailed($params['remote_cerebrate'], $url, $data, 'LocalTool', 'IncomingConnectionRequest', $e, $params);
         }
         return $jsonReply;
     }
 
     public function sendLocalToolAcceptedRequest($params, $data): Response
     {
-        $url = '/inbox/createInboxEntry/LocalTool/AcceptedRequest';
+        $url = '/inbox/createEntry/LocalTool/AcceptedRequest';
         $data = $this->injectRequiredData($params, $data);
         return $this->sendRequest($params['remote_cerebrate'], $url, true, $data);
     }
 
     public function sendLocalToolDeclinedRequest($params, $data): Response
     {
-        $url = '/inbox/createInboxEntry/LocalTool/DeclinedRequest';
+        $url = '/inbox/createEntry/LocalTool/DeclinedRequest';
         $data = $this->injectRequiredData($params, $data);
         return $this->sendRequest($params['remote_cerebrate'], $url, true, $data);
     }
@@ -264,10 +260,19 @@ class BroodsTable extends AppTable
      * @param  Object $response
      * @return array
      */
-    private function handleSendingFailed(Object $response): array
+    private function handleSendingFailed($brood, $url, $data, $model, $action, $e, $params): array
     {
-        // debug('sending failed. Modify state and add entry in outbox');
-        throw new NotFoundException(__('sending failed. Modify state and add entry in outbox'));
+        $reason = [
+            'message' => __('Failed to send message to remote cerebrate. It has been placed in the outbox.'),
+            'errors' => [$e->getMessage()],
+        ];
+        $this->saveErrorInOutbox($brood, $url, $data, $reasonMessage, $params);
+        $creationResult = [
+            'success' => false,
+            'message' => $reason['message'],
+            'errors' => $reason['errors'],
+        ];
+        return $creationResult;
     }
     
     /**
@@ -276,8 +281,43 @@ class BroodsTable extends AppTable
      * @param  Object $response
      * @return array
      */
-    private function handleMessageNotCreated(Object $response): array
+    private function handleMessageNotCreated($brood, $url, $data, $model, $action, $response, $params): array
     {
-        // debug('Saving message failed. Modify state and add entry in outbox');
+        $responseErrors = $response->getStringBody();
+        if (!is_null($response->getJson())) {
+            $responseErrors = $response->getJson()['errors'] ?? $response->getJson()['message'];
+        }
+        $reason = [
+            'message' => __('Message rejected by the remote cerebrate. It has been placed in the outbox.'),
+            'errors' => [$responseErrors],
+        ];
+        $this->saveErrorInOutbox($brood, $url, $data, $reason, $model, $action, $params);
+        $creationResult = [
+            'success' => false,
+            'message' => $reason['message'],
+            'errors' => $reason['errors'],
+        ];
+        return $creationResult;
+    }
+
+    private function saveErrorInOutbox($brood, $url, $data, $reason, $model, $action, $params): array
+    {
+        $this->OutboxProcessors = TableRegistry::getTableLocator()->get('OutboxProcessors');
+        $processor = $this->OutboxProcessors->getProcessor('Broods', 'ResendFailedMessage');
+        $entryData = [
+            'data' => [
+                'sent' => $data,
+                'url' => $url,
+                'brood_id' => $brood->id,
+                'reason' => $reason,
+                'local_tool_id' => $params['connection']['id'],
+                'remote_tool' => $params['remote_tool'],
+            ],
+            'brood' => $brood,
+            'model' => $model,
+            'action' => $action,
+        ];
+        $creationResult = $processor->create($entryData);
+        return $creationResult;
     }
 }
