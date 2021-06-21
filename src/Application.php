@@ -28,7 +28,6 @@ use Authentication\AuthenticationService;
 use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
 use Authentication\Middleware\AuthenticationMiddleware;
-use Cake\Http\Middleware\BodyParserMiddleware;
 use Psr\Http\Message\ServerRequestInterface;
 /**
  * Application setup class.
