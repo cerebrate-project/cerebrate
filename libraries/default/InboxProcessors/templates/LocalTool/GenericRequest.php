@@ -14,7 +14,7 @@ $defaultSteps = [
         'confirmButton' => __('Finalize Connection')
     ],
     [
-        'text' => __('Connection done'),
+        'text' => __('Connection Done'),
         'icon' => 'exchange-alt',
         'title' => __(''),
     ]
