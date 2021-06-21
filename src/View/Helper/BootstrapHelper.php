@@ -86,6 +86,12 @@ class BootstrapHelper extends Helper
         $bsModal = new BoostrapModal($options);
         return $bsModal->modal();
     }
+    
+    public function card($options)
+    {
+        $bsCard = new BoostrapCard($options);
+        return $bsCard->card();
+    }
 
     public function progress($options)
     {
@@ -609,7 +615,7 @@ class BoostrapTable extends BootstrapGeneric {
 
     private function genCaption()
     {
-        return $this->genNode('caption', [], h($this->caption));
+        return !empty($this->caption) ? $this->genNode('caption', [], h($this->caption)) : '';
     }
 }
 
@@ -914,6 +920,98 @@ class BoostrapModal extends BootstrapGeneric {
             ]))->button();
         }
         return implode('', $buttons);
+    }
+}
+
+class BoostrapCard extends BootstrapGeneric
+{
+    private $defaultOptions = [
+        'variant' => '',
+        'headerText' => '',
+        'footerText' => '',
+        'bodyText' => '',
+        'headerHTML' => '',
+        'footerHTML' => '',
+        'bodyHTML' => '',
+        'headerClass' => '',
+        'bodyClass' => '',
+        'footerClass' => '',
+    ];
+
+    public function __construct($options)
+    {
+        $this->allowedOptionValues = [
+            'variant' => array_merge(BootstrapGeneric::$variants, ['']),
+        ];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function card()
+    {
+        return $this->genCard();
+    }
+
+    private function genCard()
+    {
+        $card = $this->genNode('div', [
+            'class' => [
+                'card',
+                !empty($this->options['variant']) ? "bg-{$this->options['variant']}" : '',
+                !empty($this->options['variant']) ? $this->getTextClassForVariant($this->options['variant']) : '',
+            ],
+        ], implode('', [$this->genHeader(), $this->genBody(), $this->genFooter()]));
+        return $card;
+    }
+
+    private function genHeader()
+    {
+        if (empty($this->options['headerHTML']) && empty($this->options['headerText'])) {
+            return '';
+        }
+        $content = !empty($this->options['headerHTML']) ? $this->options['headerHTML'] : h($this->options['headerText']);
+        $header = $this->genNode('div', [
+            'class' => [
+                'card-header',
+                h($this->options['headerClass']),
+            ],
+        ], $content);
+        return $header;
+    }
+
+    private function genBody()
+    {
+        if (empty($this->options['bodyHTML']) && empty($this->options['bodyText'])) {
+            return '';
+        }
+        $content = !empty($this->options['bodyHTML']) ? $this->options['bodyHTML'] : h($this->options['bodyText']);
+        $body = $this->genNode('div', [
+            'class' => [
+                'card-body',
+                h($this->options['bodyClass']),
+            ],
+        ], $content);
+        return $body;
+    }
+
+    private function genFooter()
+    {
+        if (empty($this->options['footerHTML']) && empty($this->options['footerText'])) {
+            return '';
+        }
+        $content = !empty($this->options['footerHTML']) ? $this->options['footerHTML'] : h($this->options['footerText']);
+        $footer = $this->genNode('div', [
+            'class' => [
+                'card-footer',
+                h($this->options['footerClass']),
+            ],
+        ], $content);
+        return $footer;
     }
 }
 
