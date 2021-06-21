@@ -91,6 +91,9 @@ class AppController extends Controller
         $this->loadModel('Users');
         $this->Users->checkForNewInstance();
         $this->authApiUser();
+        if ($this->ParamHandler->isRest()) {
+            $this->Security->setConfig('unlockedActions', [$this->request->getParam('action')]);
+        }
         $this->ACL->setPublicInterfaces();
         if (!empty($this->request->getAttribute('identity'))) {
             $user = $this->Users->get($this->request->getAttribute('identity')->getIdentifier(), [
