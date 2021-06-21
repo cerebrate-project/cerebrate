@@ -31,7 +31,7 @@ $tools = sprintf(
     sprintf('<i class="%s fa-lg"></i>', $this->FontAwesome->getClass('long-arrow-alt-right')),
     sprintf('<span class="ml-2 d-inline-flex flex-column"><a href="%s" target="_blank" title="%s">%s</a><i style="font-size: medium;" class="text-center">%s</i></span>',
         sprintf('/localTools/broodTools/%s', h($request['data']['remote_tool']['id'])),
-        h($request['data']['remote_tool']['description']),
+        h($request['data']['remote_tool']['description'] ?? ''),
         h($request['data']['remote_tool']['name']),
         __('(remote tool)')
     )

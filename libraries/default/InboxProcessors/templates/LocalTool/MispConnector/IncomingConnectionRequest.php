@@ -18,4 +18,4 @@ $form = $this->element('genericElements/Form/genericForm', [
         ]
     ]
 ]);
-echo sprintf('<div class="d-none">%s</div>', $form);
+echo sprintf('<div class="d-none">%s</div><div class="form-error-container"></div>', $form);

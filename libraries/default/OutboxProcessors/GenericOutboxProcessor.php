@@ -6,7 +6,7 @@ use Cake\Validation\Validator;
 use Cake\View\ViewBuilder;
 use Cake\Routing\Router;
 
-interface GenericProcessorActionI
+interface GenericOutboxProcessorActionI
 {
     public function create($requestData);
     public function process($requestID, $serverRequest, $outboxRequest);

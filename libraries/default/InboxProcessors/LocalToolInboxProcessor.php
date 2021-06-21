@@ -145,11 +145,13 @@ class LocalToolInboxProcessor extends GenericInboxProcessor
             'remote_tool' => [
                 'id' => $remote_tool_id,
                 'connector' => $connector->connectorName,
+                'name' => $requestData['tool_name'],
             ],
             'remote_org' => $remote_org,
             'remote_tool_data' => $requestData,
             'remote_cerebrate' => $remoteCerebrate,
             'connection' => $connection,
+            'connector' => [$connector->connectorName => $connector],
         ];
     }
 
@@ -171,7 +173,7 @@ class LocalToolInboxProcessor extends GenericInboxProcessor
     }
 }
 
-class IncomingConnectionRequestProcessor extends LocalToolInboxProcessor implements GenericProcessorActionI {
+class IncomingConnectionRequestProcessor extends LocalToolInboxProcessor implements GenericInboxProcessorActionI {
     public $action = 'IncomingConnectionRequest';
     protected $description;
 
@@ -212,7 +214,7 @@ class IncomingConnectionRequestProcessor extends LocalToolInboxProcessor impleme
         $connector = $this->getConnector($inboxRequest);
         if (!empty($requestData['is_discard'])) { // -> declined
             $connectorResult = $this->declineConnection($connector, $remoteCerebrate, $inboxRequest['data']); // Fire-and-forget?
-            $connectionSuccessfull = true;
+            $connectionSuccessfull = !empty($connectorResult['success']);
             $resultTitle = __('Could not sent declined message to `{0}`\'s  for {1}', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
             $errors = [];
             if ($connectionSuccessfull) {
@@ -222,16 +224,20 @@ class IncomingConnectionRequestProcessor extends LocalToolInboxProcessor impleme
         } else {
             $errors = [];
             $connectorResult = [];
+            $thrownErrorMessage = '';
             try {
                 $connectorResult = $this->acceptConnection($connector, $remoteCerebrate, $inboxRequest['data']);
-                $connectionSuccessfull = true;
+                $connectionSuccessfull = !empty($connectorResult['success']);
             } catch (\Throwable $th) {
                 $connectionSuccessfull = false;
-                $errors = $th->getMessage();
+                $thrownErrorMessage = $th->getMessage();
             }
-            $resultTitle = __('Could not inter-connect `{0}`\'s {1}', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
+            $resultTitle = $connectorResult['message'] ?? __('Could not inter-connect `{0}`\'s {1}', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
+            $errors = $connectorResult['errors'] ?? $thrownErrorMessage;
             if ($connectionSuccessfull) {
                 $resultTitle = __('Interconnection for `{0}`\'s {1} created', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
+            }
+            if ($connectionSuccessfull || !empty($connectorResult['placed_in_outbox'])) {
                 $this->discard($id, $inboxRequest);
             }
         }
@@ -252,7 +258,7 @@ class IncomingConnectionRequestProcessor extends LocalToolInboxProcessor impleme
     {
         $connection = $this->getConnection($requestData);
         $params = $this->genBroodParam($remoteCerebrate, $connection, $connector, $requestData);
-        $connectorResult = $connector->acceptConnection($params);
+        $connectorResult = $connector->acceptConnectionWrapper($params);
         $response = $this->sendAcceptedRequestToRemote($params, $connectorResult);
         return $response;
     }
@@ -261,7 +267,7 @@ class IncomingConnectionRequestProcessor extends LocalToolInboxProcessor impleme
     {
         $connection = $this->getConnection($requestData);
         $params = $this->genBroodParam($remoteCerebrate, $connection, $connector, $requestData);
-        $connectorResult = $connector->declineConnection($params);
+        $connectorResult = $connector->declineConnectionWrapper($params);
         $response = $this->sendDeclinedRequestToRemote($params, $connectorResult);
         return $response;
     }
@@ -269,21 +275,17 @@ class IncomingConnectionRequestProcessor extends LocalToolInboxProcessor impleme
     protected function sendAcceptedRequestToRemote($params, $connectorResult)
     {
         $response = $this->Broods->sendLocalToolAcceptedRequest($params, $connectorResult);
-        // change state if sending fails
-        // add the entry to the outbox if sending fails.
-        return $response->getJson();
+        return $response;
     }
 
     protected function sendDeclinedRequestToRemote($remoteCerebrate, $connectorResult)
     {
         $response = $this->Broods->sendLocalToolDeclinedRequest($params, $connectorResult);
-        // change state if sending fails
-        // add the entry to the outbox if sending fails.
-        return $response->getJson();
+        return $response;
     }
 }
 
-class AcceptedRequestProcessor extends LocalToolInboxProcessor implements GenericProcessorActionI {
+class AcceptedRequestProcessor extends LocalToolInboxProcessor implements GenericInboxProcessorActionI {
     public $action = 'AcceptedRequest';
     protected $description;
 
@@ -321,21 +323,22 @@ class AcceptedRequestProcessor extends LocalToolInboxProcessor implements Generi
 
         $errors = [];
         $connectorResult = [];
+        $thrownErrorMessage = '';
         try {
-            $connectorResult = $this->finalizeConnection($connector, $remoteCerebrate, $inboxRequest['data']);
-            $connectionSuccessfull = true;
+            $connectorResult = $this->finaliseConnection($connector, $remoteCerebrate, $inboxRequest['data']);
+            $connectionSuccessfull = !empty($connectorResult['success']);
         } catch (\Throwable $th) {
             $connectionSuccessfull = false;
             $errors = $th->getMessage();
         }
-        $connectionData = [];
         $resultTitle = __('Could not finalize inter-connection for `{0}`\'s {1}', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
+        $errors = $connectorResult['errors'] ?? $thrownErrorMessage;
         if ($connectionSuccessfull) {
             $resultTitle = __('Interconnection for `{0}`\'s {1} finalized', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
             $this->discard($id, $requestData);
         }
         return $this->genActionResult(
-            $connectionData,
+            $connectorResult,
             $connectionSuccessfull,
             $resultTitle,
             $errors
@@ -347,16 +350,18 @@ class AcceptedRequestProcessor extends LocalToolInboxProcessor implements Generi
         return parent::discard($id, $requestData);
     }
 
-    protected function finalizeConnection($connector, $remoteCerebrate, $requestData)
+    protected function finaliseConnection($connector, $remoteCerebrate, $requestData)
     {
         $connection = $this->getConnection($requestData);
         $params = $this->genBroodParam($remoteCerebrate, $connection, $connector, $requestData);
-        $connectorResult = $connector->finaliseConnection($params);
-        return $connectorResult;
+        $connectorResult = $connector->finaliseConnectionWrapper($params);
+        return [
+            'success' => true
+        ];
     }
 }
 
-class DeclinedRequestProcessor extends LocalToolInboxProcessor implements GenericProcessorActionI {
+class DeclinedRequestProcessor extends LocalToolInboxProcessor implements GenericInboxProcessorActionI {
     public $action = 'DeclinedRequest';
     protected $description;
 

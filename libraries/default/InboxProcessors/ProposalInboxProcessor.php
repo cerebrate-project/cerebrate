@@ -22,7 +22,7 @@ class ProposalInboxProcessor extends GenericInboxProcessor
     }
 }
 
-class ProposalEditProcessor extends ProposalInboxProcessor implements GenericProcessorActionI {
+class ProposalEditProcessor extends ProposalInboxProcessor implements GenericInboxProcessorActionI {
     public $action = 'ProposalEdit';
     protected $description;
 

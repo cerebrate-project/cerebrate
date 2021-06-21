@@ -24,7 +24,7 @@ class UserInboxProcessor extends GenericInboxProcessor
     }
 }
 
-class RegistrationProcessor extends UserInboxProcessor implements GenericProcessorActionI {
+class RegistrationProcessor extends UserInboxProcessor implements GenericInboxProcessorActionI {
     public $action = 'Registration';
     protected $description;
 

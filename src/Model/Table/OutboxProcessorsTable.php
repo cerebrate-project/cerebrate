@@ -25,7 +25,9 @@ class OutboxProcessorsTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
-        $this->loadProcessors();
+        if (empty($this->outboxProcessors)) {
+            $this->loadProcessors();
+        }
     }
 
     public function getProcessor($scope, $action=null)

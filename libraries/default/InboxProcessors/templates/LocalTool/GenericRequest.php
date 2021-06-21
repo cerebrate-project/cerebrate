@@ -97,7 +97,7 @@ $form = $this->element('genericElements/Form/genericForm', [
         ]
     ]
 ]);
-$localToolHTML = $this->fetch('content', sprintf('<div class="d-none">%s</div>', $form));
+$localToolHTML = $this->fetch('content', sprintf('<div class="d-none">%s</div><div class="form-error-container"></div>', $form));;
 
 $requestData = $this->Bootstrap->collapse(
     [
@@ -129,7 +129,12 @@ echo $this->Bootstrap->modal([
 <script>
     function accept(modalObject, tmpApi) {
         const $form = modalObject.$modal.find('form')
-        return tmpApi.postForm($form[0])
+        return tmpApi.postForm($form[0]).catch((errors) => {
+            const formHelper = new FormValidationHelper($form[0])
+            const errorHTMLNode = formHelper.buildValidationMessageNode(errors, true)
+            modalObject.$modal.find('div.form-error-container').append(errorHTMLNode)
+            return errors
+        })
     }
     function discard(modalObject, tmpApi) {
         const $form = modalObject.$modal.find('form')

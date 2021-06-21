@@ -22,7 +22,7 @@ class SynchronisationInboxProcessor extends GenericInboxProcessor
     }
 }
 
-class DataExchangeProcessor extends SynchronisationInboxProcessor implements GenericProcessorActionI {
+class DataExchangeProcessor extends SynchronisationInboxProcessor implements GenericInboxProcessorActionI {
     public $action = 'DataExchange';
     protected $description;
 

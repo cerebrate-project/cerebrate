@@ -22,7 +22,7 @@ class BroodInboxProcessor extends GenericInboxProcessor
     }
 }
 
-class ToolInterconnectionProcessor extends BroodInboxProcessor implements GenericProcessorActionI {
+class ToolInterconnectionProcessor extends BroodInboxProcessor implements GenericInboxProcessorActionI {
     public $action = 'ToolInterconnection';
     protected $description;
 

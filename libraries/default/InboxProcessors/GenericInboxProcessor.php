@@ -5,7 +5,7 @@ use Cake\Utility\Inflector;
 use Cake\Validation\Validator;
 use Cake\View\ViewBuilder;
 
-interface GenericProcessorActionI
+interface GenericInboxProcessorActionI
 {
     public function create($requestData);
     public function process($requestID, $serverRequest, $inboxRequest);

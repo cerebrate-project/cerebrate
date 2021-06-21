@@ -22,7 +22,7 @@ class SCOPE_OutboxProcessor extends GenericOutboxProcessor
     }
 }
 
-class SCOPE_ACTION_Processor extends ProposalOutboxProcessor implements GenericProcessorActionI {
+class SCOPE_ACTION_Processor extends ProposalOutboxProcessor implements GenericOutboxProcessorActionI {
     public $action = 'ACTION';
     protected $description;
 

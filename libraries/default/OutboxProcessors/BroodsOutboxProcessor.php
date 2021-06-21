@@ -36,9 +36,34 @@ class BroodsOutboxProcessor extends GenericOutboxProcessor
             ->first();
         return $tool;
     }
+
+    protected function getConnector($className)
+    {
+        try {
+            $connectorClasses = $this->LocalTools->getConnectors($className);
+            if (!empty($connectorClasses)) {
+                $connector = array_values($connectorClasses)[0];
+            }
+        } catch (NotFoundException $e) {
+            $connector = null;
+        }
+        return $connector;
+    }
+
+    protected function setRemoteToolConnectionStatus(Object $brood, Object $outboxRequest, String $status): void
+    {
+        $connector = $this->getConnector($outboxRequest->data['remote_tool']['connector']);
+        $connection = $this->getLocalTool($outboxRequest->data['local_tool_id']);
+        $connectorParams = [
+            'connection' => $connection,
+            'remote_tool' => $outboxRequest->data['remote_tool'],
+            'remote_cerebrate' => $brood,
+        ];
+        $connector->remoteToolConnectionStatus($connectorParams, constant(get_class($connector) . '::' . $status));
+    }
 }
 
-class ResendFailedMessageProcessor extends BroodsOutboxProcessor implements GenericProcessorActionI {
+class ResendFailedMessageProcessor extends BroodsOutboxProcessor implements GenericOutboxProcessorActionI {
     public $action = 'ResendFailedMessage';
     protected $description;
 
@@ -74,12 +99,13 @@ class ResendFailedMessageProcessor extends BroodsOutboxProcessor implements Gene
 
     public function process($id, $requestData, $outboxRequest)
     {
+        $brood = $this->getIssuerBrood((int) $outboxRequest->data['brood_id']);
         if (!empty($requestData['is_delete'])) { // -> declined
             $success = true;
             $messageSucess = __('Message successfully deleted');
             $messageFail = '';
+            $this->setRemoteToolConnectionStatus($brood, $outboxRequest, 'STATE_CANCELLED');
         } else {
-            $brood = $this->getIssuerBrood((int) $outboxRequest->data['brood_id']);
             $url = $outboxRequest->data['url'];
             $dataSent = $outboxRequest->data['sent'];
             $dataSent['connectorName'] = 'MispConnector';
@@ -88,6 +114,11 @@ class ResendFailedMessageProcessor extends BroodsOutboxProcessor implements Gene
             $success = !empty($jsonReply['success']);
             $messageSuccess = __('Message successfully sent to `{0}`', $brood->name);
             $messageFail = __('Could not send message to `{0}`.', $brood->name);
+            if ($success) {
+                $this->setRemoteToolConnectionStatus($brood, $outboxRequest, $outboxRequest->data['next_connector_state']);
+            } else {
+                $this->setRemoteToolConnectionStatus($brood, $outboxRequest, 'STATE_SENDING_ERROR');
+            }
         }
         if ($success) {
             $this->discard($id, $requestData);

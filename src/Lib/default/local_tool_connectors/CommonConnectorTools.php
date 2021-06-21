@@ -16,6 +16,9 @@ class CommonConnectorTools
     const STATE_INITIAL = 'Request issued';
     const STATE_ACCEPT = 'Request accepted';
     const STATE_CONNECTED = 'Connected';
+    const STATE_SENDING_ERROR = 'Error while sending request';
+    const STATE_CANCELLED = 'Request cancelled';
+    const STATE_DECLINED = 'Request declined by remote';
 
     public function addExposedFunction(string $functionName): void
     {
