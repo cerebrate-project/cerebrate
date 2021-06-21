@@ -80,7 +80,7 @@ $requestData = $this->Bootstrap->collapse([
 $rows = sprintf('<tr><td class="font-weight-bold">%s</td><td>%s</td></tr>', __('URL'), h($request['data']['url']));
 $rows .= sprintf('<tr><td class="font-weight-bold">%s</td><td>%s</td></tr>', __('Reason'), h($request['data']['reason']['message']) ?? '');
 $rows .= sprintf('<tr><td class="font-weight-bold">%s</td><td>%s</td></tr>', __('Errors'), h(json_encode($request['data']['reason']['errors'])) ?? '');
-$table2 = sprintf('<table class="table table-sm table-striped"><tbody>%s</tbody></table>', $rows);
+$table2 = sprintf('<table class="table table-sm table-borderless"><tbody>%s</tbody></table>', $rows);
 
 $form = $this->element('genericElements/Form/genericForm', [
     'entity' => null,
@@ -102,11 +102,16 @@ $form = $this->element('genericElements/Form/genericForm', [
 ]);
 $form = sprintf('<div class="d-none">%s</div>', $form);
 
-$bodyHtml = sprintf('<div><div>%s</div><div>%s</div><div>%s</div>%s</div>%s',
+$messageSent = $this->Bootstrap->card([
+    'headerHTML' => __('Message Sent'),
+    'bodyHTML' => sprintf('%s%s', $table2, $requestData),
+    'bodyClass' => 'p-2',
+]);
+
+$bodyHtml = sprintf('<div><div class="my-1">%s</div><div class="my-1">%s</div><div class="my-1">%s</div></div>%s',
     $tools,
     $table,
-    $table2,
-    $requestData,
+    $messageSent,
     $form
 );
 
