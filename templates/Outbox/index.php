@@ -9,6 +9,16 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'top_bar' => [
             'children' => [
                 [
+                    'children' => [
+                        [
+                            'text' => __('Delete messages'),
+                            'variant' => 'danger',
+                            'onclick' => 'deleteMessages',
+                        ]
+                    ],
+                    'type' => 'multi_select_actions',
+                ],
+                [
                     'type' => 'context_filters',
                     'context_filters' => !empty($filteringContexts) ? $filteringContexts : []
                 ],
@@ -23,6 +33,15 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ]
         ],
         'fields' => [
+            [
+                'element' => 'selector',
+                'class' => 'short',
+                'data' => [
+                    'id' => [
+                        'value_path' => 'id'
+                    ]
+                ]
+            ],
             [
                 'name' => '#',
                 'sort' => 'id',
@@ -90,5 +109,43 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ]
     ]
 ]);
-echo '</div>';
 ?>
+
+<script>
+    function deleteMessages(idList, selectedData, $table) {
+        UI.submissionModalForIndex('/outbox/delete', '/outbox/index', $table).then(([modalObject, ajaxApi]) => {
+            const $idsInput = modalObject.$modal.find('form').find('input#ids-field')
+            $idsInput.val(JSON.stringify(idList))
+            const tableData = selectedData.map(row => {
+                return [row.id, row.scope, row.action, row.title]
+            });
+            handleMessageTable(
+                modalObject.$modal,
+                ['<?= __('ID') ?>', '<?= __('Scope') ?>', '<?= __('Action') ?>', '<?= __('Title') ?>'],
+                tableData
+            )
+        })
+
+        function constructMessageTable(header, data) {
+            return HtmlHelper.table(
+                header,
+                data,
+                {
+                    small: true,
+                    borderless: true,
+                    tableClass: ['message-table', 'mt-4 mb-0'],
+                }
+            )
+        }
+        function handleMessageTable($modal, header, data) {
+            const $modalBody = $modal.find('.modal-body')
+            const $messageTable = $modalBody.find('table.message-table')
+            const messageTableHTML = constructMessageTable(header, data)[0].outerHTML
+            if ($messageTable.length) {
+                $messageTable.html(messageTableHTML)
+            } else {
+                $modalBody.append(messageTableHTML)
+            }
+        }
+    }
+</script>   

@@ -57,11 +57,15 @@ class OutboxController extends AppController
         }
     }
 
-    public function delete($id)
+    public function delete($id=false)
     {
-        $this->set('deletionTitle', __('Discard request'));
-        $this->set('deletionText', __('Are you sure you want to discard request #{0}?', $id));
-        $this->set('deletionConfirm', __('Discard'));
+        $this->set('deletionTitle', __('Confirm message deletion'));
+        if (!empty($id)) {
+            $this->set('deletionText', __('Are you sure you want to delete message #{0}?', $id));
+        } else {
+            $this->set('deletionText', __('Are you sure you want to delete the selected messages?'));
+        }
+        $this->set('deletionConfirm', __('Delete'));
         $this->CRUD->delete($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
