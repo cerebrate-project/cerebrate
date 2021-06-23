@@ -31,7 +31,7 @@ class UIFactory {
      * @param  {ModalFactory~POSTFailCallback} POSTFailCallback - The callback that handles form submissions errors and validation errors.
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
-    submissionModal(url, POSTSuccessCallback, POSTFailCallback) {
+    async submissionModal(url, POSTSuccessCallback, POSTFailCallback) {
         return AJAXApi.quickFetchURL(url).then((modalHTML) => {
             const theModal = new ModalFactory({
                 rawHtml: modalHTML,
@@ -41,7 +41,7 @@ class UIFactory {
             theModal.makeModal()
             theModal.show()
             theModal.$modal.data('modalObject', theModal)
-            return theModal
+            return [theModal, theModal.ajaxApi]
         }).catch((error) => {
             UI.toast({
                 variant: 'danger',
@@ -89,6 +89,11 @@ class UIFactory {
         return UI.submissionReloaderModal(url, reloadUrl, $reloadedElement, $statusNode);
     }
 
+    getContainerForTable($table) {
+        const tableRandomID = $table.data('table-random-value')
+        return $table.closest(`#table-container-${tableRandomID}`)
+    }
+
     /**
      * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the index table after a successful operation.
      * Supports `displayOnSuccess` option to show another modal after the submission
@@ -119,7 +124,7 @@ class UIFactory {
             $statusNode = $elligibleTable
         } else {
             if ($table instanceof jQuery) {
-                $reloadedElement = $table
+                $reloadedElement = getContainerForTable($table)
                 $statusNode = $table.find('table.table')
             } else {
                 $reloadedElement = $(`#table-container-${$table}`)
@@ -147,7 +152,6 @@ class UIFactory {
      */
     submissionModalAutoGuess(url, reloadUrl=false, $table=false) {
         let currentAction = location.pathname.split('/')[2]
-        currentAction += 'cdsc'
         if (currentAction !== undefined) {
             if (currentAction === 'index') {
                 return UI.submissionModalForIndex(url, reloadUrl, $table)
@@ -392,6 +396,7 @@ class ModalFactory {
         if (this.options.backdropStatic) {
             this.bsModalOptions['backdrop'] = 'static'
         }
+        this.ajaxApi = new AJAXApi()
     }
 
     /**
@@ -657,8 +662,8 @@ class ModalFactory {
         const $buttonConfirm = $('<button type="button" class="btn"></button>')
                 .addClass('btn-' + variant)
                 .text(this.options.confirmText)
-                .click(this.getConfirmationHandlerFunction())
                 .attr('data-dismiss', (this.options.closeManually || this.options.closeOnSuccess) ? '' : 'modal')
+        $buttonConfirm.click(this.getConfirmationHandlerFunction($buttonConfirm))
         return [$buttonCancel, $buttonConfirm]
     }
 
@@ -668,18 +673,28 @@ class ModalFactory {
     }
 
     /** Generate the function that will be called when the user confirm the modal */
-    getConfirmationHandlerFunction(i) {
+    getConfirmationHandlerFunction($buttonConfirm, buttonIndex) {
+        if (this.options.APIConfirms) {
+            if (Array.isArray(this.ajaxApi)) {
+                const tmpApi = new AJAXApi({
+                    statusNode: $buttonConfirm[0]
+                })
+                this.ajaxApi.push(tmpApi)
+            } else {
+                this.ajaxApi.statusNode = $buttonConfirm[0]
+                this.ajaxApi = [this.ajaxApi];
+            }
+        } else {
+            this.ajaxApi.statusNode = $buttonConfirm[0]
+        }
         return (evt) => {
             let confirmFunction = this.options.confirm
-            const tmpApi = new AJAXApi({
-                statusNode: evt.target
-            })
             if (this.options.APIConfirms) {
-                if (i !== undefined && this.options.APIConfirms[i] !== undefined) {
-                    confirmFunction = () => { return this.options.APIConfirms[i](tmpApi) }
+                if (buttonIndex !== undefined && this.options.APIConfirms[buttonIndex] !== undefined) {
+                    confirmFunction = () => { return this.options.APIConfirms[buttonIndex](this.ajaxApi[buttonIndex]) }
                 }
             } else if (this.options.APIConfirm) {
-                confirmFunction = () => { return this.options.APIConfirm(tmpApi) }
+                confirmFunction = () => { return this.options.APIConfirm(this.ajaxApi) }
             }
             let confirmResult = confirmFunction(() => { this.hide() }, this, evt)
             if (confirmResult === undefined) {
@@ -727,7 +742,7 @@ class ModalFactory {
                         }
                     }
                 }
-                $submitButton.click(selfModal.getConfirmationHandlerFunction(i))
+                $submitButton.click(selfModal.getConfirmationHandlerFunction($submitButton, i))
             })
         } else {
             let $submitButton = this.$modal.find('.modal-footer #submitButton')
@@ -768,19 +783,21 @@ class ModalFactory {
                         return tmpApi.postForm($form[0])
                             .then((data) => {
                                 if (data.success) {
-                                    this.options.POSTSuccessCallback(data)
+                                    // this.options.POSTSuccessCallback(data)
+                                    this.options.POSTSuccessCallback([data, this])
                                 } else { // Validation error
                                     this.injectFormValidationFeedback(form, data.errors)
                                     return Promise.reject('Validation error');
                                 }
                             })
                             .catch((errorMessage) => {
-                                this.options.POSTFailCallback(errorMessage)
+                                this.options.POSTFailCallback([errorMessage, this])
+                                // this.options.POSTFailCallback(errorMessage)
                                 return Promise.reject(errorMessage);
                             })
                     }
                 }
-                $submitButton.click(this.getConfirmationHandlerFunction())
+                $submitButton.click(this.getConfirmationHandlerFunction($submitButton))
             }
         }
     }

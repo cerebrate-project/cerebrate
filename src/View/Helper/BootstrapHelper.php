@@ -898,7 +898,7 @@ class BoostrapModal extends BootstrapGeneric {
             'text' => h($this->options['confirmText']),
             'class' => 'modal-confirm-button',
             'params' => [
-                'data-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
+                // 'data-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
                 'data-confirmFunction' => sprintf('%s', $this->options['confirmFunction'])
             ]
         ]))->button();
