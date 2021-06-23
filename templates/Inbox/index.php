@@ -11,7 +11,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 [
                     'children' => [
                         [
-                            'text' => __('Discard request'),
+                            'text' => __('Discard requests'),
                             'variant' => 'danger',
                             'onclick' => 'discardRequests',
                         ]
