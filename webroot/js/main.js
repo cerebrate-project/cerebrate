@@ -18,6 +18,13 @@ function executeStateDependencyChecks(dependenceSourceSelector) {
     });
 }
 
+function toggleAllAttributeCheckboxes(clicked) {
+    let $clicked = $(clicked)
+    let $table = $clicked.closest('table')
+    let $inputs = $table.find('input.selectable_row')
+    $inputs.prop('checked', $clicked.prop('checked'))
+}
+
 function testConnection(id) {
     $container = $(`#connection_test_${id}`)
     UI.overlayUntilResolve(
