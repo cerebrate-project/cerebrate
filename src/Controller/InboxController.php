@@ -57,17 +57,46 @@ class InboxController extends AppController
         }
     }
 
-    public function delete($id)
+    public function delete($id=false)
     {
-        if ($this->request->is('post')) {
-            $request = $this->Inbox->get($id, ['contain' => ['Users' => ['Individuals' => ['Alignments' => 'Organisations']]]]);
-            $this->inboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
-            $processor = $this->inboxProcessors->getProcessor($request->scope, $request->action);
-            $discardResult = $processor->discard($id, $request);
-            return $processor->genHTTPReply($this, $discardResult);
+        if ($this->request->is('post')) { // cannot rely on CRUD's delete as inbox's processor discard function is responsible to handle their messages
+            $ids = $this->CRUD->getIdsOrFail($id);
+            $discardSuccesses = 0;
+            $discardResults = [];
+            $discardErrors = [];
+            foreach ($ids as $id) {
+                $request = $this->Inbox->get($id, ['contain' => ['Users' => ['Individuals' => ['Alignments' => 'Organisations']]]]);
+                $this->inboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
+                $processor = $this->inboxProcessors->getProcessor($request->scope, $request->action);
+                $discardResult = $processor->discard($id, $request);
+                $discardResults[] = $discardResult;
+                if ($discardResult['success']) {
+                    $discardSuccesses++;
+                } else {
+                    $discardErrors[] = $discardResult;
+                }
+            }
+            if (count($ids) == 1) {
+                return $processor->genHTTPReply($this, $discardResult);
+            } else {
+                $success = $discardSuccesses == count($ids);
+                $message = __('{0} {1} have been discarded.',
+                    $discardSuccesses == count($ids) ? __('All') : sprintf('%s / %s', $discardSuccesses, count($ids)),
+                    sprintf('%s %s', Inflector::singularize($this->Inbox->getAlias()), __('messages'))
+                );
+                $this->CRUD->setResponseForController('delete', $success, $message, $discardResults, $discardResults);
+                $responsePayload = $this->CRUD->getResponsePayload();
+                if (!empty($responsePayload)) {
+                    return $responsePayload;
+                }
+            }
         }
         $this->set('deletionTitle', __('Discard request'));
-        $this->set('deletionText', __('Are you sure you want to discard request #{0}?', $id));
+        if (!empty($id)) {
+            $this->set('deletionText', __('Are you sure you want to discard request #{0}?', $id));
+        } else {
+            $this->set('deletionText', __('Are you sure you want to discard the selected requests?'));
+        }
         $this->set('deletionConfirm', __('Discard'));
         $this->CRUD->delete($id);
         $responsePayload = $this->CRUD->getResponsePayload();
