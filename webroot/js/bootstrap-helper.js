@@ -124,7 +124,7 @@ class UIFactory {
             $statusNode = $elligibleTable
         } else {
             if ($table instanceof jQuery) {
-                $reloadedElement = getContainerForTable($table)
+                $reloadedElement = this.getContainerForTable($table)
                 $statusNode = $table.find('table.table')
             } else {
                 $reloadedElement = $(`#table-container-${$table}`)
