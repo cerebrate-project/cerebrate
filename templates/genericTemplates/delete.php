@@ -1,39 +1,31 @@
-<div class="modal-dialog" role="document">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title">
-                <?php if (empty($deletionTitle)): ?>
-                    <p><?= __('Delete {0}', h(Cake\Utility\Inflector::singularize(Cake\Utility\Inflector::humanize($this->request->getParam('controller'))))) ?></p>
-                <?php else: ?>
-                    <p><?= h($deletionTitle) ?></p>
-                <?php endif; ?>
-            </h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">
-            <?php if (empty($deletionText)): ?>
-                <p><?= __('Are you sure you want to delete {0} #{1}?', h(Cake\Utility\Inflector::singularize($this->request->getParam('controller'))), h($id)) ?></p>
-            <?php else: ?>
-                <p><?= h($deletionText) ?></p>
-            <?php endif; ?>
-        </div>
-        <div class="modal-footer">
-            <?= $this->Form->postLink(
-                !empty($deletionConfirm) ? h($deletionConfirm) : __('Delete'),
-                (empty($postLinkParameters) ? ['action' => 'delete', $id] : $postLinkParameters),
-                ['class' => 'btn btn-danger button-execute', 'id' => 'submitButton']
-                )
-            ?>
-            <button type="button" class="btn btn-secondary cancel-button" data-dismiss="modal"><?= __('Cancel') ?></button>
-        </div>
-    </div>
-</div>
-<script type="text/javascript">
-    $(document).keydown(function(e) {
-        if(e.which === 13 && e.ctrlKey) {
-            $('.button-execute').click();
-        }
-    });
-</script>
+<?php
+$form = $this->element('genericElements/Form/genericForm', [
+    'entity' => null,
+    'ajax' => false,
+    'raw' => true,
+    'data' => [
+        'fields' => [
+            [
+                'type' => 'text',
+                'field' => 'ids',
+                'default' => !empty($id) ? json_encode([$id]) : ''
+            ]
+        ],
+        'submit' => [
+            'action' => $this->request->getParam('action')
+        ]
+    ]
+]);
+$formHTML = sprintf('<div class="d-none">%s</div>', $form);
+
+$bodyMessage = !empty($deletionText) ? __($deletionText) : __('Are you sure you want to delete {0} #{1}?', h(Cake\Utility\Inflector::singularize($this->request->getParam('controller'))), h($id));
+$bodyHTML = sprintf('%s%s', $formHTML, $bodyMessage);
+
+echo $this->Bootstrap->modal([
+    'size' => 'lg',
+    'title' => !empty($deletionTitle) ? $deletionTitle : __('Delete {0}', h(Cake\Utility\Inflector::singularize(Cake\Utility\Inflector::humanize($this->request->getParam('controller'))))),
+    'type' => 'confirm-danger',
+    'confirmText' => !empty($deletionConfirm) ? $deletionConfirm : __('Delete'),
+    'bodyHtml' => $bodyHTML,
+]);
+?>
