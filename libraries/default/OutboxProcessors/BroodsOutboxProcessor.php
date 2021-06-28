@@ -108,7 +108,6 @@ class ResendFailedMessageProcessor extends BroodsOutboxProcessor implements Gene
         } else {
             $url = $outboxRequest->data['url'];
             $dataSent = $outboxRequest->data['sent'];
-            $dataSent['connectorName'] = 'MispConnector';
             $response = $this->Broods->sendRequest($brood, $url, true, $dataSent);
             $jsonReply = $response->getJson();
             $success = !empty($jsonReply['success']);
