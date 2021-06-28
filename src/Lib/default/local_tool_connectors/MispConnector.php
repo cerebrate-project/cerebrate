@@ -715,7 +715,7 @@ class MispConnector extends CommonConnectorTools
         $serverParams['body'] = [
             'authkey' => $params['remote_tool_data']['authkey'],
             'url' => $params['remote_tool_data']['url'],
-            'name' => !empty($params['remote_tool_data']['name']) ? $params['remote_tool_data']['name'] : 'Empty name fix me',
+            'name' => !empty($params['remote_tool_data']['tool_name']) ? $params['remote_tool_data']['tool_name'] : sprintf('MISP for %s', $params['remote_tool_data']['url']),
             'remote_org_id' => $params['misp_organisation']['id']
         ];
         $params['sync_connection'] = $this->addServer($serverParams);
@@ -735,7 +735,7 @@ class MispConnector extends CommonConnectorTools
         $serverParams['body'] = [
             'authkey' => $params['remote_tool_data']['authkey'],
             'url' => $params['remote_tool_data']['url'],
-            'name' => !empty($params['remote_tool_data']['name']) ? $params['remote_tool_data']['name'] : 'Empty name fix me',
+            'name' => !empty($params['remote_tool_data']['tool_name']) ? $params['remote_tool_data']['tool_name'] : sprintf('MISP for %s', $params['remote_tool_data']['url']),
             'remote_org_id' => $params['misp_organisation']['id']
         ];
         $params['sync_connection'] = $this->addServer($serverParams);
