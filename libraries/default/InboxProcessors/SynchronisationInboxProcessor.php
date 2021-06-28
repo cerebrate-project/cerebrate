@@ -1,15 +1,15 @@
 <?php
 use Cake\ORM\TableRegistry;
 
-require_once(ROOT . DS . 'libraries' . DS . 'default' . DS . 'RequestProcessors' . DS . 'GenericRequestProcessor.php'); 
+require_once(ROOT . DS . 'libraries' . DS . 'default' . DS . 'InboxProcessors' . DS . 'GenericInboxProcessor.php'); 
 
-class SCOPE_RequestProcessor extends GenericRequestProcessor
+class SynchronisationInboxProcessor extends GenericInboxProcessor
 {
-    protected $scope = '~to-be-defined~';
+    protected $scope = 'Synchronisation';
     protected $action = 'not-specified'; //overriden when extending
     protected $description = ''; // overriden when extending
     protected $registeredActions = [
-        'ACTION'
+        'DataExchange'
     ];
 
     public function __construct($loadFromAction=false) {
@@ -22,13 +22,13 @@ class SCOPE_RequestProcessor extends GenericRequestProcessor
     }
 }
 
-class SCOPE_ACTION_Processor extends ProposalRequestProcessor implements GenericProcessorActionI {
-    public $action = 'ACTION';
+class DataExchangeProcessor extends SynchronisationInboxProcessor implements GenericInboxProcessorActionI {
+    public $action = 'DataExchange';
     protected $description;
 
     public function __construct() {
         parent::__construct();
-        $this->description = __('~to-be-defined~');
+        $this->description = __('Handle exchange of data between two cerebrate instances');
         $this->Users = TableRegistry::getTableLocator()->get('Users');
     }
 
@@ -39,21 +39,21 @@ class SCOPE_ACTION_Processor extends ProposalRequestProcessor implements Generic
     
     public function create($requestData) {
         $this->validateRequestData($requestData);
-        $requestData['title'] = __('~to-be-defined~');
+        $requestData['title'] = __('Data exchange requested for record `{0}`', 'recordname');
         return parent::create($requestData);
     }
 
-    public function process($id, $requestData)
+    public function process($id, $requestData, $inboxRequest)
     {
-        $proposalAccepted = false;
+        $dataExchangeAccepted = false;
         $saveResult = [];
-        if ($proposalAccepted) {
+        if ($dataExchangeAccepted) {
             $this->discard($id, $requestData);
         }
         return $this->genActionResult(
             $saveResult,
-            $proposalAccepted,
-            $proposalAccepted ? __('success') : __('fail'),
+            $dataExchangeAccepted,
+            $dataExchangeAccepted ? __('Record `{0}` exchanged', 'recordname') : __('Could not exchange record `{0}`.', 'recordname'),
             []
         );
     }

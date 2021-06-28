@@ -11,6 +11,7 @@ class MispConnector extends CommonConnectorTools
 {
     public $description = 'MISP connector, handling diagnostics, organisation and sharing group management of your instance. Synchronisation requests can also be managed through the connector.';
 
+    public $connectorName = 'MispConnector';
     public $name = 'MISP';
 
     public $exposedFunctions = [
@@ -71,6 +72,28 @@ class MispConnector extends CommonConnectorTools
                 'value'
             ],
             'redirect' => 'serverSettingsAction'
+        ],
+        'serversAction' => [
+            'type' => 'index',
+            'scope' => 'child',
+            'params' => [
+                'quickFilter',
+                'limit',
+                'page',
+                'sort',
+                'direction'
+            ]
+        ],
+        'usersAction' => [
+            'type' => 'index',
+            'scope' => 'child',
+            'params' => [
+                'quickFilter',
+                'limit',
+                'page',
+                'sort',
+                'direction'
+            ]
         ]
     ];
     public $version = '0.1';
@@ -89,17 +112,54 @@ class MispConnector extends CommonConnectorTools
         }
     }
 
-    public function health(Object $connection): array
+    private function genHTTPClient(Object $connection, array $options=[]): Object
     {
         $settings = json_decode($connection->settings, true);
-        $http = new Client();
-        $response = $http->post($settings['url'] . '/users/view/me.json', '{}', [
+        $defaultOptions = [
             'headers' => [
-                'AUTHORIZATION' => $settings['authkey'],
-                'Accept' => 'Application/json',
-                'Content-type' => 'Application/json'
-             ]
-        ]);
+                'Authorization' => $settings['authkey'],
+            ],
+        ];
+        if (empty($options['type'])) {
+            $options['type'] = 'json';
+        }
+        if (!empty($settings['skip_ssl'])) {
+            $options['ssl_verify_peer'] = false;
+            $options['ssl_verify_host'] = false;
+            $options['ssl_verify_peer_name'] = false;
+            $options['ssl_allow_self_signed'] = true;
+        }
+        $options = array_merge($defaultOptions, $options);
+        $http = new Client($options);
+        return $http;
+    }
+
+    public function HTTPClientGET(String $relativeURL, Object $connection, array $data=[], array $options=[]): Object
+    {
+        $settings = json_decode($connection->settings, true);
+        $http = $this->genHTTPClient($connection, $options);
+        $url = sprintf('%s%s', $settings['url'], $relativeURL);
+        return $http->get($url, $data, $options);
+    }
+
+    public function HTTPClientPOST(String $relativeURL, Object $connection, $data, array $options=[]): Object
+    {
+        $settings = json_decode($connection->settings, true);
+        $http = $this->genHTTPClient($connection, $options);
+        $url = sprintf('%s%s', $settings['url'], $relativeURL);
+        return $http->post($url, $data, $options);
+    }
+
+    public function health(Object $connection): array
+    {
+        try {
+            $response = $this->HTTPClientPOST('/users/view/me.json', $connection, '{}');
+        } catch (\Exception $e) {
+            return [
+                'status' => 0,
+                'message' => __('Connection issue.')
+            ];
+        }
         $responseCode = $response->getStatusCode();
         if ($response->isOk()) {
             $status = 1;
@@ -123,8 +183,6 @@ class MispConnector extends CommonConnectorTools
         if (empty($params['connection'])) {
             throw new NotFoundException(__('No connection object received.'));
         }
-        $settings = json_decode($params['connection']->settings, true);
-        $http = new Client();
         if (!empty($params['sort'])) {
             $list = explode('.', $params['sort']);
             $params['sort'] = end($list);
@@ -133,13 +191,7 @@ class MispConnector extends CommonConnectorTools
             $params['limit'] = 50;
         }
         $url = $this->urlAppendParams($url, $params);
-        $response = $http->get($settings['url'] . $url, false, [
-            'headers' => [
-                'AUTHORIZATION' => $settings['authkey'],
-                'Accept' => 'application/json',
-                'Content-type' => 'application/json'
-             ]
-        ]);
+        $response = $this->HTTPClientGET($url, $params['connection']);
         if ($response->isOk()) {
             return $response;
         } else {
@@ -155,20 +207,12 @@ class MispConnector extends CommonConnectorTools
         if (empty($params['connection'])) {
             throw new NotFoundException(__('No connection object received.'));
         }
-        $settings = json_decode($params['connection']->settings, true);
-        $http = new Client();
         $url = $this->urlAppendParams($url, $params);
-        $response = $http->post($settings['url'] . $url, json_encode($params['body']), [
-            'headers' => [
-                'AUTHORIZATION' => $settings['authkey'],
-                'Accept' => 'application/json'
-            ],
-            'type' => 'json'
-        ]);
+        $response = $this->HTTPClientPOST($url, $params['connection'], json_encode($params['body']));
         if ($response->isOk()) {
             return $response;
         } else {
-            throw new NotFoundException(__('Could not post to the requested resource.'));
+            throw new NotFoundException(__('Could not post to the requested resource. Remote returned:') . PHP_EOL . $response->getStringBody());
         }
     }
 
@@ -248,6 +292,7 @@ class MispConnector extends CommonConnectorTools
                             'name' => __('Value'),
                             'sort' => 'value',
                             'data_path' => 'value',
+                            'options' => 'options'
                         ],
                         [
                             'name' => __('Type'),
@@ -287,6 +332,172 @@ class MispConnector extends CommonConnectorTools
             return [];
         }
     }
+
+    public function serversAction(array $params): array
+    {
+        $params['validParams'] = [
+            'limit' => 'limit',
+            'page' => 'page',
+            'quickFilter' => 'searchall'
+        ];
+        $urlParams = h($params['connection']['id']) . '/serversAction';
+        $response = $this->getData('/servers/index', $params);
+        $data = $response->getJson();
+        if (!empty($data)) {
+            return [
+                'type' => 'index',
+                'data' => [
+                    'data' => $data,
+                    'skip_pagination' => 1,
+                    'top_bar' => [
+                        'children' => [
+                            [
+                                'type' => 'search',
+                                'button' => __('Filter'),
+                                'placeholder' => __('Enter value to search'),
+                                'data' => '',
+                                'searchKey' => 'value',
+                                'additionalUrlParams' => $urlParams,
+                                'quickFilter' => 'value'
+                            ]
+                        ]
+                    ],
+                    'fields' => [
+                        [
+                            'name' => 'Id',
+                            'sort' => 'Server.id',
+                            'data_path' => 'Server.id',
+                        ],
+                        [
+                            'name' => 'Name',
+                            'sort' => 'Server.name',
+                            'data_path' => 'Server.name',
+                        ],
+                        [
+                            'name' => 'Url',
+                            'sort' => 'Server.url',
+                            'data_path' => 'Server.url'
+                        ],
+                        [
+                            'name' => 'Pull',
+                            'sort' => 'Server.pull',
+                            'element' => 'function',
+                            'function' => function($row, $context) {
+                                $pull = $context->Hash->extract($row, 'Server.pull')[0];
+                                $pull_rules = $context->Hash->extract($row, 'Server.pull_rules')[0];
+                                $pull_rules = json_encode(json_decode($pull_rules, true), JSON_PRETTY_PRINT);
+                                echo sprintf(
+                                    '<span title="%s" class="fa fa-%s"></span>',
+                                    h($pull_rules),
+                                    $pull ? 'check' : 'times'
+                                );
+                            }
+                        ],
+                        [
+                            'name' => 'Push',
+                            'element' => 'function',
+                            'function' => function($row, $context) {
+                                $push = $context->Hash->extract($row, 'Server.push')[0];
+                                $push_rules = $context->Hash->extract($row, 'Server.push_rules')[0];
+                                $push_rules = json_encode(json_decode($push_rules, true), JSON_PRETTY_PRINT);
+                                echo sprintf(
+                                    '<span title="%s" class="fa fa-%s"></span>',
+                                    h($push_rules),
+                                    $push ? 'check' : 'times'
+                                );
+                            }
+                        ],
+                        [
+                            'name' => 'Caching',
+                            'element' => 'boolean',
+                            'data_path' => 'Server.caching_enabled'
+                        ]
+                    ],
+                    'title' => false,
+                    'description' => false,
+                    'pull' => 'right'
+                ]
+            ];
+        } else {
+            return [];
+        }
+    }
+
+    public function usersAction(array $params): array
+    {
+        $params['validParams'] = [
+            'limit' => 'limit',
+            'page' => 'page',
+            'quickFilter' => 'searchall'
+        ];
+        $urlParams = h($params['connection']['id']) . '/usersAction';
+        $response = $this->getData('/admin/users/index', $params);
+        $data = $response->getJson();
+        if (!empty($data)) {
+            return [
+                'type' => 'index',
+                'data' => [
+                    'data' => $data,
+                    'skip_pagination' => 1,
+                    'top_bar' => [
+                        'children' => [
+                            [
+                                'type' => 'search',
+                                'button' => __('Filter'),
+                                'placeholder' => __('Enter value to search'),
+                                'data' => '',
+                                'searchKey' => 'value',
+                                'additionalUrlParams' => $urlParams,
+                                'quickFilter' => 'value'
+                            ]
+                        ]
+                    ],
+                    'fields' => [
+                        [
+                            'name' => 'Id',
+                            'sort' => 'User.id',
+                            'data_path' => 'User.id',
+                        ],
+                        [
+                            'name' => 'Organisation',
+                            'sort' => 'Organisation.name',
+                            'data_path' => 'Organisation.name',
+                        ],
+                        [
+                            'name' => 'Email',
+                            'sort' => 'User.email',
+                            'data_path' => 'User.email',
+                        ],
+                        [
+                            'name' => 'Role',
+                            'sort' => 'Role.name',
+                            'data_path' => 'Role.name'
+                        ]
+                    ],
+                    'actions' => [
+                        [
+                            'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/editUser?id={{0}}',
+                            'modal_params_data_path' => ['User.id'],
+                            'icon' => 'edit',
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/editAction'
+                        ],
+                        [
+                            'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/deleteUser?id={{0}}',
+                            'modal_params_data_path' => ['User.id'],
+                            'icon' => 'trash',
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/serversAction'
+                        ]
+                    ],
+                    'title' => false,
+                    'description' => false,
+                    'pull' => 'right'
+                ]
+            ];
+        } else {
+            return [];
+        }
+    }
+
 
     public function organisationsAction(array $params): array
     {
@@ -515,18 +726,30 @@ class MispConnector extends CommonConnectorTools
                 'boolean' => 'checkbox',
                 'numeric' => 'number'
             ];
-            $fields = [
-                [
-                    'field' => 'value',
-                    'label' => __('Value'),
-                    'default' => h($response['value']),
-                    'type' => $types[$response['type']]
-                ],
-            ];
+            if (!empty($response['options'])) {
+                $fields = [
+                    [
+                        'field' => 'value',
+                        'label' => __('Value'),
+                        'default' => h($response['value']),
+                        'type' => 'dropdown',
+                        'options' => $response['options']
+                    ]
+                ];
+            } else {
+                $fields = [
+                    [
+                        'field' => 'value',
+                        'label' => __('Value'),
+                        'default' => h($response['value']),
+                        'type' => $types[$response['type']]
+                    ]
+                ];
+            }
             return [
                 'data' => [
                     'title' => __('Modify server setting'),
-                    'description' => __('Modify setting ({0}) on connected MISP instance.', $params['setting']),
+                    'description' => __('Modify setting ({0}) on selected MISP instance(s).', $params['setting']),
                     'fields' => $fields,
                     'submit' => [
                         'action' => $params['request']->getParam('action')
@@ -540,18 +763,60 @@ class MispConnector extends CommonConnectorTools
             if ($response->getStatusCode() == 200) {
                 return ['success' => 1, 'message' => __('Setting saved.')];
             } else {
-                return ['success' => 0, 'message' => __('Could not save the setting.')];
+                return ['success' => 0, 'message' => __('Could not update.')];
             }
         }
         throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
     }
 
-    public function encodeConnectionAction(array $params): array
+    public function initiateConnection(array $params): array
     {
-        if (empty($params['org_uuid'])) {
-            throw new MethodNotAllowedException(__('No org uuid passed, cannot encode connection.'));
-        }
-        return [];
+        $params['connection_settings'] = json_decode($params['connection']['settings'], true);
+        $params['misp_organisation'] = $this->getSetOrg($params);
+        $params['sync_user'] = $this->createSyncUser($params, true);
+        return [
+            'email' => $params['sync_user']['email'],
+            'user_id' => $params['sync_user']['id'],
+            'authkey' => $params['sync_user']['authkey'],
+            'url' => $params['connection_settings']['url'],
+        ];
+    }
+
+    public function acceptConnection(array $params): array
+    {
+        $params['sync_user_enabled'] = true;
+        $params['connection_settings'] = json_decode($params['connection']['settings'], true);
+        $params['misp_organisation'] = $this->getSetOrg($params);
+        $params['sync_user'] = $this->createSyncUser($params, false);
+        $serverParams = $params;
+        $serverParams['body'] = [
+            'authkey' => $params['remote_tool_data']['authkey'],
+            'url' => $params['remote_tool_data']['url'],
+            'name' => !empty($params['remote_tool_data']['tool_name']) ? $params['remote_tool_data']['tool_name'] : sprintf('MISP for %s', $params['remote_tool_data']['url']),
+            'remote_org_id' => $params['misp_organisation']['id']
+        ];
+        $params['sync_connection'] = $this->addServer($serverParams);
+        return [
+            'email' => $params['sync_user']['email'],
+            'authkey' => $params['sync_user']['authkey'],
+            'url' => $params['connection_settings']['url'],
+            'reflected_user_id' => $params['remote_tool_data']['user_id'] // request initiator Cerebrate to enable the MISP user
+        ];
+    }
+
+    public function finaliseConnection(array $params): bool
+    {
+        $params['misp_organisation'] = $this->getSetOrg($params);
+        $user = $this->enableUser($params, intval($params['remote_tool_data']['reflected_user_id']));
+        $serverParams = $params;
+        $serverParams['body'] = [
+            'authkey' => $params['remote_tool_data']['authkey'],
+            'url' => $params['remote_tool_data']['url'],
+            'name' => !empty($params['remote_tool_data']['tool_name']) ? $params['remote_tool_data']['tool_name'] : sprintf('MISP for %s', $params['remote_tool_data']['url']),
+            'remote_org_id' => $params['misp_organisation']['id']
+        ];
+        $params['sync_connection'] = $this->addServer($serverParams);
+        return true;
     }
 
     private function getSetOrg(array $params): array
@@ -562,6 +827,7 @@ class MispConnector extends CommonConnectorTools
             $organisation = $response->getJson()['Organisation'];
             if (!$organisation['local']) {
                 $organisation['local'] = 1;
+                $params['body'] = $organisation;
                 $response = $this->postData('/admin/organisations/edit/' . $organisation['id'], $params);
                 if (!$response->isOk()) {
                     throw new MethodNotAllowedException(__('Could not update the organisation in MISP.'));
@@ -583,39 +849,70 @@ class MispConnector extends CommonConnectorTools
         return $organisation;
     }
 
-    private function createSyncUser(array $params): array
+    private function createSyncUser(array $params, $disabled=true): array
     {
         $params['softError'] = 1;
-        $username = sprintf(
-            'sync_%s@%s',
-            \Cake\Utility\Security::randomString(8),
-            parse_url($params['remote_cerebrate']['url'])['host']
-        );
-        $params['body'] = [
-            'email' => $username,
+        $user = [
+            'email' => 'sync_%s@' . parse_url($params['remote_cerebrate']['url'])['host'],
             'org_id' => $params['misp_organisation']['id'],
             'role_id' => empty($params['connection_settings']['role_id']) ? 5 : $params['connection_settings']['role_id'],
-            'disabled' => 1,
+            'disabled' => $disabled,
             'change_pw' => 0,
             'termsaccepted' => 1
         ];
+        return $this->createUser($user, $params);
+    }
+
+    private function enableUser(array $params, int $userID): array
+    {
+        $params['softError'] = 1;
+        $user = [
+            'disabled' => false,
+        ];
+        return $this->updateUser($userID, $user, $params);
+    }
+
+    private function addServer(array $params): array
+    {
+        if (
+            empty($params['body']['authkey']) ||
+            empty($params['body']['url']) ||
+            empty($params['body']['remote_org_id']) ||
+            empty($params['body']['name'])
+        ) {
+            throw new MethodNotAllowedException(__('Required data missing from the sync connection object. The following fields are required: [name, url, authkey, org_id].'));
+        }
+        $response = $this->postData('/servers/add', $params);
+        if (!$response->isOk()) {
+            throw new MethodNotAllowedException(__('Could not add Server in MISP.'));
+        }
+        return $response->getJson()['Server'];
+    }
+
+    private function createUser(array $user, array $params): array
+    {
+        if (strpos($user['email'], '%s') !== false) {
+            $user['email'] = sprintf(
+                $user['email'],
+                \Cake\Utility\Security::randomString(8)
+            );
+        }
+        $params['body'] = $user;
         $response = $this->postData('/admin/users/add', $params);
         if (!$response->isOk()) {
-            throw new MethodNotAllowedException(__('Could not update the organisation in MISP.'));
+            throw new MethodNotAllowedException(__('Could not add the user in MISP.'));
         }
         return $response->getJson()['User'];
     }
 
-    public function connectToRemoteTool(array $params): array
+    private function updateUser(int $userID, array $user, array $params): array
     {
-        $params['connection_settings'] = json_decode($params['connection']['settings'], true);
-        $params['misp_organisation'] = $this->getSetOrg($params);
-        $params['sync_user'] = $this->createSyncUser($params);
-        return [
-            'email' => $params['sync_user']['email'],
-            'authkey' => $params['sync_user']['authkey'],
-            'url' => $params['connection_settings']['url']
-        ];
+        $params['body'] = $user;
+        $response = $this->postData(sprintf('/admin/users/edit/%s', $userID), $params);
+        if (!$response->isOk()) {
+            throw new MethodNotAllowedException(__('Could not edit the user in MISP.'));
+        }
+        return $response->getJson()['User'];
     }
 }
 

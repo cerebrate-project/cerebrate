@@ -156,10 +156,31 @@ class BroodsController extends AppController
         }
     }
 
+    public function downloadSharingGroup($brood_id, $sg_id)
+    {
+        $result = $this->Broods->downloadSharingGroup($brood_id, $sg_id, $this->ACL->getUser()['id']);
+        $success = __('Sharing group fetched from remote.');
+        $fail = __('Could not save the remote sharing group');
+        if ($this->ParamHandler->isRest()) {
+            if ($result) {
+                return $this->RestResponse->saveSuccessResponse('Brood', 'downloadSharingGroup', $brood_id, 'json', $success);
+            } else {
+                return $this->RestResponse->saveFailResponse('Brood', 'downloadSharingGroup', $brood_id, $fail, 'json');
+            }
+        } else {
+            if ($result) {
+                $this->Flash->success($success);
+            } else {
+                $this->Flash->error($fail);
+            }
+            $this->redirect($this->referer());
+        }
+    }
+
     public function interconnectTools()
     {
-        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
-        $processor = $this->requestProcessor->getProcessor('Brood', 'ToolInterconnection');
+        $this->InboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
+        $processor = $this->InboxProcessors->getProcessor('Brood', 'ToolInterconnection');
         $data = [
             'origin' => '127.0.0.1',
             'comment' => 'Test comment',

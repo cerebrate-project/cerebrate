@@ -73,6 +73,12 @@ class LocalToolsTable extends AppTable
         throw new NotFoundException(__('Invalid connector module action requested.'));
     }
 
+    public function getConnectorByToolName($toolName): array
+    {
+        $toolName = sprintf('%sConnector', ucfirst(strtolower($toolName)));
+        return $this->getConnectors($toolName);
+    }
+
     public function getConnectors(string $name = null): array
     {
         $connectors = [];
@@ -89,6 +95,29 @@ class LocalToolsTable extends AppTable
                 $classNamespace = '\\' . $className . '\\' . $className;
                 if (empty($name) || $name === $className) {
                     $connectors[$className] = new $classNamespace;
+                }
+            }
+        }
+        return $connectors;
+    }
+
+    public function getInterconnectors(string $name = null): array
+    {
+        $connectors = [];
+        $dirs = [
+            ROOT . '/src/Lib/default/local_tool_interconnectors',
+            ROOT . '/src/Lib/custom/local_tool_interconnectors'
+        ];
+        foreach ($dirs as $dir) {
+            $dir = new Folder($dir);
+            $files = $dir->find('.*Interconnector\.php');
+            foreach ($files as $file) {
+                require_once($dir->pwd() . '/'. $file);
+                $className = substr($file, 0, -4);
+                $classNamespace = '\\' . $className . '\\' . $className;
+                $tempClass = new $classNamespace;
+                if (empty($name) || $tempClass->getConnectors()[0] === $name) {
+                    $connectors[$tempClass->getConnectors()[0]][] = new $classNamespace;
                 }
             }
         }
@@ -198,6 +227,17 @@ class LocalToolsTable extends AppTable
 
     public function encodeConnection(array $params): array
     {
+        $params = $this->buildConnectionParams($params);
+        $localResult = $params['connector'][$params['remote_tool']['connector']]->initiateConnectionWrapper($params);
+        $inboxResult = $this->sendEncodedConnection($params, $localResult);
+        return [
+            'inboxResult' => $inboxResult,
+            'localResult' => $localResult
+        ];
+    }
+
+    public function buildConnectionParams(array $params): array
+    {
         $remote_tool = $this->getRemoteToolById($params);
         $broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
         $remote_cerebrate = $broods->find()->where(['id' => $params['cerebrate_id']])->first();
@@ -207,13 +247,54 @@ class LocalToolsTable extends AppTable
         if (empty($connector[$remote_tool['connector']])) {
             throw new NotFoundException(__('No valid connector found for the remote tool.'));
         }
-        $result = $connector[$remote_tool['connector']]->connectToRemoteTool([
+        return [
             'remote_cerebrate' => $remote_cerebrate,
             'remote_org' => $remote_org,
             'remote_tool' => $remote_tool,
             'connector' => $connector,
-            'connection' => $connection
-        ]);
-        return $result;
+            'connection' => $connection,
+            //'message' =>
+        ];
+    }
+
+    public function appendLocalToolConnections(int $brood_id, array $tool): array
+    {
+        $remoteToolConnections = \Cake\ORM\TableRegistry::getTableLocator()->get('RemoteToolConnections');
+        $connections = $remoteToolConnections->find()->where(['remote_tool_id' => $tool['id'], 'brood_id' => $brood_id])->toArray();
+        $local_tools = [];
+        foreach ($connections as $k => $connection) {
+            $temp = $this->find()->where(['id' => $connection['local_tool_id']])->select(['id', 'name'])->enableHydration(false)->first();
+            $temp['status'] = $connection['status'];
+            $local_tools[] = $temp;
+        }
+        return $local_tools;
+    }
+
+    public function sendEncodedConnection($params, $encodedConnection)
+    {
+        $this->Broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
+        $jsonReply = $this->Broods->sendLocalToolConnectionRequest($params, $encodedConnection);
+        return $jsonReply;
+    }
+
+    public function findConnectable($local_tool): array
+    {
+        $connectors = $this->getInterconnectors($local_tool['connector']);
+        $validTargets = [];
+        if (!empty($connectors)) {
+            foreach ($connectors[$local_tool['connector']] as $connector) {
+                $validTargets[$connector['connects'][1]] = 1;
+            }
+        }
+
+    }
+
+    public function fetchConnection($id): object
+    {
+        $connection = $this->find()->where(['id' => $id])->first();
+        if (empty($connection)) {
+            throw new NotFoundException(__('Local tool not found.'));
+        }
+        return $connection;
     }
 }

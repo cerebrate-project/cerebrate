@@ -138,8 +138,8 @@ class UsersController extends AppController
 
     public function register()
     {
-        $this->requestProcessor = TableRegistry::getTableLocator()->get('RequestProcessor');
-        $processor = $this->requestProcessor->getProcessor('User', 'Registration');
+        $this->InboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
+        $processor = $this->InboxProcessors->getProcessor('User', 'Registration');
         $data = [
             'origin' => '127.0.0.1',
             'comment' => 'Hi there!, please create an account',

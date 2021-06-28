@@ -7,10 +7,18 @@ class CommonConnectorTools
 {
     public $description = '';
     public $name = '';
+    public $connectorName = '';
     public $exposedFunctions = [
         'diagnostics'
     ];
     public $version = '???';
+
+    const STATE_INITIAL = 'Request issued';
+    const STATE_ACCEPT = 'Request accepted';
+    const STATE_CONNECTED = 'Connected';
+    const STATE_SENDING_ERROR = 'Error while sending request';
+    const STATE_CANCELLED = 'Request cancelled';
+    const STATE_DECLINED = 'Request declined by remote';
 
     public function addExposedFunction(string $functionName): void
     {
@@ -49,10 +57,56 @@ class CommonConnectorTools
         return true;
     }
 
-    public function encodeConnection(array $params): array
+    public function remoteToolConnectionStatus(array $params, string $status): void
     {
-        $result = $this->encodeConnection($params);
+        $remoteToolConnections = \Cake\ORM\TableRegistry::getTableLocator()->get('RemoteToolConnections');
+        $remoteToolConnection = $remoteToolConnections->find()->where(
+            [
+                'local_tool_id' => $params['connection']['id'],
+                'remote_tool_id' => $params['remote_tool']['id'],
+                'brood_id' => $params['remote_cerebrate']['id']
+            ]
+        )->first();
+        if (empty($remoteToolConnection)) {
+            $data = $remoteToolConnections->newEmptyEntity();
+            $entry = [
+                'local_tool_id' => $params['connection']['id'],
+                'remote_tool_id' => $params['remote_tool']['id'],
+                'remote_tool_name' => $params['remote_tool']['name'],
+                'brood_id' => $params['remote_cerebrate']['id'],
+                'name' => '',
+                'settings' => '',
+                'status' => $status,
+                'created' => time(),
+                'modified' => time()
+            ];
+            $data = $remoteToolConnections->patchEntity($data, $entry);
+            $remoteToolConnections->save($data);
+        } else {
+            $data = $remoteToolConnections->patchEntity($remoteToolConnection, ['status' => $status, 'modified' => time()]);
+            $remoteToolConnections->save($data);
+        }
+    }
+
+    public function initiateConnectionWrapper(array $params): array
+    {
+        $result = $this->initiateConnection($params);
+        $this->remoteToolConnectionStatus($params, self::STATE_INITIAL);
         return $result;
+    }
+
+    public function acceptConnectionWrapper(array $params): array
+    {
+        $result = $this->acceptConnection($params);
+        $this->remoteToolConnectionStatus($params, self::STATE_ACCEPT);
+        return $result;
+    }
+
+    public function finaliseConnectionWrapper(array $params): bool
+    {
+        $result = $this->finaliseConnection($params);
+        $this->remoteToolConnectionStatus($params, self::STATE_CONNECTED);
+        return false;
     }
 }
 

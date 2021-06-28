@@ -83,7 +83,7 @@
         $submitButtonData['ajaxSubmit'] = $ajaxSubmit;
     }
     $ajaxFlashMessage = '';
-    if ($ajax) {
+    if (!empty($ajax)) {
         $ajaxFlashMessage = sprintf(
             '<div id="flashContainer"><div id="main-view-container">%s</div></div>',
             $this->Flash->render()

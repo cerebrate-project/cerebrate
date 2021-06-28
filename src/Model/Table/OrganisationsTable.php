@@ -55,9 +55,6 @@ class OrganisationsTable extends AppTable
 
     public function captureOrg($org): ?int
     {
-        if (!empty($org['id'])) {
-            unset($org['id']);
-        }
         if (!empty($org['uuid'])) {
             $existingOrg = $this->find()->where([
                 'uuid' => $org['uuid']
@@ -66,27 +63,20 @@ class OrganisationsTable extends AppTable
             return null;
         }
         if (empty($existingOrg)) {
-            $data = $this->newEmptyEntity();
-            $data = $this->patchEntity($data, $org, ['associated' => []]);
-            if (!$this->save($data)) {
-                return null;
-            }
-            $savedOrg = $data;
+            $entityToSave = $this->newEmptyEntity();
+            $this->patchEntity($entityToSave, $org, [
+                'accessibleFields' => $entityToSave->getAccessibleFieldForNew()
+            ]);
         } else {
-            $reserved = ['id', 'uuid', 'metaFields'];
-            foreach ($org as $field => $value) {
-                if (in_array($field, $reserved)) {
-                    continue;
-                }
-                $existingOrg->$field = $value;
-            }
-            if (!$this->save($existingOrg)) {
-                return null;
-            }
-            $savedOrg = $existingOrg;
+            $this->patchEntity($existingOrg, $org);
+            $entityToSave = $existingOrg;
         }
-        $this->postCaptureActions($savedOrg->id, $org);
-        return $savedOrg->id;
+        $savedEntity = $this->save($entityToSave, ['associated' => false]);
+        if (!$savedEntity) {
+            return null;
+        }
+        $this->postCaptureActions($savedEntity->id, $org);
+        return $savedEntity->id;
     }
 
     public function postCaptureActions($id, $org)

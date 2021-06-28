@@ -6,5 +6,8 @@ use Cake\ORM\Entity;
 
 class AppModel extends Entity
 {
-    
+    public function getAccessibleFieldForNew(): array
+    {
+        return $this->_accessibleOnNew ?? [];
+    }
 }
