@@ -115,6 +115,7 @@ class BroodsTable extends AppTable
         }
     }
 
+    // TODO: Delete this function?
     public function downloadAndCapture($brood_id, $object_id, $scope, $path)
     {
         $query = $this->find();
@@ -122,7 +123,7 @@ class BroodsTable extends AppTable
         if (empty($brood)) {
             throw new NotFoundException(__('Brood not found'));
         }
-        $response = $this->HTTPClientGET(sprintf('/%s/view/%s/index.json', $scope, $org_id), $brood);
+        $response = $this->HTTPClientGET(sprintf('/%s/view/%s.json', $scope, $org_id), $brood);
         if ($response->isOk()) {
             $org = $response->getJson();
             $this->Organisation = TableRegistry::getTableLocator()->get('Organisations');
@@ -140,7 +141,7 @@ class BroodsTable extends AppTable
         if (empty($brood)) {
             throw new NotFoundException(__('Brood not found'));
         }
-        $response = $this->HTTPClientGET(sprintf('/organisations/view/%s/index.json', $org_id), $brood);
+        $response = $this->HTTPClientGET(sprintf('/organisations/view/%s.json', $org_id), $brood);
         if ($response->isOk()) {
             $org = $response->getJson();
             $this->Organisation = TableRegistry::getTableLocator()->get('Organisations');
@@ -158,11 +159,29 @@ class BroodsTable extends AppTable
         if (empty($brood)) {
             throw new NotFoundException(__('Brood not found'));
         }
-        $response = $this->HTTPClientGET(sprintf('/individuals/view/%s/index.json', $individual_id), $brood);
+        $response = $this->HTTPClientGET(sprintf('/individuals/view/%s.json', $individual_id), $brood);
         if ($response->isOk()) {
             $individual = $response->getJson();
             $this->Individuals = TableRegistry::getTableLocator()->get('Individuals');
             $result = $this->Individuals->captureIndividual($individual);
+            return $result;
+        } else {
+            return false;
+        }
+    }
+
+    public function downloadSharingGroup($brood_id, $sg_id, $user_id)
+    {
+        $query = $this->find();
+        $brood = $query->where(['id' => $brood_id])->first();
+        if (empty($brood)) {
+            throw new NotFoundException(__('Brood not found'));
+        }
+        $response = $this->HTTPClientGET(sprintf('/sharing-groups/view/%s.json', $sg_id), $brood);
+        if ($response->isOk()) {
+            $individual = $response->getJson();
+            $this->SharingGroups = TableRegistry::getTableLocator()->get('SharingGroups');
+            $result = $this->SharingGroups->captureSharingGroup($individual, $user_id);
             return $result;
         } else {
             return false;

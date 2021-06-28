@@ -130,7 +130,7 @@ class CRUDComponent extends Component
         if ($this->request->is('post')) {
             $patchEntityParams = [
                 'associated' => [],
-                'accessibleFields' => ['uuid' => true],
+                'accessibleFields' => $data->getAccessibleFieldForNew(),
             ];
             if (!empty($params['id'])) {
                 unset($params['id']);

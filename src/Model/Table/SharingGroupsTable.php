@@ -46,9 +46,6 @@ class SharingGroupsTable extends AppTable
 
     public function captureSharingGroup($input, int $user_id = 0): ?int
     {
-        if (!empty($input['id'])) {
-            unset($input['id']);
-        }
         if (!empty($input['uuid'])) {
             $existingSG = $this->find()->where([
                 'uuid' => $input['uuid']
@@ -57,41 +54,31 @@ class SharingGroupsTable extends AppTable
             return null;
         }
         if (empty($existingSG)) {
-            $data = $this->newEmptyEntity();
+            $entityToSave = $this->newEmptyEntity();
             $input['organisation_id'] = $this->Organisations->captureOrg($input['organisation']);
             $input['user_id'] = $user_id;
-            $data = $this->patchEntity($data, $input, ['associated' => []]);
-            if (!$this->save($data)) {
-                return null;
-            }
-            $savedSG = $data;
+            $this->patchEntity($entityToSave, $input, [
+                'accessibleFields' => $entityToSave->getAccessibleFieldForNew()
+            ]);
         } else {
-            $reserved = ['id', 'uuid', 'metaFields'];
-            foreach ($input as $field => $value) {
-                if (in_array($field, $reserved)) {
-                    continue;
-                }
-                $existingSG->$field = $value;
-            }
-            if (!$this->save($existingSG)) {
-                return null;
-            }
-            $savedSG = $existingSG;
+            $this->patchEntity($existingSG, $input);
+            $entityToSave = $existingSG;
         }
-        $this->postCaptureActions($savedSG->id, $input);
-        return $savedSG->id;
+        $savedEntity = $this->save($entityToSave, ['associated' => false]);
+        if (!$savedEntity) {
+            return null;
+        }
+        $this->postCaptureActions($savedEntity, $input);
+        return $savedEntity->id;
     }
 
-    public function postCaptureActions($id, $input): void
+    public function postCaptureActions($savedEntity, $input): void
     {
-        $sharingGroup = $this->find()->where([
-            'id' => $id
-        ])->first();
         $orgs = [];
         foreach ($input['sharing_group_orgs'] as $sgo) {
             $organisation_id = $this->Organisations->captureOrg($sgo);
             $orgs[] = $this->SharingGroupOrgs->get($organisation_id);
         }
-        $this->SharingGroupOrgs->link($sharingGroup, $orgs);
+        $this->SharingGroupOrgs->link($savedEntity, $orgs);
     }
 }

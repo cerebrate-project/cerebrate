@@ -7,5 +7,18 @@ use Cake\ORM\Entity;
 
 class Organisation extends AppModel
 {
+    protected $_accessible = [
+        '*' => true,
+        'id' => false,
+        'uuid' => false,
+    ];
 
+    protected $_accessibleOnNew = [
+        'uuid' => true,
+    ];
+
+    public function getAccessibleFieldForNew(): array
+    {
+        return $this->_accessibleOnNew;
+    }
 }

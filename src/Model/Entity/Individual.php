@@ -12,4 +12,13 @@ class Individual extends AppModel
         'id' => false,
         'uuid' => false,
     ];
+
+    protected $_accessibleOnNew = [
+        'uuid' => true,
+    ];
+
+    public function getAccessibleFieldForNew(): array
+    {
+        return $this->_accessibleOnNew;
+    }
 }

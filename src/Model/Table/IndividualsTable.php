@@ -55,11 +55,10 @@ class IndividualsTable extends AppTable
             return null;
         }
         if (empty($existingIndividual)) {
-            $entity = $this->newEmptyEntity();
-            $this->patchEntity($entity, $individual, [
-                'accessibleFields' => ['uuid' => true]
+            $entityToSave = $this->newEmptyEntity();
+            $this->patchEntity($entityToSave, $individual, [
+                'accessibleFields' => $entityToSave->getAccessibleFieldForNew()
             ]);
-            $entityToSave = $entity;
         } else {
             $this->patchEntity($existingIndividual, $individual);
             $entityToSave = $existingIndividual;
