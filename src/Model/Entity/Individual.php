@@ -7,5 +7,9 @@ use Cake\ORM\Entity;
 
 class Individual extends AppModel
 {
-
+    protected $_accessible = [
+        '*' => true,
+        'id' => false,
+        'uuid' => false,
+    ];
 }

@@ -55,26 +55,21 @@ class IndividualsTable extends AppTable
             return null;
         }
         if (empty($existingIndividual)) {
-            $entity = $this->newEntity($individual, ['associated' => []]);
-            if (!$this->save($entity)) {
-                return null;
-            }
-            $individual = $entity;
+            $entity = $this->newEmptyEntity();
+            $this->patchEntity($entity, $individual, [
+                'accessibleFields' => ['uuid' => true]
+            ]);
+            $entityToSave = $entity;
         } else {
-            $reserved = ['id', 'uuid', 'metaFields'];
-            foreach ($individual as $field => $value) {
-                if (in_array($field, $reserved)) {
-                    continue;
-                }
-                $existingIndividual->$field = $value;
-            }
-            if (!$this->save($existingIndividual, ['associated' => false])) {
-                return null;
-            }
-            $individual = $existingIndividua;
+            $this->patchEntity($existingIndividual, $individual);
+            $entityToSave = $existingIndividual;
         }
-        $this->postCaptureActions($individual);
-        return $individual->id;
+        $savedEntity = $this->save($entityToSave, ['associated' => false]);
+        if (!$savedEntity) {
+            return null;
+        }
+        $this->postCaptureActions($savedEntity);
+        return $savedEntity->id;
     }
 
     public function postCaptureActions($individual): void
