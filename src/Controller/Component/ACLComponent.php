@@ -760,7 +760,17 @@ class ACLComponent extends Component
                             'skipTopMenu' => 1
                         ]
                     ]
-                ]
+                ],
+                'Instance' => [
+                    __('Instance'),
+                    'url' => '/instance/home',
+                    'children' => [
+                        'migration' => [
+                            'url' => '/instance/migrationIndex',
+                            'label' => __('Database migration')
+                        ]
+                    ]
+                ],
             ],
             'Cerebrate' => [
                 'Roles' => [
@@ -794,10 +804,6 @@ class ACLComponent extends Component
                             'url' => '/instance/home',
                             'label' => __('Home')
                         ],
-                        'migration' => [
-                            'url' => '/instance/migrationIndex',
-                            'label' => __('Database migration')
-                        ]
                     ]
                 ],
                 'Users' => [
