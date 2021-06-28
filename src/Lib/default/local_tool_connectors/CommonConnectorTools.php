@@ -104,6 +104,7 @@ class CommonConnectorTools
 
     public function finaliseConnectionWrapper(array $params): bool
     {
+        $result = $this->finaliseConnection($params);
         $this->remoteToolConnectionStatus($params, self::STATE_CONNECTED);
         return false;
     }
