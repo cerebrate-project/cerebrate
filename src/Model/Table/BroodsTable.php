@@ -29,18 +29,40 @@ class BroodsTable extends AppTable
         return $validator;
     }
 
+    public function genHTTPClient(Object $brood, array $options=[]): Object
+    {
+        $defaultOptions = [
+            'headers' => [
+                'Authorization' => $brood->authkey,
+            ],
+        ];
+        if (empty($options['type'])) {
+            $options['type'] = 'json';
+        }
+        $options = array_merge($defaultOptions, $options);
+        $http = new Client($options);
+        return $http;
+    }
+
+    public function HTTPClientGET(String $relativeURL, Object $brood, array $data=[], array $options=[]): Object
+    {
+        $http = $this->genHTTPClient($brood, $options);
+        $url = sprintf('%s%s', $brood->url, $relativeURL);
+        return $http->get($url, $data, $options);
+    }
+
+    public function HTTPClientPOST(String $relativeURL, Object $brood, $data, array $options=[]): Object
+    {
+        $http = $this->genHTTPClient($brood, $options);
+        $url = sprintf('%s%s', $brood->url, $relativeURL);
+        return $http->post($url, $data, $options);
+    }
+
     public function queryStatus($id)
     {
         $brood = $this->find()->where(['id' => $id])->first();
-        $http = new Client();
         $start = microtime(true);
-        $response = $http->get($brood['url'] . '/instance/status.json', [], [
-            'headers' => [
-                'Authorization' => $brood['authkey'],
-                'Accept' => 'Application/json',
-                'Content-type' => 'Application/json'
-            ]
-        ]);
+        $response = $this->HTTPClientGET('/instance/status.json', $brood);
         $ping = ((int)(100 * (microtime(true) - $start)));
         $errors = [
             403 => [
@@ -84,15 +106,8 @@ class BroodsTable extends AppTable
         if (empty($brood)) {
             throw new NotFoundException(__('Brood not found'));
         }
-        $http = new Client();
         $filterQuery = empty($filter) ? '' : '?quickFilter=' . urlencode($filter);
-        $response = $http->get($brood['url'] . '/' . $scope . '/index.json' . $filterQuery , [], [
-            'headers' => [
-                'Authorization' => $brood['authkey'],
-                'Accept' => 'Application/json',
-                'Content-type' => 'Application/json'
-            ]
-        ]);
+        $response = $this->HTTPClientGET(sprintf('/%s/index.json%s', $scope, $filterQuery), $brood);
         if ($response->isOk()) {
             return $response->getJson();
         } else {
@@ -107,14 +122,7 @@ class BroodsTable extends AppTable
         if (empty($brood)) {
             throw new NotFoundException(__('Brood not found'));
         }
-        $http = new Client();
-        $response = $http->get($brood['url'] . '/' . $scope . '/view/' . $org_id . '/index.json' , [], [
-            'headers' => [
-                'Authorization' => $brood['authkey'],
-                'Accept' => 'Application/json',
-                'Content-type' => 'Application/json'
-            ]
-        ]);
+        $response = $this->HTTPClientGET(sprintf('/%s/view/%s/index.json', $scope, $org_id), $brood);
         if ($response->isOk()) {
             $org = $response->getJson();
             $this->Organisation = TableRegistry::getTableLocator()->get('Organisations');
@@ -132,14 +140,7 @@ class BroodsTable extends AppTable
         if (empty($brood)) {
             throw new NotFoundException(__('Brood not found'));
         }
-        $http = new Client();
-        $response = $http->get($brood['url'] . '/organisations/view/' . $org_id . '/index.json' , [], [
-            'headers' => [
-                'Authorization' => $brood['authkey'],
-                'Accept' => 'Application/json',
-                'Content-type' => 'Application/json'
-            ]
-        ]);
+        $response = $this->HTTPClientGET(sprintf('/organisations/view/%s/index.json', $org_id), $brood);
         if ($response->isOk()) {
             $org = $response->getJson();
             $this->Organisation = TableRegistry::getTableLocator()->get('Organisations');
@@ -157,14 +158,7 @@ class BroodsTable extends AppTable
         if (empty($brood)) {
             throw new NotFoundException(__('Brood not found'));
         }
-        $http = new Client();
-        $response = $http->get($brood['url'] . '/individuals/view/' . $individual_id . '/index.json' , [], [
-            'headers' => [
-                'Authorization' => $brood['authkey'],
-                'Accept' => 'Application/json',
-                'Content-type' => 'Application/json'
-            ]
-        ]);
+        $response = $this->HTTPClientGET(sprintf('/individuals/view/%s/index.json', $individual_id), $brood);
         if ($response->isOk()) {
             $org = $response->getJson();
             $this->Individual = TableRegistry::getTableLocator()->get('Individual');
@@ -182,13 +176,7 @@ class BroodsTable extends AppTable
         if (empty($brood)) {
             throw new NotFoundException(__('Brood not found'));
         }
-        $http = new Client();
-        $response = $http->get($brood['url'] . '/localTools/exposedTools' , [], [
-            'headers' => [
-                'Authorization' => $brood['authkey']
-            ],
-            'type' => 'json'
-        ]);
+        $response = $this->HTTPClientGET('/localTools/exposedTools', $brood);
         if ($response->isOk()) {
             return $response->getJson();
         } else {
@@ -198,19 +186,10 @@ class BroodsTable extends AppTable
 
     public function sendRequest($brood, $urlPath, $methodPost = true, $data = []): Response
     {
-        $http = new Client();
-        $config = [
-            'headers' => [
-                'AUTHORIZATION' => $brood->authkey,
-                'Accept' => 'application/json'
-            ],
-            'type' => 'json'
-        ];
-        $url = $brood->url . $urlPath;
         if ($methodPost) {
-            $response = $http->post($url, json_encode($data), $config);
+            $response = $this->HTTPClientPOST($urlPath, $brood, json_encode($data));
         } else {
-            $response = $http->get($brood->url, $data, $config);
+            $response = $this->HTTPClientGET($urlPath, $brood, $data);
         }
         return $response;
     }
