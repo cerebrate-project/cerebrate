@@ -43,12 +43,12 @@ echo $this->element(
         ],
         'children' => [
             [
-                'url' => '/AuthKeys/index?users_id={{0}}',
+                'url' => '/AuthKeys/index?Users.id={{0}}',
                 'url_params' => ['id'],
                 'title' => __('Authentication keys')
             ],
             [
-                'url' => '/EncryptionKeys/index?users_id={{0}}',
+                'url' => '/EncryptionKeys/index?Users.id={{0}}',
                 'url_params' => ['id'],
                 'title' => __('Encryption keys')
             ]
