@@ -202,8 +202,8 @@ class MispConnector extends CommonConnectorTools
         $url = $this->urlAppendParams($url, $params);
         $response = $http->post($settings['url'] . $url, json_encode($params['body']), [
             'headers' => [
-                    'AUTHORIZATION' => $settings['authkey'],
-                    'Accept' => 'application/json',
+                'AUTHORIZATION' => $settings['authkey'],
+                'Accept' => 'application/json',
             ],
             'type' => 'json',
         ]);
