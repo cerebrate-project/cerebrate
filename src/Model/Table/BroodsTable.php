@@ -160,9 +160,9 @@ class BroodsTable extends AppTable
         }
         $response = $this->HTTPClientGET(sprintf('/individuals/view/%s/index.json', $individual_id), $brood);
         if ($response->isOk()) {
-            $org = $response->getJson();
-            $this->Individual = TableRegistry::getTableLocator()->get('Individual');
-            $result = $this->Individual->captureIndividual($individual);
+            $individual = $response->getJson();
+            $this->Individuals = TableRegistry::getTableLocator()->get('Individuals');
+            $result = $this->Individuals->captureIndividual($individual);
             return $result;
         } else {
             return false;
