@@ -51,14 +51,30 @@ class ACLComponent extends Component
         'Broods' => [
             'add' => ['perm_admin'],
             'delete' => ['perm_admin'],
+            'downloadIndividual' => ['perm_admin'],
+            'downloadOrg' => ['perm_admin'],
+            'downloadSharingGroup' => ['perm_admin'],
             'edit' => ['perm_admin'],
             'index' => ['perm_admin'],
+            'interconnectTools' => ['perm_admin'],
+            'previewIndex' => ['perm_admin'],
+            'testConnection' => ['perm_admin'],
             'view' => ['perm_admin']
         ],
         'EncryptionKeys' => [
             'add' => ['*'],
+            'edit' => ['*'],
             'delete' => ['*'],
             'index' => ['*']
+        ],
+        'Inbox' => [
+            'createEntry' => ['perm_admin', 'perm_sync'],
+            'delete' => ['perm_admin'],
+            'filtering' => ['perm_admin'],
+            'index' => ['perm_admin'],
+            'listProcessors' => ['perm_admin', 'perm_sync'],
+            'process' => ['perm_admin'],
+            'view' => ['perm_admin'],
         ],
         'Individuals' => [
             'add' => ['perm_admin'],
@@ -69,7 +85,24 @@ class ACLComponent extends Component
         ],
         'Instance' => [
             'home' => ['*'],
+            'migrate' => ['perm_admin'],
+            'migrationIndex' => ['perm_admin'],
+            'rollback' => ['perm_admin'],
             'status' => ['*']
+        ],
+        'LocalTools' => [
+            'action' => ['perm_admin'],
+            'add' => ['perm_admin'],
+            'broodTools' => ['perm_admin'],
+            'connectionRequest' => ['perm_admin'],
+            'connectLocal' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'edit' => ['perm_admin'],
+            'exposedTools' => ['perm_admin'],
+            'index' => ['perm_admin'],
+            'connectorIndex' => ['perm_admin'],
+            'view' => ['perm_admin'],
+            'viewConnector' => ['perm_admin']
         ],
         'MetaTemplateFields' => [
             'index' => ['perm_admin']
@@ -79,14 +112,25 @@ class ACLComponent extends Component
             'enable' => ['perm_admin'],
             'index' => ['perm_admin'],
             'update' => ['perm_admin'],
+            'toggle' => ['perm_admin'],
             'view' => ['perm_admin']
         ],
         'Organisations' => [
             'add' => ['perm_admin'],
             'delete' => ['perm_admin'],
             'edit' => ['perm_admin'],
+            'filtering' => ['*'],
             'index' => ['*'],
             'view' => ['*']
+        ],
+        'Outbox' => [
+            'createEntry' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'filtering' => ['perm_admin'],
+            'index' => ['perm_admin'],
+            'listProcessors' => ['perm_admin'],
+            'process' => ['perm_admin'],
+            'view' => ['perm_admin']
         ],
         'Pages' => [
             'display' => ['*']
@@ -115,6 +159,8 @@ class ACLComponent extends Component
             'index' => ['perm_admin'],
             'login' => ['*'],
             'logout' => ['*'],
+            'register' => ['*'],
+            'toggle' => ['perm_admin'],
             'view' => ['*']
         ]
     );
