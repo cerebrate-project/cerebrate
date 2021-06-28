@@ -95,6 +95,29 @@ class LocalToolsTable extends AppTable
         return $connectors;
     }
 
+    public function getInterconnectors(string $name = null): array
+    {
+        $connectors = [];
+        $dirs = [
+            ROOT . '/src/Lib/default/local_tool_interconnectors',
+            ROOT . '/src/Lib/custom/local_tool_interconnectors'
+        ];
+        foreach ($dirs as $dir) {
+            $dir = new Folder($dir);
+            $files = $dir->find('.*Interconnector\.php');
+            foreach ($files as $file) {
+                require_once($dir->pwd() . '/'. $file);
+                $className = substr($file, 0, -4);
+                $classNamespace = '\\' . $className . '\\' . $className;
+                $tempClass = new $classNamespace;
+                if (empty($name) || $tempClass->getConnectors()[0] === $name) {
+                    $connectors[$tempClass->getConnectors()[0]][] = new $classNamespace;
+                }
+            }
+        }
+        return $connectors;
+    }
+
     public function extractMeta(array $connector_classes, bool $includeConnections = false): array
     {
         $connectors = [];
@@ -235,5 +258,26 @@ class LocalToolsTable extends AppTable
             $local_tools[] = $temp;
         }
         return $local_tools;
+    }
+
+    public function findConnectable($local_tool): array
+    {
+        $connectors = $this->getInterconnectors($local_tool['connector']);
+        $validTargets = [];
+        if (!empty($connectors)) {
+            foreach ($connectors[$local_tool['connector']] as $connector) {
+                $validTargets[$connector['connects'][1]] = 1;
+            }
+        }
+
+    }
+
+    public function fetchConnection($id): object
+    {
+        $connection = $this->find()->where(['id' => $id])->first();
+        if (empty($connection)) {
+            throw new NotFoundException(__('Local tool not found.'));
+        }
+        return $connection;
     }
 }

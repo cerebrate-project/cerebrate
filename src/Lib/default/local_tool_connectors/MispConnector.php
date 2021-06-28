@@ -82,6 +82,17 @@ class MispConnector extends CommonConnectorTools
                 'sort',
                 'direction'
             ]
+        ],
+        'usersAction' => [
+            'type' => 'index',
+            'scope' => 'child',
+            'params' => [
+                'quickFilter',
+                'limit',
+                'page',
+                'sort',
+                'direction'
+            ]
         ]
     ];
     public $version = '0.1';
@@ -397,6 +408,82 @@ class MispConnector extends CommonConnectorTools
         }
     }
 
+    public function usersAction(array $params): array
+    {
+        $params['validParams'] = [
+            'limit' => 'limit',
+            'page' => 'page',
+            'quickFilter' => 'searchall'
+        ];
+        $urlParams = h($params['connection']['id']) . '/usersAction';
+        $response = $this->getData('/admin/users/index', $params);
+        $data = $response->getJson();
+        if (!empty($data)) {
+            return [
+                'type' => 'index',
+                'data' => [
+                    'data' => $data,
+                    'skip_pagination' => 1,
+                    'top_bar' => [
+                        'children' => [
+                            [
+                                'type' => 'search',
+                                'button' => __('Filter'),
+                                'placeholder' => __('Enter value to search'),
+                                'data' => '',
+                                'searchKey' => 'value',
+                                'additionalUrlParams' => $urlParams,
+                                'quickFilter' => 'value'
+                            ]
+                        ]
+                    ],
+                    'fields' => [
+                        [
+                            'name' => 'Id',
+                            'sort' => 'User.id',
+                            'data_path' => 'User.id',
+                        ],
+                        [
+                            'name' => 'Organisation',
+                            'sort' => 'Organisation.name',
+                            'data_path' => 'Organisation.name',
+                        ],
+                        [
+                            'name' => 'Email',
+                            'sort' => 'User.email',
+                            'data_path' => 'User.email',
+                        ],
+                        [
+                            'name' => 'Role',
+                            'sort' => 'Role.name',
+                            'data_path' => 'Role.name'
+                        ]
+                    ],
+                    'actions' => [
+                        [
+                            'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/editUser?id={{0}}',
+                            'modal_params_data_path' => ['User.id'],
+                            'icon' => 'edit',
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/editAction'
+                        ],
+                        [
+                            'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/deleteUser?id={{0}}',
+                            'modal_params_data_path' => ['User.id'],
+                            'icon' => 'trash',
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/serversAction'
+                        ]
+                    ],
+                    'title' => false,
+                    'description' => false,
+                    'pull' => 'right'
+                ]
+            ];
+        } else {
+            return [];
+        }
+    }
+
+
     public function organisationsAction(array $params): array
     {
         $params['validParams'] = [
@@ -631,8 +718,7 @@ class MispConnector extends CommonConnectorTools
                         'label' => __('Value'),
                         'default' => h($response['value']),
                         'type' => 'dropdown',
-                        'options' => $response['options'],
-
+                        'options' => $response['options']
                     ]
                 ];
             } else {
@@ -648,7 +734,7 @@ class MispConnector extends CommonConnectorTools
             return [
                 'data' => [
                     'title' => __('Modify server setting'),
-                    'description' => __('Modify setting ({0}) on connected MISP instance.', $params['setting']),
+                    'description' => __('Modify setting ({0}) on selected MISP instance(s).', $params['setting']),
                     'fields' => $fields,
                     'submit' => [
                         'action' => $params['request']->getParam('action')

@@ -61,6 +61,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
+                'open_modal' => '/localTools/connectLocal/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'icon' => 'plug'
+            ],
+            [
                 'open_modal' => '/localTools/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'edit'
