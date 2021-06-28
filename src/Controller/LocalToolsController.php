@@ -263,4 +263,34 @@ class LocalToolsController extends AppController
             ]);
         }
     }
+
+    public function connectLocal($local_tool_id)
+    {
+        $params = [
+            'local_tool_id' => $local_tool_id
+        ];
+        $local_tool = $this->LocalTools->fetchConnection($local_tool_id);
+        if ($this->request->is(['post', 'put'])) {
+            $postParams = $this->ParamHandler->harvestParams(['target_tool_id']);
+            if (empty($postParams['target_tool_id'])) {
+                throw new MethodNotAllowedException(__('No target tool ID supplied.'));
+            }
+
+            $params['target_tool_id'] = $postParams['target_tool_id'];
+            $result = $this->LocalTools->encodeLocalConnection($params);
+            // Send message to remote inbox
+            debug($result);
+        } else {
+            $target_tools = $this->LocalTools->findConnectable($local_tool);
+            debug($target_tools);
+            if (empty($target_tools)) {
+                throw new NotFoundException(__('No tools found to connect.'));
+            }
+            $this->set('data', [
+                'remoteCerebrate' => $remoteCerebrate,
+                'remoteTool' => $remoteTool,
+                'local_tools' => $local_tools
+            ]);
+        }
+    }
 }

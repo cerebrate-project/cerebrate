@@ -2,7 +2,7 @@
 echo $this->element('genericElements/Form/genericForm', [
     'data' => [
         'title' => __('Add new encryption key'),
-        'description' => __('Alignments indicate that an individual belongs to an organisation in one way or another. The type of relationship is defined by the type field.'),
+        'description' => __('Assign encryption keys to the user, used to securely communicate or validate messages coming from the user.'),
         'model' => 'Organisations',
         'fields' => [
             [
