@@ -696,7 +696,7 @@ class MispConnector extends CommonConnectorTools
     {
         $params['connection_settings'] = json_decode($params['connection']['settings'], true);
         $params['misp_organisation'] = $this->getSetOrg($params);
-        $params['sync_user'] = $this->createSyncUser($params);
+        $params['sync_user'] = $this->createSyncUser($params, true);
         return [
             'email' => $params['sync_user']['email'],
             'user_id' => $params['sync_user']['id'],
@@ -710,7 +710,7 @@ class MispConnector extends CommonConnectorTools
         $params['sync_user_enabled'] = true;
         $params['connection_settings'] = json_decode($params['connection']['settings'], true);
         $params['misp_organisation'] = $this->getSetOrg($params);
-        $params['sync_user'] = $this->createSyncUser($params);
+        $params['sync_user'] = $this->createSyncUser($params, false);
         $serverParams = $params;
         $serverParams['body'] = [
             'authkey' => $params['remote_tool_data']['authkey'],
@@ -730,6 +730,7 @@ class MispConnector extends CommonConnectorTools
     public function finaliseConnection(array $params): bool
     {
         $params['misp_organisation'] = $this->getSetOrg($params);
+        $user = $this->enableUser($params, intval($params['remote_tool_data']['reflected_user_id']));
         $serverParams = $params;
         $serverParams['body'] = [
             'authkey' => $params['remote_tool_data']['authkey'],
@@ -771,18 +772,27 @@ class MispConnector extends CommonConnectorTools
         return $organisation;
     }
 
-    private function createSyncUser(array $params): array
+    private function createSyncUser(array $params, $disabled=true): array
     {
         $params['softError'] = 1;
         $user = [
             'email' => 'sync_%s@' . parse_url($params['remote_cerebrate']['url'])['host'],
             'org_id' => $params['misp_organisation']['id'],
             'role_id' => empty($params['connection_settings']['role_id']) ? 5 : $params['connection_settings']['role_id'],
-            'disabled' => 1,
+            'disabled' => $disabled,
             'change_pw' => 0,
             'termsaccepted' => 1
         ];
         return $this->createUser($user, $params);
+    }
+
+    private function enableUser(array $params, int $userID): array
+    {
+        $params['softError'] = 1;
+        $user = [
+            'disabled' => false,
+        ];
+        return $this->updateUser($userID, $user, $params);
     }
 
     private function addServer(array $params): array
@@ -814,6 +824,16 @@ class MispConnector extends CommonConnectorTools
         $response = $this->postData('/admin/users/add', $params);
         if (!$response->isOk()) {
             throw new MethodNotAllowedException(__('Could not add the user in MISP.'));
+        }
+        return $response->getJson()['User'];
+    }
+
+    private function updateUser(int $userID, array $user, array $params): array
+    {
+        $params['body'] = $user;
+        $response = $this->postData(sprintf('/admin/users/edit/%s', $userID), $params);
+        if (!$response->isOk()) {
+            throw new MethodNotAllowedException(__('Could not edit the user in MISP.'));
         }
         return $response->getJson()['User'];
     }
