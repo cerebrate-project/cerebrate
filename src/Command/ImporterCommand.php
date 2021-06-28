@@ -161,7 +161,7 @@ class ImporterCommand extends Command
                     'valueField' => 'id'
                 ])->where(['meta_template_id' => $metaTemplate->id])->toArray();
             } else {
-                $this->io->error("Unkown template for UUID $metaTemplateUUID");
+                $this->io->error("Unkown template for UUID {$config['metaTemplateUUID']}");
                 die(1);
             }
         }
