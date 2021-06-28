@@ -1,3 +1,23 @@
+/* utils */
+.mw-75 {
+    max-width: 75% !important;
+  }
+.mw-50 {
+    max-width: 50% !important;
+}
+.mw-25 {
+    max-width: 25% !important;
+}
+.mh-75 {
+    max-width: 75% !important;
+}
+.mh-50 {
+    max-width: 50% !important;
+}
+.mh-25 {
+    max-width: 25% !important;
+}
+
 /* Toast */
 .toast {
     min-width: 250px;
@@ -65,4 +85,26 @@
 }
 .toast-dark strong {
     color: #040505;
+}
+
+div.progress-timeline {
+    padding: 0.2em 0.2em 0.5em 0.2em;
+}
+div.progress-timeline ul {
+    position: relative;
+    padding: 0;
+}
+div.progress-timeline li {
+    list-style-type: none;
+    position: relative
+}
+div.progress-timeline li.progress-inactive {
+    opacity: 0.5;
+}
+div.progress-timeline .progress-line {
+    height: 2px;
+    /* background: gray; */
+}
+div.progress-timeline .progress-line.progress-inactive {
+    opacity: 0.5;
 }

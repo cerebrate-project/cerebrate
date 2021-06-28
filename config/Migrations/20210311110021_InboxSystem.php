@@ -56,11 +56,6 @@ class InboxSystem extends AbstractMigration
                 'null' => false,
                 'limit' => 191,
             ])
-            // ->addColumn('ip', 'string', [
-            //     'limit' => 191,
-            //     'default' => null,
-            //     'null' => true,
-            // ])
             ->addColumn('user_id', 'integer', [
                 'default' => null,
                 'null' => true,
@@ -92,7 +87,6 @@ class InboxSystem extends AbstractMigration
               ->addIndex('action')
               ->addIndex('title')
               ->addIndex('origin')
-            //   ->addIndex('ip')
               ->addIndex('created')
               ->addIndex('user_id');
 

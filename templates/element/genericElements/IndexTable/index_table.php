@@ -93,7 +93,8 @@
     }
     $tbody = '<tbody>' . $rows . '</tbody>';
     echo sprintf(
-        '<table class="table table-hover" id="index-table-%s">%s%s</table>',
+        '<table class="table table-hover" id="index-table-%s" data-table-random-value="%s">%s%s</table>',
+        $tableRandomValue,
         $tableRandomValue,
         $this->element(
             '/genericElements/IndexTable/headers',
@@ -114,6 +115,7 @@
 ?>
 <script type="text/javascript">
     $(document).ready(function() {
+        $('#index-table-<?= $tableRandomValue ?>').data('data', <?= json_encode($data['data']) ?>);
         $('.privacy-toggle').on('click', function() {
             var $privacy_target = $(this).parent().find('.privacy-value');
             if ($(this).hasClass('fa-eye')) {

@@ -650,18 +650,56 @@ class ACLComponent extends Component
                             'url' => '/inbox/index',
                             'label' => __('Inbox')
                         ],
+                        'outbox' => [
+                            'url' => '/outbox/index',
+                            'label' => __('Outbox')
+                        ],
                         'view' => [
                             'url' => '/inbox/view/{{id}}',
-                            'label' => __('View Meta Template'),
+                            'label' => __('View Message'),
                             'actions' => ['delete', 'edit', 'view'],
                             'skipTopMenu' => 1
                         ],
                         'delete' => [
                             'url' => '/inbox/delete/{{id}}',
-                            'label' => __('Delete Meta Template'),
+                            'label' => __('Delete Message'),
                             'actions' => ['delete', 'edit', 'view'],
                             'skipTopMenu' => 1,
                             'popup' => 1
+                        ],
+                        'listProcessors' => [
+                            'url' => '/inbox/listProcessors',
+                            'label' => __('List Inbox Processors'),
+                            'skipTopMenu' => 1
+                        ]
+                    ]
+                ],
+                'Outbox' => [
+                    'label' => __('Outbox'),
+                    'url' => '/outbox/index',
+                    'children' => [
+                        'index' => [
+                            'url' => '/outbox/index',
+                            'label' => __('Outbox'),
+                            'skipTopMenu' => 1
+                        ],
+                        'view' => [
+                            'url' => '/outbox/view/{{id}}',
+                            'label' => __('View Message'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1
+                        ],
+                        'delete' => [
+                            'url' => '/outbox/delete/{{id}}',
+                            'label' => __('Delete Message'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => 1,
+                            'popup' => 1
+                        ],
+                        'listProcessors' => [
+                            'url' => '/outbox/listProcessors',
+                            'label' => __('List Outbox Processors'),
+                            'skipTopMenu' => 1
                         ]
                     ]
                 ],

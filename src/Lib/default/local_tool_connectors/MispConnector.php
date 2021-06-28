@@ -11,6 +11,7 @@ class MispConnector extends CommonConnectorTools
 {
     public $description = 'MISP connector, handling diagnostics, organisation and sharing group management of your instance. Synchronisation requests can also be managed through the connector.';
 
+    public $connectorName = 'MispConnector';
     public $name = 'MISP';
 
     public $exposedFunctions = [
@@ -111,18 +112,48 @@ class MispConnector extends CommonConnectorTools
         }
     }
 
-    public function health(Object $connection): array
+    private function genHTTPClient(Object $connection, array $options=[]): Object
     {
         $settings = json_decode($connection->settings, true);
-        $http = new Client();
+        $defaultOptions = [
+            'headers' => [
+                'Authorization' => $settings['authkey'],
+            ],
+        ];
+        if (empty($options['type'])) {
+            $options['type'] = 'json';
+        }
+        if (!empty($settings['skip_ssl'])) {
+            $options['ssl_verify_peer'] = false;
+            $options['ssl_verify_host'] = false;
+            $options['ssl_verify_peer_name'] = false;
+            $options['ssl_allow_self_signed'] = true;
+        }
+        $options = array_merge($defaultOptions, $options);
+        $http = new Client($options);
+        return $http;
+    }
+
+    public function HTTPClientGET(String $relativeURL, Object $connection, array $data=[], array $options=[]): Object
+    {
+        $settings = json_decode($connection->settings, true);
+        $http = $this->genHTTPClient($connection, $options);
+        $url = sprintf('%s%s', $settings['url'], $relativeURL);
+        return $http->get($url, $data, $options);
+    }
+
+    public function HTTPClientPOST(String $relativeURL, Object $connection, $data, array $options=[]): Object
+    {
+        $settings = json_decode($connection->settings, true);
+        $http = $this->genHTTPClient($connection, $options);
+        $url = sprintf('%s%s', $settings['url'], $relativeURL);
+        return $http->post($url, $data, $options);
+    }
+
+    public function health(Object $connection): array
+    {
         try {
-            $response = $http->post($settings['url'] . '/users/view/me.json', '{}', [
-                'headers' => [
-                    'AUTHORIZATION' => $settings['authkey'],
-                    'Accept' => 'Application/json',
-                    'Content-type' => 'Application/json'
-                ]
-            ]);
+            $response = $this->HTTPClientPOST('/users/view/me.json', $connection, '{}');
         } catch (\Exception $e) {
             return [
                 'status' => 0,
@@ -152,8 +183,6 @@ class MispConnector extends CommonConnectorTools
         if (empty($params['connection'])) {
             throw new NotFoundException(__('No connection object received.'));
         }
-        $settings = json_decode($params['connection']->settings, true);
-        $http = new Client();
         if (!empty($params['sort'])) {
             $list = explode('.', $params['sort']);
             $params['sort'] = end($list);
@@ -162,13 +191,7 @@ class MispConnector extends CommonConnectorTools
             $params['limit'] = 50;
         }
         $url = $this->urlAppendParams($url, $params);
-        $response = $http->get($settings['url'] . $url, false, [
-            'headers' => [
-                'AUTHORIZATION' => $settings['authkey'],
-                'Accept' => 'application/json',
-                'Content-type' => 'application/json'
-             ]
-        ]);
+        $response = $this->HTTPClientGET($url, $params['connection']);
         if ($response->isOk()) {
             return $response;
         } else {
@@ -184,20 +207,12 @@ class MispConnector extends CommonConnectorTools
         if (empty($params['connection'])) {
             throw new NotFoundException(__('No connection object received.'));
         }
-        $settings = json_decode($params['connection']->settings, true);
-        $http = new Client();
         $url = $this->urlAppendParams($url, $params);
-        $response = $http->post($settings['url'] . $url, json_encode($params['body']), [
-            'headers' => [
-                'AUTHORIZATION' => $settings['authkey'],
-                'Accept' => 'application/json'
-            ],
-            'type' => 'json'
-        ]);
+        $response = $this->HTTPClientPOST($url, $params['connection'], json_encode($params['body']));
         if ($response->isOk()) {
             return $response;
         } else {
-            throw new NotFoundException(__('Could not post to the requested resource.'));
+            throw new NotFoundException(__('Could not post to the requested resource. Remote returned:') . PHP_EOL . $response->getStringBody());
         }
     }
 
@@ -758,11 +773,12 @@ class MispConnector extends CommonConnectorTools
     {
         $params['connection_settings'] = json_decode($params['connection']['settings'], true);
         $params['misp_organisation'] = $this->getSetOrg($params);
-        $params['sync_user'] = $this->createSyncUser($params);
+        $params['sync_user'] = $this->createSyncUser($params, true);
         return [
             'email' => $params['sync_user']['email'],
+            'user_id' => $params['sync_user']['id'],
             'authkey' => $params['sync_user']['authkey'],
-            'url' => $params['connection_settings']['url']
+            'url' => $params['connection_settings']['url'],
         ];
     }
 
@@ -771,28 +787,35 @@ class MispConnector extends CommonConnectorTools
         $params['sync_user_enabled'] = true;
         $params['connection_settings'] = json_decode($params['connection']['settings'], true);
         $params['misp_organisation'] = $this->getSetOrg($params);
-        $params['sync_user'] = $this->createSyncUser($params);
-        $params['sync_connection'] = $this->addServer([
-            'authkey' => $params['remote_tool']['authkey'],
-            'url' => $params['remote_tool']['url'],
-            'name' => $params['remote_tool']['name'],
+        $params['sync_user'] = $this->createSyncUser($params, false);
+        $serverParams = $params;
+        $serverParams['body'] = [
+            'authkey' => $params['remote_tool_data']['authkey'],
+            'url' => $params['remote_tool_data']['url'],
+            'name' => !empty($params['remote_tool_data']['tool_name']) ? $params['remote_tool_data']['tool_name'] : sprintf('MISP for %s', $params['remote_tool_data']['url']),
             'remote_org_id' => $params['misp_organisation']['id']
-        ]);
+        ];
+        $params['sync_connection'] = $this->addServer($serverParams);
         return [
             'email' => $params['sync_user']['email'],
             'authkey' => $params['sync_user']['authkey'],
-            'url' => $params['connection_settings']['url']
+            'url' => $params['connection_settings']['url'],
+            'reflected_user_id' => $params['remote_tool_data']['user_id'] // request initiator Cerebrate to enable the MISP user
         ];
     }
 
     public function finaliseConnection(array $params): bool
     {
-        $params['sync_connection'] = $this->addServer([
-            'authkey' => $params['remote_tool']['authkey'],
-            'url' => $params['remote_tool']['url'],
-            'name' => $params['remote_tool']['name'],
+        $params['misp_organisation'] = $this->getSetOrg($params);
+        $user = $this->enableUser($params, intval($params['remote_tool_data']['reflected_user_id']));
+        $serverParams = $params;
+        $serverParams['body'] = [
+            'authkey' => $params['remote_tool_data']['authkey'],
+            'url' => $params['remote_tool_data']['url'],
+            'name' => !empty($params['remote_tool_data']['tool_name']) ? $params['remote_tool_data']['tool_name'] : sprintf('MISP for %s', $params['remote_tool_data']['url']),
             'remote_org_id' => $params['misp_organisation']['id']
-        ]);
+        ];
+        $params['sync_connection'] = $this->addServer($serverParams);
         return true;
     }
 
@@ -804,6 +827,7 @@ class MispConnector extends CommonConnectorTools
             $organisation = $response->getJson()['Organisation'];
             if (!$organisation['local']) {
                 $organisation['local'] = 1;
+                $params['body'] = $organisation;
                 $response = $this->postData('/admin/organisations/edit/' . $organisation['id'], $params);
                 if (!$response->isOk()) {
                     throw new MethodNotAllowedException(__('Could not update the organisation in MISP.'));
@@ -825,27 +849,36 @@ class MispConnector extends CommonConnectorTools
         return $organisation;
     }
 
-    private function createSyncUser(array $params): array
+    private function createSyncUser(array $params, $disabled=true): array
     {
         $params['softError'] = 1;
         $user = [
             'email' => 'sync_%s@' . parse_url($params['remote_cerebrate']['url'])['host'],
             'org_id' => $params['misp_organisation']['id'],
             'role_id' => empty($params['connection_settings']['role_id']) ? 5 : $params['connection_settings']['role_id'],
-            'disabled' => 1,
+            'disabled' => $disabled,
             'change_pw' => 0,
             'termsaccepted' => 1
         ];
         return $this->createUser($user, $params);
     }
 
+    private function enableUser(array $params, int $userID): array
+    {
+        $params['softError'] = 1;
+        $user = [
+            'disabled' => false,
+        ];
+        return $this->updateUser($userID, $user, $params);
+    }
+
     private function addServer(array $params): array
     {
         if (
-            empty($params['authkey']) ||
-            empty($params['url']) ||
-            empty($params['remote_org_id']) ||
-            empty($params['name'])
+            empty($params['body']['authkey']) ||
+            empty($params['body']['url']) ||
+            empty($params['body']['remote_org_id']) ||
+            empty($params['body']['name'])
         ) {
             throw new MethodNotAllowedException(__('Required data missing from the sync connection object. The following fields are required: [name, url, authkey, org_id].'));
         }
@@ -868,6 +901,16 @@ class MispConnector extends CommonConnectorTools
         $response = $this->postData('/admin/users/add', $params);
         if (!$response->isOk()) {
             throw new MethodNotAllowedException(__('Could not add the user in MISP.'));
+        }
+        return $response->getJson()['User'];
+    }
+
+    private function updateUser(int $userID, array $user, array $params): array
+    {
+        $params['body'] = $user;
+        $response = $this->postData(sprintf('/admin/users/edit/%s', $userID), $params);
+        if (!$response->isOk()) {
+            throw new MethodNotAllowedException(__('Could not edit the user in MISP.'));
         }
         return $response->getJson()['User'];
     }

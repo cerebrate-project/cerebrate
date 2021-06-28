@@ -7,6 +7,7 @@ class CommonConnectorTools
 {
     public $description = '';
     public $name = '';
+    public $connectorName = '';
     public $exposedFunctions = [
         'diagnostics'
     ];
@@ -15,6 +16,9 @@ class CommonConnectorTools
     const STATE_INITIAL = 'Request issued';
     const STATE_ACCEPT = 'Request accepted';
     const STATE_CONNECTED = 'Connected';
+    const STATE_SENDING_ERROR = 'Error while sending request';
+    const STATE_CANCELLED = 'Request cancelled';
+    const STATE_DECLINED = 'Request declined by remote';
 
     public function addExposedFunction(string $functionName): void
     {
@@ -100,6 +104,7 @@ class CommonConnectorTools
 
     public function finaliseConnectionWrapper(array $params): bool
     {
+        $result = $this->finaliseConnection($params);
         $this->remoteToolConnectionStatus($params, self::STATE_CONNECTED);
         return false;
     }

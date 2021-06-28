@@ -7,6 +7,8 @@ use Cake\Error\Debugger;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 use Cake\View\ViewBuilder;
+use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\Http\Exception\NotFoundException;
 
 class CRUDComponent extends Component
 {
@@ -340,31 +342,115 @@ class CRUDComponent extends Component
         $this->Controller->set('entity', $data);
     }
 
-    public function delete(int $id): void
+    public function delete($id=false): void
     {
-        if (empty($id)) {
-            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
-        }
-        $data = $this->Table->get($id);
-        if ($this->request->is('post') || $this->request->is('delete')) {
-            if ($this->Table->delete($data)) {
-                $message = __('{0} deleted.', $this->ObjectAlias);
-                if ($this->Controller->ParamHandler->isRest()) {
-                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
-                } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'delete', $data, $message);
-                } else {
-                    $this->Controller->Flash->success($message);
-                    $this->Controller->redirect($this->Controller->referer());
+        if ($this->request->is('get')) {
+            if(!empty($id)) {
+                $data = $this->Table->get($id);
+                $this->Controller->set('id', $data['id']);
+                $this->Controller->set('data', $data);
+                $this->Controller->set('bulkEnabled', false);
+            } else {
+                $this->Controller->set('bulkEnabled', true);
+            }
+        } else if ($this->request->is('post') || $this->request->is('delete')) {
+            $ids = $this->getIdsOrFail($id);
+            $isBulk = count($ids) > 1;
+            $bulkSuccesses = 0;
+            foreach ($ids as $id) {
+                $data = $this->Table->get($id);
+                $success = $this->Table->delete($data);
+                $success = true;
+                if ($success) {
+                    $bulkSuccesses++;
                 }
             }
+            $message = $this->getMessageBasedOnResult(
+                $bulkSuccesses == count($ids),
+                $isBulk,
+                __('{0} deleted.', $this->ObjectAlias),
+                __('All {0} have been deleted.', Inflector::pluralize($this->ObjectAlias)),
+                __('Could not delete {0}.', $this->ObjectAlias),
+                __('{0} / {1} {2} have been deleted.',
+                    $bulkSuccesses,
+                    count($ids),
+                    Inflector::pluralize($this->ObjectAlias)
+                )
+            );
+            $this->setResponseForController('delete', $bulkSuccesses, $message, $data);
         }
         $this->Controller->set('metaGroup', 'ContactDB');
         $this->Controller->set('scope', 'users');
-        $this->Controller->set('id', $data['id']);
-        $this->Controller->set('data', $data);
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/delete');
+    }
+
+    public function setResponseForController($action, $success, $message, $data=[], $errors=null)
+    {
+        if ($success) {
+            if ($this->Controller->ParamHandler->isRest()) {
+                $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+            } elseif ($this->Controller->ParamHandler->isAjax()) {
+                $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, $action, $data, $message);
+            } else {
+                $this->Controller->Flash->success($message);
+                $this->Controller->redirect($this->Controller->referer());
+            }
+        } else {
+            if ($this->Controller->ParamHandler->isRest()) {
+                $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+            } elseif ($this->Controller->ParamHandler->isAjax()) {
+                $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, $action, $data, $message, !is_null($errors) ? $errors : $data->getErrors());
+            } else {
+                $this->Controller->Flash->error($message);
+                $this->Controller->redirect($this->Controller->referer());
+            }
+        }
+    }
+
+    private function getMessageBasedOnResult($isSuccess, $isBulk, $messageSingleSuccess, $messageBulkSuccess, $messageSingleFailure, $messageBulkFailure)
+    {
+        if ($isSuccess) {
+            $message = $isBulk ? $messageBulkSuccess : $messageSingleSuccess;
+        } else {
+            $message = $isBulk ? $messageBulkFailure : $messageSingleFailure;
+        }
+        return $message;
+    }
+
+    /**
+     * getIdsOrFail
+     *
+     * @param  mixed $id
+     * @return Array The ID converted to a list or the list of provided IDs from the request
+     * @throws NotFoundException when no ID could be found
+     */
+    public function getIdsOrFail($id=false): Array
+    {
+        $params = $this->Controller->ParamHandler->harvestParams(['ids']);
+        if (!empty($params['ids'])) {
+            $params['ids'] = json_decode($params['ids']);
+        }
+        $ids = [];
+        if (empty($id)) {
+            if (empty($params['ids'])) {
+                throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+            }
+            $ids = $params['ids'];
+        } else {
+            $id = $this->getInteger($id);
+            if (!is_null($id)) {
+                $ids = [$id];
+            } else {
+                throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+            }
+        }
+        return $ids;
+    }
+
+    private function getInteger($value)
+    {
+        return is_numeric($value) ? intval($value) : null;
     }
 
     protected function massageFilters(array $params): array

@@ -5,32 +5,41 @@ use Cake\Utility\Inflector;
 use Cake\Validation\Validator;
 use Cake\View\ViewBuilder;
 
-interface GenericProcessorActionI
+interface GenericInboxProcessorActionI
 {
     public function create($requestData);
-    public function process($requestID, $serverRequest);
+    public function process($requestID, $serverRequest, $inboxRequest);
     public function discard($requestID ,$requestData);
 }
 
-class GenericRequestProcessor
+class GenericInboxProcessor
 {
     protected $Inbox;
     protected $registeredActions = [];
     protected $validator;
-    private $processingTemplate = '/genericTemplates/confirm';
-    private $processingTemplatesDirectory = ROOT . '/libraries/default/RequestProcessors/templates';
+    protected $processingTemplate = '/genericTemplates/confirm';
+    protected $processingTemplatesDirectory = ROOT . '/libraries/default/InboxProcessors/templates';
 
     public function __construct($registerActions=false) {
         $this->Inbox = TableRegistry::getTableLocator()->get('Inbox');
         if ($registerActions) {
             $this->registerActionInProcessor();
         }
+        $this->assignProcessingTemplate();
+    }
+
+    private function assignProcessingTemplate()
+    {
         $processingTemplatePath = $this->getProcessingTemplatePath();
         $file = new File($this->processingTemplatesDirectory . DS . $processingTemplatePath);
         if ($file->exists()) {
             $this->processingTemplate = str_replace('.php', '', $processingTemplatePath);
         }
         $file->close();
+    }
+
+    protected function updateProcessingTemplate($request)
+    {
     }
 
     public function getRegisteredActions()
@@ -41,14 +50,16 @@ class GenericRequestProcessor
     {
         return $this->scope;
     }
-
-    private function getProcessingTemplatePath()
+    public function getDescription()
     {
-        $class = str_replace('RequestProcessor', '', get_parent_class($this));
-        $action = strtolower(str_replace('Processor', '', get_class($this)));
+        return $this->description ?? '';
+    }
+
+    protected function getProcessingTemplatePath()
+    {
         return sprintf('%s/%s.php',
-            $class,
-            $action
+            $this->scope,
+            $this->action
         );
     }
 
@@ -57,15 +68,17 @@ class GenericRequestProcessor
         return $this->processingTemplate;
     }
 
-    public function render($request=[])
+    public function render($request=[], Cake\Http\ServerRequest $serverRequest)
     {
-        $processingTemplate = $this->getProcessingTemplate();
         $viewVariables = $this->getViewVariables($request);
+        $this->updateProcessingTemplate($request);
+        $processingTemplate = $this->getProcessingTemplate();
         $builder = new ViewBuilder();
         $builder->disableAutoLayout()
             ->setClassName('Monad')
             ->setTemplate($processingTemplate);
         $view = $builder->build($viewVariables);
+        $view->setRequest($serverRequest);
         return $view->render();
     }
 
@@ -141,7 +154,7 @@ class GenericRequestProcessor
             if ($controller->ParamHandler->isRest()) {
                 $response = $controller->RestResponse->viewData($processResult, 'json');
             } else if ($controller->ParamHandler->isAjax()) {
-                $response = $controller->RestResponse->ajaxSuccessResponse('RequestProcessor', "{$scope}.{$action}", $processResult['data'], $message);
+                $response = $controller->RestResponse->ajaxSuccessResponse('InboxProcessor', "{$scope}.{$action}", $processResult['data'], $message);
             } else {
                 $controller->Flash->success($message);
                 if (!is_null($redirect)) {
@@ -155,7 +168,7 @@ class GenericRequestProcessor
             if ($controller->ParamHandler->isRest()) {
                 $response = $controller->RestResponse->viewData($processResult, 'json');
             } else if ($controller->ParamHandler->isAjax()) {
-                $response = $controller->RestResponse->ajaxFailResponse('RequestProcessor', "{$scope}.{$action}", $processResult['data'], $message, $processResult['errors']);
+                $response = $controller->RestResponse->ajaxFailResponse('InboxProcessor', "{$scope}.{$action}", $processResult['data'], $message, $processResult['errors']);
             } else {
                 $controller->Flash->error($message);
                 if (!is_null($redirect)) {
@@ -180,7 +193,7 @@ class GenericRequestProcessor
         $requestData['action'] = $this->action;
         $requestData['description'] = $this->description;
         $request = $this->generateRequest($requestData);
-        $savedRequest = $this->Inbox->save($request);
+        $savedRequest = $this->Inbox->createEntry($request);
         return $this->genActionResult(
             $savedRequest,
             $savedRequest !== false,

@@ -73,6 +73,12 @@ class LocalToolsTable extends AppTable
         throw new NotFoundException(__('Invalid connector module action requested.'));
     }
 
+    public function getConnectorByToolName($toolName): array
+    {
+        $toolName = sprintf('%sConnector', ucfirst(strtolower($toolName)));
+        return $this->getConnectors($toolName);
+    }
+
     public function getConnectors(string $name = null): array
     {
         $connectors = [];
@@ -222,8 +228,12 @@ class LocalToolsTable extends AppTable
     public function encodeConnection(array $params): array
     {
         $params = $this->buildConnectionParams($params);
-        $result = $params['connector'][$params['remote_tool']['connector']]->initiateConnectionWrapper($params);
-        return $result;
+        $localResult = $params['connector'][$params['remote_tool']['connector']]->initiateConnectionWrapper($params);
+        $inboxResult = $this->sendEncodedConnection($params, $localResult);
+        return [
+            'inboxResult' => $inboxResult,
+            'localResult' => $localResult
+        ];
     }
 
     public function buildConnectionParams(array $params): array
@@ -258,6 +268,13 @@ class LocalToolsTable extends AppTable
             $local_tools[] = $temp;
         }
         return $local_tools;
+    }
+
+    public function sendEncodedConnection($params, $encodedConnection)
+    {
+        $this->Broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
+        $jsonReply = $this->Broods->sendLocalToolConnectionRequest($params, $encodedConnection);
+        return $jsonReply;
     }
 
     public function findConnectable($local_tool): array

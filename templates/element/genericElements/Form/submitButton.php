@@ -1,5 +1,5 @@
 <?php
-    if ($ajax) {
+    if (!empty($ajax)) {
         echo sprintf(
             '%s',
             sprintf(
