@@ -16,9 +16,4 @@ class Individual extends AppModel
     protected $_accessibleOnNew = [
         'uuid' => true,
     ];
-
-    public function getAccessibleFieldForNew(): array
-    {
-        return $this->_accessibleOnNew;
-    }
 }

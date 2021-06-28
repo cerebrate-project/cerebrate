@@ -20,9 +20,4 @@ class SharingGroup extends AppModel
         'organisation_id' => true,
         'user_id' => true,
     ];
-
-    public function getAccessibleFieldForNew(): array
-    {
-        return $this->_accessibleOnNew;
-    }
 }
