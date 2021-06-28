@@ -101,41 +101,48 @@ class MispConnector extends CommonConnectorTools
         }
     }
 
-    private function getHeaders(array $connectionSettings): array
-    {
-        return [
-            'AUTHORIZATION' => $connectionSettings['authkey'],
-            'Accept' => 'application/json',
-            'Content-type' => 'application/json'
-        ];
-    }
-
-    private function getHTTPClient(Object $connection): Object
+    private function genHTTPClient(Object $connection, array $options=[]): Object
     {
         $settings = json_decode($connection->settings, true);
-        $options = [];
+        $defaultOptions = [
+            'headers' => [
+                'Authorization' => $settings['authkey'],
+            ],
+        ];
+        if (empty($options['type'])) {
+            $options['type'] = 'json';
+        }
         if (!empty($settings['skip_ssl'])) {
             $options['ssl_verify_peer'] = false;
             $options['ssl_verify_host'] = false;
             $options['ssl_verify_peer_name'] = false;
             $options['ssl_allow_self_signed'] = true;
         }
+        $options = array_merge($defaultOptions, $options);
         $http = new Client($options);
         return $http;
     }
 
-    public function health(Object $connection): array
+    public function HTTPClientGET(String $relativeURL, Object $connection, array $data=[], array $options=[]): Object
     {
         $settings = json_decode($connection->settings, true);
-        $http = $this->getHTTPClient($connection);
+        $http = $this->genHTTPClient($connection, $options);
+        $url = sprintf('%s%s', $settings['url'], $relativeURL);
+        return $http->get($url, $data, $options);
+    }
 
+    public function HTTPClientPOST(String $relativeURL, Object $connection, $data, array $options=[]): Object
+    {
+        $settings = json_decode($connection->settings, true);
+        $http = $this->genHTTPClient($connection, $options);
+        $url = sprintf('%s%s', $settings['url'], $relativeURL);
+        return $http->post($url, $data, $options);
+    }
+
+    public function health(Object $connection): array
+    {
         try {
-            $response = $http->post($settings['url'] . '/users/view/me.json', '{}', ['headers' => [
-                    'AUTHORIZATION' => $settings['authkey'],
-                    'Accept' => 'application/json',
-                ],
-                'type' => 'json',
-            ]);
+            $response = $this->HTTPClientPOST('/users/view/me.json', $connection, '{}');
         } catch (\Exception $e) {
             return [
                 'status' => 0,
@@ -165,8 +172,6 @@ class MispConnector extends CommonConnectorTools
         if (empty($params['connection'])) {
             throw new NotFoundException(__('No connection object received.'));
         }
-        $settings = json_decode($params['connection']->settings, true);
-        $http = $this->getHTTPClient($params['connection']);
         if (!empty($params['sort'])) {
             $list = explode('.', $params['sort']);
             $params['sort'] = end($list);
@@ -175,13 +180,7 @@ class MispConnector extends CommonConnectorTools
             $params['limit'] = 50;
         }
         $url = $this->urlAppendParams($url, $params);
-        $response = $http->get($settings['url'] . $url, false, [
-            'headers' => [
-                'AUTHORIZATION' => $settings['authkey'],
-                'Accept' => 'application/json',
-                'Content-type' => 'application/json'
-           ]
-        ]);
+        $response = $this->HTTPClientGET($url, $params['connection']);
         if ($response->isOk()) {
             return $response;
         } else {
@@ -197,16 +196,8 @@ class MispConnector extends CommonConnectorTools
         if (empty($params['connection'])) {
             throw new NotFoundException(__('No connection object received.'));
         }
-        $settings = json_decode($params['connection']->settings, true);
-        $http = $this->getHTTPClient($params['connection']);
         $url = $this->urlAppendParams($url, $params);
-        $response = $http->post($settings['url'] . $url, json_encode($params['body']), [
-            'headers' => [
-                'AUTHORIZATION' => $settings['authkey'],
-                'Accept' => 'application/json',
-            ],
-            'type' => 'json',
-        ]);
+        $response = $this->HTTPClientPOST($url, $params['connection'], json_encode($params['body']));
         if ($response->isOk()) {
             return $response;
         } else {
