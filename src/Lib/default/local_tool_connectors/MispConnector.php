@@ -699,8 +699,9 @@ class MispConnector extends CommonConnectorTools
         $params['sync_user'] = $this->createSyncUser($params);
         return [
             'email' => $params['sync_user']['email'],
+            'user_id' => $params['sync_user']['id'],
             'authkey' => $params['sync_user']['authkey'],
-            'url' => $params['connection_settings']['url']
+            'url' => $params['connection_settings']['url'],
         ];
     }
 
@@ -721,7 +722,8 @@ class MispConnector extends CommonConnectorTools
         return [
             'email' => $params['sync_user']['email'],
             'authkey' => $params['sync_user']['authkey'],
-            'url' => $params['connection_settings']['url']
+            'url' => $params['connection_settings']['url'],
+            'reflected_user_id' => $params['remote_tool_data']['user_id'] // request initiator Cerebrate to enable the MISP user
         ];
     }
 
