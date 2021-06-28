@@ -43,6 +43,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'actions' => [
             [
                 'open_modal' => sprintf('/localTools/connectionRequest/%s/[onclick_params_data_path]', h($id)),
+                'reload_url' => $this->Url->build(['action' => 'broodTools', $id]),
                 'modal_params_data_path' => 'id',
                 'title' => 'Issue a connection request',
                 'icon' => 'plug'
