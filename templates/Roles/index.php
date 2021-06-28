@@ -48,6 +48,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'boolean'
             ],
             [
+                'name' => __('Sync'),
+                'sort' => 'perm_sync',
+                'data_path' => 'perm_sync',
+                'element' => 'boolean'
+            ],
+            [
                 'name' => 'Default',
                 'sort' => 'is_default',
                 'data_path' => 'is_default',
