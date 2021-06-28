@@ -4,7 +4,7 @@
         $string = $field['raw'];
     } else {
         $value = Cake\Utility\Hash::extract($data, $field['path']);
-        $string = count($value) == 0 ? '' : $value;
+        $string = count($value) == 0 ? '' : $value[0];
     }
     echo sprintf(
         '<div class="json_container_%s"></div>',
