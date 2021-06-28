@@ -32,7 +32,7 @@ Managing public keys and assigning them to users both for communication and vali
 
 The platform is built on CakePHP 4 along with Bootstrap 4 and shares parts of the code-base with [MISP](https://www.github.com/MISP).
 
-The installation is documented at the following location [INSTALL/INSTALL.md](INSTALL/INSTALL.md)
+The installation is documented at the following location [INSTALL/INSTALL.md](INSTALL/INSTALL.md). For upgrades, look at [INSTALL/UPGRADE.md](INSTALL/UPGRADE.md)
 
 Hardware requirements:
 
