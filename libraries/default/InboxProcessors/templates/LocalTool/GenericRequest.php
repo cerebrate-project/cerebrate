@@ -11,7 +11,7 @@ $defaultSteps = [
         'text' => __('Request Accepted'),
         'icon' => 'check-square',
         'title' => __(''),
-        'confirmButton' => __('Finalize Connection')
+        'confirmButton' => __('Finalise Connection')
     ],
     [
         'text' => __('Connection Done'),

@@ -331,7 +331,7 @@ class AcceptedRequestProcessor extends LocalToolInboxProcessor implements Generi
             $connectionSuccessfull = false;
             $errors = $th->getMessage();
         }
-        $resultTitle = __('Could not finalize inter-connection for `{0}`\'s {1}', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
+        $resultTitle = __('Could not finalise inter-connection for `{0}`\'s {1}', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
         $errors = $connectorResult['errors'] ?? $thrownErrorMessage;
         if ($connectionSuccessfull) {
             $resultTitle = __('Interconnection for `{0}`\'s {1} finalised', $inboxRequest['origin'], $inboxRequest['local_tool_name']);
