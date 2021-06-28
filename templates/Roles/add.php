@@ -13,6 +13,11 @@
                     'label' => 'Full admin privilege'
                 ],
                 [
+                    'field' => 'perm_sync',
+                    'type' => 'checkbox',
+                    'label' => 'Sync permission'
+                ],
+                [
                     'field' => 'is_default',
                     'type' => 'checkbox',
                     'label' => 'Default role'

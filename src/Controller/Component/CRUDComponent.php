@@ -12,7 +12,7 @@ use Cake\Http\Exception\NotFoundException;
 
 class CRUDComponent extends Component
 {
-    protected $components = ['RestResponse'];
+    public $components = ['RestResponse'];
 
     public function initialize(array $config): void
     {

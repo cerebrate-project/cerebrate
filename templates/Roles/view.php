@@ -18,6 +18,11 @@ echo $this->element(
                 'type' => 'boolean'
             ],
             [
+                'key' => __('Sync permission'),
+                'path' => 'perm_sync',
+                'type' => 'boolean'
+            ],
+            [
                 'key' => __('Default role'),
                 'path' => 'is_default',
                 'type' => 'boolean'
