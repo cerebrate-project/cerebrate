@@ -16,8 +16,9 @@ class UsersController extends AppController
             'filters' => ['Users.email', 'uuid'],
             'quickFilters' => ['uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'],
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
@@ -49,8 +50,9 @@ class UsersController extends AppController
         $this->CRUD->view($id, [
             'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }

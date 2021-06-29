@@ -26,8 +26,9 @@ class OrganisationsController extends AppController
             'quickFilters' => ['name', 'uuid', 'nationality', 'sector', 'type', 'url'],
             'contain' => ['Alignments' => 'Individuals']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('alignmentScope', 'individuals');
         $this->set('metaGroup', 'Public');
