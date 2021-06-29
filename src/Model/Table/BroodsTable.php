@@ -26,7 +26,11 @@ class BroodsTable extends AppTable
 
     public function validationDefault(Validator $validator): Validator
     {
-        return $validator;
+        return $validator
+            ->requirePresence(['name', 'url', 'organisation'], 'create')
+            ->notEmptyString('name')
+            ->notEmptyString('url')
+            ->url('url');
     }
 
     public function genHTTPClient(Object $brood, array $options=[]): Object
