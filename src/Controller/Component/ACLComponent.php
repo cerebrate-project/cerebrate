@@ -68,11 +68,11 @@ class ACLComponent extends Component
             'index' => ['*']
         ],
         'Inbox' => [
-            'createEntry' => ['perm_admin', 'perm_sync'],
+            'createEntry' => ['OR' => ['perm_admin', 'perm_sync']],
             'delete' => ['perm_admin'],
             'filtering' => ['perm_admin'],
             'index' => ['perm_admin'],
-            'listProcessors' => ['perm_admin', 'perm_sync'],
+            'listProcessors' => ['OR' => ['perm_admin', 'perm_sync']],
             'process' => ['perm_admin'],
             'view' => ['perm_admin'],
         ],
@@ -274,14 +274,14 @@ class ACLComponent extends Component
             }
             if (isset($this->aclList[$controller][$action]['OR'])) {
                 foreach ($this->aclList[$controller][$action]['OR'] as $permission) {
-                    if ($user['Role'][$permission]) {
+                    if ($this->user['role'][$permission]) {
                         return true;
                     }
                 }
             } elseif (isset($this->aclList[$controller][$action]['AND'])) {
                 $allConditionsMet = true;
                 foreach ($this->aclList[$controller][$action]['AND'] as $permission) {
-                    if (!$user['Role'][$permission]) {
+                    if (!$this->user['role'][$permission]) {
                         $allConditionsMet = false;
                     }
                 }
