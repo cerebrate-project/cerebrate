@@ -13,7 +13,8 @@ class UsersController extends AppController
     {
         $this->CRUD->index([
             'contain' => ['Individuals', 'Roles'],
-            'filters' => ['Users.email', 'uuid']
+            'filters' => ['Users.email', 'uuid'],
+            'quickFilters' => ['uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'],
         ]);
         if ($this->ParamHandler->isRest()) {
             return $this->restResponsePayload;
