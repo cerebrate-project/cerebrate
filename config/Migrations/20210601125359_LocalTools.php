@@ -17,46 +17,49 @@ class LocalTools extends AbstractMigration
      */
     public function change()
     {
-        $table = $this->table('local_tools', [
-            'signed' => false,
-            'collation' => 'utf8mb4_unicode_ci',
-        ]);
-        $table
-            ->addColumn('id', 'integer', [
-                'autoIncrement' => true,
-                'limit' => 10,
+        $exists = $this->hasTable('local_tools');
+        if (!$exists) {
+            $table = $this->table('local_tools', [
                 'signed' => false,
-            ])
-            ->addPrimaryKey('id')
-            ->addColumn('name', 'string', [
-                'default' => null,
-                'null' => false,
-                'limit' => 191,
-                'comment' => 'The name of the individual connection',
-            ])
-            ->addColumn('connector', 'string', [
-                'default' => null,
-                'null' => false,
-                'limit' => 191,
-                'comment' => 'The library name used for the connection',
-            ])
-            ->addColumn('settings', 'text', [
-                'default' => null,
-                'null' => true,
-            ])
-            ->addColumn('exposed', 'boolean', [
-                'default' => 0,
-                'null' => false,
-            ])
-            ->addColumn('description', 'text', [
-                'default' => null,
-                'null' => true,
+                'collation' => 'utf8mb4_unicode_ci',
             ]);
+            $table
+                ->addColumn('id', 'integer', [
+                    'autoIncrement' => true,
+                    'limit' => 10,
+                    'signed' => false,
+                ])
+                ->addPrimaryKey('id')
+                ->addColumn('name', 'string', [
+                    'default' => null,
+                    'null' => false,
+                    'limit' => 191,
+                    'comment' => 'The name of the individual connection',
+                ])
+                ->addColumn('connector', 'string', [
+                    'default' => null,
+                    'null' => false,
+                    'limit' => 191,
+                    'comment' => 'The library name used for the connection',
+                ])
+                ->addColumn('settings', 'text', [
+                    'default' => null,
+                    'null' => true,
+                ])
+                ->addColumn('exposed', 'boolean', [
+                    'default' => 0,
+                    'null' => false,
+                ])
+                ->addColumn('description', 'text', [
+                    'default' => null,
+                    'null' => true,
+                ]);
 
-        $table->addIndex('name')
-              ->addIndex('connector');
+            $table->addIndex('name')
+                ->addIndex('connector');
 
-        $table->create();
+            $table->create();
+        }
     }
 }
 
