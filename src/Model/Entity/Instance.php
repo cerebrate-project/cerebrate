@@ -7,13 +7,5 @@ use Cake\ORM\Entity;
 
 class Instance extends AppModel
 {
-    protected $_accessible = [
-        '*' => true,
-        'id' => false,
-        'uuid' => false,
-    ];
 
-    protected $_accessibleOnNew = [
-        'uuid' => true,
-    ];
 }
