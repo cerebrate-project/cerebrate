@@ -77,8 +77,9 @@ class IndividualsTable extends AppTable
             $this->saveMetaFields($id, $individual);
         }
         if (!empty($individual['alignments'])) {
+            $Organisation = \Cake\ORM\TableRegistry::getTableLocator()->get('Organisations');
             foreach ($individual['alignments'] as $alignment) {
-                $org_id = $this->Organisation->captureOrg($alignment['organisation']);
+                $org_id = $Organisation->captureOrg($alignment['organisation']);
                 if ($org_id) {
                     $this->Alignments->setAlignment($org_id, $individual->id, $alignment['type']);
                 }
