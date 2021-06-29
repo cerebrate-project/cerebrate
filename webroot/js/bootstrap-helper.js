@@ -180,7 +180,7 @@ class UIFactory {
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
     submissionReloaderModal(url, reloadUrl, $reloadedElement, $statusNode=null) {
-        const successCallback = function (data) {
+        const successCallback = function ([data, modalObject]) {
             UI.reload(reloadUrl, $reloadedElement, $statusNode)
             if (data.additionalData !== undefined && data.additionalData.displayOnSuccess !== undefined) {
                 UI.modal({
