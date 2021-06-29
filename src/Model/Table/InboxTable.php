@@ -75,15 +75,15 @@ class InboxTable extends AppTable
             $errors[] = __('Unkown brood `{0}`', $entryData['data']['cerebrateURL']);
         }
         
-        $found = false;
-        foreach ($user->individual->organisations as $organisations) {
-            if ($organisations->id == $brood->organisation_id) {
-                $found = true;
-            }
-        }
-        if (!$found) {
-            $errors[] = __('User `{0}` is not part of the brood\'s organisation. Make sure `{0}` is aligned with the organisation owning the brood.', $user->individual->email);
-        }
+        // $found = false;
+        // foreach ($user->individual->organisations as $organisations) {
+        //     if ($organisations->id == $brood->organisation_id) {
+        //         $found = true;
+        //     }
+        // }
+        // if (!$found) {
+        //     $errors[] = __('User `{0}` is not part of the brood\'s organisation. Make sure `{0}` is aligned with the organisation owning the brood.', $user->individual->email);
+        // }
         return $errors;
     }
 
