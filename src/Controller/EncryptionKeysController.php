@@ -26,8 +26,9 @@ class EncryptionKeysController extends AppController
             ],
             'contain' => ['Individuals', 'Organisations']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
     }
@@ -35,8 +36,9 @@ class EncryptionKeysController extends AppController
     public function delete($id)
     {
         $this->CRUD->delete($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
     }
@@ -44,8 +46,9 @@ class EncryptionKeysController extends AppController
     public function add()
     {
         $this->CRUD->add(['redirect' => $this->referer()]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->loadModel('Organisations');
         $this->loadModel('Individuals');
@@ -70,8 +73,9 @@ class EncryptionKeysController extends AppController
             'redirect' => $this->referer()
         ];
         $this->CRUD->edit($id, $params);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('dropdownData', []);
         $this->set('metaGroup', 'ContactDB');

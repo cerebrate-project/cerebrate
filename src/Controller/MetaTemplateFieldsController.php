@@ -15,8 +15,9 @@ class MetaTemplateFieldsController extends AppController
             'filters' => ['field', 'type', 'meta_template_id'],
             'quickFilters' => ['field', 'type']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Administration');
     }

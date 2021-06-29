@@ -36,8 +36,9 @@ class LocalToolsController extends AppController
                 return $data;
             }
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Administration');
     }
@@ -102,8 +103,9 @@ class LocalToolsController extends AppController
     public function add($connector = false)
     {
         $this->CRUD->add();
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $connectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
         $dropdownData = ['connectors' => []];
@@ -133,8 +135,9 @@ class LocalToolsController extends AppController
     public function edit($id)
     {
         $this->CRUD->edit($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         if ($this->ParamHandler->isAjax() && !empty($this->ajaxResponsePayload)) {
             return $this->ajaxResponsePayload;
@@ -152,8 +155,9 @@ class LocalToolsController extends AppController
     public function delete($id)
     {
         $this->CRUD->delete($id);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Administration');
     }
@@ -193,8 +197,9 @@ class LocalToolsController extends AppController
                 return $data;
             }
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Administration');
     }

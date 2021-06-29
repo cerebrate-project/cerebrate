@@ -16,8 +16,9 @@ class SharingGroupsController extends AppController
             'contain' => ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]],
             'filters' => ['uuid', 'description', 'releasability', 'Organisations.name', 'Organisations.uuid']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Trust Circles');
     }
@@ -45,8 +46,9 @@ class SharingGroupsController extends AppController
         $this->CRUD->view($id, [
             'contain' => ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]]
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Trust Circles');
     }

@@ -51,8 +51,9 @@ class MetaTemplatesController extends AppController
             ],
             'contain' => ['MetaTemplateFields']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('defaultTemplatePerScope', $this->MetaTemplates->getDefaultTemplatePerScope());
         $this->set('alignmentScope', 'individuals');
@@ -64,8 +65,9 @@ class MetaTemplatesController extends AppController
         $this->CRUD->view($id, [
             'contain' => ['MetaTemplateFields']
         ]);
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
         $this->set('metaGroup', 'Administration');
     }
@@ -79,10 +81,9 @@ class MetaTemplatesController extends AppController
         } else {
             $this->CRUD->toggle($id, $fieldName);
         }
-        if ($this->ParamHandler->isRest()) {
-            return $this->restResponsePayload;
-        } else if($this->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
-            return $this->ajaxResponsePayload;
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
         }
     }
 }
