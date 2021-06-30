@@ -107,7 +107,7 @@
             .click(function() {
                 const url = `/${controller}/filtering`
                 const reloadUrl = `/${controller}/index${additionalUrlParams}`
-                openFilteringModal(this, url, reloadUrl, $(`#table-container-${randomValue}`));
+                openFilteringModal(this, url, reloadUrl, $(`#index-table-${randomValue}`));
             })
 
         function doFilter($button) {
@@ -151,7 +151,8 @@
         }
 
         function openFilteringModal(clicked, url, reloadUrl, tableId) {
-            UI.overlayUntilResolve(clicked, UI.submissionModalForIndex(url, reloadUrl, tableId))
+            const modalPromise = UI.submissionModalForIndex(url, reloadUrl, tableId)
+            UI.overlayUntilResolve(clicked, modalPromise)
         }
     });
 </script>
