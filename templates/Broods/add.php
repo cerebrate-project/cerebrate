@@ -26,7 +26,8 @@
                     'field' => 'organisation_id',
                     'label' => __('Owner organisation'),
                     'options' => $dropdownData['organisation'],
-                    'type' => 'dropdown'
+                    'type' => 'dropdown',
+                    'empty' => __('-- pick one --')
                 ),
                 array(
                     'field' => 'trusted',

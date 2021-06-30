@@ -98,7 +98,7 @@ class ACLComponent extends Component
             'connectLocal' => ['perm_admin'],
             'delete' => ['perm_admin'],
             'edit' => ['perm_admin'],
-            'exposedTools' => ['perm_admin'],
+            'exposedTools' => ['OR' => ['perm_admin', 'perm_sync']],
             'index' => ['perm_admin'],
             'connectorIndex' => ['perm_admin'],
             'view' => ['perm_admin'],

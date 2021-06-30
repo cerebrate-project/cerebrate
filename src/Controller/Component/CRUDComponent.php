@@ -165,7 +165,8 @@ class CRUDComponent extends Component
                 }
             } else {
                 $this->Controller->isFailResponse = true;
-                $validationMessage = $this->prepareValidationError($data);
+                $validationErrors = $data->getErrors();
+                $validationMessage = $this->prepareValidationMessage($validationErrors);
                 $message = __(
                     '{0} could not be added.{1}',
                     $this->ObjectAlias,
@@ -174,13 +175,28 @@ class CRUDComponent extends Component
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($message, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'add', $data, $message, $validationMessage);
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'add', $data, $message, $validationErrors);
                 } else {
                     $this->Controller->Flash->error($message);
                 }
             }
         }
         $this->Controller->set('entity', $data);
+    }
+
+    private function prepareValidationMessage($errors)
+    {
+        $validationMessage = '';
+        if (!empty($errors)) {
+            if (count($errors) == 1) {
+                $field = array_keys($errors)[0];
+                $fieldError = implode(', ', array_values($errors[$field]));
+                $validationMessage = __('{0}: {1}', $field, $fieldError);
+            } else {
+                $validationMessage = __('There has been validation issues with multiple fields');
+            }
+        }
+        return $validationMessage;
     }
 
     private function prepareValidationError($data)
@@ -192,7 +208,7 @@ class CRUDComponent extends Component
                 foreach ($errorData as $key => $value) {
                     $errorMessages[] = $value;
                 }
-                $validationMessage .= __(' {1}', $field, implode(',', $errorMessages));
+                $validationMessage .= __('{0}: {1}', $field, implode(',', $errorMessages));
             }
         }
         return $validationMessage;
@@ -261,14 +277,15 @@ class CRUDComponent extends Component
                     }
                 }
             } else {
-                $validationMessage = $this->prepareValidationError($data);
+                $validationErrors = $data->getErrors();
+                $validationMessage = $this->prepareValidationMessage($validationErrors);
                 $message = __(
                     __('{0} could not be modified.'),
                     $this->ObjectAlias
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'edit', $data, $message, $data->getErrors());
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'edit', $data, $message, $validationErrors);
                 } else {
                     $this->Controller->Flash->error($message);
                 }
@@ -699,7 +716,8 @@ class CRUDComponent extends Component
                     }
                 }
             } else {
-                $validationMessage = $this->prepareValidationError($data);
+                $validationErrors = $data->getErrors();
+                $validationMessage = $this->prepareValidationMessage($validationErrors);
                 $message = __(
                     '{0} could not be modified.{1}',
                     $this->ObjectAlias,
@@ -707,7 +725,7 @@ class CRUDComponent extends Component
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $message, $validationMessage);
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $message, $validationErrors);
                 } else {
                     $this->Controller->Flash->error($message);
                     if (empty($params['redirect'])) {

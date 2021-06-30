@@ -996,21 +996,22 @@ class FormValidationHelper {
     injectValidationErrorInForm(fieldName, errors) {
         const inputField = Array.from(this.form).find(node => { return node.name == fieldName })
         if (inputField !== undefined) {
-            const $messageNode = this.buildValidationMessageNode(errors)
+            const $messageNode = this.buildValidationMessageNode(fieldName, errors)
             const $inputField = $(inputField)
             $inputField.addClass('is-invalid')
             $messageNode.insertAfter($inputField)
         } else {
-            const $messageNode = this.buildValidationMessageNode(errors, true)
+            const $messageNode = this.buildValidationMessageNode(fieldName, errors, true)
             const $flashContainer = $(this.form).parent().find('#flashContainer')
             $messageNode.insertAfter($flashContainer)
         }
     }
 
-    buildValidationMessageNode(errors, isAlert=false) {
+    buildValidationMessageNode(fieldName, errors, isAlert=false) {
         const $messageNode = $('<div></div>')
         if (isAlert) {
             $messageNode.addClass('alert alert-danger').attr('role', 'alert')
+            $messageNode.append($('<strong></strong>').text(`${fieldName}: `))
         } else {
             $messageNode.addClass('invalid-feedback')
         }
@@ -1020,7 +1021,7 @@ class FormValidationHelper {
                 if (hasMultipleErrors) {
                     $messageNode.append($('<li></li>').text(error))
                 } else {
-                    $messageNode.text(error)
+                    $messageNode.append($('<span></span>').text(error))
                 }
             }
         } else {
