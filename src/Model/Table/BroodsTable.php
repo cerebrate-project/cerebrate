@@ -27,10 +27,11 @@ class BroodsTable extends AppTable
     public function validationDefault(Validator $validator): Validator
     {
         return $validator
-            ->requirePresence(['name', 'url', 'organisation'], 'create')
+            ->requirePresence(['name', 'url', 'organisation_id'], 'create')
             ->notEmptyString('name')
             ->notEmptyString('url')
-            ->url('url');
+            ->url('url', __('The provided value is not a valid URL'))
+            ->naturalNumber('organisation_id', false);
     }
 
     public function genHTTPClient(Object $brood, array $options=[]): Object
