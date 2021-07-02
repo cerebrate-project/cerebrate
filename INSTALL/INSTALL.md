@@ -5,6 +5,14 @@ An Ubuntu server (18.04/20.04 should both work fine) - though other linux instal
 - php extensions for intl, mysql, sqlite3, mbstring, xml need to be installed and running
 - composer
 
+## Network requirements
+
+Cerebrate communicates via HTTPS so in order to be able to connect to other cerebrate nodes, requireing the following ports to be open:
+- port 443 needs to be open for outbound connections to be able to pull contactdb / sharing group information in
+- Cerebrate also needs to be accessible from the outside if:
+    - you wish to pull interconnect local tools with remote cerebrate instances
+    - you wish to act as a hub node for a community where members are expected to pull data from your node
+
 
 ## Cerebrate installation instructions
 
