@@ -97,6 +97,28 @@ class MispConnector extends CommonConnectorTools
         ]
     ];
     public $version = '0.1';
+    public $settings = [
+        'url' => [
+            'type' => 'text'
+        ],
+        'authkey' => [
+            'type' => 'text'
+        ],
+        'skip_ssl' => [
+            'type' => 'boolean'
+        ],
+    ];
+
+    public function addSettingValidatorRules($validator)
+    {
+        return $validator
+            ->requirePresence('url')
+            ->notEmpty('url', __('An URL must be provided'))
+            ->requirePresence('authkey')
+            ->notEmpty('authkey', __('An Authkey must be provided'))
+            ->lengthBetween('authkey', [40, 40], __('The authkey must be 40 character long'))
+            ->boolean('skip_ssl');
+    }
 
     public function addExposedFunction(string $functionName): void
     {
