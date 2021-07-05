@@ -152,9 +152,6 @@ class LocalToolsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        if ($this->ParamHandler->isAjax() && !empty($this->ajaxResponsePayload)) {
-            return $this->ajaxResponsePayload;
-        }
         $localConnectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
         $dropdownData = ['connectors' => []];
         $connector = false;

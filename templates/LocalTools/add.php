@@ -21,7 +21,7 @@
                     'type' => 'codemirror',
                     'codemirror' => [
                         'height' => '10rem',
-                        'hints' => $connectors[0]['connector_parameters']
+                        'hints' => $connectors[0]['connector_settings']
                     ]
                 ],
                 [

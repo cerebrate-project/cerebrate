@@ -68,7 +68,21 @@
             }
             cm.save()
         })
+        registerObserver(cm, $textArea[0])
+        synchronizeClasses(cm, $textArea[0])
         postInit()
+    }
+
+    // Used to synchronize textarea classes (such as `is-invalid` for content validation)
+    function registerObserver(cm, textarea) {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName == 'class') {
+                    synchronizeClasses(cm, textarea)
+                }
+            });    
+        });
+        observer.observe(textarea, {attributes: true})
     }
 
     function postInit() {
@@ -77,6 +91,14 @@
                 cm.refresh()
             }, 200); // modal takes 150ms to be displayed
         }
+    }
+
+    function synchronizeClasses(cm, textarea) {
+        const classes = Array.from(textarea.classList).filter(c => !c.startsWith('area-for-codemirror'))
+        const $wrapper = $(cm.getWrapperElement())
+        classes.forEach(c => {
+            $wrapper.toggleClass(c)
+        });
     }
 
     function jsonHints() {
@@ -130,7 +152,7 @@
         if (str.length > 0) {
             let validHints = []
             let hint
-            for (let i = 0; hints.length < cmOptions.hintOptions.maxHints && i < validHints.length; i++) {
+            for (let i = 0; validHints.length < cmOptions.hintOptions.maxHints && i < hints.length; i++) {
                 if (hints[i].text.startsWith(str)) {
                     validHints.push(hints[i])
                 }

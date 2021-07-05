@@ -184,7 +184,7 @@ class CRUDComponent extends Component
         $this->Controller->set('entity', $data);
     }
 
-    private function prepareValidationMessage($errors)
+    public function prepareValidationMessage($errors)
     {
         $validationMessage = '';
         if (!empty($errors)) {
@@ -280,8 +280,9 @@ class CRUDComponent extends Component
                 $validationErrors = $data->getErrors();
                 $validationMessage = $this->prepareValidationMessage($validationErrors);
                 $message = __(
-                    __('{0} could not be modified.'),
-                    $this->ObjectAlias
+                    '{0} could not be modified.{1}',
+                    $this->ObjectAlias,
+                    empty($validationMessage) ? '' : PHP_EOL . __('Reason:{0}', $validationMessage)
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
