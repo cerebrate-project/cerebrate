@@ -97,6 +97,25 @@ class MispConnector extends CommonConnectorTools
         ]
     ];
     public $version = '0.1';
+    public $parameters = [
+        'url' => [
+            'required' => true,
+            // 'validation' => 'url',
+        ],
+        'authkey' => [
+            'required' => true,
+            // 'validation' => 'authkeyLength',
+        ],
+        'skip_ssl' => [
+            // 'validation' => 'boolean',
+        ],
+        'test_param' => [
+            'options' => [
+                'John',
+                'Doe'
+            ]
+        ]
+    ];
 
     public function addExposedFunction(string $functionName): void
     {

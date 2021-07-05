@@ -23,12 +23,16 @@ class LocalToolsController extends AppController
         $this->set('metaGroup', 'Administration');
     }
 
-    public function connectorIndex()
+    public function connectorIndex($connectorName)
     {
         $this->set('metaGroup', 'Admin');
         $this->CRUD->index([
             'filters' => ['name', 'connector'],
             'quickFilters' => ['name', 'connector'],
+            'filterFunction' => function($query) use ($connectorName) {
+                $query->where(['connector' => $connectorName]);
+                return $query;
+            },
             'afterFind' => function($data) {
                 foreach ($data as $connector) {
                     $connector['health'] = [$this->LocalTools->healthCheckIndividual($connector)];
@@ -41,6 +45,7 @@ class LocalToolsController extends AppController
             return $responsePayload;
         }
         $this->set('metaGroup', 'Administration');
+        $this->set('connector', $connectorName);
     }
 
     public function action($connectionId, $actionName)
@@ -100,18 +105,25 @@ class LocalToolsController extends AppController
         }
     }
 
-    public function add($connector = false)
+    public function add($connectorName = false)
     {
         $this->CRUD->add();
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $connectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
+        $localConnectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
         $dropdownData = ['connectors' => []];
-        foreach ($connectors as $connector) {
-            $dropdownData['connectors'][$connector['connector']] = $connector['name'];
+        $connector = false;
+        $connectors = [];
+        foreach ($localConnectors as $c) {
+            if (empty($connectorName) || $c['connector'] == $connectorName) {
+                $dropdownData['connectors'][$c['connector']] = $c['name'];
+                $connectors[] = $c;
+            }
         }
+        $this->set('connectorName', $connectorName);
+        $this->set('connectors', $connectors);
         $this->set(compact('dropdownData'));
         $this->set('metaGroup', 'Administration');
     }
@@ -121,7 +133,7 @@ class LocalToolsController extends AppController
         $connectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
         $connector = false;
         foreach ($connectors as $c) {
-            if ($connector === false || version_compare($c['version'], $connectors['version']) > 0) {
+            if ($connector_name == $c['connector'] && ($connector === false || version_compare($c['version'], $connectors['version']) > 0)) {
                 $connector = $c;
             }
         }
@@ -134,6 +146,7 @@ class LocalToolsController extends AppController
 
     public function edit($id)
     {
+        $localTool = $this->LocalTools->get($id);
         $this->CRUD->edit($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -142,12 +155,19 @@ class LocalToolsController extends AppController
         if ($this->ParamHandler->isAjax() && !empty($this->ajaxResponsePayload)) {
             return $this->ajaxResponsePayload;
         }
-        $connectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
+        $localConnectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
         $dropdownData = ['connectors' => []];
-        foreach ($connectors as $connector) {
-            $dropdownData['connectors'][$connector['connector']] = $connector['name'];
+        $connector = false;
+        $connectors = [];
+        foreach ($localConnectors as $c) {
+            if (empty($localTool->connector) || $c['connector'] == $localTool->connector) {
+                $dropdownData['connectors'][$c['connector']] = $c['name'];
+                $connectors[] = $c;
+            }
         }
         $this->set(compact('dropdownData'));
+        $this->set('connectorName', $localTool->connector);
+        $this->set('connectors', $connectors);
         $this->set('metaGroup', 'Administration');
         $this->render('add');
     }

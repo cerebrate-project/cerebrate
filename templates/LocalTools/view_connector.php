@@ -24,7 +24,7 @@ echo $this->element(
         ],
         'children' => [
             [
-                'url' => '/localTools/connectorIndex/',
+                'url' => '/localTools/connectorIndex/{{0}}',
                 'url_params' => ['connector'],
                 'title' => __('Connections')
             ]

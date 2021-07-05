@@ -5,6 +5,16 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'top_bar' => [
             'children' => [
                 [
+                    'type' => 'simple',
+                    'children' => [
+                        'data' => [
+                            'type' => 'simple',
+                            'text' => __('Add connection'),
+                            'popover_url' => sprintf('/localTools/add/%s', h($connector))
+                        ]
+                    ]
+                ],
+                [
                     'type' => 'search',
                     'button' => __('Filter'),
                     'placeholder' => __('Enter value to search'),
@@ -53,7 +63,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => false,
         'description' => false,
-        'pull' => 'right',
         'actions' => [
             [
                 'url' => '/localTools/view',
@@ -63,16 +72,19 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'open_modal' => '/localTools/connectLocal/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
+                'reload_url' => sprintf('/localTools/connectorIndex/%s', h($connector)),
                 'icon' => 'plug'
             ],
             [
                 'open_modal' => '/localTools/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
+                'reload_url' => sprintf('/localTools/connectorIndex/%s', h($connector)),
                 'icon' => 'edit'
             ],
             [
                 'open_modal' => '/localTools/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
+                'reload_url' => sprintf('/localTools/connectorIndex/%s', h($connector)),
                 'icon' => 'trash'
             ],
         ]

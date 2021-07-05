@@ -5,12 +5,12 @@
             'model' => 'LocalTools',
             'fields' => [
                 [
-                    'field' => 'name'
-                ],
-                [
                     'field' => 'connector',
                     'options' => $dropdownData['connectors'],
                     'type' => 'dropdown'
+                ],
+                [
+                    'field' => 'name'
                 ],
                 [
                     'field' => 'exposed',
@@ -18,7 +18,11 @@
                 ],
                 [
                     'field' => 'settings',
-                    'type' => 'textarea'
+                    'type' => 'codemirror',
+                    'codemirror' => [
+                        'height' => '10rem',
+                        'hints' => $connectors[0]['connector_parameters']
+                    ]
                 ],
                 [
                     'field' => 'description',

@@ -132,7 +132,8 @@ class LocalToolsTable extends AppTable
                 'name' => $connector_class->name,
                 'connector' => $connector_type,
                 'connector_version' => $connector_class->version,
-                'connector_description' => $connector_class->description
+                'connector_description' => $connector_class->description,
+                'connector_parameters' => $connector_class->parameters ?? []
             ];
             if ($includeConnections) {
                 $connector['connections'] = $this->healthCheck($connector_type, $connector_class);
