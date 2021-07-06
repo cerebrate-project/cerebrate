@@ -45,6 +45,7 @@ echo $this->element(
             ]
         ],
         'metaTemplates' => empty($metaFields) ? [] : $metaFields,
+        'combinedFieldsView' => true,
         'children' => []
     ]
 );
