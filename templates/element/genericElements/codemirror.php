@@ -40,7 +40,7 @@
         },
         hintData: {}
     }
-    const passedOptions = <?= json_encode($data['codemirror'] ?? $data['codemirror']) ?>;
+    const passedOptions = <?= !empty($data['codemirror']) ? json_encode($data['codemirror']) : '{}' ?>;
     const cmOptions = Object.assign({}, cmDefaultOptions, passedOptions)
     let cm
     init()
