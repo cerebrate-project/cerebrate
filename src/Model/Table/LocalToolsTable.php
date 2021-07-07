@@ -310,7 +310,7 @@ class LocalToolsTable extends AppTable
     public function isValidSettings($settings, array $context)
     {
         $settings = json_decode($settings, true);
-        $validationErrors = $this->getLocalToolsSettingValidationErrors($context['data']['id'], $settings);
+        $validationErrors = $this->getLocalToolsSettingValidationErrors($context['data']['connector'], $settings);
         return $this->getValidationMessage($validationErrors);
     }
 
@@ -323,9 +323,9 @@ class LocalToolsTable extends AppTable
         return empty($messages) ? true : implode('; ', $messages);
     }
 
-    public function getLocalToolsSettingValidationErrors($connectionId, array $settings): array
+    public function getLocalToolsSettingValidationErrors($connectorName, array $settings): array
     {
-        $connector = array_values($this->getConnectorByConnectionId($connectionId))[0];
+        $connector = array_values($this->getConnectors($connectorName))[0];
         $errors = [];
         if (method_exists($connector, 'addSettingValidatorRules')) {
             $validator = new Validator();

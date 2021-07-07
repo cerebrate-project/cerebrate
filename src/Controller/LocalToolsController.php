@@ -44,8 +44,56 @@ class LocalToolsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        $connector = $this->LocalTools->getConnectors($connectorName)[$connectorName];
         $this->set('metaGroup', 'Administration');
-        $this->set('connector', $connectorName);
+        $this->set('connectorName', $connectorName);
+        $this->set('connector', $connector);
+    }
+
+    public function batchAction($actionName)
+    {
+        $params = $this->ParamHandler->harvestParams(['connection_ids']);
+        $params['connection_ids'] = explode(',', $params['connection_ids']);
+        $connections = $this->LocalTools->query()->where(['id IN' => $params['connection_ids']])->all();
+        if (empty($connections)) {
+            throw new NotFoundException(__('Invalid connector.'));
+        }
+        $connection = $connections->first();
+        if ($this->request->is(['post', 'put'])) {
+            $actionParams = $this->LocalTools->getActionFilterOptions($connection->connector, $actionName);
+            $params = array_merge($params, $this->ParamHandler->harvestParams($actionParams));
+            $results = [];
+            $successes = 0;
+            $this->LocalTools->loadConnector($connection->connector);
+            foreach ($connections as $connection) {
+                $actionDetails = $this->LocalTools->getActionDetails($actionName);
+                $params['connection'] = $connection;
+                $tmpResult = $this->LocalTools->action($this->ACL->getUser()['id'], $connection->connector, $actionName, $params, $this->request);
+                $tmpResult['connection'] = $connection;
+                $results[$connection->id] = $tmpResult;
+                $successes += $tmpResult['success'] ? 1 : 0;
+            }
+            $success = $successes > 0;
+            $message = __('{0} / {1} operations were successful', $successes, count($results));
+            $this->CRUD->setResponseForController('batchAction', $success, $message, $results, $results);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
+            }
+            if (!empty($success)) {
+                $this->Flash->success($message);
+                $this->redirect(['controller' => 'localTools', 'action' => 'connectorIndex', $actionName]);
+            } else {
+                $this->Flash->error($message);
+                $this->redirect(['controller' => 'localTools', 'action' => 'connectorIndex', $actionName]);
+            }
+        } else {
+            $params['connection'] = $connection;
+            $results = $this->LocalTools->action($this->ACL->getUser()['id'], $connection->connector, $actionName, $params, $this->request);
+            $this->set('data', $results);
+            $this->set('metaGroup', 'Administration');
+            $this->render('/Common/getForm');
+        }
     }
 
     public function action($connectionId, $actionName)

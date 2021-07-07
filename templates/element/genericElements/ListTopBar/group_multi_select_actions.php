@@ -6,11 +6,12 @@
                 'variant' => $child['variant'] ?? 'primary',
                 'text' => $child['text'],
                 'outline' => !empty($child['outline']),
-                'params' => [
+                'icon' => $child['icon'] ?? null,
+                'params' => array_merge([
                     'data-onclick-function' => $child['onclick'] ?? '',
                     'data-table-random-value' => $tableRandomValue,
                     'onclick' => 'multiActionClickHandler(this)'
-                ]
+                ], $child['params'] ?? [])
             ]);
         }
         echo sprintf(
@@ -68,7 +69,7 @@
         })
         const functionName = $clicked.data('onclick-function')
         if (functionName && typeof window[functionName] === 'function') {
-            window[functionName](selectedIDs, selectedData, $table)
+            window[functionName](selectedIDs, selectedData, $table, $clicked)
         }
     }
 </script>
