@@ -25,6 +25,13 @@ class CommonConnectorTools
         $this->exposedFunctions[] = $functionName;
     }
 
+    public function getBatchActionFunctions(): array
+    {
+        return array_filter($this->exposedFunctions, function($function) {
+            return $function['type'] == 'batchAction';
+        });
+    }
+
     public function runAction($action, $params) {
         if (!in_array($action, $exposedFunctions)) {
             throw new MethodNotAllowedException(__('Invalid connector function called.'));

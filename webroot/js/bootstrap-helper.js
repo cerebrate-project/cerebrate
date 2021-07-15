@@ -29,15 +29,18 @@ class UIFactory {
      * @param  {string} url - The URL from which the modal's content should be fetched
      * @param  {ModalFactory~POSTSuccessCallback} POSTSuccessCallback - The callback that handles successful form submission
      * @param  {ModalFactory~POSTFailCallback} POSTFailCallback - The callback that handles form submissions errors and validation errors.
+     * @param  {Object=[]} modalOptions - Additional options to be passed to the modal constructor
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
-    async submissionModal(url, POSTSuccessCallback, POSTFailCallback) {
+    async submissionModal(url, POSTSuccessCallback, POSTFailCallback, modalOptions={}) {
         return AJAXApi.quickFetchURL(url).then((modalHTML) => {
-            const theModal = new ModalFactory({
+            const defaultOptions = {
                 rawHtml: modalHTML,
                 POSTSuccessCallback: POSTSuccessCallback !== undefined ? POSTSuccessCallback : () => {},
                 POSTFailCallback: POSTFailCallback !== undefined ? POSTFailCallback : (errorMessage) => {},
-            });
+            }
+            const options = Object.assign({}, defaultOptions, modalOptions)
+            const theModal = new ModalFactory(options);
             theModal.makeModal()
             theModal.show()
             theModal.$modal.data('modalObject', theModal)
