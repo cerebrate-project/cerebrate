@@ -110,6 +110,11 @@ class BootstrapHelper extends Helper
         $bsProgressTimeline = new BoostrapProgressTimeline($options, $this);
         return $bsProgressTimeline->progressTimeline();
     }
+
+    public function genNode($node, $params=[], $content='')
+    {
+        return BootstrapGeneric::genNode($node, $params, $content);
+    }
 }
 
 class BootstrapGeneric
@@ -142,7 +147,7 @@ class BootstrapGeneric
         }
     }
 
-    protected static function genNode($node, $params=[], $content="")
+    public static function genNode($node, $params=[], $content="")
     {
         return sprintf('<%s %s>%s</%s>', $node, BootstrapGeneric::genHTMLParams($params), $content, $node);
     }
@@ -238,7 +243,6 @@ class BootstrapTabs extends BootstrapGeneric
         $this->bsClasses = [
             'nav' => [],
             'nav-item' => $this->options['nav-item-class'],
-    
         ];
 
         if (!empty($this->options['justify'])) {
@@ -286,7 +290,9 @@ class BootstrapTabs extends BootstrapGeneric
         }
         $this->data['navs'][$activeTab]['active'] = true;
 
-        $this->options['vertical-size'] = $this->options['vertical-size'] < 0 || $this->options['vertical-size'] > 11 ? 3 : $this->options['vertical-size'];
+        if (!empty($this->options['vertical-size']) && $this->options['vertical-size'] != 'auto') {
+            $this->options['vertical-size'] = $this->options['vertical-size'] < 0 || $this->options['vertical-size'] > 11 ? 3 : $this->options['vertical-size'];
+        }
 
         $this->options['header-text-variant'] = $this->options['header-variant'] == 'light' ? 'body' : 'white';
         $this->options['header-border-variant'] = $this->options['header-variant'] == 'light' ? '' : $this->options['header-variant'];
@@ -333,11 +339,37 @@ class BootstrapTabs extends BootstrapGeneric
 
     private function genVerticalTabs()
     {
-        $html = $this->openNode('div', ['class' => array_merge(['row', ($this->options['card'] ? 'card flex-row' : '')], ["border-{$this->options['header-border-variant']}"])]);
-            $html .= $this->openNode('div', ['class' => array_merge(['col-' . $this->options['vertical-size'], ($this->options['card'] ? 'card-header border-right' : '')], ["bg-{$this->options['header-variant']}", "text-{$this->options['header-text-variant']}", "border-{$this->options['header-border-variant']}"])]);
+        $html = $this->openNode('div', ['class' => array_merge(
+            [
+                'row',
+                ($this->options['card'] ? 'card flex-row' : ''),
+                ($this->options['vertical-size'] == 'auto' ? 'flex-nowrap' : '')
+            ],
+            [
+                "border-{$this->options['header-border-variant']}"
+            ]
+        )]);
+            $html .= $this->openNode('div', ['class' => array_merge(
+                [
+                    ($this->options['vertical-size'] != 'auto' ? 'col-' . $this->options['vertical-size'] : ''),
+                    ($this->options['card'] ? 'card-header border-right' : '')
+                ],
+                [
+                    "bg-{$this->options['header-variant']}",
+                    "text-{$this->options['header-text-variant']}",
+                    "border-{$this->options['header-border-variant']}"
+                ])]);
                 $html .= $this->genNav();
             $html .= $this->closeNode('div');
-            $html .= $this->openNode('div', ['class' => array_merge(['col-' . (12 - $this->options['vertical-size']), ($this->options['card'] ? 'card-body2' : '')], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
+            $html .= $this->openNode('div', ['class' => array_merge(
+                [
+                    ($this->options['vertical-size'] != 'auto' ? 'col-' . (12 - $this->options['vertical-size']) : ''),
+                    ($this->options['card'] ? 'card-body2' : '')
+                ],
+                [
+                    "bg-{$this->options['body-variant']}",
+                    "text-{$this->options['body-text-variant']}"
+                ])]);
                 $html .= $this->genContent();
             $html .= $this->closeNode('div');
         $html .= $this->closeNode('div');

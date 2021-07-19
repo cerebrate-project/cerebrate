@@ -9,13 +9,13 @@
     max-width: 25% !important;
 }
 .mh-75 {
-    max-width: 75% !important;
+    max-height: 75% !important;
 }
 .mh-50 {
-    max-width: 50% !important;
+    max-height: 50% !important;
 }
 .mh-25 {
-    max-width: 25% !important;
+    max-height: 25% !important;
 }
 
 /* Toast */
@@ -107,4 +107,33 @@ div.progress-timeline .progress-line {
 }
 div.progress-timeline .progress-line.progress-inactive {
     opacity: 0.5;
+}
+
+.bd-callout {
+    border: 1px solid #eee;
+        border-left-color: rgb(238, 238, 238);
+        border-left-width: 1px;
+    border-left-width: .25rem;
+    border-radius: .25rem;
+}
+.bd-callout-primary {
+    border-left-color: var(--primary);
+}
+.bd-callout-info {
+    border-left-color: var(--info);
+}
+.bd-callout-success {
+    border-left-color: var(--success);
+}
+.bd-callout-warning {
+    border-left-color: var(--warning);
+}
+.bd-callout-danger {
+    border-left-color: var(--danger);
+}
+.bd-callout-dark {
+    border-left-color: var(--dark);
+}
+.bd-callout-light {
+    border-left-color: var(--light);
 }
