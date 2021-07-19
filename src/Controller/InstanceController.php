@@ -101,4 +101,12 @@ class InstanceController extends AppController
         $this->set('path', ['controller' => 'instance', 'action' => 'rollback']);
         $this->render('/genericTemplates/confirm');
     }
+
+    public function settings()
+    {
+        $this->Settings = $this->getTableLocator()->get('Settings');
+        $all = $this->Settings->getSettings();
+        $this->set('settingsProvider', $all['settingsProvider']);
+        $this->set('settings', $all['settings']);
+    }
 }
