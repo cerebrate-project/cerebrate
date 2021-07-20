@@ -1,9 +1,73 @@
 <?php
 // debug($settings);
 // debug($settingsProvider);
+// debug($notices);
+$mainNoticeHeading = [
+    'critical' => __('Your Cerebrate instance requires immediate attention.'),
+    'warning' => __('Issues found, it is recommended that you resolve them.'),
+    'info' => __('There are some optional settings that are incorrect or not set.'),
+];
+$noticeDescriptionPerLevel = [
+    'critical' => __('Cerebrate will not operate correctly or will be unsecure until these issues are resolved.'),
+    'warning' => __('Some of the features of Cerebrate cannot be utilised until these issues are resolved.'),
+    'info' => __('There are some optional tweaks that could be done to improve the looks of your Cerebrate instance.'),
+];
+$headingPerLevel = [
+    'critical' => __('Critical settings'),
+    'warning' => __('Warning settings'),
+    'info' => __('Info settings'),
+];
+
 $settingTable = genLevel0($settingsProvider, $this);
+$alertVariant = 'info';
+$alertBody = '';
+$skipHeading = false;
+$tableItems = [];
+foreach (array_keys($mainNoticeHeading) as $level) {
+    if(!empty($notices[$level])) {
+        $variant = $level == 'critical' ? 'danger' : $level;
+        if (!$skipHeading) {
+            $alertBody .= sprintf('<h5 class="alert-heading">%s</h5>', $mainNoticeHeading[$level]);
+            $alertVariant = $variant;
+            $skipHeading = true;
+        }
+        $tableItems[] = [
+            'severity' => $headingPerLevel[$level],
+            'issues' => count($notices[$level]),
+            'badge-variant' => $variant,
+            'description' => $noticeDescriptionPerLevel[$level],
+        ];
+    }
+}
+$alertBody .= $this->Bootstrap->table([
+    'small' => true,
+    'striped' => false,
+    'hover' => false,
+    'borderless' => true,
+    'bordered' => false,
+    'tableClass' => 'mb-0'
+], [
+    'fields' => [
+        ['key' => 'severity', 'label' => __('Severity')],
+        ['key' => 'issues', 'label' => __('Issues'), 'formatter' => function($count, $row) {
+            return $this->Bootstrap->badge([
+                'variant' => $row['badge-variant'],
+                'text' => $count
+            ]);
+        }],
+        ['key' => 'description', 'label' => __('Description')]
+    ],
+    'items' => $tableItems,
+]);
+$settingNotice = $this->Bootstrap->alert([
+    'variant' => $alertVariant,
+    'html' => $alertBody
+]);
 ?>
 <div class="px-5">
+    <div class="">
+        <?= $settingNotice ?>
+    </div>
     <div class="mb-3">
         <input class="form-control" type="text" id="search" placeholder="<?= __('Search settings') ?>" aria-describedby="<?= __('Search setting input') ?>">
     </div>
@@ -28,7 +92,7 @@ function genLevel0($settingsProvider, $appView)
         'card' => false,
         'pills' => false,
         'justify' => 'center',
-        'content-class' => ['mt-2'],
+        'content-class' => [''],
         'data' => [
             'navs' => $level0,
             'content' => $content0
@@ -100,10 +164,21 @@ function genLevel3($level2Name, $settingGroupName, $setting, $appView)
 
 function genSingleSetting($settingName, $setting, $appView)
 {
+    $dependsOnHtml = '';
+    if (!empty($setting['dependsOn'])) {
+        $dependsOnHtml = $appView->Bootstrap->genNode('span', [
+        ], $appView->Bootstrap->genNode('sup', [
+            'class' => [
+                $appView->FontAwesome->getClass('info'),
+                'ml-1',
+            ],
+            'title' => __('This setting depends on the validity of: {0}', h($setting['dependsOn']))
+        ]));
+    }
     $label = $appView->Bootstrap->genNode('label', [
         'class' => ['font-weight-bolder', 'mb-0'],
         'for' => $settingName
-    ], h($setting['name']));
+    ], h($setting['name']) . $dependsOnHtml);
     $description = '';
     if (!empty($setting['description'])) {
         $description = $appView->Bootstrap->genNode('small', [
@@ -111,7 +186,16 @@ function genSingleSetting($settingName, $setting, $appView)
             'id' => "{$settingName}Help"
         ], h($setting['description']));
     }
-    $inputGroup = '';
+    $error = '';
+    if (!empty($setting['error'])) {
+        $textColor = '';
+        if ($setting['severity'] != 'critical') {
+            $textColor = "text-{$setting['severity']}";
+        }
+        $error = $appView->Bootstrap->genNode('div', [
+            'class' => ['d-block', 'invalid-feedback', $textColor],
+        ], h($setting['errorMessage']));
+    }
     if (empty($setting['type'])) {
         $setting['type'] = 'string';
     }
@@ -131,19 +215,23 @@ function genSingleSetting($settingName, $setting, $appView)
     }
     $container = $appView->Bootstrap->genNode('div', [
         'class' => ['form-group', 'mb-2']
-    ], implode('', [$label, $input, $description]));
+    ], implode('', [$label, $input, $description, $error]));
     return $container;
 }
 
 function genInputString($settingName, $setting, $appView)
 {
+    // debug($setting);
     return $appView->Bootstrap->genNode('input', [
         'class' => [
-            'form-control'
+            'form-control',
+            (!empty($setting['error']) ? 'is-invalid' : ''),
+            (!empty($setting['error']) ? ($setting['severity'] != 'critical' ? "border-{$setting['severity']} warning" : '') : ''),
         ],
         'type' => 'text',
         'id' => $settingName,
         'value' => isset($setting['value']) ? $setting['value'] : "",
+        'placeholder' => $setting['default'] ?? '',
         'aria-describedby' => "{$settingName}Help"
     ]);
 }

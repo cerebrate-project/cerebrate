@@ -16,13 +16,19 @@ class SettingsTable extends AppTable
         $this->SettingsProvider = TableRegistry::getTableLocator()->get('SettingsProvider');
     }
 
-    public function getSettings(): array
+    public function getSettings($full=false): array
     {
         $settings = Configure::read()['Cerebrate'];
-        $settingsProvider = $this->SettingsProvider->getSettingsConfiguration($settings);
-        return [
-            'settings' => $settings,
-            'settingsProvider' => $settingsProvider
-        ];
+        if (empty($full)) {
+            return $settings;
+        } else {
+            $settingsProvider = $this->SettingsProvider->getSettingsConfiguration($settings);
+            $notices = $this->SettingsProvider->getNoticesFromSettingsConfiguration($settingsProvider, $settings);
+            return [
+                'settings' => $settings,
+                'settingsProvider' => $settingsProvider,
+                'notices' => $notices,
+            ];
+        }
     }
 }

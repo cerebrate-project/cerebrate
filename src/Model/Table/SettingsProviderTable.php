@@ -7,12 +7,20 @@ use Cake\Validation\Validator;
 class SettingsProviderTable extends AppTable
 {
     private $settingsConfiguration = [];
+    private $error_critical = '',
+            $error_warning = '',
+            $error_info = '';
+    private $severities = ['info', 'warning', 'critical'];
 
     public function initialize(array $config): void
     {
         parent::initialize($config);
         $this->settingsConfiguration = $this->generateSettingsConfiguration();
         $this->setTable(false);
+        $this->error_critical =  __('Cerebrate will not operate correctly or will be unsecure until these issues are resolved.');
+        $this->error_warning =  __('Some of the features of Cerebrate cannot be utilised until these issues are resolved.');
+        $this->error_info =  __('There are some optional tweaks that could be done to improve the looks of your Cerebrate instance.');
+        $this->settingValidator = new SettingValidator();
     }
     
     /**
@@ -28,24 +36,99 @@ class SettingsProviderTable extends AppTable
         }
         return $settingConf;
     }
-
-    private function mergeSettingsIntoSettingConfiguration($settingConf, $settings)
+    
+    /**
+     * mergeSettingsIntoSettingConfiguration Inject the provided settings into the configuration while performing depencency and validation checks
+     *
+     * @param  array $settingConf the setting configuration to have the setting injected into
+     * @param  array $settings the settings
+     * @return void
+     */
+    private function mergeSettingsIntoSettingConfiguration(array $settingConf, array $settings): array
     {
         foreach ($settingConf as $key => $value) {
             if ($this->isLeaf($value)) {
                 if (isset($settings[$key])) {
                     $settingConf[$key]['value'] = $settings[$key];
                 }
+                $settingConf[$key] = $this->evaluateLeaf($settingConf[$key], $settingConf);
             } else {
                 $settingConf[$key] = $this->mergeSettingsIntoSettingConfiguration($value, $settings);
             }
         }
         return $settingConf;
     }
+    
+    /**
+     * getNoticesFromSettingsConfiguration Summarize the validation errors
+     *
+     * @param  array $settingsProvider the setting configuration having setting value assigned
+     * @return void
+     */
+    public function getNoticesFromSettingsConfiguration(array $settingsProvider): array
+    {
+        $notices = [];
+        foreach ($settingsProvider as $key => $value) {
+            if ($this->isLeaf($value)) {
+                if (!empty($value['error'])) {
+                    if (empty($notices[$value['severity']])) {
+                        $notices[$value['severity']] = [];
+                    }
+                    $notices[$value['severity']][] = $key;
+                }
+            } else {
+                $notices = array_merge($notices, $this->getNoticesFromSettingsConfiguration($value));
+            }
+        }
+        return $notices;
+    }
 
     private function isLeaf($setting)
     {
         return !empty($setting['name']) && !empty($setting['type']);
+    }
+
+    private function evaluateLeaf($setting, $settingSection)
+    {
+        $skipValidation = false;
+        if (isset($setting['dependsOn'])) {
+            $parentSetting = null;
+            foreach ($settingSection as $settingSectionName => $settingSectionConfig) {
+                if ($settingSectionName == $setting['dependsOn']) {
+                    $parentSetting = $settingSectionConfig;
+                }
+            }
+            if (!is_null($parentSetting)) {
+                $parentSetting = $this->evaluateLeaf($parentSetting, $settingSection);
+                $skipValidation = $parentSetting['error'] === true || empty($parentSetting['value']);
+            }
+        }
+        if (!$skipValidation) {
+            if (isset($setting['test'])) {
+                $error = false;
+                $setting['value'] = $setting['value'] ?? '';
+                if (is_callable($setting['test'])) { // Validate with anonymous function
+                    $error = $setting['test']($setting['value'], $setting);
+                } else if (method_exists($this->settingValidator, $setting['test'])) { // Validate with function defined in settingValidator class
+                    $error = $this->settingValidator->{$setting['test']}($setting['value'], $setting);
+                } else {
+                    $validator = new Validator();
+                    if (method_exists($validator, $setting['test'])) { // Validate with cake's validator function
+                        $validator->{$setting['test']};
+                        $error = $validator->validate($setting['value']);
+                    }
+                }
+                if ($error !== true) {
+                    $setting['severity'] = $setting['severity'] ?? 'warning';
+                    if (!in_array($setting['severity'], $this->severities)) {
+                        $setting['severity'] = 'warning';
+                    }
+                    $setting['errorMessage'] = $error;
+                }
+                $setting['error'] = $error !== false ? true : false;
+            }
+        }
+        return $setting;
     }
 
     /**
@@ -60,17 +143,17 @@ class SettingsProviderTable extends AppTable
             'Application' => [
                 'General' => [
                     'Essentials' => [
-                        'baseurl' => [
+                        'app.baseurl' => [
                             'description' => __('The base url of the application (in the format https://www.mymispinstance.com or https://myserver.com/misp). Several features depend on this setting being correctly set to function.'),
-                            'errorMessage' => __('The currently set baseurl does not match the URL through which you have accessed the page. Disregard this if you are accessing the page via an alternate URL (for example via IP address).'),
+                            'severity' => 'critical',
                             'default' => '',
                             'name' => __('Base URL'),
                             'test' => 'testBaseURL',
                             'type' => 'string',
                         ],
-                        'uuid' => [
+                        'app.uuid' => [
                             'description' => __('The Cerebrate instance UUID. This UUID is used to identify this instance.'),
-                            'errorMessage' => __('No valid UUID set'),
+                            'severity' => 'critical',
                             'default' => '',
                             'name' => 'UUID',
                             'test' => 'testUuid',
@@ -81,8 +164,11 @@ class SettingsProviderTable extends AppTable
                         'to-del' => [
                             'description' => 'to del',
                             'errorMessage' => 'to del',
-                            'default' => '',
+                            'default' => 'A-default-value',
                             'name' => 'To DEL',
+                            'test' => function ($value) {
+                                return empty($value) ? __('Oh not! it\'s not valid!') : '';
+                            },
                             'type' => 'string'
                         ],
                         'to-del2' => [
@@ -110,32 +196,34 @@ class SettingsProviderTable extends AppTable
                 ],
                 'Network' => [
                     'Proxy' => [
-                        'host' => [
+                        'proxy.host' => [
                             'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
                             'default' => '',
                             'name' => __('Host'),
                             'test' => 'testHostname',
                             'type' => 'string',
                         ],
-                        'port' => [
+                        'proxy.port' => [
                             'description' => __('The TCP port for the HTTP proxy.'),
                             'default' => '',
                             'name' => __('Port'),
                             'test' => 'testForRangeXY',
                             'type' => 'integer',
                         ],
-                        'user' => [
+                        'proxy.user' => [
                             'description' => __('The authentication username for the HTTP proxy.'),
-                            'default' => '',
+                            'default' => 'admin',
                             'name' => __('User'),
-                            'test' => 'testForEmpty',
+                            'test' => 'testEmptyBecomesDefault',
+                            'dependsOn' => 'proxy.host',
                             'type' => 'string',
                         ],
-                        'password' => [
+                        'proxy.password' => [
                             'description' => __('The authentication password for the HTTP proxy.'),
                             'default' => '',
                             'name' => __('Password'),
-                            'test' => 'testForEmpty',
+                            'test' => 'testEmptyBecomesDefault',
+                            'dependsOn' => 'proxy.host',
                             'type' => 'string',
                         ],
                     ],
@@ -158,20 +246,20 @@ class SettingsProviderTable extends AppTable
                             'description' => __('The authentication username for the HTTP proxy.'),
                             'default' => '',
                             'name' => __('User'),
-                            'test' => 'testForEmpty',
+                            'test' => 'testEmptyBecomesDefault',
                             'type' => 'string',
                         ],
                         'password' => [
                             'description' => __('The authentication password for the HTTP proxy.'),
                             'default' => '',
                             'name' => __('Password'),
-                            'test' => 'testForEmpty',
+                            'test' => 'testEmptyBecomesDefault',
                             'type' => 'string',
                         ],
                     ],
                 ],
                 'UI' => [
-                    'dark' => [
+                    'app.ui.dark' => [
                         'description' => __('Enable the dark theme of the application'),
                         'default' => false,
                         'name' => __('Dark theme'),
@@ -179,11 +267,48 @@ class SettingsProviderTable extends AppTable
                     ],
                 ],
             ],
-            'Features' => [
-            ],
             'Security' => [
+            ],
+            'Features' => [
             ],
         ];
     }
 }
 
+class SettingValidator
+{
+
+    public function testEmptyBecomesDefault($value, $setting)
+    {
+        if (!empty($value)) {
+            return true;
+        } else if (!empty($setting['default'])) {
+            return __('Setting is not set, fallback to default value: {0}', $setting['default']);
+        } else {
+            return __('Cannot be empty');
+        }
+    }
+
+    public function testForEmpty($value, $setting)
+    {
+        return !empty($value) ? true : __('Cannot be empty');
+    }
+
+    public function testBaseURL($value, $setting)
+    {
+        if (empty($value)) {
+            return __('Cannot be empty');
+        }
+        if (!empty($value) && !preg_match('/^http(s)?:\/\//i', $value)) {
+            return __('Invalid URL, please make sure that the protocol is set.');
+        }
+        return true;
+    }
+
+    public function testUuid($value, $setting) {
+        if (empty($value) || !preg_match('/^\{?[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}?$/', $value)) {
+            return __('Invalid UUID.');
+        }
+        return true;
+    }
+}

@@ -105,8 +105,9 @@ class InstanceController extends AppController
     public function settings()
     {
         $this->Settings = $this->getTableLocator()->get('Settings');
-        $all = $this->Settings->getSettings();
+        $all = $this->Settings->getSettings(true);
         $this->set('settingsProvider', $all['settingsProvider']);
         $this->set('settings', $all['settings']);
+        $this->set('notices', $all['notices']);
     }
 }
