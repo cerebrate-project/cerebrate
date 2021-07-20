@@ -111,6 +111,12 @@ class BootstrapHelper extends Helper
         return $bsProgressTimeline->progressTimeline();
     }
 
+    public function listGroup($options, $data)
+    {
+        $bsListGroup = new BootstrapListGroup($options, $data, $this);
+        return $bsListGroup->listGroup();
+    }
+
     public function genNode($node, $params=[], $content='')
     {
         return BootstrapGeneric::genNode($node, $params, $content);
@@ -1275,5 +1281,101 @@ class BoostrapProgressTimeline extends BootstrapGeneric {
             'class' => ['progress-timeline', 'mw-75', 'mx-auto']
         ], $ulIcons . $ulText);
         return $html;
+    }
+}
+
+class BootstrapListGroup extends BootstrapGeneric
+{
+    private $defaultOptions = [
+        'hover' => false,
+    ];
+
+    private $bsClasses = null;
+
+    function __construct($options, $data, $btHelper) {
+        $this->data = $data;
+        $this->processOptions($options);
+        $this->btHelper = $btHelper;
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+    }
+
+    public function listGroup()
+    {
+        return $this->genListGroup();
+    }
+
+    private function genListGroup()
+    {
+        $html = $this->openNode('div', [
+            'class' => ['list-group',],
+        ]);
+        foreach ($this->data as $item) {
+            $html .= $this->genItem($item);
+        }
+        $html .= $this->closeNode('div');
+        return $html;
+    }
+
+    private function genItem($item)
+    {
+        if (!empty($item['heading'])) { // complex layout with heading, badge and body
+            $html = $this->genNode('a', [
+                'class' => ['list-group-item', (!empty($this->options['hover']) ? 'list-group-item-action' : ''),],
+            ], implode('', [
+                $this->genHeadingGroup($item),
+                $this->genBody($item),
+            ]));
+        } else { // simple layout with just <li>-like elements
+            $html = $this->genNode('a', [
+                'class' => ['list-group-item', 'd-flex', 'align-items-center', 'justify-content-between'],
+            ], implode('', [
+                h($item['text']),
+                $this->genBadge($item)
+            ]));
+        }
+        return $html;
+    }
+
+    private function genHeadingGroup($item)
+    {
+        $html = $this->genNode('div', [
+            'class' => ['d-flex', 'w-100', 'justify-content-between',],
+        ], implode('', [
+            $this->genHeading($item),
+            $this->genBadge($item)
+        ]));
+        return $html;
+    }
+
+    private function genHeading($item)
+    {
+        if (empty($item['heading'])) {
+            return '';
+        }
+        return $this->genNode('h5', [
+            'class' => ['mb-1'],
+        ], h($item['heading']));
+    }
+
+    private function genBadge($item)
+    {
+        if (empty($item['badge'])) {
+            return '';
+        }
+        return $this->genNode('span', [
+            'class' => ['badge badge-pill', (!empty($item['badge-variant']) ? "badge-{$item['badge-variant']}" : 'badge-primary')],
+        ], h($item['badge']));
+    }
+
+    private function genBody($item)
+    {
+        if (!empty($item['bodyHTML'])) {
+            return $item['bodyHTML'];
+        }
+        return !empty($item['body']) ? h($item['body']) : '';
     }
 }
