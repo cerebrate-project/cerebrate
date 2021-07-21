@@ -149,6 +149,7 @@ class AJAXApi {
     /**
      * @param {string} url              - The URL from which to fetch the form
      * @param {Object} [dataToMerge={}] - Additional data to be integrated or modified in the form
+     * @param {Object} [options={}]     - The options supported by AJAXApi#defaultOptions 
      * @return {Promise<Object>} Promise object resolving to the result of the POST operation
      */
     static async quickFetchAndPostForm(url, dataToMerge={}, options={}) {

@@ -92,7 +92,7 @@ function genLevel0($settingsProvider, $appView)
             $content0[] = __('No Settings available yet');
         }
     }
-    array_unshift($level0, __('Setting Diagnostic'));
+    array_unshift($level0, __('Settings Diagnostic'));
     array_unshift($content0, $appView->get('settingNotice'));
     $tabsOptions0 = [
         // 'vertical' => true,
@@ -178,6 +178,7 @@ function genLevel3($level2Name, $settingGroupName, $setting, $appView)
                 'p-2',
                 'mb-4',
                 'rounded',
+                'settings-group',
                 (!empty($groupIssueSeverity) ? "callout callout-${groupIssueSeverity}" : ''),
                 ($appView->get('darkMode') ? 'bg-dark' : 'bg-light')
             ],
@@ -211,56 +212,75 @@ function genSingleSetting($settingName, $setting, $appView)
             'id' => "{$settingId}Help"
         ], h($setting['description']));
     }
-    $error = '';
-    if (!empty($setting['error'])) {
-        $textColor = '';
+    $textColor = 'text-warning';
+    if (!empty($setting['severity'])) {
         $textColor = "text-{$appView->get('variantFromSeverity')[$setting['severity']]}";
-        $error = $appView->Bootstrap->genNode('div', [
-            'class' => ['d-block', 'invalid-feedback', $textColor],
-        ], h($setting['errorMessage']));
     }
+    $error = $appView->Bootstrap->genNode('div', [
+        'class' => ['d-block', 'invalid-feedback', $textColor],
+    ], (!empty($setting['error']) ? h($setting['errorMessage']) : ''));
     if (empty($setting['type'])) {
         $setting['type'] = 'string';
     }
     if ($setting['type'] == 'string') {
-        $input = genInputString($settingId, $setting, $appView);
+        $input = genInputString($settingName, $setting, $appView);
     } elseif ($setting['type'] == 'boolean') {
-        $input = genInputCheckbox($settingId, $setting, $appView);
+        $input = genInputCheckbox($settingName, $setting, $appView);
         $description = '';
     } elseif ($setting['type'] == 'integer') {
-        $input = genInputInteger($settingId, $setting, $appView);
+        $input = genInputInteger($settingName, $setting, $appView);
     } elseif ($setting['type'] == 'select') {
-        $input = genInputSelect($settingId, $setting, $appView);
+        $input = genInputSelect($settingName, $setting, $appView);
     } elseif ($setting['type'] == 'multi-select') {
-        $input = genInputMultiSelect($settingId, $setting, $appView);
+        $input = genInputMultiSelect($settingName, $setting, $appView);
     } else {
-        $input = genInputString($settingId, $setting, $appView);
+        $input = genInputString($settingName, $setting, $appView);
     }
+
+    $inputGroupSave = $appView->Bootstrap->genNode('div', [
+        'class' => ['input-group-append', 'd-none', 'position-relative', 'input-group-actions'],
+    ], implode('', [
+            $appView->Bootstrap->genNode('a', [
+                'class' => ['position-absolute', 'fas fa-times', 'p-abs-center-y', 'text-reset text-decoration-none', 'btn-reset-setting'],
+                'href' => '#',
+                'style' => 'left: -1.25em; z-index: 5;'
+            ]),
+            $appView->Bootstrap->genNode('button', [
+                'class' => ['btn', 'btn-success', 'btn-save-setting'],
+                'type' => 'button'
+            ], __('save')),
+    ]));
+    $inputGroup = $appView->Bootstrap->genNode('div', [
+        'class' => ['input-group'],
+    ], implode('', [$input, $inputGroupSave]));
+
     $container = $appView->Bootstrap->genNode('div', [
         'class' => ['form-group', 'mb-2']
-    ], implode('', [$label, $input, $description, $error]));
+    ], implode('', [$label, $inputGroup, $description, $error]));
     return $container;
 }
 
-function genInputString($settingId, $setting, $appView)
+function genInputString($settingName, $setting, $appView)
 {
+    $settingId = str_replace('.', '_', $settingName);
     return $appView->Bootstrap->genNode('input', [
         'class' => [
             'form-control',
-            "xxx-{$appView->get('variantFromSeverity')[$setting['severity']]} yyy-{$setting['severity']}",
             (!empty($setting['error']) ? 'is-invalid' : ''),
             (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
             (!empty($setting['error']) && $setting['severity'] == 'warning' ? 'warning' : ''),
         ],
         'type' => 'text',
         'id' => $settingId,
+        'data-setting-name' => $settingName,
         'value' => isset($setting['value']) ? $setting['value'] : "",
         'placeholder' => $setting['default'] ?? '',
         'aria-describedby' => "{$settingId}Help"
     ]);
 }
-function genInputCheckbox($settingId, $setting, $appView)
+function genInputCheckbox($settingName, $setting, $appView)
 {
+    $settingId = str_replace('.', '_', $settingName);
     $switch = $appView->Bootstrap->genNode('input', [
         'class' => [
             'custom-control-input'
@@ -269,6 +289,7 @@ function genInputCheckbox($settingId, $setting, $appView)
         'value' => !empty($setting['value']) ? 1 : 0,
         'checked' => !empty($setting['value']) ? 'checked' : '',
         'id' => $settingId,
+        'data-setting-name' => $settingName,
     ]);
     $label = $appView->Bootstrap->genNode('label', [
         'class' => [
@@ -284,8 +305,9 @@ function genInputCheckbox($settingId, $setting, $appView)
     ], implode('', [$switch, $label]));
     return $container;
 }
-function genInputInteger($settingId, $setting, $appView)
+function genInputInteger($settingName, $setting, $appView)
 {
+    $settingId = str_replace('.', '_', $settingName);
     return $appView->Bootstrap->genNode('input', [
         'class' => [
             'form-control'
@@ -294,6 +316,7 @@ function genInputInteger($settingId, $setting, $appView)
         'min' => '0',
         'step' => 1,
         'id' => $settingId,
+        'data-setting-name' => $settingName,
         'aria-describedby' => "{$settingId}Help"
     ]);
 }
@@ -330,6 +353,7 @@ function isLeaf($setting)
 
 
 <script>
+    const variantFromSeverity = <?= json_encode($variantFromSeverity) ?>;
     const settingsFlattened = <?= json_encode($settingsFlattened) ?>;
     let selectData = []
     for (const settingName in settingsFlattened) {
@@ -391,6 +415,36 @@ function isLeaf($setting)
                 }
                 $("#search-settings").val(null).trigger('change.select2');
             })
+        
+        $('.tab-content input').on('input', function() {
+            handleSettingValueChange($(this))
+        })
+
+        $('.tab-content .input-group-actions .btn-save-setting').click(function() {
+            const $input = $(this).closest('.input-group').find('input')
+            const settingName = $input.data('setting-name')
+            const settingValue = $input.val()
+            const url = '/instance/saveSetting/'
+            const data = {
+                name: settingName,
+                value: settingValue,
+            }
+            const APIOptions = {
+                statusNode: this
+            }
+            AJAXApi.quickFetchAndPostForm(url, data, APIOptions).then((result) => {
+                settingsFlattened[settingName] = result.data
+                $input.val(result.data.value)
+                handleSettingValueChange($input)
+            })
+        })
+        $('.tab-content .input-group-actions .btn-reset-setting').click(function() {
+            const $btn = $(this)
+            const $input = $btn.closest('.input-group').find('input')
+            const oldValue = settingsFlattened[$input.data('setting-name')].value
+            $input.val(oldValue)
+            handleSettingValueChange($input)
+        })
     })
 
     function formatSettingSearchResult(state) {
@@ -410,6 +464,62 @@ function isLeaf($setting)
     
     function formatSettingSearchSelection(state) {
         return state.text
+    }
+
+    function handleSettingValueChange($input) {
+        const oldValue = settingsFlattened[$input.data('setting-name')].value
+        if ($input.val() == oldValue) {
+            restoreWarnings($input)
+        } else {
+            removeWarnings($input)
+        }
+    }
+
+    function removeWarnings($input) {
+        const $inputGroup = $input.closest('.input-group')
+        const $inputGroupAppend = $inputGroup.find('.input-group-append')
+        const $saveButton = $inputGroup.find('button.btn-save-setting')
+        $input.removeClass(['is-invalid', 'border-warning', 'border-danger'])
+        $inputGroupAppend.removeClass('d-none')
+        $inputGroup.parent().find('.invalid-feedback').removeClass('d-block')
+    }
+
+    function restoreWarnings($input) {
+        const $inputGroup = $input.closest('.input-group')
+        const $inputGroupAppend = $inputGroup.find('.input-group-append')
+        const $saveButton = $inputGroup.find('button.btn-save-setting')
+        const setting = settingsFlattened[$input.data('setting-name')]
+        if (setting.error) {
+            borderVariant = setting.severity !== undefined ? variantFromSeverity[setting.severity] : 'warning'
+            $input.addClass(['is-invalid', `border-${borderVariant}`])
+            if (setting.severity == 'warning') {
+                $input.addClass('warning')
+            }
+            $inputGroup.parent().find('.invalid-feedback').addClass('d-block').text(setting.errorMessage)
+        }
+        const $callout = $input.closest('.settings-group')
+        updateCalloutColors($callout)
+        $inputGroupAppend.addClass('d-none')
+    }
+
+    function updateCalloutColors($callout) {
+        const $settings = $callout.find('input')
+        const settingNames = Array.from($settings).map((i) => {
+            return $(i).data('setting-name')
+        })
+        const severityMapping = {null: 0, info: 1, warning: 2, critical: 3}
+        const severityMappingInverted = Object.assign({}, ...Object.entries(severityMapping).map(([k, v]) => ({[v]: k})))
+        let highestSeverity = severityMapping[null]
+        settingNames.forEach(name => {
+            if (settingsFlattened[name].error) {
+                highestSeverity = severityMapping[settingsFlattened[name].severity] > highestSeverity ? severityMapping[settingsFlattened[name].severity] : highestSeverity
+            }
+        });
+        highestSeverity = severityMappingInverted[highestSeverity]
+        $callout.removeClass(['callout', 'callout-danger', 'callout-warning', 'callout-info'])
+        if (highestSeverity !== null) {
+            $callout.addClass(['callout', `callout-${variantFromSeverity[highestSeverity]}`])
+        }
     }
 
 </script>

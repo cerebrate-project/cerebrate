@@ -111,4 +111,31 @@ class InstanceController extends AppController
         $this->set('settingsFlattened', $all['settingsFlattened']);
         $this->set('notices', $all['notices']);
     }
+
+    public function saveSetting()
+    {
+        if ($this->request->is('post')) {
+            $data = $this->ParamHandler->harvestParams([
+                'name',
+                'value'
+            ]);
+            $this->Settings = $this->getTableLocator()->get('Settings');
+            $errors = $this->Settings->saveSetting($data['name'], $data['value']);
+            $message = __('Could not save setting `{0}`', $data['name']);
+            if (empty($errors)) {
+                $message = __('Setting `{0}` saved', $data['name']);
+                $data = $this->Settings->getSetting($data['name']);
+                // TO DEL
+                $data['errorMessage'] = 'Test test test';
+                $data['error'] = true;
+                $data['error'] = false;
+                // TO DEL
+            }
+            $this->CRUD->setResponseForController('saveSetting', empty($errors), $message, $data, $errors);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
+            }
+        }
+    }
 }

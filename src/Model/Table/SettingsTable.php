@@ -33,4 +33,19 @@ class SettingsTable extends AppTable
             ];
         }
     }
+
+    public function getSetting($name=false): array
+    {
+        $settings = Configure::read()['Cerebrate'];
+        $settingsProvider = $this->SettingsProvider->getSettingsConfiguration($settings);
+        $settingsFlattened = $this->SettingsProvider->flattenSettingsConfiguration($settingsProvider);
+        return $settingsFlattened[$name] ?? [];
+    }
+
+    public function saveSetting(string $name, string $value): array
+    {
+        $errors = [];
+        // Save setting here!
+        return $errors;
+    }
 }
