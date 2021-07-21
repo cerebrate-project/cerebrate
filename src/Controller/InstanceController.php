@@ -108,6 +108,7 @@ class InstanceController extends AppController
         $all = $this->Settings->getSettings(true);
         $this->set('settingsProvider', $all['settingsProvider']);
         $this->set('settings', $all['settings']);
+        $this->set('settingsFlattened', $all['settingsFlattened']);
         $this->set('notices', $all['notices']);
     }
 }

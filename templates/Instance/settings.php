@@ -17,15 +17,20 @@ $headingPerLevel = [
     'warning' => __('Warning settings'),
     'info' => __('Info settings'),
 ];
+$variantFromSeverity = [
+    'critical' => 'danger',
+    'warning' => 'warning',
+    'info' => 'info',
+];
+$this->set('variantFromSeverity', $variantFromSeverity);
 
-$settingTable = genLevel0($settingsProvider, $this);
 $alertVariant = 'info';
 $alertBody = '';
 $skipHeading = false;
 $tableItems = [];
 foreach (array_keys($mainNoticeHeading) as $level) {
     if(!empty($notices[$level])) {
-        $variant = $level == 'critical' ? 'danger' : $level;
+        $variant = $variantFromSeverity[$level];
         if (!$skipHeading) {
             $alertBody .= sprintf('<h5 class="alert-heading">%s</h5>', $mainNoticeHeading[$level]);
             $alertVariant = $variant;
@@ -60,16 +65,17 @@ $alertBody .= $this->Bootstrap->table([
     'items' => $tableItems,
 ]);
 $settingNotice = $this->Bootstrap->alert([
+    'dismissible' => false,
     'variant' => $alertVariant,
     'html' => $alertBody
 ]);
+$settingNotice = sprintf('<div class="mt-3">%s</div>', $settingNotice);
+$this->set('settingNotice', $settingNotice);
+$settingTable = genLevel0($settingsProvider, $this);
 ?>
 <div class="px-5">
-    <div class="">
-        <?= $settingNotice ?>
-    </div>
     <div class="mb-3">
-        <input class="form-control" type="text" id="search" placeholder="<?= __('Search settings') ?>" aria-describedby="<?= __('Search setting input') ?>">
+        <select id="search-settings" class="d-block w-100" aria-describedby="<?= __('Search setting input') ?>"><option></option></select>
     </div>
     <?= $settingTable; ?>
 </div>
@@ -86,13 +92,15 @@ function genLevel0($settingsProvider, $appView)
             $content0[] = __('No Settings available yet');
         }
     }
+    array_unshift($level0, __('Setting Diagnostic'));
+    array_unshift($content0, $appView->get('settingNotice'));
     $tabsOptions0 = [
         // 'vertical' => true,
         // 'vertical-size' => 2,
         'card' => false,
         'pills' => false,
         'justify' => 'center',
-        'content-class' => [''],
+        'nav-class' => ['settings-tabs'],
         'data' => [
             'navs' => $level0,
             'content' => $content0
@@ -124,7 +132,7 @@ function genLevel1($level1Setting, $appView)
     $mainPanelHeight = 'calc(100vh - 8px - 42px - 1rem - 56px - 38px - 1rem)';
     $container =  '<div class="d-flex">';
     $container .=   "<div class=\"\" style=\"flex: 0 0 10em;\">{$scrollspyNav}</div>";
-    $container .=   "<div data-spy=\"scroll\" data-target=\"#navbar-scrollspy-setting\" data-offset=\"24\" style=\"height: {$mainPanelHeight}\" class=\"p-3 overflow-auto position-relative flex-grow-1\">{$contentHtml}</div>";
+    $container .=   "<div data-spy=\"scroll\" data-target=\"#navbar-scrollspy-setting\" data-offset=\"25\" style=\"height: {$mainPanelHeight}\" class=\"p-3 overflow-auto position-relative flex-grow-1\">{$contentHtml}</div>";
     $container .= '</div>';
     return $container;
 }
@@ -151,12 +159,28 @@ function genLevel3($level2Name, $settingGroupName, $setting, $appView)
     } else {
         $tmpID = sprintf('sp-%s-%s', h($level2Name), h($settingGroupName)); 
         $settingGroup .= sprintf('<h4 id="%s"><a class="text-reset text-decoration-none" href="#%s">%s</a></h4>', $tmpID, $tmpID, h($settingGroupName));
+        $groupIssueSeverity = false;
         foreach ($setting as $singleSettingName => $singleSetting) {
             $tmp = genSingleSetting($singleSettingName, $singleSetting, $appView);
             $settingGroup .= sprintf('<div class="ml-3">%s</div>', $tmp);
+            if (!empty($singleSetting['error'])) {
+                $settingVariant = $appView->get('variantFromSeverity')[$singleSetting['severity']];
+                if ($groupIssueSeverity != 'danger') {
+                    if ($groupIssueSeverity != 'warning') {
+                        $groupIssueSeverity = $settingVariant;
+                    }
+                }
+            }
         }
         $settingGroup = $appView->Bootstrap->genNode('div', [
-            'class' => ['shadow', 'p-2', 'mb-4', 'rounded', ($appView->get('darkMode') ? 'bg-dark' : 'bg-light')],
+            'class' => [
+                'shadow',
+                'p-2',
+                'mb-4',
+                'rounded',
+                (!empty($groupIssueSeverity) ? "callout callout-${groupIssueSeverity}" : ''),
+                ($appView->get('darkMode') ? 'bg-dark' : 'bg-light')
+            ],
         ], $settingGroup);
     }
     return $settingGroup;
@@ -175,23 +199,22 @@ function genSingleSetting($settingName, $setting, $appView)
             'title' => __('This setting depends on the validity of: {0}', h($setting['dependsOn']))
         ]));
     }
+    $settingId = str_replace('.', '_', $settingName);
     $label = $appView->Bootstrap->genNode('label', [
         'class' => ['font-weight-bolder', 'mb-0'],
-        'for' => $settingName
+        'for' => $settingId
     ], h($setting['name']) . $dependsOnHtml);
     $description = '';
     if (!empty($setting['description'])) {
         $description = $appView->Bootstrap->genNode('small', [
             'class' => ['form-text', 'text-muted', 'mt-0'],
-            'id' => "{$settingName}Help"
+            'id' => "{$settingId}Help"
         ], h($setting['description']));
     }
     $error = '';
     if (!empty($setting['error'])) {
         $textColor = '';
-        if ($setting['severity'] != 'critical') {
-            $textColor = "text-{$setting['severity']}";
-        }
+        $textColor = "text-{$appView->get('variantFromSeverity')[$setting['severity']]}";
         $error = $appView->Bootstrap->genNode('div', [
             'class' => ['d-block', 'invalid-feedback', $textColor],
         ], h($setting['errorMessage']));
@@ -200,18 +223,18 @@ function genSingleSetting($settingName, $setting, $appView)
         $setting['type'] = 'string';
     }
     if ($setting['type'] == 'string') {
-        $input = genInputString($settingName, $setting, $appView);
+        $input = genInputString($settingId, $setting, $appView);
     } elseif ($setting['type'] == 'boolean') {
-        $input = genInputCheckbox($settingName, $setting, $appView);
+        $input = genInputCheckbox($settingId, $setting, $appView);
         $description = '';
     } elseif ($setting['type'] == 'integer') {
-        $input = genInputInteger($settingName, $setting, $appView);
+        $input = genInputInteger($settingId, $setting, $appView);
     } elseif ($setting['type'] == 'select') {
-        $input = genInputSelect($settingName, $setting, $appView);
+        $input = genInputSelect($settingId, $setting, $appView);
     } elseif ($setting['type'] == 'multi-select') {
-        $input = genInputMultiSelect($settingName, $setting, $appView);
+        $input = genInputMultiSelect($settingId, $setting, $appView);
     } else {
-        $input = genInputString($settingName, $setting, $appView);
+        $input = genInputString($settingId, $setting, $appView);
     }
     $container = $appView->Bootstrap->genNode('div', [
         'class' => ['form-group', 'mb-2']
@@ -219,23 +242,24 @@ function genSingleSetting($settingName, $setting, $appView)
     return $container;
 }
 
-function genInputString($settingName, $setting, $appView)
+function genInputString($settingId, $setting, $appView)
 {
-    // debug($setting);
     return $appView->Bootstrap->genNode('input', [
         'class' => [
             'form-control',
+            "xxx-{$appView->get('variantFromSeverity')[$setting['severity']]} yyy-{$setting['severity']}",
             (!empty($setting['error']) ? 'is-invalid' : ''),
-            (!empty($setting['error']) ? ($setting['severity'] != 'critical' ? "border-{$setting['severity']} warning" : '') : ''),
+            (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
+            (!empty($setting['error']) && $setting['severity'] == 'warning' ? 'warning' : ''),
         ],
         'type' => 'text',
-        'id' => $settingName,
+        'id' => $settingId,
         'value' => isset($setting['value']) ? $setting['value'] : "",
         'placeholder' => $setting['default'] ?? '',
-        'aria-describedby' => "{$settingName}Help"
+        'aria-describedby' => "{$settingId}Help"
     ]);
 }
-function genInputCheckbox($settingName, $setting, $appView)
+function genInputCheckbox($settingId, $setting, $appView)
 {
     $switch = $appView->Bootstrap->genNode('input', [
         'class' => [
@@ -244,13 +268,13 @@ function genInputCheckbox($settingName, $setting, $appView)
         'type' => 'checkbox',
         'value' => !empty($setting['value']) ? 1 : 0,
         'checked' => !empty($setting['value']) ? 'checked' : '',
-        'id' => $settingName,
+        'id' => $settingId,
     ]);
     $label = $appView->Bootstrap->genNode('label', [
         'class' => [
             'custom-control-label'
         ],
-        'for' => $settingName,
+        'for' => $settingId,
     ], h($setting['description']));
     $container = $appView->Bootstrap->genNode('div', [
         'class' => [
@@ -260,23 +284,23 @@ function genInputCheckbox($settingName, $setting, $appView)
     ], implode('', [$switch, $label]));
     return $container;
 }
-function genInputInteger($settingName, $setting, $appView)
+function genInputInteger($settingId, $setting, $appView)
 {
     return $appView->Bootstrap->genNode('input', [
         'class' => [
             'form-control'
         ],
-        'params' => [
-            'type' => 'integer',
-            'id' => $settingName,
-            'aria-describedby' => "{$settingName}Help"
-        ]
+        'type' => 'number',
+        'min' => '0',
+        'step' => 1,
+        'id' => $settingId,
+        'aria-describedby' => "{$settingId}Help"
     ]);
 }
-function genInputSelect($settingName, $setting, $appView)
+function genInputSelect($settingId, $setting, $appView)
 {
 }
-function genInputMultiSelect($settingName, $setting, $appView)
+function genInputMultiSelect($settingId, $setting, $appView)
 {
 }
 
@@ -304,7 +328,21 @@ function isLeaf($setting)
 
 ?>
 
+
 <script>
+    const settingsFlattened = <?= json_encode($settingsFlattened) ?>;
+    let selectData = []
+    for (const settingName in settingsFlattened) {
+        if (Object.hasOwnProperty.call(settingsFlattened, settingName)) {
+            const setting = settingsFlattened[settingName];
+            const selectID = settingName.replaceAll('.', '_')
+            selectData.push({
+                id: selectID,
+                text: setting.name,
+                setting: setting
+            })
+        }
+    }
     $(document).ready(function() {
         $('[data-spy="scroll"]').on('activate.bs.scrollspy', function(evt, {relatedTarget}) {
             const $associatedLink = $(`#navbar-scrollspy-setting nav.nav-pills .nav-link[href="${relatedTarget}"]`)
@@ -318,7 +356,61 @@ function isLeaf($setting)
             $allNavs.removeClass('group-active').hide()
             $associatedNav.addClass('group-active').show()
         })
+
+        $('.settings-tabs a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
+            $('[data-spy="scroll"]').trigger('scroll.bs.scrollspy')
+        })
+
+        $("#search-settings").select2({
+            data: selectData,
+            placeholder: '<?= __('Search setting by typing here...') ?>',
+            templateResult: formatSettingSearchResult,
+            templateSelection: formatSettingSearchSelection,
+        })
+            .on('select2:select', function (e) {
+                const selected = e.params.data
+                const settingPath = selected.setting['setting-path']
+                const settingPathTokenized = settingPath.split('.')
+                const tabName = settingPathTokenized[0]
+                const IDtoFocus = 'sp-' + settingPathTokenized.slice(1).join('-')
+                const $navController = $('.settings-tabs').find('a.nav-link').filter(function() {
+                    return $(this).text() == tabName
+                })
+                if ($navController.length == 1) {
+                    $toFocus = $(`#${IDtoFocus}`).parent()
+                    if ($navController.hasClass('active')) {
+                        $toFocus[0].scrollIntoView()
+                        $toFocus.find(`input#${selected.id}`).focus()
+                    } else {
+                        $navController.on('shown.bs.tab.after-selection', () => {
+                            $toFocus[0].scrollIntoView()
+                            $toFocus.find(`input#${selected.id}`).focus()
+                            $navController.off('shown.bs.tab.after-selection')
+                        }).tab('show')
+                    }
+                }
+                $("#search-settings").val(null).trigger('change.select2');
+            })
     })
+
+    function formatSettingSearchResult(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        const $state = $('<div/>').append(
+            $('<div/>').addClass('d-flex justify-content-between')
+                .append(
+                    $('<span/>').addClass('font-weight-bold').text(state.text),
+                    $('<span/>').addClass('font-weight-light').text(state.setting['setting-path'].replaceAll('.', ' ▸ '))
+                ),
+            $('<div/>').addClass('font-italic font-weight-light ml-3').text(state.setting['description'])
+        )
+        return $state
+    }
+    
+    function formatSettingSearchSelection(state) {
+        return state.text
+    }
 
 </script>
 
@@ -352,5 +444,10 @@ function isLeaf($setting)
 
     #navbar-scrollspy-setting nav.nav-pills .nav-link.main-group:before {
         content: "\f0da";
+    }
+
+    .select2-container {
+        max-width: 100%;
+        min-width: 100%;
     }
 </style>

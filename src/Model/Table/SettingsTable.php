@@ -23,10 +23,12 @@ class SettingsTable extends AppTable
             return $settings;
         } else {
             $settingsProvider = $this->SettingsProvider->getSettingsConfiguration($settings);
+            $settingsFlattened = $this->SettingsProvider->flattenSettingsConfiguration($settingsProvider);
             $notices = $this->SettingsProvider->getNoticesFromSettingsConfiguration($settingsProvider, $settings);
             return [
                 'settings' => $settings,
                 'settingsProvider' => $settingsProvider,
+                'settingsFlattened' => $settingsFlattened,
                 'notices' => $notices,
             ];
         }

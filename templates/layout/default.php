@@ -41,6 +41,7 @@ $cakeDescription = 'Cerebrate';
     <?= $this->Html->script('main.js') ?>
     <?= $this->Html->script('bootstrap-helper.js') ?>
     <?= $this->Html->script('api-helper.js') ?>
+    <?= $this->Html->script('select2.min.js') ?>
     <?= $this->Html->script('CodeMirror/codemirror.js') ?>
     <?= $this->Html->script('CodeMirror/mode/javascript/javascript') ?>
     <?= $this->Html->script('CodeMirror/addon/hint/show-hint') ?>
@@ -53,6 +54,8 @@ $cakeDescription = 'Cerebrate';
     <?= $this->Html->css('CodeMirror/codemirror-additional') ?>
     <?= $this->Html->css('CodeMirror/addon/hint/show-hint') ?>
     <?= $this->Html->css('CodeMirror/addon/lint/lint') ?>
+    <?= $this->Html->css('select2.min') ?>
+    <?= $this->Html->css('select2-bootstrap4.min') ?>
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
@@ -83,5 +86,6 @@ $cakeDescription = 'Cerebrate';
 </body>
 <script>
     const darkMode = (<?= empty($darkMode) ? 'false' : 'true' ?>)
+    $.fn.select2.defaults.set('theme', 'bootstrap4');
 </script>
 </html>

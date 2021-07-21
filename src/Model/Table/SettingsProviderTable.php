@@ -44,19 +44,36 @@ class SettingsProviderTable extends AppTable
      * @param  array $settings the settings
      * @return void
      */
-    private function mergeSettingsIntoSettingConfiguration(array $settingConf, array $settings): array
+    private function mergeSettingsIntoSettingConfiguration(array $settingConf, array $settings, string $path=''): array
     {
         foreach ($settingConf as $key => $value) {
             if ($this->isLeaf($value)) {
                 if (isset($settings[$key])) {
                     $settingConf[$key]['value'] = $settings[$key];
                 }
+                if (empty($settingConf[$key]['severity'])) {
+                    $settingConf[$key]['severity'] = 'warning';
+                }
                 $settingConf[$key] = $this->evaluateLeaf($settingConf[$key], $settingConf);
+                $settingConf[$key]['setting-path'] = $path;
             } else {
-                $settingConf[$key] = $this->mergeSettingsIntoSettingConfiguration($value, $settings);
+                $currentPath = empty($path) ? $key : sprintf('%s.%s', $path, $key);
+                $settingConf[$key] = $this->mergeSettingsIntoSettingConfiguration($value, $settings, $currentPath);
             }
         }
         return $settingConf;
+    }
+
+    public function flattenSettingsConfiguration(array $settingsProvider, $flattenedSettings=[]): array
+    {
+        foreach ($settingsProvider as $key => $value) {
+            if ($this->isLeaf($value)) {
+                $flattenedSettings[$key] = $value;
+            } else {
+                $flattenedSettings = $this->flattenSettingsConfiguration($value, $flattenedSettings);
+            }
+        }
+        return $flattenedSettings;
     }
     
     /**
@@ -175,14 +192,14 @@ class SettingsProviderTable extends AppTable
                             'description' => 'to del',
                             'errorMessage' => 'to del',
                             'default' => '',
-                            'name' => 'To DEL',
+                            'name' => 'To DEL 2',
                             'type' => 'string'
                         ],
                         'to-del3' => [
                             'description' => 'to del',
                             'errorMessage' => 'to del',
                             'default' => '',
-                            'name' => 'To DEL',
+                            'name' => 'To DEL 2',
                             'type' => 'string'
                         ],
                     ],
@@ -227,36 +244,6 @@ class SettingsProviderTable extends AppTable
                             'type' => 'string',
                         ],
                     ],
-                    'Proxy2' => [
-                        'host' => [
-                            'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
-                            'default' => '',
-                            'name' => __('Host'),
-                            'test' => 'testHostname',
-                            'type' => 'string',
-                        ],
-                        'port' => [
-                            'description' => __('The TCP port for the HTTP proxy.'),
-                            'default' => '',
-                            'name' => __('Port'),
-                            'test' => 'testForRangeXY',
-                            'type' => 'integer',
-                        ],
-                        'user' => [
-                            'description' => __('The authentication username for the HTTP proxy.'),
-                            'default' => '',
-                            'name' => __('User'),
-                            'test' => 'testEmptyBecomesDefault',
-                            'type' => 'string',
-                        ],
-                        'password' => [
-                            'description' => __('The authentication password for the HTTP proxy.'),
-                            'default' => '',
-                            'name' => __('Password'),
-                            'test' => 'testEmptyBecomesDefault',
-                            'type' => 'string',
-                        ],
-                    ],
                 ],
                 'UI' => [
                     'app.ui.dark' => [
@@ -268,6 +255,40 @@ class SettingsProviderTable extends AppTable
                 ],
             ],
             'Security' => [
+                'Network' => [
+                    'Proxy Test' => [
+                        'proxy-test.host' => [
+                            'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
+                            'default' => '',
+                            'name' => __('Host'),
+                            'test' => 'testHostname',
+                            'type' => 'string',
+                        ],
+                        'proxy-test.port' => [
+                            'description' => __('The TCP port for the HTTP proxy.'),
+                            'default' => '',
+                            'name' => __('Port'),
+                            'test' => 'testForRangeXY',
+                            'type' => 'integer',
+                        ],
+                        'proxy-test.user' => [
+                            'description' => __('The authentication username for the HTTP proxy.'),
+                            'default' => '',
+                            'dependsOn' => 'host',
+                            'name' => __('User'),
+                            'test' => 'testEmptyBecomesDefault',
+                            'type' => 'string',
+                        ],
+                        'proxy-test.password' => [
+                            'description' => __('The authentication password for the HTTP proxy.'),
+                            'default' => '',
+                            'dependsOn' => 'host',
+                            'name' => __('Password'),
+                            'test' => 'testEmptyBecomesDefault',
+                            'type' => 'string',
+                        ],
+                    ],
+                ]
             ],
             'Features' => [
             ],

@@ -811,6 +811,10 @@ class ACLComponent extends Component
                     __('Instance'),
                     'url' => '/instance/home',
                     'children' => [
+                        'settings' => [
+                            'url' => '/instance/settings',
+                            'label' => __('Settings')
+                        ],
                         'migration' => [
                             'url' => '/instance/migrationIndex',
                             'label' => __('Database migration')
