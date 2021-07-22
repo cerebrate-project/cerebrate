@@ -123,7 +123,7 @@ function genLevel1($level1Setting, $appView)
         $nav1[$level2Name] = array_filter( // only show grouped settings
             array_keys($level2Setting),
             function ($settingGroupName) use ($level2Setting) {
-                return !isLeaf($level2Setting[$settingGroupName]);
+                return !isLeaf($level2Setting[$settingGroupName]) && !empty($level2Setting[$settingGroupName]);
             }
         );
     }
@@ -247,7 +247,8 @@ function genSingleSetting($settingName, $setting, $appView)
             ]),
             $appView->Bootstrap->genNode('button', [
                 'class' => ['btn', 'btn-success', 'btn-save-setting'],
-                'type' => 'button'
+                'type' => 'button',
+                'style' => 'z-index: 5;'
             ], __('save')),
     ]));
     $inputGroup = $appView->Bootstrap->genNode('div', [
@@ -266,6 +267,7 @@ function genInputString($settingName, $setting, $appView)
     return $appView->Bootstrap->genNode('input', [
         'class' => [
             'form-control',
+            'pr-4',
             (!empty($setting['error']) ? 'is-invalid' : ''),
             (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
             (!empty($setting['error']) && $setting['severity'] == 'warning' ? 'warning' : ''),
@@ -390,6 +392,8 @@ function isLeaf($setting)
             placeholder: '<?= __('Search setting by typing here...') ?>',
             templateResult: formatSettingSearchResult,
             templateSelection: formatSettingSearchSelection,
+            matcher: settingMatcher,
+            sorter: settingSorter,
         })
             .on('select2:select', function (e) {
                 const selected = e.params.data
@@ -446,6 +450,38 @@ function isLeaf($setting)
             handleSettingValueChange($input)
         })
     })
+
+    function settingMatcher(params, data) {
+        if (params.term == null || params.term.trim() === '') {
+            return data;
+        }
+        if (data.text === undefined || data.setting === undefined) {
+            return null;
+        }
+        let modifiedData = $.extend({}, data, true);
+        const loweredTerms = params.term.trim().toLowerCase().split(' ')
+        for (let i = 0; i < loweredTerms.length; i++) {
+            const loweredTerm = loweredTerms[i];
+            const settingNameMatch = data.setting['true-name'].toLowerCase().indexOf(loweredTerm) > -1 || data.text.toLowerCase().indexOf(loweredTerm) > -1
+            const settingGroupMatch = data.setting['setting-path'].toLowerCase().indexOf(loweredTerm) > -1
+            const settingDescMatch = data.setting.description.toLowerCase().indexOf(loweredTerm) > -1
+            if (settingNameMatch || settingGroupMatch || settingDescMatch) {
+                modifiedData.matchPriority = (settingNameMatch ? 10 : 0) + (settingGroupMatch ? 5 : 0) + (settingDescMatch ? 1 : 0)
+            }
+        }
+        if (modifiedData.matchPriority > 0) {
+            return modifiedData;
+        }
+        return null;
+    }
+
+    function settingSorter(data) {
+        let sortedData = data.slice(0)
+        sortedData = sortedData.sort((a, b) => {
+            return a.matchPriority == b.matchPriority ? 0 : (b.matchPriority - a.matchPriority)
+        })
+        return sortedData;
+    }
 
     function formatSettingSearchResult(state) {
         if (!state.id) {

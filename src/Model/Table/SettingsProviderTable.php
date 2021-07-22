@@ -56,6 +56,7 @@ class SettingsProviderTable extends AppTable
                 }
                 $settingConf[$key] = $this->evaluateLeaf($settingConf[$key], $settingConf);
                 $settingConf[$key]['setting-path'] = $path;
+                $settingConf[$key]['true-name'] = $key;
             } else {
                 $currentPath = empty($path) ? $key : sprintf('%s.%s', $path, $key);
                 $settingConf[$key] = $this->mergeSettingsIntoSettingConfiguration($value, $settings, $currentPath);
@@ -246,6 +247,8 @@ class SettingsProviderTable extends AppTable
                     ],
                 ],
                 'UI' => [
+                    'General' => [
+                    ],
                     'app.ui.dark' => [
                         'description' => __('Enable the dark theme of the application'),
                         'default' => false,
