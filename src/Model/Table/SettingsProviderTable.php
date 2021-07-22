@@ -109,6 +109,11 @@ class SettingsProviderTable extends AppTable
     private function evaluateLeaf($setting, $settingSection)
     {
         $skipValidation = false;
+        if ($setting['type'] == 'select') {
+            if (!empty($setting['options']) && is_callable($setting['options'])) {
+                $setting['options'] = $setting['options']($this);
+            }
+        }
         if (isset($setting['dependsOn'])) {
             $parentSetting = null;
             foreach ($settingSection as $settingSectionName => $settingSectionConfig) {
@@ -189,19 +194,30 @@ class SettingsProviderTable extends AppTable
                             },
                             'type' => 'string'
                         ],
-                        'to-del2' => [
-                            'description' => 'to del',
-                            'errorMessage' => 'to del',
+                        'sc2.hero' => [
+                            'description' => 'The true hero',
                             'default' => '',
-                            'name' => 'To DEL 2',
-                            'type' => 'string'
+                            'options' => [
+                                'Jim Raynor' => 'Jim Raynor',
+                                'Sarah Kerrigan' => 'Sarah Kerrigan',
+                                'Artanis' => 'Artanis',
+                                'Zeratul' => 'Zeratul',
+                            ],
+                            'name' => 'Hero',
+                            'type' => 'select'
                         ],
-                        'to-del3' => [
-                            'description' => 'to del',
-                            'errorMessage' => 'to del',
+                        'sc2.antagonist' => [
+                            'description' => 'The real bad guy',
                             'default' => '',
-                            'name' => 'To DEL 2',
-                            'type' => 'string'
+                            'options' => function($settingsProviders) {
+                                return [
+                                    'Amon' => 'Amon',
+                                    'Sarah Kerrigan' => 'Sarah Kerrigan',
+                                    'Narud' => 'Narud',
+                                ];
+                            },
+                            'name' => 'Antagonist',
+                            'type' => 'select'
                         ],
                     ],
                     'floating-setting' => [

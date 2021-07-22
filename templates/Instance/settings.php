@@ -243,12 +243,10 @@ function genSingleSetting($settingName, $setting, $appView)
             $appView->Bootstrap->genNode('a', [
                 'class' => ['position-absolute', 'fas fa-times', 'p-abs-center-y', 'text-reset text-decoration-none', 'btn-reset-setting'],
                 'href' => '#',
-                'style' => 'left: -1.25em; z-index: 5;'
             ]),
             $appView->Bootstrap->genNode('button', [
                 'class' => ['btn', 'btn-success', 'btn-save-setting'],
                 'type' => 'button',
-                'style' => 'z-index: 5;'
             ], __('save')),
     ]));
     $inputGroup = $appView->Bootstrap->genNode('div', [
@@ -324,10 +322,37 @@ function genInputInteger($settingName, $setting, $appView)
         'aria-describedby' => "{$settingId}Help"
     ]);
 }
-function genInputSelect($settingId, $setting, $appView)
+function genInputSelect($settingName, $setting, $appView)
 {
+    $settingId = str_replace('.', '_', $settingName);
+    $setting['value'] = $setting['value'] ?? '';
+    $options = [
+        $appView->Bootstrap->genNode('option', ['value' => '-1', 'data-is-empty-option' => '1'], __('Select an option'))
+    ];
+    foreach ($setting['options'] as $key => $value) {
+        $options[] = $appView->Bootstrap->genNode('option', [
+            'class' => [],
+            'value' => $key,
+            ($setting['value'] == $value ? 'selected' : '') => $setting['value'] == $value ? 'selected' : '',
+        ], h($value));
+    }
+    $options = implode('', $options);
+    return $appView->Bootstrap->genNode('select', [
+        'class' => [
+            'custom-select',
+            'pr-4',
+            (!empty($setting['error']) ? 'is-invalid' : ''),
+            (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
+            (!empty($setting['error']) && $setting['severity'] == 'warning' ? 'warning' : ''),
+        ],
+        'type' => 'text',
+        'id' => $settingId,
+        'data-setting-name' => $settingName,
+        'placeholder' => $setting['default'] ?? '',
+        'aria-describedby' => "{$settingId}Help"
+    ], $options);
 }
-function genInputMultiSelect($settingId, $setting, $appView)
+function genInputMultiSelect($settingName, $setting, $appView)
 {
 }
 
@@ -422,7 +447,7 @@ function isLeaf($setting)
                 $("#search-settings").val(null).trigger('change.select2');
             })
         
-        $('.tab-content input').on('input', function() {
+        $('.tab-content input, .tab-content select').on('input', function() {
             if ($(this).attr('type') == 'checkbox') {
                 const $input = $(this)
                 const $inputGroup = $(this).closest('.form-group')
@@ -435,15 +460,18 @@ function isLeaf($setting)
         })
 
         $('.tab-content .input-group-actions .btn-save-setting').click(function() {
-            const $input = $(this).closest('.input-group').find('input')
+            const $input = $(this).closest('.input-group').find('input, select')
             const settingName = $input.data('setting-name')
             const settingValue = $input.val()
             saveSetting(this, $input, settingName, settingValue)
         })
         $('.tab-content .input-group-actions .btn-reset-setting').click(function() {
             const $btn = $(this)
-            const $input = $btn.closest('.input-group').find('input')
-            const oldValue = settingsFlattened[$input.data('setting-name')].value
+            const $input = $btn.closest('.input-group').find('input, select')
+            let oldValue = settingsFlattened[$input.data('setting-name')].value
+            if ($input.is('select')) {
+                oldValue = oldValue !== undefined ? oldValue : -1
+            }
             $input.val(oldValue)
             handleSettingValueChange($input)
         })
@@ -468,6 +496,72 @@ function isLeaf($setting)
             handleSettingValueChange($input)
         })
     }
+
+    function handleSettingValueChange($input) {
+        const oldValue = settingsFlattened[$input.data('setting-name')].value
+        const newValue = ($input.attr('type') == 'checkbox' ? $input.is(':checked') : $input.val())
+        if (newValue == oldValue) {
+            restoreWarnings($input)
+        } else {
+            removeWarnings($input)
+        }
+    }
+
+    function removeWarnings($input) {
+        const $inputGroup = $input.closest('.input-group')
+        const $inputGroupAppend = $inputGroup.find('.input-group-append')
+        const $saveButton = $inputGroup.find('button.btn-save-setting')
+        $input.removeClass(['is-invalid', 'border-warning', 'border-danger'])
+        $inputGroupAppend.removeClass('d-none')
+        if ($input.is('select') && $input.find('option:selected').data('is-empty-option') == 1) {
+            $inputGroupAppend.addClass('d-none') // hide save button if empty selection picked
+        }
+        $inputGroup.parent().find('.invalid-feedback').removeClass('d-block')
+    }
+
+    function restoreWarnings($input) {
+        const $inputGroup = $input.closest('.input-group')
+        const $inputGroupAppend = $inputGroup.find('.input-group-append')
+        const $saveButton = $inputGroup.find('button.btn-save-setting')
+        const setting = settingsFlattened[$input.data('setting-name')]
+        if (setting.error) {
+            borderVariant = setting.severity !== undefined ? variantFromSeverity[setting.severity] : 'warning'
+            $input.addClass(['is-invalid', `border-${borderVariant}`])
+            if (setting.severity == 'warning') {
+                $input.addClass('warning')
+            }
+            $inputGroup.parent().find('.invalid-feedback').addClass('d-block').text(setting.errorMessage)
+        } else {
+            removeWarnings($input)
+        }
+        const $callout = $input.closest('.settings-group')
+        updateCalloutColors($callout)
+        $inputGroupAppend.addClass('d-none')
+    }
+
+    function updateCalloutColors($callout) {
+        if ($callout.length == 0) {
+            return
+        }
+        const $settings = $callout.find('input')
+        const settingNames = Array.from($settings).map((i) => {
+            return $(i).data('setting-name')
+        })
+        const severityMapping = {null: 0, info: 1, warning: 2, critical: 3}
+        const severityMappingInverted = Object.assign({}, ...Object.entries(severityMapping).map(([k, v]) => ({[v]: k})))
+        let highestSeverity = severityMapping[null]
+        settingNames.forEach(name => {
+            if (settingsFlattened[name].error) {
+                highestSeverity = severityMapping[settingsFlattened[name].severity] > highestSeverity ? severityMapping[settingsFlattened[name].severity] : highestSeverity
+            }
+        });
+        highestSeverity = severityMappingInverted[highestSeverity]
+        $callout.removeClass(['callout', 'callout-danger', 'callout-warning', 'callout-info'])
+        if (highestSeverity !== null) {
+            $callout.addClass(['callout', `callout-${variantFromSeverity[highestSeverity]}`])
+        }
+    }
+
 
     function settingMatcher(params, data) {
         if (params.term == null || params.term.trim() === '') {
@@ -519,69 +613,6 @@ function isLeaf($setting)
     function formatSettingSearchSelection(state) {
         return state.text
     }
-
-    function handleSettingValueChange($input) {
-        const oldValue = settingsFlattened[$input.data('setting-name')].value
-        const newValue = ($input.attr('type') == 'checkbox' ? $input.is(':checked') : $input.val())
-        if (newValue == oldValue) {
-            restoreWarnings($input)
-        } else {
-            removeWarnings($input)
-        }
-    }
-
-    function removeWarnings($input) {
-        const $inputGroup = $input.closest('.input-group')
-        const $inputGroupAppend = $inputGroup.find('.input-group-append')
-        const $saveButton = $inputGroup.find('button.btn-save-setting')
-        $input.removeClass(['is-invalid', 'border-warning', 'border-danger'])
-        $inputGroupAppend.removeClass('d-none')
-        $inputGroup.parent().find('.invalid-feedback').removeClass('d-block')
-    }
-
-    function restoreWarnings($input) {
-        const $inputGroup = $input.closest('.input-group')
-        const $inputGroupAppend = $inputGroup.find('.input-group-append')
-        const $saveButton = $inputGroup.find('button.btn-save-setting')
-        const setting = settingsFlattened[$input.data('setting-name')]
-        if (setting.error) {
-            borderVariant = setting.severity !== undefined ? variantFromSeverity[setting.severity] : 'warning'
-            $input.addClass(['is-invalid', `border-${borderVariant}`])
-            if (setting.severity == 'warning') {
-                $input.addClass('warning')
-            }
-            $inputGroup.parent().find('.invalid-feedback').addClass('d-block').text(setting.errorMessage)
-        } else {
-            removeWarnings($input)
-        }
-        const $callout = $input.closest('.settings-group')
-        updateCalloutColors($callout)
-        $inputGroupAppend.addClass('d-none')
-    }
-
-    function updateCalloutColors($callout) {
-        if ($callout.length == 0) {
-            return
-        }
-        const $settings = $callout.find('input')
-        const settingNames = Array.from($settings).map((i) => {
-            return $(i).data('setting-name')
-        })
-        const severityMapping = {null: 0, info: 1, warning: 2, critical: 3}
-        const severityMappingInverted = Object.assign({}, ...Object.entries(severityMapping).map(([k, v]) => ({[v]: k})))
-        let highestSeverity = severityMapping[null]
-        settingNames.forEach(name => {
-            if (settingsFlattened[name].error) {
-                highestSeverity = severityMapping[settingsFlattened[name].severity] > highestSeverity ? severityMapping[settingsFlattened[name].severity] : highestSeverity
-            }
-        });
-        highestSeverity = severityMappingInverted[highestSeverity]
-        $callout.removeClass(['callout', 'callout-danger', 'callout-warning', 'callout-info'])
-        if (highestSeverity !== null) {
-            $callout.addClass(['callout', `callout-${variantFromSeverity[highestSeverity]}`])
-        }
-    }
-
 </script>
 
 <style>
@@ -619,5 +650,15 @@ function isLeaf($setting)
     .select2-container {
         max-width: 100%;
         min-width: 100%;
+    }
+
+    .input-group-actions {
+        z-index: 5;
+    }
+    a.btn-reset-setting {
+        left: -1.25em;
+    }
+    .custom-select ~ div > a.btn-reset-setting {
+        left: -2.5em;
     }
 </style>
