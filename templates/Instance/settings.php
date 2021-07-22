@@ -129,7 +129,7 @@ function genLevel1($level1Setting, $appView)
     }
     $contentHtml = implode('', $content1);
     $scrollspyNav = genScrollspyNav($nav1);
-    $mainPanelHeight = 'calc(100vh - 8px - 42px - 1rem - 56px - 38px - 1rem)';
+    $mainPanelHeight = 'calc(100vh - 42px - 1rem - 56px - 38px - 1rem)';
     $container =  '<div class="d-flex">';
     $container .=   "<div class=\"\" style=\"flex: 0 0 10em;\">{$scrollspyNav}</div>";
     $container .=   "<div data-spy=\"scroll\" data-target=\"#navbar-scrollspy-setting\" data-offset=\"25\" style=\"height: {$mainPanelHeight}\" class=\"p-3 overflow-auto position-relative flex-grow-1\">{$contentHtml}</div>";
@@ -285,11 +285,13 @@ function genInputCheckbox($settingName, $setting, $appView)
     $settingId = str_replace('.', '_', $settingName);
     $switch = $appView->Bootstrap->genNode('input', [
         'class' => [
-            'custom-control-input'
+            'custom-control-input',
+            (!empty($setting['error']) ? 'is-invalid' : ''),
+            (!empty($setting['error']) && $setting['severity'] == 'warning' ? 'warning' : ''),
         ],
         'type' => 'checkbox',
         'value' => !empty($setting['value']) ? 1 : 0,
-        'checked' => !empty($setting['value']) ? 'checked' : '',
+        (!empty($setting['value']) ? 'checked' : '') => !empty($setting['value']) ? 'checked' : '',
         'id' => $settingId,
         'data-setting-name' => $settingName,
     ]);
@@ -421,26 +423,22 @@ function isLeaf($setting)
             })
         
         $('.tab-content input').on('input', function() {
-            handleSettingValueChange($(this))
+            if ($(this).attr('type') == 'checkbox') {
+                const $input = $(this)
+                const $inputGroup = $(this).closest('.form-group')
+                const settingName = $(this).data('setting-name')
+                const settingValue = $(this).is(':checked')
+                saveSetting($inputGroup[0], $input, settingName, settingValue)
+            } else {
+                handleSettingValueChange($(this))
+            }
         })
 
         $('.tab-content .input-group-actions .btn-save-setting').click(function() {
             const $input = $(this).closest('.input-group').find('input')
             const settingName = $input.data('setting-name')
             const settingValue = $input.val()
-            const url = '/instance/saveSetting/'
-            const data = {
-                name: settingName,
-                value: settingValue,
-            }
-            const APIOptions = {
-                statusNode: this
-            }
-            AJAXApi.quickFetchAndPostForm(url, data, APIOptions).then((result) => {
-                settingsFlattened[settingName] = result.data
-                $input.val(result.data.value)
-                handleSettingValueChange($input)
-            })
+            saveSetting(this, $input, settingName, settingValue)
         })
         $('.tab-content .input-group-actions .btn-reset-setting').click(function() {
             const $btn = $(this)
@@ -450,6 +448,26 @@ function isLeaf($setting)
             handleSettingValueChange($input)
         })
     })
+
+    function saveSetting(statusNode, $input, settingName, settingValue) {
+        const url = '/instance/saveSetting/'
+        const data = {
+            name: settingName,
+            value: settingValue,
+        }
+        const APIOptions = {
+            statusNode: statusNode,
+        }
+        AJAXApi.quickFetchAndPostForm(url, data, APIOptions).then((result) => {
+            settingsFlattened[settingName] = result.data
+            if ($input.attr('type') == 'checkbox') {
+                $input.prop('checked', result.data.value)
+            } else {
+                $input.val(result.data.value)
+            }
+            handleSettingValueChange($input)
+        })
+    }
 
     function settingMatcher(params, data) {
         if (params.term == null || params.term.trim() === '') {
@@ -504,7 +522,8 @@ function isLeaf($setting)
 
     function handleSettingValueChange($input) {
         const oldValue = settingsFlattened[$input.data('setting-name')].value
-        if ($input.val() == oldValue) {
+        const newValue = ($input.attr('type') == 'checkbox' ? $input.is(':checked') : $input.val())
+        if (newValue == oldValue) {
             restoreWarnings($input)
         } else {
             removeWarnings($input)
@@ -532,6 +551,8 @@ function isLeaf($setting)
                 $input.addClass('warning')
             }
             $inputGroup.parent().find('.invalid-feedback').addClass('d-block').text(setting.errorMessage)
+        } else {
+            removeWarnings($input)
         }
         const $callout = $input.closest('.settings-group')
         updateCalloutColors($callout)
@@ -539,6 +560,9 @@ function isLeaf($setting)
     }
 
     function updateCalloutColors($callout) {
+        if ($callout.length == 0) {
+            return
+        }
         const $settings = $callout.find('input')
         const settingNames = Array.from($settings).map((i) => {
             return $(i).data('setting-name')

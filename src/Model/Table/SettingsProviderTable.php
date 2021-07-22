@@ -248,12 +248,15 @@ class SettingsProviderTable extends AppTable
                 ],
                 'UI' => [
                     'General' => [
-                    ],
-                    'app.ui.dark' => [
-                        'description' => __('Enable the dark theme of the application'),
-                        'default' => false,
-                        'name' => __('Dark theme'),
-                        'type' => 'boolean',
+                        'app.ui.dark' => [
+                            'description' => __('Enable the dark theme of the application'),
+                            'default' => false,
+                            'name' => __('Dark theme'),
+                            'test' => function() {
+                                return 'Fake error';
+                            },
+                            'type' => 'boolean',
+                        ],
                     ],
                 ],
             ],
