@@ -131,7 +131,7 @@ class SettingsProviderTable extends AppTable
                 $error = false;
                 $setting['value'] = $setting['value'] ?? '';
                 if (is_callable($setting['test'])) { // Validate with anonymous function
-                    $error = $setting['test']($setting['value'], $setting);
+                    $error = $setting['test']($setting['value'], $setting, new Validator());
                 } else if (method_exists($this->settingValidator, $setting['test'])) { // Validate with function defined in settingValidator class
                     $error = $this->settingValidator->{$setting['test']}($setting['value'], $setting);
                 } else {
@@ -223,8 +223,9 @@ class SettingsProviderTable extends AppTable
                     'floating-setting' => [
                         'description' => 'floaringSetting',
                         'errorMessage' => 'floaringSetting',
-                        'default' => '',
+                        'default' => 'A default value',
                         'name' => 'Uncategorized Setting',
+                        'test' => 'testEmptyBecomesDefault',
                         'type' => 'string'
                     ],
                 ],
@@ -277,37 +278,23 @@ class SettingsProviderTable extends AppTable
                 ],
             ],
             'Security' => [
-                'Network' => [
-                    'Proxy Test' => [
-                        'proxy-test.host' => [
-                            'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
-                            'default' => '',
-                            'name' => __('Host'),
-                            'test' => 'testHostname',
-                            'type' => 'string',
-                        ],
-                        'proxy-test.port' => [
-                            'description' => __('The TCP port for the HTTP proxy.'),
-                            'default' => '',
-                            'name' => __('Port'),
-                            'test' => 'testForRangeXY',
-                            'type' => 'integer',
-                        ],
-                        'proxy-test.user' => [
-                            'description' => __('The authentication username for the HTTP proxy.'),
-                            'default' => '',
+                'Development' => [
+                    'Debugging' => [
+                        'Debug' => [
+                            'description' => __('The debug level of the instance'),
+                            'default' => 0,
                             'dependsOn' => 'host',
                             'name' => __('User'),
-                            'test' => 'testEmptyBecomesDefault',
-                            'type' => 'string',
-                        ],
-                        'proxy-test.password' => [
-                            'description' => __('The authentication password for the HTTP proxy.'),
-                            'default' => '',
-                            'dependsOn' => 'host',
-                            'name' => __('Password'),
-                            'test' => 'testEmptyBecomesDefault',
-                            'type' => 'string',
+                            'test' => function($value, $setting, $validator) {
+                                $validator->range('value', [0, 3]);
+                                return testValidator($value, $validator);
+                            },
+                            'type' => 'select',
+                            'options' => [
+                                0 => __('Debug Off'),
+                                1 => __('Debug On'),
+                                2 => __('Debug On + SQL Dump'),
+                            ]
                         ],
                     ],
                 ]
@@ -318,26 +305,33 @@ class SettingsProviderTable extends AppTable
     }
 }
 
+function testValidator($value, $validator)
+{
+    $errors = $validator->validate(['value' => $value]);
+    return !empty($errors) ? implode(', ', $errors['value']) : true;
+}
+
 class SettingValidator
 {
 
-    public function testEmptyBecomesDefault($value, $setting)
+    public function testEmptyBecomesDefault($value, &$setting)
     {
         if (!empty($value)) {
             return true;
         } else if (!empty($setting['default'])) {
+            $setting['severity'] = 'info';
             return __('Setting is not set, fallback to default value: {0}', $setting['default']);
         } else {
             return __('Cannot be empty');
         }
     }
 
-    public function testForEmpty($value, $setting)
+    public function testForEmpty($value, &$setting)
     {
         return !empty($value) ? true : __('Cannot be empty');
     }
 
-    public function testBaseURL($value, $setting)
+    public function testBaseURL($value, &$setting)
     {
         if (empty($value)) {
             return __('Cannot be empty');
@@ -348,7 +342,7 @@ class SettingValidator
         return true;
     }
 
-    public function testUuid($value, $setting) {
+    public function testUuid($value, &$setting) {
         if (empty($value) || !preg_match('/^\{?[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}?$/', $value)) {
             return __('Invalid UUID.');
         }

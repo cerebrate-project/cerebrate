@@ -268,7 +268,7 @@ function genInputString($settingName, $setting, $appView)
             'pr-4',
             (!empty($setting['error']) ? 'is-invalid' : ''),
             (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
-            (!empty($setting['error']) && $setting['severity'] == 'warning' ? 'warning' : ''),
+            (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
         ],
         'type' => 'text',
         'id' => $settingId,
