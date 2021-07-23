@@ -474,6 +474,8 @@ function isLeaf($setting)
             let oldValue = settingsFlattened[$input.data('setting-name')].value
             if ($input.is('select')) {
                 oldValue = oldValue !== undefined ? oldValue : -1
+            } else {
+                oldValue = oldValue !== undefined ? oldValue : ''
             }
             $input.val(oldValue)
             handleSettingValueChange($input)
@@ -503,7 +505,7 @@ function isLeaf($setting)
     function handleSettingValueChange($input) {
         const oldValue = settingsFlattened[$input.data('setting-name')].value
         const newValue = ($input.attr('type') == 'checkbox' ? $input.is(':checked') : $input.val())
-        if (newValue == oldValue) {
+        if (newValue == oldValue || (newValue == '' && oldValue == undefined)) {
             restoreWarnings($input)
         } else {
             removeWarnings($input)
@@ -663,5 +665,9 @@ function isLeaf($setting)
     }
     .custom-select ~ div > a.btn-reset-setting {
         left: -2.5em;
+    }
+
+    .form-control ~ div > a.btn-reset-setting {
+        left: -3em;
     }
 </style>

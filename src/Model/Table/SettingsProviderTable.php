@@ -216,31 +216,30 @@ class SettingsProviderTable extends AppTable
                                     'Narud' => 'Narud',
                                 ];
                             },
-                            'name' => 'Antagonist',
+                            'severity' => 'warning',
                             'type' => 'select'
                         ],
                     ],
                     'floating-setting' => [
                         'description' => 'floaringSetting',
-                        'errorMessage' => 'floaringSetting',
-                        'default' => 'A default value',
+                        // 'default' => 'A default value',
                         'name' => 'Uncategorized Setting',
-                        'test' => 'testEmptyBecomesDefault',
-                        'type' => 'string'
+                        // 'severity' => 'critical',
+                        'severity' => 'warning',
+                        // 'severity' => 'info',
+                        'type' => 'integer'
                     ],
                 ],
                 'Network' => [
                     'Proxy' => [
                         'proxy.host' => [
                             'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
-                            'default' => '',
                             'name' => __('Host'),
                             'test' => 'testHostname',
                             'type' => 'string',
                         ],
                         'proxy.port' => [
                             'description' => __('The TCP port for the HTTP proxy.'),
-                            'default' => '',
                             'name' => __('Port'),
                             'test' => 'testForRangeXY',
                             'type' => 'integer',
