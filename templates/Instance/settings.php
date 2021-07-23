@@ -312,7 +312,10 @@ function genInputInteger($settingName, $setting, $appView)
     $settingId = str_replace('.', '_', $settingName);
     return $appView->Bootstrap->genNode('input', [
         'class' => [
-            'form-control'
+            'form-control',
+            (!empty($setting['error']) ? 'is-invalid' : ''),
+            (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
+            (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
         ],
         'type' => 'number',
         'min' => '0',
@@ -343,7 +346,7 @@ function genInputSelect($settingName, $setting, $appView)
             'pr-4',
             (!empty($setting['error']) ? 'is-invalid' : ''),
             (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
-            (!empty($setting['error']) && $setting['severity'] == 'warning' ? 'warning' : ''),
+            (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
         ],
         'type' => 'text',
         'id' => $settingId,
@@ -543,7 +546,7 @@ function isLeaf($setting)
         if ($callout.length == 0) {
             return
         }
-        const $settings = $callout.find('input')
+        const $settings = $callout.find('input, select')
         const settingNames = Array.from($settings).map((i) => {
             return $(i).data('setting-name')
         })

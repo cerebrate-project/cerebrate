@@ -51,9 +51,6 @@ class SettingsProviderTable extends AppTable
                 if (isset($settings[$key])) {
                     $settingConf[$key]['value'] = $settings[$key];
                 }
-                if (empty($settingConf[$key]['severity'])) {
-                    $settingConf[$key]['severity'] = 'warning';
-                }
                 $settingConf[$key] = $this->evaluateLeaf($settingConf[$key], $settingConf);
                 $settingConf[$key]['setting-path'] = $path;
                 $settingConf[$key]['true-name'] = $key;
@@ -95,7 +92,7 @@ class SettingsProviderTable extends AppTable
                     $notices[$value['severity']][] = $key;
                 }
             } else {
-                $notices = array_merge($notices, $this->getNoticesFromSettingsConfiguration($value));
+                $notices = array_merge_recursive($notices, $this->getNoticesFromSettingsConfiguration($value));
             }
         }
         return $notices;
@@ -127,29 +124,31 @@ class SettingsProviderTable extends AppTable
             }
         }
         if (!$skipValidation) {
-            if (isset($setting['test'])) {
-                $error = false;
+            $validationResult = false;
+            if (!isset($setting['value'])) {
+                $validationResult = $this->settingValidator->testEmptyBecomesDefault(null, $setting);
+            } else if (isset($setting['test'])) {
                 $setting['value'] = $setting['value'] ?? '';
                 if (is_callable($setting['test'])) { // Validate with anonymous function
-                    $error = $setting['test']($setting['value'], $setting, new Validator());
+                    $validationResult = $setting['test']($setting['value'], $setting, new Validator());
                 } else if (method_exists($this->settingValidator, $setting['test'])) { // Validate with function defined in settingValidator class
-                    $error = $this->settingValidator->{$setting['test']}($setting['value'], $setting);
+                    $validationResult = $this->settingValidator->{$setting['test']}($setting['value'], $setting);
                 } else {
                     $validator = new Validator();
                     if (method_exists($validator, $setting['test'])) { // Validate with cake's validator function
                         $validator->{$setting['test']};
-                        $error = $validator->validate($setting['value']);
+                        $validationResult = $validator->validate($setting['value']);
                     }
                 }
-                if ($error !== true) {
-                    $setting['severity'] = $setting['severity'] ?? 'warning';
-                    if (!in_array($setting['severity'], $this->severities)) {
-                        $setting['severity'] = 'warning';
-                    }
-                    $setting['errorMessage'] = $error;
-                }
-                $setting['error'] = $error !== false ? true : false;
             }
+            if ($validationResult !== true) {
+                $setting['severity'] = $setting['severity'] ?? 'warning';
+                if (!in_array($setting['severity'], $this->severities)) {
+                    $setting['severity'] = 'warning';
+                }
+                $setting['errorMessage'] = $validationResult;
+            }
+            $setting['error'] = $validationResult !== true ? true : false;
         }
         return $setting;
     }
@@ -176,9 +175,9 @@ class SettingsProviderTable extends AppTable
                         ],
                         'app.uuid' => [
                             'description' => __('The Cerebrate instance UUID. This UUID is used to identify this instance.'),
-                            'severity' => 'critical',
                             'default' => '',
                             'name' => 'UUID',
+                            'severity' => 'critical',
                             'test' => 'testUuid',
                             'type' => 'string'
                         ],
@@ -196,19 +195,20 @@ class SettingsProviderTable extends AppTable
                         ],
                         'sc2.hero' => [
                             'description' => 'The true hero',
-                            'default' => '',
+                            'default' => 'Sarah Kerrigan',
+                            'name' => 'Hero',
                             'options' => [
                                 'Jim Raynor' => 'Jim Raynor',
                                 'Sarah Kerrigan' => 'Sarah Kerrigan',
                                 'Artanis' => 'Artanis',
                                 'Zeratul' => 'Zeratul',
                             ],
-                            'name' => 'Hero',
                             'type' => 'select'
                         ],
                         'sc2.antagonist' => [
                             'description' => 'The real bad guy',
-                            'default' => '',
+                            'default' => 'Amon',
+                            'name' => 'Antagonist',
                             'options' => function($settingsProviders) {
                                 return [
                                     'Amon' => 'Amon',
@@ -249,7 +249,6 @@ class SettingsProviderTable extends AppTable
                             'description' => __('The authentication username for the HTTP proxy.'),
                             'default' => 'admin',
                             'name' => __('User'),
-                            'test' => 'testEmptyBecomesDefault',
                             'dependsOn' => 'proxy.host',
                             'type' => 'string',
                         ],
@@ -257,7 +256,6 @@ class SettingsProviderTable extends AppTable
                             'description' => __('The authentication password for the HTTP proxy.'),
                             'default' => '',
                             'name' => __('Password'),
-                            'test' => 'testEmptyBecomesDefault',
                             'dependsOn' => 'proxy.host',
                             'type' => 'string',
                         ],
@@ -284,7 +282,7 @@ class SettingsProviderTable extends AppTable
                             'description' => __('The debug level of the instance'),
                             'default' => 0,
                             'dependsOn' => 'host',
-                            'name' => __('User'),
+                            'name' => __('Debug Level'),
                             'test' => function($value, $setting, $validator) {
                                 $validator->range('value', [0, 3]);
                                 return testValidator($value, $validator);
@@ -319,10 +317,11 @@ class SettingValidator
         if (!empty($value)) {
             return true;
         } else if (!empty($setting['default'])) {
-            $setting['severity'] = 'info';
+            $setting['severity'] = $setting['severity'] ?? 'info';
             return __('Setting is not set, fallback to default value: {0}', $setting['default']);
         } else {
-            return __('Cannot be empty');
+            $setting['severity'] = $setting['severity'] ?? 'critical';
+            return __('Cannot be empty. Setting does not have a default value.');
         }
     }
 
