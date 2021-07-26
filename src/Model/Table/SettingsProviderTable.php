@@ -277,10 +277,9 @@ class SettingsProviderTable extends AppTable
             'Security' => [
                 'Development' => [
                     'Debugging' => [
-                        'Debug' => [
+                        'app.security.debug' => [
                             'description' => __('The debug level of the instance'),
                             'default' => 0,
-                            'dependsOn' => 'host',
                             'name' => __('Debug Level'),
                             'test' => function($value, $setting, $validator) {
                                 $validator->range('value', [0, 3]);
