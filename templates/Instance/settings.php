@@ -170,7 +170,7 @@ function isLeaf($setting)
                 $input.val(result.data.value)
             }
             handleSettingValueChange($input)
-        })
+        }).catch((e) => {})
     }
 
     function handleSettingValueChange($input) {
@@ -187,7 +187,7 @@ function isLeaf($setting)
         const $inputGroup = $input.closest('.input-group')
         const $inputGroupAppend = $inputGroup.find('.input-group-append')
         const $saveButton = $inputGroup.find('button.btn-save-setting')
-        $input.removeClass(['is-invalid', 'border-warning', 'border-danger', 'border-info'])
+        $input.removeClass(['is-invalid', 'border-warning', 'border-danger', 'border-info', 'warning', 'info'])
         $inputGroupAppend.removeClass('d-none')
         if ($input.is('select') && $input.find('option:selected').data('is-empty-option') == 1) {
             $inputGroupAppend.addClass('d-none') // hide save button if empty selection picked
@@ -202,7 +202,7 @@ function isLeaf($setting)
         const setting = settingsFlattened[$input.data('setting-name')]
         if (setting.error) {
             borderVariant = setting.severity !== undefined ? variantFromSeverity[setting.severity] : 'warning'
-            $input.addClass(['is-invalid', `border-${borderVariant}`])
+            $input.addClass(['is-invalid', `border-${borderVariant}`, borderVariant])
             if (setting.severity == 'warning') {
                 $input.addClass('warning')
             }

@@ -9,6 +9,9 @@ use Cake\ORM\TableRegistry;
 
 class SettingsTable extends AppTable
 {
+    private static $FILENAME = 'cerebrate';
+    private static $CONFIG_KEY = 'Cerebrate';
+    
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -18,7 +21,7 @@ class SettingsTable extends AppTable
 
     public function getSettings($full=false): array
     {
-        $settings = Configure::read()['Cerebrate'];
+        $settings = $this->readSettings();
         if (empty($full)) {
             return $settings;
         } else {
@@ -36,7 +39,7 @@ class SettingsTable extends AppTable
 
     public function getSetting($name=false): array
     {
-        $settings = Configure::read()['Cerebrate'];
+        $settings = $this->readSettings();
         $settingsProvider = $this->SettingsProvider->getSettingsConfiguration($settings);
         $settingsFlattened = $this->SettingsProvider->flattenSettingsConfiguration($settingsProvider);
         return $settingsFlattened[$name] ?? [];
@@ -45,7 +48,36 @@ class SettingsTable extends AppTable
     public function saveSetting(string $name, string $value): array
     {
         $errors = [];
-        // Save setting here!
+        $setting = $this->getSetting($name);
+        if (!empty($setting['beforeSave'])) {
+            $setting['value'] = $value ?? '';
+            $beforeSaveResult = $this->SettingsProvider->evaluateFunctionForSetting($setting['beforeSave'], $setting);
+            if ($beforeSaveResult !== true) {
+                $errors[] = $beforeSaveResult;
+            }
+        }
+        if (empty($errors)) {
+            $saveResult = $this->saveSettingOnDisk($name, $value);
+            if ($saveResult) {
+                if (!empty($setting['afterSave'])) {
+                    $this->SettingsProvider->evaluateFunctionForSetting($setting['afterSave'], $setting);
+                }
+            }
+        }
         return $errors;
+    }
+
+    private function readSettings()
+    {
+        return Configure::read()[$this::$CONFIG_KEY];
+    }
+
+    private function saveSettingOnDisk($name, $value)
+    {
+        $settings = $this->readSettings();
+        $settings[$name] = $value;
+        Configure::write($this::$CONFIG_KEY, $settings);
+        Configure::dump($this::$FILENAME, 'default', [$this::$CONFIG_KEY]);
+        return true;
     }
 }

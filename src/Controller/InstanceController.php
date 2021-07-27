@@ -7,6 +7,7 @@ use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
 use Cake\Event\EventInterface;
+use Cake\Core\Configure;
 
 class InstanceController extends AppController
 {
@@ -125,11 +126,6 @@ class InstanceController extends AppController
             if (empty($errors)) {
                 $message = __('Setting `{0}` saved', $data['name']);
                 $data = $this->Settings->getSetting($data['name']);
-                // TO DEL
-                $data['errorMessage'] = 'Test test test';
-                $data['error'] = true;
-                $data['error'] = false;
-                // TO DEL
             }
             $this->CRUD->setResponseForController('saveSetting', empty($errors), $message, $data, $errors);
             $responsePayload = $this->CRUD->getResponsePayload();

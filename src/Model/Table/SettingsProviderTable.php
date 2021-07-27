@@ -124,22 +124,12 @@ class SettingsProviderTable extends AppTable
             }
         }
         if (!$skipValidation) {
-            $validationResult = false;
+            $validationResult = true;
             if (!isset($setting['value'])) {
                 $validationResult = $this->settingValidator->testEmptyBecomesDefault(null, $setting);
             } else if (isset($setting['test'])) {
                 $setting['value'] = $setting['value'] ?? '';
-                if (is_callable($setting['test'])) { // Validate with anonymous function
-                    $validationResult = $setting['test']($setting['value'], $setting, new Validator());
-                } else if (method_exists($this->settingValidator, $setting['test'])) { // Validate with function defined in settingValidator class
-                    $validationResult = $this->settingValidator->{$setting['test']}($setting['value'], $setting);
-                } else {
-                    $validator = new Validator();
-                    if (method_exists($validator, $setting['test'])) { // Validate with cake's validator function
-                        $validator->{$setting['test']};
-                        $validationResult = $validator->validate($setting['value']);
-                    }
-                }
+                $validationResult = $this->evaluateFunctionForSetting($setting['test'], $setting);
             }
             if ($validationResult !== true) {
                 $setting['severity'] = $setting['severity'] ?? 'warning';
@@ -152,12 +142,37 @@ class SettingsProviderTable extends AppTable
         }
         return $setting;
     }
+    
+    /**
+     * evaluateFunctionForSetting - evaluate the provided function. If function could not be evaluated, its result is defaulted to true
+     *
+     * @param  mixed $fun
+     * @param  array $setting
+     * @return mixed
+     */
+    public function evaluateFunctionForSetting($fun, $setting)
+    {
+        $functionResult = true;
+        if (is_callable($fun)) { // Validate with anonymous function
+            $functionResult = $fun($setting['value'], $setting, new Validator());
+        } else if (method_exists($this->settingValidator, $fun)) { // Validate with function defined in settingValidator class
+            $functionResult = $this->settingValidator->{$fun}($setting['value'], $setting);
+        } else {
+            $validator = new Validator();
+            if (method_exists($validator, $fun)) { // Validate with cake's validator function
+                $validator->{$fun};
+                $functionResult = $validator->validate($setting['value']);
+            }
+        }
+        return $functionResult;
+    }
 
     /**
      * Support up to 3 level:
      *      Application -> Network -> Proxy -> Proxy.URL
      * 
-     * Leave errorMessage empty to let the validator generate the error message
+     * - Leave errorMessage empty to let the validator generate the error message
+     * - Default severity level is `info` if a `default` value is provided otherwise it becomes `critical`
      */
     private function generateSettingsConfiguration()
     {
@@ -188,8 +203,16 @@ class SettingsProviderTable extends AppTable
                             'errorMessage' => 'to del',
                             'default' => 'A-default-value',
                             'name' => 'To DEL',
-                            'test' => function ($value) {
-                                return empty($value) ? __('Oh not! it\'s not valid!') : '';
+                            'test' => function($value) {
+                                return empty($value) ? __('Oh not! it\'s not valid!') : true;
+                            },
+                            'beforeSave' => function($value, $setting) {
+                                if ($value != 'foo') {
+                                    return 'value must be `foo`!';
+                                }
+                                return true;
+                            },
+                            'afterSave' => function($value, $setting) {
                             },
                             'type' => 'string'
                         ],
