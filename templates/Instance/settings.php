@@ -66,12 +66,14 @@ function genContentForNav($sectionSettings, $appView)
         } else {
             $groupedContent[] = '';
         }
-        $groupedSetting[$sectionName] = array_filter( // only show grouped settings
-            array_keys($subSectionSettings),
-            function ($settingGroupName) use ($subSectionSettings) {
-                return !isLeaf($subSectionSettings[$settingGroupName]) && !empty($subSectionSettings[$settingGroupName]);
-            }
-        );
+        if (!isLeaf($subSectionSettings)) {
+            $groupedSetting[$sectionName] = array_filter( // only show grouped settings
+                array_keys($subSectionSettings),
+                function ($settingGroupName) use ($subSectionSettings) {
+                    return !isLeaf($subSectionSettings[$settingGroupName]) && !empty($subSectionSettings[$settingGroupName]);
+                }
+            );
+        }
     }
     $contentHtml = implode('', $groupedContent);
     $scrollspyNav = $appView->element('Settings/scrollspyNav', [
@@ -89,16 +91,25 @@ function genSection($sectionName, $subSectionSettings, $appView)
 {
     $sectionContent = [];
     $sectionContent[] = sprintf('<div id="%s">', sprintf('sp-%s', h($sectionName)));
-    foreach ($subSectionSettings as $panelName => $panelSettings) {
-        if (!empty($panelSettings)) {
-            $panelHTML = $appView->element('Settings/panel', [
-                'sectionName' => $sectionName,
-                'panelName' => $panelName,
-                'panelSettings' => $panelSettings,
-            ]);
-            $sectionContent[] = $panelHTML;
-        } else {
-            $sectionContent[] = '';
+    if (isLeaf($subSectionSettings)) {
+        $panelHTML = $appView->element('Settings/panel', [
+            'sectionName' => $sectionName,
+            'panelName' => $sectionName,
+            'panelSettings' => $subSectionSettings,
+        ]);
+        $sectionContent[] = $panelHTML;
+    } else {
+        foreach ($subSectionSettings as $panelName => $panelSettings) {
+            if (!empty($panelSettings)) {
+                $panelHTML = $appView->element('Settings/panel', [
+                    'sectionName' => $sectionName,
+                    'panelName' => $panelName,
+                    'panelSettings' => $panelSettings,
+                ]);
+                $sectionContent[] = $panelHTML;
+            } else {
+                $sectionContent[] = '';
+            }
         }
     }
     $sectionContent[] = '</div>';
