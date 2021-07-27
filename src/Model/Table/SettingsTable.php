@@ -49,6 +49,7 @@ class SettingsTable extends AppTable
     {
         $errors = [];
         $setting = $this->getSetting($name);
+        $value = $this->normaliseValue($value, $setting);
         if (!empty($setting['beforeSave'])) {
             $setting['value'] = $value ?? '';
             $beforeSaveResult = $this->SettingsProvider->evaluateFunctionForSetting($setting['beforeSave'], $setting);
@@ -65,6 +66,14 @@ class SettingsTable extends AppTable
             }
         }
         return $errors;
+    }
+
+    private function normaliseValue($value, $setting)
+    {
+        if ($setting['type'] == 'boolean') {
+            return (bool) $value;
+        }
+        return $value;
     }
 
     private function readSettings()

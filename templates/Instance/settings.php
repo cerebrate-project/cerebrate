@@ -126,7 +126,7 @@ function isLeaf($setting)
                 const $input = $(this)
                 const $inputGroup = $(this).closest('.form-group')
                 const settingName = $(this).data('setting-name')
-                const settingValue = $(this).is(':checked')
+                const settingValue = $(this).is(':checked') ? 1 : 0
                 saveSetting($inputGroup[0], $input, settingName, settingValue)
             } else {
                 handleSettingValueChange($(this))
