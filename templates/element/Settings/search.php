@@ -26,7 +26,8 @@
                 .on('select2:select', function (e) {
                     const selected = e.params.data
                     const settingPath = selected.setting['setting-path']
-                    const settingPathTokenized = settingPath.split('.')
+                    let settingPathTokenized = settingPath.split('.')
+                    settingPathTokenized = settingPathTokenized.map((elem) => elem.replaceAll(/(\.|\W)/g, '_'))
                     const tabName = settingPathTokenized[0]
                     const IDtoFocus = 'sp-' + settingPathTokenized.slice(1).join('-')
                     const $navController = $('.settings-tabs').find('a.nav-link').filter(function() {
@@ -36,11 +37,11 @@
                         $toFocus = $(`#${IDtoFocus}`).parent()
                         if ($navController.hasClass('active')) {
                             $toFocus[0].scrollIntoView()
-                            $toFocus.find(`input#${selected.id}`).focus()
+                            $toFocus.find(`input#${selected.id}, textarea#${selected.id}`).focus()
                         } else {
                             $navController.on('shown.bs.tab.after-selection', () => {
                                 $toFocus[0].scrollIntoView()
-                                $toFocus.find(`input#${selected.id}`).focus()
+                                $toFocus.find(`input#${selected.id}, textarea#${selected.id}`).focus()
                                 $navController.off('shown.bs.tab.after-selection')
                             }).tab('show')
                         }
@@ -58,16 +59,18 @@
         }
         let modifiedData = $.extend({}, data, true);
         const loweredTerms = params.term.trim().toLowerCase().split(' ')
+        let matchNumber = 0
         for (let i = 0; i < loweredTerms.length; i++) {
             const loweredTerm = loweredTerms[i];
             const settingNameMatch = data.setting['true-name'].toLowerCase().indexOf(loweredTerm) > -1 || data.text.toLowerCase().indexOf(loweredTerm) > -1
             const settingGroupMatch = data.setting['setting-path'].toLowerCase().indexOf(loweredTerm) > -1
             const settingDescMatch = data.setting.description.toLowerCase().indexOf(loweredTerm) > -1
             if (settingNameMatch || settingGroupMatch || settingDescMatch) {
+                matchNumber += 1
                 modifiedData.matchPriority = (settingNameMatch ? 10 : 0) + (settingGroupMatch ? 5 : 0) + (settingDescMatch ? 1 : 0)
             }
         }
-        if (modifiedData.matchPriority > 0) {
+        if (matchNumber == loweredTerms.length && modifiedData.matchPriority > 0) {
             return modifiedData;
         }
         return null;

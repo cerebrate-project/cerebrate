@@ -127,7 +127,7 @@ function getResolvableID($sectionName, $panelName=false)
 {
     $id = sprintf('sp-%s', h($sectionName));
     if (!empty($panelName)) {
-        $id .= preg_replace('/(\.|\s)/', '_', h($panelName));
+        $id .= '-' . preg_replace('/(\.|\s)/', '_', h($panelName));
     }
     return $id;
 }
