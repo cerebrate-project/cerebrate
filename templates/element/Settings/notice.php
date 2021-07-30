@@ -15,6 +15,9 @@ $noticeDescriptionPerLevel = [
     'info' => __('There are some optional tweaks that could be done to improve the looks of your Cerebrate instance.'),
 ];
 
+$settingNoticeListHeader = [];
+$settingNoticeList = [];
+
 $alertVariant = 'info';
 $skipHeading = false;
 $alertBody = '';
@@ -33,6 +36,40 @@ foreach (array_keys($mainNoticeHeading) as $level) {
             'badge-variant' => $variant,
             'description' => $noticeDescriptionPerLevel[$level],
         ];
+        $settingNoticeListHeader[] = $level;
+        $settingNoticeList[] = $this->Bootstrap->table([
+            'small' => true,
+            'striped' => false,
+            'hover' => false,
+            'borderless' => true,
+            'bordered' => false,
+        ], [
+            'fields' => [
+                ['key' => 'name', 'label' => __('Name'), 'formatter' => function($name, $row) {
+                    $settingID = $row['true-name'];
+                    return sprintf('<a style="max-width: 200px; white-space: pre-wrap;" href="#lb-%s" onclick="redirectToSetting(\'#lb-%s\')">%s</a>', h($settingID), h($settingID), h($name));
+                }],
+                ['key' => 'setting-path', 'label' => __('Category'), 'formatter' => function($path, $row) {
+                    return '<span class="text-nowrap">' . h(str_replace('.', ' ▸ ', $path)) . '</span>';
+                }],
+                ['key' => 'value', 'label' => __('Value'), 'formatter' => function($value, $row) {
+                    $formatedValue = '<pre class="p-1 rounded mb-0" style="background: #eeeeee55;">';
+                    if (is_null($value)) {
+                        $formatedValue .= '<i class="text-nowrap">' . __('No value') . '</i>';
+                    } else if ($value === '') {
+                        $formatedValue .= '<i class="text-nowrap">' . __('Empty string') . '</i>';
+                    } else if (is_bool($value)) {
+                        $formatedValue .= '<i class="text-nowrap">' . ($value ? __('true') : __('false')) . '</i>';
+                    } else {
+                        $formatedValue .= h($value);
+                    }
+                    $formatedValue .= '</pre>';
+                    return $formatedValue;
+                }],
+                ['key' => 'description', 'label' => __('Description')]
+            ],
+            'items' => $notices[$level],
+        ]);
     }
 }
 
@@ -64,3 +101,13 @@ $settingNotice = $this->Bootstrap->alert([
 ]);
 $settingNotice = sprintf('<div class="mt-3">%s</div>', $settingNotice);
 echo $settingNotice;
+
+$tabsOptions = [
+    'card' => true,
+    'pills' => false,
+    'data' => [
+        'navs' => $settingNoticeListHeader,
+        'content' => $settingNoticeList
+    ]
+];
+echo $this->Bootstrap->tabs($tabsOptions);
