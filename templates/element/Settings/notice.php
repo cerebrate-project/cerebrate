@@ -36,7 +36,12 @@ foreach (array_keys($mainNoticeHeading) as $level) {
             'badge-variant' => $variant,
             'description' => $noticeDescriptionPerLevel[$level],
         ];
-        $settingNoticeListHeader[] = $level;
+        $settingNoticeListHeader[] = [
+            'html' => $this->Bootstrap->badge([
+                'variant' => $variantFromSeverity[$level],
+                'text' => $level
+            ])
+        ];
         $settingNoticeList[] = $this->Bootstrap->table([
             'small' => true,
             'striped' => false,
@@ -53,7 +58,7 @@ foreach (array_keys($mainNoticeHeading) as $level) {
                     return '<span class="text-nowrap">' . h(str_replace('.', ' ▸ ', $path)) . '</span>';
                 }],
                 ['key' => 'value', 'label' => __('Value'), 'formatter' => function($value, $row) {
-                    $formatedValue = '<pre class="p-1 rounded mb-0" style="background: #eeeeee55;">';
+                    $formatedValue = '<span class="p-1 rounded mb-0" style="background: #eeeeee55; font-family: monospace;">';
                     if (is_null($value)) {
                         $formatedValue .= '<i class="text-nowrap">' . __('No value') . '</i>';
                     } else if ($value === '') {
@@ -63,7 +68,7 @@ foreach (array_keys($mainNoticeHeading) as $level) {
                     } else {
                         $formatedValue .= h($value);
                     }
-                    $formatedValue .= '</pre>';
+                    $formatedValue .= '</span>';
                     return $formatedValue;
                 }],
                 ['key' => 'description', 'label' => __('Description')]
