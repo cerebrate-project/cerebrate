@@ -18,7 +18,7 @@
     $label = $this->Bootstrap->genNode('label', [
         'class' => ['font-weight-bolder', 'mb-0'],
         'for' => $settingId
-    ], h($setting['name']) . $dependsOnHtml);
+    ], sprintf('<a id="lb-%s" href="#lb-%s" class="text-reset text-decoration-none">%s</a>', h($settingId), h($settingId), h($setting['name'])) . $dependsOnHtml);
 
     $description = '';
     if (!empty($setting['description']) && (empty($setting['type']) || $setting['type'] != 'boolean')) {

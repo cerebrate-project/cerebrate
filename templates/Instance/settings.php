@@ -83,7 +83,7 @@ function genContentForNav($sectionSettings, $appView)
     $mainPanelHeight = 'calc(100vh - 42px - 1rem - 56px - 38px - 1rem)';
     $container =  '<div class="d-flex">';
     $container .=   "<div class=\"\" style=\"flex: 0 0 10em;\">{$scrollspyNav}</div>";
-    $container .=   "<div data-spy=\"scroll\" data-target=\"#navbar-scrollspy-setting\" data-offset=\"25s\" style=\"height: {$mainPanelHeight}\" class=\"p-3 overflow-auto position-relative flex-grow-1\">{$contentHtml}</div>";
+    $container .=   "<div data-spy=\"scroll\" data-target=\"#navbar-scrollspy-setting\" data-offset=\"25\" style=\"height: {$mainPanelHeight}\" class=\"p-3 overflow-auto position-relative flex-grow-1\">{$contentHtml}</div>";
     $container .= '</div>';
     return $container;
 }
@@ -173,6 +173,8 @@ function getResolvableID($sectionName, $panelName=false)
             $input.val(oldValue)
             handleSettingValueChange($input)
         })
+
+        redirectToSettingFromURL()
     })
 
     function saveSetting(statusNode, $input, settingName, settingValue) {
@@ -258,6 +260,21 @@ function getResolvableID($sectionName, $panelName=false)
         if (highestSeverity !== null) {
             $callout.addClass(['callout', `callout-${variantFromSeverity[highestSeverity]}`])
         }
+    }
+
+    function redirectToSettingFromURL() {
+        const referencedID = window.location.hash
+        const $settingToFocus = $(referencedID)
+        const pageNavID = $(referencedID).closest('.tab-pane').attr('aria-labelledby')
+        const $navController = $(`#${pageNavID}`)
+        $navController
+            .on('shown.bs.tab.after-redirect', () => {
+                $settingToFocus[0].scrollIntoView()
+                const inputID = $settingToFocus.parent().attr('for')
+                $settingToFocus.closest('.form-group').find(`#${inputID}`).focus()
+                $navController.off('shown.bs.tab.after-redirect')
+            })
+            .tab('show')
     }
 </script>
 
