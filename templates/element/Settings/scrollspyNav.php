@@ -1,10 +1,10 @@
 <nav id="navbar-scrollspy-setting" class="navbar">
     <nav class="nav nav-pills flex-column">
         <?php foreach ($groupedSetting as $group => $sections): ?>
-            <a class="nav-link main-group text-reset p-1" href="#<?= sprintf('sp-%s', h($group)) ?>"><?= h($group) ?></a>
-                <nav class="nav nav-pills sub-group collapse flex-column" data-maingroup="<?= sprintf('sp-%s', h($group)) ?>">
+            <a class="nav-link main-group text-reset p-1" href="#<?= getResolvableID($group) ?>"><?= h($group) ?></a>
+                <nav class="nav nav-pills sub-group collapse flex-column" data-maingroup="<?= getResolvableID($group) ?>">
                     <?php foreach ($sections as $section): ?>
-                        <a class="nav-link nav-link-group text-reset ml-3 my-1 p-1" href="#<?= sprintf('sp-%s-%s', h($group), h($section)) ?>"><?= h($section) ?></a>
+                        <a class="nav-link nav-link-group text-reset ml-3 my-1 p-1" href="#<?= getResolvableID($group, $section) ?>"><?= h($section) ?></a>
                     <?php endforeach; ?>
                 </nav>
             </a>

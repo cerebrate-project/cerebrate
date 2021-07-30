@@ -9,7 +9,7 @@ if (isLeaf($panelSettings)) {
     ]);
     $panelHTML = "<div>{$singleSetting}</div>";
 } else {
-    $panelID = sprintf('sp-%s-%s', h($sectionName), h($panelName)); 
+    $panelID = getResolvableID($sectionName, $panelName);
     $panelHTML .= sprintf('<h4 id="%s"><a class="text-reset text-decoration-none" href="#%s">%s</a></h4>', $panelID, $panelID, h($panelName));
     $groupIssueSeverity = false;
     foreach ($panelSettings as $singleSettingName => $singleSetting) {

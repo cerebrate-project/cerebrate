@@ -1,4 +1,5 @@
 <?php
+
 $variantFromSeverity = [
     'critical' => 'danger',
     'warning' => 'warning',
@@ -82,7 +83,7 @@ function genContentForNav($sectionSettings, $appView)
     $mainPanelHeight = 'calc(100vh - 42px - 1rem - 56px - 38px - 1rem)';
     $container =  '<div class="d-flex">';
     $container .=   "<div class=\"\" style=\"flex: 0 0 10em;\">{$scrollspyNav}</div>";
-    $container .=   "<div data-spy=\"scroll\" data-target=\"#navbar-scrollspy-setting\" data-offset=\"25\" style=\"height: {$mainPanelHeight}\" class=\"p-3 overflow-auto position-relative flex-grow-1\">{$contentHtml}</div>";
+    $container .=   "<div data-spy=\"scroll\" data-target=\"#navbar-scrollspy-setting\" data-offset=\"25s\" style=\"height: {$mainPanelHeight}\" class=\"p-3 overflow-auto position-relative flex-grow-1\">{$contentHtml}</div>";
     $container .= '</div>';
     return $container;
 }
@@ -90,7 +91,8 @@ function genContentForNav($sectionSettings, $appView)
 function genSection($sectionName, $subSectionSettings, $appView)
 {
     $sectionContent = [];
-    $sectionContent[] = sprintf('<div id="%s">', sprintf('sp-%s', h($sectionName)));
+    $sectionContent[] = '<div>';
+    $sectionContent[] = sprintf('<h2 id="%s">%s</h2>', getResolvableID($sectionName), h($sectionName));
     if (isLeaf($subSectionSettings)) {
         $panelHTML = $appView->element('Settings/panel', [
             'sectionName' => $sectionName,
@@ -119,6 +121,15 @@ function genSection($sectionName, $subSectionSettings, $appView)
 function isLeaf($setting)
 {
     return !empty($setting['name']) && !empty($setting['type']);
+}
+
+function getResolvableID($sectionName, $panelName=false)
+{
+    $id = sprintf('sp-%s', h($sectionName));
+    if (!empty($panelName)) {
+        $id .= preg_replace('/(\.|\s)/', '_', h($panelName));
+    }
+    return $id;
 }
 ?>
 
