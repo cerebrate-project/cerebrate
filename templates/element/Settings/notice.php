@@ -51,8 +51,8 @@ foreach (array_keys($mainNoticeHeading) as $level) {
         ], [
             'fields' => [
                 ['key' => 'name', 'label' => __('Name'), 'formatter' => function($name, $row) {
-                    $settingID = $row['true-name'];
-                    return sprintf('<a style="max-width: 200px; white-space: pre-wrap;" href="#lb-%s" onclick="redirectToSetting(\'#lb-%s\')">%s</a>', h($settingID), h($settingID), h($name));
+                    $settingID = preg_replace('/(\.|\W)/', '_', h($row['true-name']));
+                    return sprintf('<a style="max-width: 200px; white-space: pre-wrap;" href="#lb-%s" onclick="redirectToSetting(\'#lb-%s\')">%s</a>', $settingID, $settingID, h($name));
                 }],
                 ['key' => 'setting-path', 'label' => __('Category'), 'formatter' => function($path, $row) {
                     return '<span class="text-nowrap">' . h(str_replace('.', ' ▸ ', $path)) . '</span>';
