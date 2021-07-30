@@ -50,7 +50,12 @@ class SettingsTable extends AppTable
         $errors = [];
         $setting = $this->getSetting($name);
         $value = $this->normaliseValue($value, $setting);
-        if (!empty($setting['beforeSave'])) {
+        if ($setting['type'] == 'select') {
+            if (!in_array($value, array_keys($setting['options']))) {
+                $errors[] = __('Invalid option provided');
+            }
+        }
+        if (empty($errors) && !empty($setting['beforeSave'])) {
             $setting['value'] = $value ?? '';
             $beforeSaveResult = $this->SettingsProvider->evaluateFunctionForSetting($setting['beforeSave'], $setting);
             if ($beforeSaveResult !== true) {
