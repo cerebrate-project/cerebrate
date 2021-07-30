@@ -92,7 +92,6 @@ function genSection($sectionName, $subSectionSettings, $appView)
 {
     $sectionContent = [];
     $sectionContent[] = '<div>';
-    $sectionContent[] = sprintf('<h2 id="%s">%s</h2>', getResolvableID($sectionName), h($sectionName));
     if (isLeaf($subSectionSettings)) {
         $panelHTML = $appView->element('Settings/panel', [
             'sectionName' => $sectionName,
@@ -101,6 +100,9 @@ function genSection($sectionName, $subSectionSettings, $appView)
         ]);
         $sectionContent[] = $panelHTML;
     } else {
+        if (count($subSectionSettings) > 1) {
+            $sectionContent[] = sprintf('<h2 id="%s">%s</h2>', getResolvableID($sectionName), h($sectionName));
+        }
         foreach ($subSectionSettings as $panelName => $panelSettings) {
             if (!empty($panelSettings)) {
                 $panelHTML = $appView->element('Settings/panel', [
@@ -125,9 +127,9 @@ function isLeaf($setting)
 
 function getResolvableID($sectionName, $panelName=false)
 {
-    $id = sprintf('sp-%s', h($sectionName));
+    $id = sprintf('sp-%s', preg_replace('/(\.|\W)/', '_', h($sectionName)));
     if (!empty($panelName)) {
-        $id .= '-' . preg_replace('/(\.|\s)/', '_', h($panelName));
+        $id .= '-' . preg_replace('/(\.|\W)/', '_', h($panelName));
     }
     return $id;
 }
