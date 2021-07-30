@@ -140,6 +140,7 @@ function getResolvableID($sectionName, $panelName=false)
         $('.depends-on-icon').tooltip({
             placement: 'right',
         })
+        $('select.custom-select[multiple]').select2()
 
         $('.settings-tabs a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
             $('[data-spy="scroll"]').trigger('scroll.bs.scrollspy')
@@ -292,5 +293,11 @@ function getResolvableID($sectionName, $panelName=false)
     }
     .form-control[type="number"] ~ div > a.btn-reset-setting {
         left: -3em;
+    }
+    select.custom-select[multiple][data-setting-name] ~ span.select2-container{
+        min-width: unset;
+    }
+    span.select2-container--open {
+        min-width: unset;
     }
 </style>

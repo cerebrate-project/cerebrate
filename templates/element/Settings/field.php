@@ -72,18 +72,19 @@
             ]);
         })($settingName, $setting, $this);
 
-    } elseif ($setting['type'] == 'select') {
+    } elseif ($setting['type'] == 'select' || $setting['type'] == 'multi-select') {
         $input = (function ($settingName, $setting, $appView) {
             $settingId = str_replace('.', '_', $settingName);
             $setting['value'] = $setting['value'] ?? '';
-            $options = [
-                $appView->Bootstrap->genNode('option', ['value' => '-1', 'data-is-empty-option' => '1'], __('Select an option'))
-            ];
+            $options = [];
+            if ($setting['type'] == 'select') {
+                $options[] = $appView->Bootstrap->genNode('option', ['value' => '-1', 'data-is-empty-option' => '1'], __('Select an option'));
+            }
             foreach ($setting['options'] as $key => $value) {
                 $options[] = $appView->Bootstrap->genNode('option', [
                     'class' => [],
                     'value' => $key,
-                    ($setting['value'] == $value ? 'selected' : '') => $setting['value'] == $value ? 'selected' : '',
+                    ($setting['value'] == $key ? 'selected' : '') => $setting['value'] == $value ? 'selected' : '',
                 ], h($value));
             }
             $options = implode('', $options);
@@ -95,17 +96,12 @@
                     (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
                     (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
                 ],
-                'type' => 'text',
+                ($setting['type'] == 'multi-select' ? 'multiple' : '') => '',
                 'id' => $settingId,
                 'data-setting-name' => $settingName,
                 'placeholder' => $setting['default'] ?? '',
                 'aria-describedby' => "{$settingId}Help"
             ], $options);
-        })($settingName, $setting, $this);
-
-    } elseif ($setting['type'] == 'multi-select') {
-        $input = (function ($settingName, $setting, $appView) {
-            return '';
         })($settingName, $setting, $this);
     }
     echo $input;
