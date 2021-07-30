@@ -174,7 +174,8 @@ function getResolvableID($sectionName, $panelName=false)
             handleSettingValueChange($input)
         })
 
-        redirectToSettingFromURL()
+        const referencedID = window.location.hash
+        redirectToSetting(referencedID)
     })
 
     function saveSetting(statusNode, $input, settingName, settingValue) {
@@ -262,8 +263,7 @@ function getResolvableID($sectionName, $panelName=false)
         }
     }
 
-    function redirectToSettingFromURL() {
-        const referencedID = window.location.hash
+    function redirectToSetting(referencedID) {
         const $settingToFocus = $(referencedID)
         const pageNavID = $(referencedID).closest('.tab-pane').attr('aria-labelledby')
         const $navController = $(`#${pageNavID}`)

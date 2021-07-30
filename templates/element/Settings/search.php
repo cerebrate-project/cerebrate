@@ -26,29 +26,38 @@
                 .on('select2:select', function (e) {
                     const selected = e.params.data
                     const settingPath = selected.setting['setting-path']
-                    let settingPathTokenized = settingPath.split('.')
-                    settingPathTokenized = settingPathTokenized.map((elem) => elem.replaceAll(/(\.|\W)/g, '_'))
-                    const tabName = settingPathTokenized[0]
-                    const IDtoFocus = 'sp-' + settingPathTokenized.slice(1).join('-')
-                    const $navController = $('.settings-tabs').find('a.nav-link').filter(function() {
-                        return $(this).text() == tabName
-                    })
-                    if ($navController.length == 1) {
-                        $toFocus = $(`#${IDtoFocus}`).parent()
-                        if ($navController.hasClass('active')) {
-                            $toFocus[0].scrollIntoView()
-                            $toFocus.find(`input#${selected.id}, textarea#${selected.id}`).focus()
-                        } else {
-                            $navController.on('shown.bs.tab.after-selection', () => {
-                                $toFocus[0].scrollIntoView()
-                                $toFocus.find(`input#${selected.id}, textarea#${selected.id}`).focus()
-                                $navController.off('shown.bs.tab.after-selection')
-                            }).tab('show')
-                        }
-                    }
+                    const {tabName, IDtoFocus} = getTabAndSettingIDFromPath(settingPath)
+                    showSetting(selected, tabName, IDtoFocus)
                     $("#search-settings").val(null).trigger('change.select2');
                 })
     })
+
+    function getTabAndSettingIDFromPath(settingPath) {
+        let settingPathTokenized = settingPath.split('.')
+        settingPathTokenized = settingPathTokenized.map((elem) => elem.replaceAll(/(\.|\W)/g, '_'))
+        const tabName = settingPathTokenized[0]
+        const IDtoFocus = 'sp-' + settingPathTokenized.slice(1).join('-')
+        return {tabName: tabName, IDtoFocus: IDtoFocus}
+    }
+
+    function showSetting(selected, tabName, IDtoFocus) {
+        const $navController = $('.settings-tabs').find('a.nav-link').filter(function() {
+            return $(this).text() == tabName
+        })
+        if ($navController.length == 1) {
+            $toFocus = $(`#${IDtoFocus}`).parent()
+            if ($navController.hasClass('active')) {
+                $toFocus[0].scrollIntoView()
+                $toFocus.find(`input#${selected.id}, textarea#${selected.id}`).focus()
+            } else {
+                $navController.on('shown.bs.tab.after-selection', () => {
+                    $toFocus[0].scrollIntoView()
+                    $toFocus.find(`input#${selected.id}, textarea#${selected.id}`).focus()
+                    $navController.off('shown.bs.tab.after-selection')
+                }).tab('show')
+            }
+        }
+    }
 
     function settingMatcher(params, data) {
         if (params.term == null || params.term.trim() === '') {
