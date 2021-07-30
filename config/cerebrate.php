@@ -7,4 +7,3 @@ return [
         'ui.dark' => 0,
     ]
 ];
-
