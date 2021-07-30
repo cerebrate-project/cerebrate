@@ -280,6 +280,7 @@ class SettingsProviderTable extends AppTable
                 $skipValidation = $parentSetting['error'] === true || empty($parentSetting['value']);
             }
         }
+        $setting['error'] = false;
         if (!$skipValidation) {
             $validationResult = true;
             if (!isset($setting['value'])) {
