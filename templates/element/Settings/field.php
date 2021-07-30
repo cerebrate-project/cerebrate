@@ -1,22 +1,25 @@
 <?php
-    if ($setting['type'] == 'string' || empty($setting['type'])) {
+    if ($setting['type'] == 'string' || $setting['type'] == 'textarea' || empty($setting['type'])) {
         $input = (function ($settingName, $setting, $appView) {
             $settingId = str_replace('.', '_', $settingName);
-            return $appView->Bootstrap->genNode('input', [
-                'class' => [
-                    'form-control',
-                    'pr-4',
-                    (!empty($setting['error']) ? 'is-invalid' : ''),
-                    (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
-                    (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
-                ],
-                'type' => 'text',
-                'id' => $settingId,
-                'data-setting-name' => $settingName,
-                'value' => isset($setting['value']) ? $setting['value'] : "",
-                'placeholder' => $setting['default'] ?? '',
-                'aria-describedby' => "{$settingId}Help"
-            ]);
+            return $appView->Bootstrap->genNode(
+                $setting['type'] == 'textarea' ? 'textarea' : 'input',
+                [
+                    'class' => [
+                        'form-control',
+                        'pr-4',
+                        (!empty($setting['error']) ? 'is-invalid' : ''),
+                        (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
+                        (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
+                    ],
+                    ($setting['type'] == 'textarea' ? '' : 'type') => ($setting['type'] == 'textarea' ? '' : 'text'),
+                    'id' => $settingId,
+                    'data-setting-name' => $settingName,
+                    'value' => isset($setting['value']) ? $setting['value'] : "",
+                    'placeholder' => $setting['default'] ?? '',
+                    'aria-describedby' => "{$settingId}Help"
+                ]
+            );
         })($settingName, $setting, $this);
 
     } elseif ($setting['type'] == 'boolean') {
@@ -26,7 +29,7 @@
                 'class' => [
                     'custom-control-input',
                     (!empty($setting['error']) ? 'is-invalid' : ''),
-                    (!empty($setting['error']) && $setting['severity'] == 'warning' ? 'warning' : ''),
+                    (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
                 ],
                 'type' => 'checkbox',
                 'value' => !empty($setting['value']) ? 1 : 0,
