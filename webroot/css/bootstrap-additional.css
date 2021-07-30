@@ -110,8 +110,8 @@ div.progress-timeline .progress-line.progress-inactive {
 }
 
 .callout {
-    border: 1px solid #eee;
-        border-left-color: rgb(238, 238, 238);
+    border: 1px solid #00000000;
+        border-left-color: var(--light);
         border-left-width: 1px;
     border-left-width: .25rem;
     border-radius: .25rem;
@@ -173,6 +173,21 @@ div.progress-timeline .progress-line.progress-inactive {
 }
 .custom-control-input.is-invalid.warning:focus ~ .custom-control-label::before {
     box-shadow: 0 0 0 0.2rem #ffc10740;
+}
+.custom-control-input.is-invalid.info ~ .custom-control-label {
+    color: unset;
+}
+.custom-control-input.is-invalid.info ~ .custom-control-label::before {
+    border-color: #17a2b8;
+}
+.custom-control-input.is-invalid.info:checked ~ .custom-control-label::before {
+    background-color: #17a2b8;
+}
+.custom-control-input.is-invalid.info:focus:not(:checked) ~ .custom-control-label::before {
+    border-color: #17a2b8;
+}
+.custom-control-input.is-invalid.info:focus ~ .custom-control-label::before {
+    box-shadow: 0 0 0 0.2rem #17a2b840;
 }
 
 .p-abs-center-y {
