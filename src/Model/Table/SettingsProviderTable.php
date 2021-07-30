@@ -246,7 +246,7 @@ class SettingsProviderTable extends AppTable
                     if (empty($notices[$value['severity']])) {
                         $notices[$value['severity']] = [];
                     }
-                    $notices[$value['severity']][] = $key;
+                    $notices[$value['severity']][] = $value;
                 }
             } else {
                 $notices = array_merge_recursive($notices, $this->getNoticesFromSettingsConfiguration($value));
@@ -263,7 +263,7 @@ class SettingsProviderTable extends AppTable
     private function evaluateLeaf($setting, $settingSection)
     {
         $skipValidation = false;
-        if ($setting['type'] == 'select') {
+        if ($setting['type'] == 'select' || $setting['type'] == 'multi-select') {
             if (!empty($setting['options']) && is_callable($setting['options'])) {
                 $setting['options'] = $setting['options']($this);
             }
@@ -339,9 +339,14 @@ class SettingValidator
     {
         if (!empty($value)) {
             return true;
-        } else if (!empty($setting['default'])) {
+        } else if (isset($setting['default'])) {
+            $setting['value'] = $setting['default'];
             $setting['severity'] = $setting['severity'] ?? 'info';
-            return __('Setting is not set, fallback to default value: {0}', $setting['default']);
+            if ($setting['type'] == 'boolean') {
+                return __('Setting is not set, fallback to default value: {0}', empty($setting['default']) ? 'false' : 'true');
+            } else {
+                return __('Setting is not set, fallback to default value: {0}', $setting['default']);
+            }
         } else {
             $setting['severity'] = $setting['severity'] ?? 'critical';
             return __('Cannot be empty. Setting does not have a default value.');
