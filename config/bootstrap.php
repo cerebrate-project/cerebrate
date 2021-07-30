@@ -87,6 +87,7 @@ try {
  */
 if (file_exists(CONFIG . 'app_local.php')) {
     Configure::load('app_local', 'default');
+    Configure::load('cerebrate', 'default', true);
 }
 
 /*

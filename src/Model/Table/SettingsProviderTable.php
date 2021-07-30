@@ -27,9 +27,23 @@ class SettingsProviderTable extends AppTable
      * Supports up to 3 levels:
      *      Application -> Network -> Proxy -> Proxy.URL
      *        page -> [group] -> [panel] -> setting
-     * 
-     * - Leave errorMessage empty to let the validator generate the error message
-     * - Default severity level is `info` if a `default` value is provided otherwise it becomes `critical`
+     * Keys of setting configuration are the actual setting name.
+     * Accepted setting configuration:
+     *     name        [required]: The human readable name of the setting.
+     *     type        [required]: The type of the setting.
+     *     description [required]: A description of the setting.
+     *                             Default severity level is `info` if a `default` value is provided otherwise it becomes `critical`
+     *     default     [optional]: The default value of the setting if not specified in the configuration.
+     *     options     [optional]: Used to populate the select with options. Keys are values to be saved, values are human readable version of the value.
+     *                             Required paramter if `type` == `select`.
+     *     severity    [optional]: Severity level of the setting if the configuration is incorrect.
+     *     dependsOn   [optional]: If the validation of this setting depends on the validation of the provided setting name
+     *     test        [optional]: Could be either a string or an anonymous function to be called in order to warn user if setting is invalid.
+     *                             Could be either: `string`, `boolean`, `integer`, `select`
+     *     beforeSave  [optional]: Could be either a string or an anonymous function to be called in order to block a setting to be saved.
+     *     afterSave   [optional]: Could be either a string or an anonymous function to be called allowing to execute a function after the setting is saved.
+     *     redacted    [optional]: Should the setting value be redacted. FIXME: To implement
+     *     cli_only    [optional]: Should this setting be modified only via the CLI.
      */
     private function generateSettingsConfiguration()
     {
@@ -38,41 +52,23 @@ class SettingsProviderTable extends AppTable
                 'General' => [
                     'Essentials' => [
                         'app.baseurl' => [
-                            'description' => __('The base url of the application (in the format https://www.mymispinstance.com or https://myserver.com/misp). Several features depend on this setting being correctly set to function.'),
-                            'severity' => 'critical',
-                            'default' => '',
                             'name' => __('Base URL'),
-                            'test' => 'testBaseURL',
                             'type' => 'string',
+                            'description' => __('The base url of the application (in the format https://www.mymispinstance.com or https://myserver.com/misp). Several features depend on this setting being correctly set to function.'),
+                            'default' => '',
+                            'severity' => 'critical',
+                            'test' => 'testBaseURL',
                         ],
                         'app.uuid' => [
+                            'name' => 'UUID',
+                            'type' => 'string',
                             'description' => __('The Cerebrate instance UUID. This UUID is used to identify this instance.'),
                             'default' => '',
-                            'name' => 'UUID',
                             'severity' => 'critical',
                             'test' => 'testUuid',
-                            'type' => 'string'
                         ],
                     ],
                     'Miscellaneous' => [
-                        'to-del' => [
-                            'description' => 'to del',
-                            'errorMessage' => 'to del',
-                            'default' => 'A-default-value',
-                            'name' => 'To DEL',
-                            'test' => function($value) {
-                                return empty($value) ? __('Oh not! it\'s not valid!') : true;
-                            },
-                            'beforeSave' => function($value, $setting) {
-                                if ($value != 'foo') {
-                                    return 'value must be `foo`!';
-                                }
-                                return true;
-                            },
-                            'afterSave' => function($value, $setting) {
-                            },
-                            'type' => 'string'
-                        ],
                         'sc2.hero' => [
                             'description' => 'The true hero',
                             'default' => 'Sarah Kerrigan',
@@ -85,10 +81,10 @@ class SettingsProviderTable extends AppTable
                             ],
                             'type' => 'select'
                         ],
-                        'sc2.antagonist' => [
-                            'description' => 'The real bad guy',
+                        'sc2.antagonists' => [
+                            'description' => 'The bad guys',
                             'default' => 'Amon',
-                            'name' => 'Antagonist',
+                            'name' => 'Antagonists',
                             'options' => function($settingsProviders) {
                                 return [
                                     'Amon' => 'Amon',
@@ -97,7 +93,7 @@ class SettingsProviderTable extends AppTable
                                 ];
                             },
                             'severity' => 'warning',
-                            'type' => 'select'
+                            'type' => 'multi-select'
                         ],
                     ],
                     'floating-setting' => [
@@ -113,43 +109,43 @@ class SettingsProviderTable extends AppTable
                 'Network' => [
                     'Proxy' => [
                         'proxy.host' => [
-                            'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
                             'name' => __('Host'),
-                            'test' => 'testHostname',
                             'type' => 'string',
+                            'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
+                            'test' => 'testHostname',
                         ],
                         'proxy.port' => [
-                            'description' => __('The TCP port for the HTTP proxy.'),
                             'name' => __('Port'),
-                            'test' => 'testForRangeXY',
                             'type' => 'integer',
+                            'description' => __('The TCP port for the HTTP proxy.'),
+                            'test' => 'testForRangeXY',
                         ],
                         'proxy.user' => [
+                            'name' => __('User'),
+                            'type' => 'string',
                             'description' => __('The authentication username for the HTTP proxy.'),
                             'default' => 'admin',
-                            'name' => __('User'),
                             'dependsOn' => 'proxy.host',
-                            'type' => 'string',
                         ],
                         'proxy.password' => [
+                            'name' => __('Password'),
+                            'type' => 'string',
                             'description' => __('The authentication password for the HTTP proxy.'),
                             'default' => '',
-                            'name' => __('Password'),
                             'dependsOn' => 'proxy.host',
-                            'type' => 'string',
                         ],
                     ],
                 ],
                 'UI' => [
                     'General' => [
-                        'app.ui.dark' => [
+                        'ui.dark' => [
+                            'name' => __('Dark theme'),
+                            'type' => 'boolean',
                             'description' => __('Enable the dark theme of the application'),
                             'default' => false,
-                            'name' => __('Dark theme'),
                             'test' => function() {
                                 return 'Fake error';
                             },
-                            'type' => 'boolean',
                         ],
                     ],
                 ],
@@ -157,20 +153,20 @@ class SettingsProviderTable extends AppTable
             'Security' => [
                 'Development' => [
                     'Debugging' => [
-                        'app.security.debug' => [
+                        'security.debug' => [
+                            'name' => __('Debug Level'),
+                            'type' => 'select',
                             'description' => __('The debug level of the instance'),
                             'default' => 0,
-                            'name' => __('Debug Level'),
-                            'test' => function($value, $setting, $validator) {
-                                $validator->range('value', [0, 3]);
-                                return testValidator($value, $validator);
-                            },
-                            'type' => 'select',
                             'options' => [
                                 0 => __('Debug Off'),
                                 1 => __('Debug On'),
                                 2 => __('Debug On + SQL Dump'),
-                            ]
+                            ],
+                            'test' => function($value, $setting, $validator) {
+                                $validator->range('value', [0, 3]);
+                                return testValidator($value, $validator);
+                            },
                         ],
                     ],
                 ]
