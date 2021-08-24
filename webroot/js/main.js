@@ -99,6 +99,60 @@ function syntaxHighlightJson(json, indent) {
     });
 }
 
+function getTextColour(hex) {
+    if (hex === undefined || hex.length == 0) {
+        return 'black'
+    }
+    hex = hex.slice(1)
+    var r = parseInt(hex.substring(0,2), 16)
+    var g = parseInt(hex.substring(2,4), 16)
+    var b = parseInt(hex.substring(4,6), 16)
+    var avg = ((2 * r) + b + (3 * g))/6
+    if (avg < 128) {
+        return 'white'
+    } else {
+        return 'black'
+    }
+}
+
+function createTagPicker(clicked) {
+
+    function templateTag(state) {
+        if (!state.id) {
+            return state.text;
+        }
+        if (state.colour === undefined) {
+            state.colour = $(state.element).data('colour')
+        }
+        return HtmlHelper.tag(state)
+    }
+
+    const $clicked = $(clicked)
+    const $container = $clicked.closest('.tag-container')
+    $('.picker-container').remove()
+    const $pickerContainer = $('<div></div>').addClass(['picker-container', 'd-flex'])
+    const $select = $container.find('select.tag-input').removeClass('d-none').addClass('flex-grow-1')
+    const $saveButton = $('<button></button>').addClass(['btn btn-primary btn-sm', 'align-self-start'])
+        .append($('<span></span>').text('Save').prepend($('<i></i>').addClass('fa fa-save mr-1')))
+    const $cancelButton = $('<button></button>').addClass(['btn btn-secondary btn-sm', 'align-self-start'])
+        .append($('<span></span>').text('Cancel').prepend($('<i></i>').addClass('fa fa-times mr-1')))
+        .click(function() {
+            $select.appendTo($container)
+            $pickerContainer.remove()
+        })
+    const $buttons = $('<span></span>').addClass(['picker-action', 'btn-group']).append($saveButton, $cancelButton)
+    $select.prependTo($pickerContainer)
+    $pickerContainer.append($buttons)
+    $container.parent().append($pickerContainer)
+    $select.select2({
+        placeholder: 'Pick a tag',
+        tags: true,
+        templateResult: templateTag,
+        templateSelection: templateTag,
+    })
+}
+
+
 var UI
 $(document).ready(() => {
     if (typeof UIFactory !== "undefined") {

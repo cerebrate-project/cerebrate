@@ -670,6 +670,7 @@ class BoostrapButton extends BootstrapGeneric {
         'class' => [],
         'type' => 'button',
         'nodeType' => 'button',
+        'title' => '',
         'params' => [],
         'badge' => false
     ];
@@ -678,7 +679,7 @@ class BoostrapButton extends BootstrapGeneric {
 
     function __construct($options) {
         $this->allowedOptionValues = [
-            'variant' => BootstrapGeneric::$variants,
+            'variant' => array_merge(BootstrapGeneric::$variants, ['link', 'text']),
             'size' => ['', 'sm', 'lg'],
             'type' => ['button', 'submit', 'reset']
         ];
@@ -701,10 +702,14 @@ class BoostrapButton extends BootstrapGeneric {
             $this->bsClasses[] = "btn-{$this->options['variant']}";
         }
         if (!empty($this->options['size'])) {
-            $this->bsClasses[] = "btn-$this->options['size']";
+            $this->bsClasses[] = "btn-{$this->options['size']}";
         }
         if ($this->options['block']) {
             $this->bsClasses[] = 'btn-block';
+        }
+        if ($this->options['variant'] == 'text') {
+            $this->bsClasses[] = 'p-0';
+            $this->bsClasses[] = 'lh-1';
         }
     }
 
@@ -718,7 +723,8 @@ class BoostrapButton extends BootstrapGeneric {
         $html = $this->openNode($this->options['nodeType'], array_merge($this->options['params'], [
             'class' => array_merge($this->options['class'], $this->bsClasses),
             'role' => "alert",
-            'type' => $this->options['type']
+            'type' => $this->options['type'],
+            'title' => h($this->options['title']),
         ]));
 
         $html .= $this->genIcon();
@@ -734,7 +740,8 @@ class BoostrapButton extends BootstrapGeneric {
     private function genIcon()
     {
         return $this->genNode('span', [
-            'class' => ['mr-1', "fa fa-{$this->options['icon']}"],
+            // 'class' => ['mr-1', "fa fa-{$this->options['icon']}"],
+            'class' => ['', "fa fa-{$this->options['icon']}"],
         ]);
     }
 
@@ -749,7 +756,8 @@ class BoostrapBadge extends BootstrapGeneric {
         'text' => '',
         'variant' => 'primary',
         'pill' => false,
-        'title' => ''
+        'title' => '',
+        'class' => [],
     ];
 
     function __construct($options) {
@@ -773,11 +781,11 @@ class BoostrapBadge extends BootstrapGeneric {
     private function genBadge()
     {
         $html = $this->genNode('span', [
-            'class' => [
+            'class' => array_merge($this->options['class'], [
                 'badge',
                 "badge-{$this->options['variant']}",
                 $this->options['pill'] ? 'badge-pill' : '',
-            ],
+            ]),
             'title' => $this->options['title']
         ], h($this->options['text']));
         return $html;

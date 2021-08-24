@@ -86,6 +86,5 @@ $cakeDescription = 'Cerebrate';
 </body>
 <script>
     const darkMode = (<?= empty($darkMode) ? 'false' : 'true' ?>)
-    $.fn.select2.defaults.set('theme', 'bootstrap4');
 </script>
 </html>

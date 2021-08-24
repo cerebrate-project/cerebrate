@@ -115,6 +115,13 @@
 .text-black {color:black;}
 .text-white {color:white;}
 
+.lh-1 {
+    line-height: 1;
+}
+.lh-2 {
+    line-height: 1.5;
+}
+
 .link-unstyled, .link-unstyled:link, .link-unstyled:hover {
   color: inherit;
   text-decoration: inherit;
@@ -144,4 +151,16 @@ input[type="checkbox"]:disabled.change-cursor {
 .topbar-contextual-filter button.btn {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+}
+
+.select2-selection__choice { /* Our app do not have the same font size */
+    padding-left: 1.5em !important;
+}
+.picker-container .select2-selection {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+.picker-container .picker-action .btn:first-child {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
 }

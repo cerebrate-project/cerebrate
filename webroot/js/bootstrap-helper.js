@@ -1108,4 +1108,13 @@ class HtmlHelper {
         }
         return $table
     }
+
+    static tag(options={}) {
+        const $tag = $('<span/>')
+            .addClass(['tag', 'badge', 'border'])
+            .css({color: getTextColour(options.colour), 'background-color': options.colour})
+            .text(options.text)
+
+        return $tag
+    }
 }
