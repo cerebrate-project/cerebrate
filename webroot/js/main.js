@@ -119,7 +119,7 @@ function createTagPicker(clicked) {
 
     function templateTag(state) {
         if (!state.id) {
-            return state.text;
+            return state.label;
         }
         if (state.colour === undefined) {
             state.colour = $(state.element).data('colour')
@@ -141,7 +141,7 @@ function createTagPicker(clicked) {
         .append($('<span></span>').text('Save').prepend($('<i></i>').addClass('fa fa-save mr-1')))
         .click(function() {
             const tags = $select.select2('data').map(tag => tag.text)
-            addTags(tags, $(this))
+            addTags($select.data('url'), tags, $(this))
         })
     const $cancelButton = $('<button></button>').addClass(['btn btn-secondary btn-sm', 'align-self-start']).attr('type', 'button')
         .append($('<span></span>').text('Cancel').prepend($('<i></i>').addClass('fa fa-times mr-1')))
@@ -176,11 +176,15 @@ function deleteTag(url, tag, clicked) {
         })
         const theToast = UI.toast({
             variant: 'success',
-            title: 'Tag deleted',
+            title: result.message,
             bodyHtml: $('<div/>').append(
                 $('<span/>').text('Cancel untag operation.'),
                 $('<button/>').addClass(['btn', 'btn-primary', 'btn-sm', 'ml-3']).text('Restore tag').click(function() {
-                    addTags([tag], $container.find('.tag-container')).then(() => {
+                    const split = url.split('/')
+                    const controllerName = split[1]
+                    const id = split[3]
+                    const urlRetag = `/${controllerName}/tag/${id}`
+                    addTags(urlRetag, [tag], $container.find('.tag-container')).then(() => {
                         theToast.removeToast()
                     })
                 }),
@@ -189,8 +193,7 @@ function deleteTag(url, tag, clicked) {
     }).catch((e) => {})
 }
 
-function addTags(tags, $statusNode) {
-    const url = '/individuals/tag/2'
+function addTags(url, tags, $statusNode) {
     const data = {
         tag_list: tags
     }

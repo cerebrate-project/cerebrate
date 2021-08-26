@@ -7,6 +7,7 @@ use Cake\Error\Debugger;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 use Cake\View\ViewBuilder;
+use Cake\ORM\TableRegistry;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 
@@ -355,6 +356,7 @@ class CRUDComponent extends Component
 
         if ($this->taggingSupported()) {
             $params['contain'][] = 'Tags';
+            $this->setAllTags();
         }
 
         $data = $this->Table->get($id, $params);
@@ -417,6 +419,7 @@ class CRUDComponent extends Component
             throw new Exception("Table {$this->TableAlias} does not support tagging");
         }
         if ($this->request->is('get')) {
+            $this->setAllTags();
             if(!empty($id)) {
                 $params = [
                     'contain' => 'Tags',
@@ -455,9 +458,9 @@ class CRUDComponent extends Component
             $message = $this->getMessageBasedOnResult(
                 $bulkSuccesses == count($ids),
                 $isBulk,
-                __('{0} tagged.', $this->ObjectAlias),
+                __('{0} tagged with `{1}`.', $this->ObjectAlias, $input['tag_list']),
                 __('All {0} have been tagged.', Inflector::pluralize($this->ObjectAlias)),
-                __('Could not tag {0}.', $this->ObjectAlias),
+                __('Could not tag {0} with `{1}`.', $this->ObjectAlias, $input['tag_list']),
                 __('{0} / {1} {2} have been tagged.',
                     $bulkSuccesses,
                     count($ids),
@@ -476,6 +479,7 @@ class CRUDComponent extends Component
             throw new Exception("Table {$this->TableAlias} does not support tagging");
         }
         if ($this->request->is('get')) {
+            $this->setAllTags();
             if(!empty($id)) {
                 $params = [
                     'contain' => 'Tags',
@@ -516,9 +520,9 @@ class CRUDComponent extends Component
             $message = $this->getMessageBasedOnResult(
                 $bulkSuccesses == count($ids),
                 $isBulk,
-                __('{0} untagged.', $this->ObjectAlias),
+                __('{0} untagged with `{1}`.', $this->ObjectAlias, implode(', ', $tagsToRemove)),
                 __('All {0} have been untagged.', Inflector::pluralize($this->ObjectAlias)),
-                __('Could not untag {0}.', $this->ObjectAlias),
+                __('Could not untag {0} with `{1}`.', $this->ObjectAlias, $input['tag_list']),
                 __('{0} / {1} {2} have been untagged.',
                     $bulkSuccesses,
                     count($ids),
@@ -549,6 +553,7 @@ class CRUDComponent extends Component
             $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
         }
         $this->Controller->set('entity', $data);
+        $this->setAllTags();
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/tag');
     }
@@ -835,6 +840,13 @@ class CRUDComponent extends Component
     public function taggingSupported()
     {
         return $this->Table->behaviors()->has('Tag');
+    }
+
+    public function setAllTags()
+    {
+        $this->Tags = TableRegistry::getTableLocator()->get('Tags.Tags');
+        $allTags = $this->Tags->find()->all()->toList();
+        $this->Controller->set('allTags', $allTags);
     }
 
     public function toggle(int $id, string $fieldName = 'enabled', array $params = []): void

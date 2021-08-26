@@ -9,6 +9,7 @@ use Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\ForbiddenException;
+use Cake\ORM\TableRegistry;
 
 class IndividualsController extends AppController
 {

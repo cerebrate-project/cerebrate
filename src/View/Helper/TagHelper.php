@@ -27,15 +27,20 @@ class TagHelper extends Helper
         $field = 'tag_list';
         $values = !empty($options['allTags']) ? array_map(function($tag) {
             return [
-                'text' => h($tag['text']),
-                'value' => h($tag['text']),
+                'text' => h($tag['label']),
+                'value' => h($tag['label']),
                 'data-colour' => h($tag['colour']),
+                'data-text-colour' => h($tag['text_colour']),
             ];
         }, $options['allTags']) : [];
         $selectConfig = [
             'multiple' => true,
-            // 'value' => $options['tags'],
-            'class' => ['tag-input', 'd-none']
+            'class' => ['tag-input', 'd-none'],
+            'data-url' => $this->Url->build([
+                'controller' => $this->getView()->getName(),
+                'action' => 'tag',
+                $this->getView()->get('entity')['id']
+            ]),
         ];
         return $this->Form->select($field, $values, $selectConfig);
     }
@@ -63,11 +68,11 @@ class TagHelper extends Helper
         $html .= '<div class="tag-container my-1">';
         $html .= '<div class="tag-list d-inline-block">';
         foreach ($tags as $tag) {
-            if (is_array($tag)) {
+            if (is_object($tag)) {
                 $html .= $this->tag($tag);
             } else {
                 $html .= $this->tag([
-                    'name' => $tag
+                    'label' => $tag
                 ]);
             }
         }
@@ -81,13 +86,13 @@ class TagHelper extends Helper
         return $html;
     }
 
-    public function tag(array $tag, array $options = [])
+    public function tag($tag, array $options = [])
     {
         if (empty($this->_config)) {
             $this->_config = array_merge($this->defaultConfig, $options);
         }
         $tag['colour'] = !empty($tag['colour']) ? $tag['colour'] : $this->getConfig('default_colour');
-        $textColour = $this->TextColour->getTextColour(h($tag['colour']));
+        $textColour = !empty($tag['text_colour']) ? $tag['text_colour'] : $this->TextColour->getTextColour(h($tag['colour']));;
 
         if (!empty($this->getConfig('editable'))) {
             $deleteButton = $this->Bootstrap->button([
@@ -103,7 +108,7 @@ class TagHelper extends Helper
                             'action' => 'untag',
                             $this->getView()->get('entity')['id']
                         ]),
-                        h($tag['name'])
+                        h($tag['label'])
                     ),
                 ],
             ]);
@@ -118,9 +123,9 @@ class TagHelper extends Helper
                 'mx-1',
                 'align-middle',
             ],
-            'title' => h($tag['name']),
+            'title' => h($tag['label']),
             'style' => sprintf('color:%s; background-color:%s', $textColour, h($tag['colour'])),
-        ], h($tag['name']) . $deleteButton);
+        ], h($tag['label']) . $deleteButton);
         return $html;
     }
 }
