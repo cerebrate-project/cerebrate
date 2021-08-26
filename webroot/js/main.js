@@ -127,18 +127,26 @@ function createTagPicker(clicked) {
         return HtmlHelper.tag(state)
     }
 
+    function closePicker($select, $container) {
+        $select.appendTo($container)
+        $container.parent().find('.picker-container').remove()
+    }
+
     const $clicked = $(clicked)
     const $container = $clicked.closest('.tag-container')
-    $('.picker-container').remove()
+    const $select = $container.parent().find('select.tag-input').removeClass('d-none').addClass('flex-grow-1')
+    closePicker($select, $container)
     const $pickerContainer = $('<div></div>').addClass(['picker-container', 'd-flex'])
-    const $select = $container.find('select.tag-input').removeClass('d-none').addClass('flex-grow-1')
-    const $saveButton = $('<button></button>').addClass(['btn btn-primary btn-sm', 'align-self-start'])
+    const $saveButton = $('<button></button>').addClass(['btn btn-primary btn-sm', 'align-self-start']).attr('type', 'button')
         .append($('<span></span>').text('Save').prepend($('<i></i>').addClass('fa fa-save mr-1')))
-    const $cancelButton = $('<button></button>').addClass(['btn btn-secondary btn-sm', 'align-self-start'])
+        .click(function() {
+            const tags = $select.select2('data').map(tag => tag.text)
+            addTags(tags, $(this))
+        })
+    const $cancelButton = $('<button></button>').addClass(['btn btn-secondary btn-sm', 'align-self-start']).attr('type', 'button')
         .append($('<span></span>').text('Cancel').prepend($('<i></i>').addClass('fa fa-times mr-1')))
         .click(function() {
-            $select.appendTo($container)
-            $pickerContainer.remove()
+            closePicker($select, $container)
         })
     const $buttons = $('<span></span>').addClass(['picker-action', 'btn-group']).append($saveButton, $cancelButton)
     $select.prependTo($pickerContainer)
@@ -150,6 +158,56 @@ function createTagPicker(clicked) {
         templateResult: templateTag,
         templateSelection: templateTag,
     })
+}
+
+function deleteTag(url, tag, clicked) {
+    const data = {
+        tag_list: tag
+    }
+    const $statusNode = $(clicked).closest('.tag')
+    const APIOptions = {
+        statusNode: $statusNode,
+        skipFeedback: true,
+    }
+    return AJAXApi.quickFetchAndPostForm(url, data, APIOptions).then((result) => {
+        let $container = $statusNode.closest('.tag-container-wrapper')
+        refreshTagList(result, $container).then(($tagContainer) => {
+            $container = $tagContainer // old container might not exist anymore since it was replaced after the refresh
+        })
+        const theToast = UI.toast({
+            variant: 'success',
+            title: 'Tag deleted',
+            bodyHtml: $('<div/>').append(
+                $('<span/>').text('Cancel untag operation.'),
+                $('<button/>').addClass(['btn', 'btn-primary', 'btn-sm', 'ml-3']).text('Restore tag').click(function() {
+                    addTags([tag], $container.find('.tag-container')).then(() => {
+                        theToast.removeToast()
+                    })
+                }),
+            ),
+        })
+    }).catch((e) => {})
+}
+
+function addTags(tags, $statusNode) {
+    const url = '/individuals/tag/2'
+    const data = {
+        tag_list: tags
+    }
+    const APIOptions = {
+        statusNode: $statusNode
+    }
+    return AJAXApi.quickFetchAndPostForm(url, data, APIOptions).then((result) => {
+        const $container = $statusNode.closest('.tag-container-wrapper')
+        refreshTagList(result, $container)
+    }).catch((e) => {})
+}
+
+function refreshTagList(result, $container) {
+    const controllerName = result.url.split('/')[1]
+    const entityId = result.data.id
+    const url = `/${controllerName}/viewTags/${entityId}`
+    return UI.reload(url, $container)
 }
 
 

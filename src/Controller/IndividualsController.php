@@ -72,4 +72,31 @@ class IndividualsController extends AppController
         }
         $this->set('metaGroup', 'ContactDB');
     }
+
+    public function tag($id)
+    {
+        $this->CRUD->tag($id);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+    }
+
+    public function untag($id)
+    {
+        $this->CRUD->untag($id);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+    }
+
+    public function viewTags($id)
+    {
+        $this->CRUD->viewTags($id);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+    }
 }

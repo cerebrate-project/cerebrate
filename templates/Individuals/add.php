@@ -20,7 +20,11 @@
                 ),
                 array(
                     'field' => 'position'
-                )
+                ),
+                array(
+                    'field' => 'tag_list',
+                    'type' => 'tags'
+                ),
             ),
             'metaTemplates' => empty($metaTemplates) ? [] : $metaTemplates,
             'submit' => array(
