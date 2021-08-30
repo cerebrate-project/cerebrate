@@ -1,8 +1,8 @@
 <?php
-    $tagsHtml = $this->Tag->tags([
-        'allTags' => $allTags,
-        'tags' => $entity['tags'],
+    $tagsHtml = $this->Tag->tags($entity['tags'], [
+        'allTags' => [],
         'picker' => true,
+        'editable' => true,
     ]);
 ?>
 <div class="form-group row">

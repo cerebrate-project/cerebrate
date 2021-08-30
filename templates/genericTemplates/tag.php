@@ -1,7 +1,6 @@
 <?php
-    echo $this->Tag->tags([
+    echo $this->Tag->tags($entity->tags, [
         'allTags' => $allTags,
-        'tags' => $entity->tags,
         'picker' => true,
         'editable' => true,
     ]);

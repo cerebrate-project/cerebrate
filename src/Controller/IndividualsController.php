@@ -13,10 +13,12 @@ use Cake\ORM\TableRegistry;
 
 class IndividualsController extends AppController
 {
+    public $filters = ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'];
+
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'],
+            'filters' => $this->filters,
             'quickFilters' => ['uuid', 'email', 'first_name', 'last_name', 'position'],
             'contextFilters' => [
                 'fields' => [
@@ -31,6 +33,11 @@ class IndividualsController extends AppController
         }
         $this->set('alignmentScope', 'individuals');
         $this->set('metaGroup', 'ContactDB');
+    }
+
+    public function filtering()
+    {
+        $this->CRUD->filtering();
     }
 
     public function add()

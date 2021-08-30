@@ -15,7 +15,7 @@ $filteringForm = $this->Bootstrap->table(
         [
             'labelHtml' => sprintf('%s %s',
                 __('Value'),
-                sprintf('<sup class="fa fa-info" title="%s"><sup>', __('Supports strict match and LIKE match with the `%` character.&#10;Example: `%.com`'))
+                sprintf('<sup class="fa fa-info" title="%s"><sup>', __('Supports strict matches and LIKE matches with the `%` character.&#10;Example: `%.com`'))
             )
         ],
         __('Action')
@@ -23,12 +23,28 @@ $filteringForm = $this->Bootstrap->table(
     'items' => []
 ]);
 
+if ($taggingEnabled) {
+    $helpText = $this->Bootstrap->genNode('sup', [
+        'class' => ['ml-1 fa fa-info'],
+        'title' => __('Supports negation matches (with the `!` character) and LIKE matches (with the `%` character).&#10;Example: `!exportable`, `%able`'),
+    ]);
+    $filteringTags = $this->Bootstrap->genNode('h5', [], __('Tags') . $helpText);
+    $filteringTags .= $this->Tag->tags([], [
+        'allTags' => $allTags,
+        'picker' => true,
+        'editable' => false,
+    ]);
+} else {
+    $filteringTags = '';
+}
+$modalBody = sprintf('%s%s', $filteringForm, $filteringTags);
+
 
 echo $this->Bootstrap->modal([
     'title' => __('Filtering options for {0}', Inflector::singularize($this->request->getParam('controller'))),
     'size' => 'lg',
     'type' => 'confirm',
-    'bodyHtml' => $filteringForm,
+    'bodyHtml' => $modalBody,
     'confirmText' => __('Filter'),
     'confirmFunction' => 'filterIndex'
 ]);
@@ -54,7 +70,9 @@ echo $this->Bootstrap->modal([
             }
             activeFilters[fullFilter] = rowData['value']
         })
-        const searchParam = (new URLSearchParams(activeFilters)).toString();
+        $select = modalObject.$modal.find('select.tag-input')
+        activeFilters['filteringTags'] = $select.select2('data').map(tag => tag.text)
+        const searchParam = jQuery.param(activeFilters);
         const url = `/${controller}/${action}?${searchParam}`
 
         const randomValue = getRandomValue()
@@ -70,6 +88,8 @@ echo $this->Bootstrap->modal([
         addControlRow($filteringTable)
         const randomValue = getRandomValue()
         const activeFilters = $(`#toggleFilterButton-${randomValue}`).data('activeFilters')
+        const tags = activeFilters['filteringTags'] !== undefined ? Object.assign({}, activeFilters)['filteringTags'] : []
+        delete activeFilters['filteringTags']
         for (let [field, value] of Object.entries(activeFilters)) {
             const fieldParts = field.split(' ')
             let operator = '='
@@ -81,6 +101,17 @@ echo $this->Bootstrap->modal([
             }
             addFilteringRow($filteringTable, field, value, operator)
         }
+        $select = $filteringTable.closest('.modal-body').find('select.tag-input')
+        let passedTags = []
+        tags.forEach(tagname => {
+            if (!$select.find("option[value='" + tagname + "']")) {
+                passedTags.push(new Option(tagname, tagname, true, true))
+            }
+        })
+        $select
+            .append(passedTags)
+            .val(tags)
+            .trigger('change')
     }
 
     function addControlRow($filteringTable) {

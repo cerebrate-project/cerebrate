@@ -33,14 +33,20 @@ class TagHelper extends Helper
                 'data-text-colour' => h($tag['text_colour']),
             ];
         }, $options['allTags']) : [];
-        $selectConfig = [
-            'multiple' => true,
-            'class' => ['tag-input', 'd-none'],
-            'data-url' => $this->Url->build([
+        $classes = ['tag-input', 'flex-grow-1'];
+        $url = '';
+        if (!empty($this->getConfig('editable'))) {
+            $url = $this->Url->build([
                 'controller' => $this->getView()->getName(),
                 'action' => 'tag',
                 $this->getView()->get('entity')['id']
-            ]),
+            ]);
+            $classes[] = 'd-none';
+        }
+        $selectConfig = [
+            'multiple' => true,
+            'class' => $classes,
+            'data-url' => $url,
         ];
         return $this->Form->select($field, $values, $selectConfig);
     }
@@ -48,24 +54,26 @@ class TagHelper extends Helper
     protected function picker(array $options = [])
     {
         $html =  $this->Tag->control($options);
-        $html .= $this->Bootstrap->button([
-            'size' => 'sm',
-            'icon' => 'plus',
-            'variant' => 'secondary',
-            'class' => ['badge'],
-            'params' => [
-                'onclick' => 'createTagPicker(this)',
-            ]
-        ]);
+        if (!empty($this->getConfig('editable'))) {
+            $html .= $this->Bootstrap->button([
+                'size' => 'sm',
+                'icon' => 'plus',
+                'variant' => 'secondary',
+                'class' => ['badge'],
+                'params' => [
+                    'onclick' => 'createTagPicker(this)',
+                ]
+            ]);
+        }
+        $html .= '<script>$(document).ready(function() { initSelect2Pickers() })</script>';
         return $html;
     }
 
-    public function tags(array $options = [])
+    public function tags(array $tags = [], array $options = [])
     {
         $this->_config = array_merge($this->defaultConfig, $options);
-        $tags = !empty($options['tags']) ? $options['tags'] : [];
         $html = '<div class="tag-container-wrapper">';
-        $html .= '<div class="tag-container my-1">';
+        $html .= '<div class="tag-container my-1 d-flex">';
         $html .= '<div class="tag-list d-inline-block">';
         foreach ($tags as $tag) {
             if (is_object($tag)) {

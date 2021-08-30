@@ -164,3 +164,7 @@ input[type="checkbox"]:disabled.change-cursor {
     border-top-left-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
 }
+
+.tag {
+    filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.5));
+}

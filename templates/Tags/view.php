@@ -1,0 +1,32 @@
+<?php
+echo $this->element(
+    '/genericElements/SingleViews/single_view',
+    [
+        'data' => $entity,
+        'fields' => [
+            [
+                'key' => __('ID'),
+                'path' => 'id'
+            ],
+            [
+                'key' => __('Label'),
+                'path' => '',
+                'type' => 'tag',
+            ],
+            [
+                'key' => __('Counter'),
+                'path' => 'counter',
+                'type' => 'json',
+            ],
+            [
+                'key' => __('Colour'),
+                'path' => 'colour',
+            ],
+            [
+                'key' => __('Created'),
+                'path' => 'created',
+            ],
+        ],
+        'children' => []
+    ]
+);

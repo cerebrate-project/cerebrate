@@ -117,47 +117,37 @@ function getTextColour(hex) {
 
 function createTagPicker(clicked) {
 
-    function templateTag(state) {
-        if (!state.id) {
-            return state.label;
-        }
-        if (state.colour === undefined) {
-            state.colour = $(state.element).data('colour')
-        }
-        return HtmlHelper.tag(state)
-    }
-
     function closePicker($select, $container) {
         $select.appendTo($container)
         $container.parent().find('.picker-container').remove()
     }
 
-    const $clicked = $(clicked)
-    const $container = $clicked.closest('.tag-container')
-    const $select = $container.parent().find('select.tag-input').removeClass('d-none').addClass('flex-grow-1')
-    closePicker($select, $container)
-    const $pickerContainer = $('<div></div>').addClass(['picker-container', 'd-flex'])
-    const $saveButton = $('<button></button>').addClass(['btn btn-primary btn-sm', 'align-self-start']).attr('type', 'button')
+    function getEditableButtons($select, $container) {
+        const $saveButton = $('<button></button>').addClass(['btn btn-primary btn-sm', 'align-self-start']).attr('type', 'button')
         .append($('<span></span>').text('Save').prepend($('<i></i>').addClass('fa fa-save mr-1')))
         .click(function() {
             const tags = $select.select2('data').map(tag => tag.text)
             addTags($select.data('url'), tags, $(this))
         })
-    const $cancelButton = $('<button></button>').addClass(['btn btn-secondary btn-sm', 'align-self-start']).attr('type', 'button')
-        .append($('<span></span>').text('Cancel').prepend($('<i></i>').addClass('fa fa-times mr-1')))
-        .click(function() {
-            closePicker($select, $container)
-        })
-    const $buttons = $('<span></span>').addClass(['picker-action', 'btn-group']).append($saveButton, $cancelButton)
+        const $cancelButton = $('<button></button>').addClass(['btn btn-secondary btn-sm', 'align-self-start']).attr('type', 'button')
+            .append($('<span></span>').text('Cancel').prepend($('<i></i>').addClass('fa fa-times mr-1')))
+            .click(function() {
+                closePicker($select, $container)
+            })
+        const $buttons = $('<span></span>').addClass(['picker-action', 'btn-group']).append($saveButton, $cancelButton)
+        return $buttons
+    }
+
+    const $clicked = $(clicked)
+    const $container = $clicked.closest('.tag-container')
+    const $select = $container.parent().find('select.tag-input').removeClass('d-none')//.addClass('flex-grow-1')
+    closePicker($select, $container)
+    const $pickerContainer = $('<div></div>').addClass(['picker-container', 'd-flex'])
+    
     $select.prependTo($pickerContainer)
-    $pickerContainer.append($buttons)
+    $pickerContainer.append(getEditableButtons($select, $container))
     $container.parent().append($pickerContainer)
-    $select.select2({
-        placeholder: 'Pick a tag',
-        tags: true,
-        templateResult: templateTag,
-        templateSelection: templateTag,
-    })
+    initSelect2Picker($select)
 }
 
 function deleteTag(url, tag, clicked) {
@@ -211,6 +201,35 @@ function refreshTagList(result, $container) {
     const entityId = result.data.id
     const url = `/${controllerName}/viewTags/${entityId}`
     return UI.reload(url, $container)
+}
+
+function initSelect2Pickers() {
+    $('select.tag-input').each(function() {
+        if (!$(this).hasClass("select2-hidden-accessible")) {
+            initSelect2Picker($(this))
+        }
+    })
+}
+
+function initSelect2Picker($select) {
+
+    function templateTag(state) {
+        if (!state.id) {
+            return state.label;
+        }
+        if (state.colour === undefined) {
+            state.colour = $(state.element).data('colour')
+        }
+        return HtmlHelper.tag(state)
+    }
+
+    $select.select2({
+        placeholder: 'Pick a tag',
+        tags: true,
+        width: '100%',
+        templateResult: templateTag,
+        templateSelection: templateTag,
+    })
 }
 
 

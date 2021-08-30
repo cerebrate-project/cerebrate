@@ -35,6 +35,9 @@ class CRUDComponent extends Component
             $options['filters'][] = 'quickFilter';
         }
         $options['filters'][] = 'filteringLabel';
+        if ($this->taggingSupported()) {
+            $options['filters'][] = 'filteringTags';
+        }
 
         $optionFilters = empty($options['filters']) ? [] : $options['filters'];
         foreach ($optionFilters as $i => $filter) {
@@ -49,6 +52,9 @@ class CRUDComponent extends Component
         $query = $this->setQuickFilters($params, $query, empty($options['quickFilters']) ? [] : $options['quickFilters']);
         if (!empty($options['contain'])) {
             $query->contain($options['contain']);
+        }
+        if ($this->taggingSupported()) {
+            $query->contain('Tags');
         }
         if (!empty($options['fields'])) {
             $query->select($options['fields']);
@@ -73,15 +79,17 @@ class CRUDComponent extends Component
                     $data = $this->Table->{$options['afterFind']}($data);
                 }
             }
-            if (!empty($options['contextFilters'])) {
-                $this->setFilteringContext($options['contextFilters'], $params);
-            }
+            $this->setFilteringContext($options['contextFilters'] ?? [], $params);
             $this->Controller->set('data', $data);
         }
     }
 
     public function filtering(): void
     {
+        if ($this->taggingSupported()) {
+            $this->Controller->set('taggingEnabled', true);
+            $this->setAllTags();
+        }
         $filters = !empty($this->Controller->filters) ? $this->Controller->filters : [];
         $this->Controller->set('filters', $filters);
         $this->Controller->viewBuilder()->setLayout('ajax');
@@ -246,8 +254,9 @@ class CRUDComponent extends Component
         $this->getMetaTemplates();
         if ($this->taggingSupported()) {
             $params['contain'][] = 'Tags';
+            $this->setAllTags();
         }
-        $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : []);
+        $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : $params);
         $data = $this->getMetaFields($id, $data);
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
@@ -676,6 +685,8 @@ class CRUDComponent extends Component
     {
         $filteringLabel = !empty($params['filteringLabel']) ? $params['filteringLabel'] : '';
         unset($params['filteringLabel']);
+        $filteringTags = !empty($params['filteringTags']) && $this->taggingSupported() ? $params['filteringTags'] : '';
+        unset($params['filteringTags']);
         $customFilteringFunction = '';
         $chosenFilter = '';
         if (!empty($options['contextFilters']['custom'])) {
@@ -719,8 +730,24 @@ class CRUDComponent extends Component
                 }
             }
         }
+
+        if ($this->taggingSupported() && !empty($filteringTags)) {
+            $activeFilters['filteringTags'] = $filteringTags;
+            $query = $this->setTagFilters($query, $filteringTags);
+        }
+
         $this->Controller->set('activeFilters', $activeFilters);
         return $query;
+    }
+
+    protected function setTagFilters($query, $tags)
+    {
+        $modelAlias = $this->Table->getAlias();
+        $subQuery = $this->Table->find('tagged', [
+            'label' => $tags,
+            'forceAnd' => true
+        ])->select($modelAlias . '.id');
+        return $query = $query->where([$modelAlias . '.id IN' => $subQuery]);
     }
 
     protected function setNestedRelatedCondition($query, $filterParts, $filterValue)

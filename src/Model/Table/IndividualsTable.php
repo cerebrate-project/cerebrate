@@ -17,6 +17,7 @@ class IndividualsTable extends AppTable
         $this->addBehavior('Tags.Tag', [
             'taggedCounter' => false,
             'strategy' => 'array',
+            'finderField' => 'label',
         ]);
         $this->hasMany(
             'Alignments',
