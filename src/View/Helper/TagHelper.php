@@ -64,8 +64,9 @@ class TagHelper extends Helper
                     'onclick' => 'createTagPicker(this)',
                 ]
             ]);
+        } else {
+            $html .= '<script>$(document).ready(function() { initSelect2Pickers() })</script>';
         }
-        $html .= '<script>$(document).ready(function() { initSelect2Pickers() })</script>';
         return $html;
     }
 

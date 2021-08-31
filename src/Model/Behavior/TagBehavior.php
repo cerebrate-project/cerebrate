@@ -1,0 +1,212 @@
+<?php
+
+namespace App\Model\Behavior;
+
+use Cake\ORM\Behavior;
+use Cake\ORM\Entity;
+use Cake\ORM\Query;
+use Cake\ORM\Table;
+
+class TagBehavior extends Behavior
+{
+
+    protected $_defaultConfig = [
+        'tagsAssoc' => [
+            'className' => 'Tags',
+            // 'joinTable' => 'tagged', // uncomment me!
+            'joinTable' => 'tags_tagged', // remove me!
+            'foreignKey' => 'fk_id',
+            'targetForeignKey' => 'tag_id',
+            'propertyName' => 'tags',
+        ],
+        'tagsCounter' => ['counter'],
+        'taggedAssoc' => [
+            'className' => 'Tagged',
+            'foreignKey' => 'fk_id'
+        ],
+        'implementedEvents' => [
+            'Model.beforeMarshal' => 'beforeMarshal',
+            'Model.beforeFind' => 'beforeFind',
+            'Model.beforeSave' => 'beforeSave',
+        ],
+        'implementedMethods' => [
+            'normalizeTags' => 'normalizeTags',
+        ],
+        'implementedFinders' => [
+            'tagged' => 'findByTag',
+            'untagged' => 'findUntagged',
+        ],
+    ];
+
+    public function initialize(array $config): void {
+        $this->bindAssociations();
+        $this->attachCounters();
+    }
+
+    public function bindAssociations() {
+        $config = $this->getConfig();
+        $tagsAssoc = $config['tagsAssoc'];
+        $taggedAssoc = $config['taggedAssoc'];
+        
+        $table = $this->_table;
+        $tableAlias = $this->_table->getAlias();
+        
+        $assocConditions = ['Tagged.fk_model' => $tableAlias];
+
+        if (!$table->hasAssociation('Tagged')) {
+            $table->hasMany('Tagged', array_merge(
+                $taggedAssoc,
+                [
+                    'conditions' => $assocConditions
+                ]
+            ));
+        }
+
+        if (!$table->hasAssociation('Tags')) {
+            $table->belongsToMany('Tags', array_merge(
+                $tagsAssoc,
+                [
+                    'through' => $table->Tagged->getTarget(),
+                    'conditions' => $assocConditions,
+                ]
+            ));
+        }
+
+        if (!$table->Tags->hasAssociation($tableAlias)) {
+            $table->Tags->belongsToMany($tableAlias, array_merge(
+                $tagsAssoc,
+                [
+                    'className' => get_class($table),
+                ]
+            ));
+        }
+
+        if (!$table->Tagged->hasAssociation($tableAlias)) {
+            $table->Tagged->belongsTo($tableAlias, [
+                'className' => get_class($table),
+                'foreignKey' => $tagsAssoc['foreignKey'],
+                'conditions' => $assocConditions,
+                'joinType' => 'INNER',
+            ]);
+        }
+
+        if (!$table->Tagged->hasAssociation($tableAlias . 'Tags')) {
+            $table->Tagged->belongsTo($tableAlias . 'Tags', [
+                'className' => $tagsAssoc['className'],
+                'foreignKey' => $tagsAssoc['targetForeignKey'],
+                'conditions' => $assocConditions,
+                'joinType' => 'INNER',
+            ]);
+        }
+    }
+
+    public function attachCounters() {
+        $config = $this->getConfig();
+        $taggedTable = $this->_table->Tagged;
+
+        if (!$taggedTable->hasBehavior('CounterCache')) {
+            $taggedTable->addBehavior('CounterCache', [
+                'Tags' => $config['tagsCounter']
+            ]);
+        }
+    }
+
+    public function beforeMarshal($event, $data, $options) {
+        $property = $this->getConfig('tagsAssoc.propertyName');
+        $options['accessibleFields'][$property] = true;
+        $options['associated']['Tags']['accessibleFields']['id'] = true;
+
+        if (isset($data['tags'])) {
+            if (!empty($data['tags'])) {
+                $data[$property] = $this->normalizeTags($data['tags']);
+            }
+        }
+    }
+
+    public function beforeSave($event, $entity, $options)
+    {
+        if (empty($entity->tags)) {
+            return;
+        }
+        foreach ($entity->tags as $k => $tag) {
+            if (!$tag->isNew()) {
+                continue;
+            }
+
+            $existingTag = $this->getExistingTag($tag->label);
+            if (!$existing) {
+                continue;
+            }
+
+            $joinData = $tag->_joinData;
+            $tag = $existing;
+            $tag->_joinData = $joinData;
+            $entity->tags[$k] = $tag;
+        }
+    }
+
+    public function normalizeTags($tags) {
+
+        $result = [];
+
+        $modelAlias = $this->_table->getAlias();
+
+        $common = [
+            '_joinData' => [
+                'fk_model' => $modelAlias
+            ]
+        ];
+
+        $tagsTable = $this->_table->Tags;
+        $displayField = $tagsTable->getDisplayField();
+
+        $tagIdentifiers = [];
+        foreach ($tags as $tag) {
+            if (empty($tag)) {
+                continue;
+            }
+            if (is_object($tag)) {
+                $result[] = $tag->toArray();
+            }
+            $tagIdentifier = $this->getTagIdentifier($tag);
+            if (isset($tagIdentifiers[$tagIdentifier])) {
+                continue;
+            }
+            $tagIdentifiers[$tagIdentifier] = true;
+
+            $existingTag = $this->getExistingTag($tagIdentifier);
+            if ($existingTag) {
+                $result[] = array_merge($common, ['id' => $existingTag->id]);
+                continue;
+            }
+
+            $result[] = array_merge(
+                $common,
+                [
+                    'label' => $tagIdentifier,
+                ]
+            );
+        }
+
+        return $result;
+    }
+
+    protected function getTagIdentifier($tag)
+    {
+        if (is_object($tag)) {
+            return $tag->label;
+        } else {
+            return trim($tag);
+        }
+    }
+
+    protected function getExistingTag($tagName)
+    {
+        $tagsTable = $this->_table->Tags->getTarget();
+        $query = $tagsTable->find()->where([
+            'Tags.label' => $tagName
+        ])
+        ->select('Tags.id');
+        return $query->first();
+    }
+}

@@ -38,6 +38,10 @@ echo $this->element(
                 'path' => 'contacts'
             ],
             [
+                'key' => __('Tags'),
+                'type' => 'tags',
+            ],
+            [
                 'key' => __('Alignments'),
                 'type' => 'alignment',
                 'path' => '',

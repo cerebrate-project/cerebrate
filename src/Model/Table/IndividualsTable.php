@@ -14,11 +14,7 @@ class IndividualsTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
-        $this->addBehavior('Tags.Tag', [
-            'taggedCounter' => false,
-            'strategy' => 'array',
-            'finderField' => 'label',
-        ]);
+        $this->addBehavior('Tag');
         $this->hasMany(
             'Alignments',
             [

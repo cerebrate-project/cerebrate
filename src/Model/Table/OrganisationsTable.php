@@ -18,6 +18,7 @@ class OrganisationsTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('Tag');
         $this->hasMany(
             'Alignments',
             [

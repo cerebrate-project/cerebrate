@@ -124,13 +124,13 @@ function createTagPicker(clicked) {
 
     function getEditableButtons($select, $container) {
         const $saveButton = $('<button></button>').addClass(['btn btn-primary btn-sm', 'align-self-start']).attr('type', 'button')
-        .append($('<span></span>').text('Save').prepend($('<i></i>').addClass('fa fa-save mr-1')))
+        .append($('<span></span>').text('Save').addClass('text-nowrap').prepend($('<i></i>').addClass('fa fa-save mr-1')))
         .click(function() {
             const tags = $select.select2('data').map(tag => tag.text)
             addTags($select.data('url'), tags, $(this))
         })
         const $cancelButton = $('<button></button>').addClass(['btn btn-secondary btn-sm', 'align-self-start']).attr('type', 'button')
-            .append($('<span></span>').text('Cancel').prepend($('<i></i>').addClass('fa fa-times mr-1')))
+            .append($('<span></span>').text('Cancel').addClass('text-nowrap').prepend($('<i></i>').addClass('fa fa-times mr-1')))
             .click(function() {
                 closePicker($select, $container)
             })
@@ -150,9 +150,12 @@ function createTagPicker(clicked) {
     initSelect2Picker($select)
 }
 
-function deleteTag(url, tag, clicked) {
+function deleteTag(url, tags, clicked) {
+    if (!Array.isArray(tags)) {
+        tags = [tags];
+    }
     const data = {
-        tag_list: tag
+        tag_list: JSON.stringify(tags)
     }
     const $statusNode = $(clicked).closest('.tag')
     const APIOptions = {
@@ -174,7 +177,7 @@ function deleteTag(url, tag, clicked) {
                     const controllerName = split[1]
                     const id = split[3]
                     const urlRetag = `/${controllerName}/tag/${id}`
-                    addTags(urlRetag, [tag], $container.find('.tag-container')).then(() => {
+                    addTags(urlRetag, tags, $container.find('.tag-container')).then(() => {
                         theToast.removeToast()
                     })
                 }),
@@ -185,7 +188,7 @@ function deleteTag(url, tag, clicked) {
 
 function addTags(url, tags, $statusNode) {
     const data = {
-        tag_list: tags
+        tag_list: JSON.stringify(tags)
     }
     const APIOptions = {
         statusNode: $statusNode

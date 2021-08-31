@@ -449,11 +449,10 @@ class CRUDComponent extends Component
                     'contain' => 'Tags',
                 ];
                 $entity = $this->Table->get($id, $params);
-                // patching will mirror tag in the DB, however, we only want to add tags
                 $input = $this->request->getData();
-                $tagsToAdd = explode(',', $input['tag_list']);
-                $entity->tag_list = $entity->tag_list;
-                $input['tag_list'] = implode(',', array_merge($tagsToAdd, $entity->tag_list));
+                $tagsToAdd = json_decode($input['tag_list']);
+                // patching will mirror tag in the DB, however, we only want to add tags
+                $input['tags'] = array_merge($tagsToAdd, $entity->tags);
                 $patchEntityParams = [
                     'fields' => ['tags'],
                 ];
@@ -509,13 +508,12 @@ class CRUDComponent extends Component
                     'contain' => 'Tags',
                 ];
                 $entity = $this->Table->get($id, $params);
-                // patching will mirror tag in the DB, however, we only want to remove tags
                 $input = $this->request->getData();
-                $tagsToRemove = explode(',', $input['tag_list']);
-                $entity->tag_list = $entity->tag_list;
-                $input['tag_list'] = implode(',', array_filter($entity->tag_list, function ($existingTag) use ($tagsToRemove) {
-                    return !in_array($existingTag, $tagsToRemove);
-                }));
+                $tagsToRemove = json_decode($input['tag_list']);
+                // patching will mirror tag in the DB, however, we only want to remove tags
+                $input['tags'] = array_filter($entity->tags, function ($existingTag) use ($tagsToRemove) {
+                    return !in_array($existingTag->label, $tagsToRemove);
+                });
                 $patchEntityParams = [
                     'fields' => ['tags'],
                 ];
