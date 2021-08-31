@@ -213,12 +213,23 @@ function initSelect2Pickers() {
 
 function initSelect2Picker($select) {
 
-    function templateTag(state) {
+    function templateTag(state, $select) {
         if (!state.id) {
             return state.label;
         }
         if (state.colour === undefined) {
             state.colour = $(state.element).data('colour')
+        }
+        if ($select !== undefined && state.text[0] === '!') {
+            // fetch corresponding tag and set colors?
+            // const baseTag = state.text.slice(1)
+            // const existingBaseTag = $select.find('option').filter(function() {
+            //     return $(this).val() === baseTag
+            // })
+            // if (existingBaseTag.length > 0) {
+            //     state.colour = existingBaseTag.data('colour')
+            //     state.text = baseTag
+            // }
         }
         return HtmlHelper.tag(state)
     }
@@ -227,8 +238,8 @@ function initSelect2Picker($select) {
         placeholder: 'Pick a tag',
         tags: true,
         width: '100%',
-        templateResult: templateTag,
-        templateSelection: templateTag,
+        templateResult: (state) => templateTag(state),
+        templateSelection: (state) => templateTag(state, $select),
     })
 }
 

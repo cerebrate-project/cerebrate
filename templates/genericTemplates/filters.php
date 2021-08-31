@@ -104,7 +104,10 @@ echo $this->Bootstrap->modal([
         $select = $filteringTable.closest('.modal-body').find('select.tag-input')
         let passedTags = []
         tags.forEach(tagname => {
-            if (!$select.find("option[value='" + tagname + "']")) {
+            const existingOption = $select.find('option').filter(function() {
+                return $(this).val() === tagname
+            })
+            if (existingOption.length == 0) {
                 passedTags.push(new Option(tagname, tagname, true, true))
             }
         })
