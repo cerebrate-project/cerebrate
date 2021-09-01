@@ -162,14 +162,14 @@ function deleteTag(url, tags, clicked) {
         statusNode: $statusNode,
         skipFeedback: true,
     }
-    return AJAXApi.quickFetchAndPostForm(url, data, APIOptions).then((result) => {
+    return AJAXApi.quickFetchAndPostForm(url, data, APIOptions).then((apiResult) => {
         let $container = $statusNode.closest('.tag-container-wrapper')
-        refreshTagList(result, $container).then(($tagContainer) => {
+        refreshTagList(apiResult, $container).then(($tagContainer) => {
             $container = $tagContainer // old container might not exist anymore since it was replaced after the refresh
         })
         const theToast = UI.toast({
             variant: 'success',
-            title: result.message,
+            title: apiResult.message,
             bodyHtml: $('<div/>').append(
                 $('<span/>').text('Cancel untag operation.'),
                 $('<button/>').addClass(['btn', 'btn-primary', 'btn-sm', 'ml-3']).text('Restore tag').click(function() {
@@ -193,15 +193,15 @@ function addTags(url, tags, $statusNode) {
     const APIOptions = {
         statusNode: $statusNode
     }
-    return AJAXApi.quickFetchAndPostForm(url, data, APIOptions).then((result) => {
+    return AJAXApi.quickFetchAndPostForm(url, data, APIOptions).then((apiResult) => {
         const $container = $statusNode.closest('.tag-container-wrapper')
-        refreshTagList(result, $container)
+        refreshTagList(apiResult, $container)
     }).catch((e) => {})
 }
 
-function refreshTagList(result, $container) {
-    const controllerName = result.url.split('/')[1]
-    const entityId = result.data.id
+function refreshTagList(apiResult, $container) {
+    const controllerName = apiResult.url.split('/')[1]
+    const entityId = apiResult.data.id
     const url = `/${controllerName}/viewTags/${entityId}`
     return UI.reload(url, $container)
 }

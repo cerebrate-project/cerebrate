@@ -745,7 +745,7 @@ class CRUDComponent extends Component
             'label' => $tags,
             'forceAnd' => true
         ])->select($modelAlias . '.id');
-        return $query = $query->where([$modelAlias . '.id IN' => $subQuery]);
+        return $query->where([$modelAlias . '.id IN' => $subQuery]);
     }
 
     protected function setNestedRelatedCondition($query, $filterParts, $filterValue)

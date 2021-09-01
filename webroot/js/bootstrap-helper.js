@@ -1125,7 +1125,7 @@ class HtmlHelper {
             options.colour = '#924da6'
         }
         const $tag = $('<span/>')
-            .addClass(['tag', 'badge', 'border'])
+            .addClass(['tag', 'badge', 'align-text-top'])
             .css({color: getTextColour(options.colour), 'background-color': options.colour})
             .text(options.text)
 

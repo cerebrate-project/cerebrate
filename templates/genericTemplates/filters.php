@@ -87,7 +87,7 @@ echo $this->Bootstrap->modal([
         $filteringTable.find('tbody').empty()
         addControlRow($filteringTable)
         const randomValue = getRandomValue()
-        const activeFilters = $(`#toggleFilterButton-${randomValue}`).data('activeFilters')
+        const activeFilters = Object.assign({}, $(`#toggleFilterButton-${randomValue}`).data('activeFilters'))
         const tags = activeFilters['filteringTags'] !== undefined ? Object.assign({}, activeFilters)['filteringTags'] : []
         delete activeFilters['filteringTags']
         for (let [field, value] of Object.entries(activeFilters)) {
