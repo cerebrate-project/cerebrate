@@ -291,6 +291,7 @@ class Toaster {
     makeToast() {
         if (this.isValid()) {
             this.$toast = Toaster.buildToast(this.options)
+            this.$toast.data('toastObject', this)
             $('#mainToastContainer').append(this.$toast)
         }
     }
@@ -301,6 +302,19 @@ class Toaster {
             var that = this
             this.$toast.toast(this.bsToastOptions)
                 .toast('show')
+                .on('hide.bs.toast', function (evt) {
+                    const $toast = $(this)
+                    const hoveredElements = $(':hover').filter(function() {
+                        return $(this).is($toast)
+                    });
+                    if (hoveredElements.length > 0) {
+                        console.log('Toast hovered. Not hidding')
+                        evt.preventDefault()
+                        setTimeout(() => {
+                            $toast.toast('hide')
+                        }, that.options.delay);
+                    }
+                })
                 .on('hidden.bs.toast', function () {
                     that.removeToast()
                 })
@@ -355,7 +369,10 @@ class Toaster {
                 $toastHeader.append($toastHeaderMuted)
             }
             if (options.closeButton) {
-                var $closeButton = $('<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+                var $closeButton = $('<button type="button" class="ml-2 mb-1 close" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+                    .click(function() {
+                        $(this).closest('.toast').data('toastObject').removeToast()
+                    })
                 $toastHeader.append($closeButton)
             }
             $toast.append($toastHeader)
