@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Table;
+namespace Tags\Model\Table;
 
 use App\Model\Table\AppTable;
 use Cake\Validation\Validator;
@@ -13,10 +13,9 @@ class TaggedTable extends AppTable
 
     public function initialize(array $config): void
     {
-        // $this->setTable('tagged');
         $this->setTable('tags_tagged');
         $this->belongsTo('Tags', [
-            'className' => 'Tags',
+            'className' => 'Tags.Tags',
             'foreignKey' => 'tag_id',
             'propertyName' => 'tag',
         ]);

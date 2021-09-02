@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Behavior;
+namespace Tags\Model\Behavior;
 
 use Cake\ORM\Behavior;
 use Cake\ORM\Entity;
@@ -9,20 +9,18 @@ use Cake\ORM\Table;
 
 class TagBehavior extends Behavior
 {
-
     protected $_defaultConfig = [
         'finderField' => 'label',
         'tagsAssoc' => [
-            'className' => 'Tags',
-            // 'joinTable' => 'tagged', // uncomment me!
-            'joinTable' => 'tags_tagged', // remove me!
+            'className' => 'Tags.Tags',
+            'joinTable' => 'tags_tagged',
             'foreignKey' => 'fk_id',
             'targetForeignKey' => 'tag_id',
             'propertyName' => 'tags',
         ],
         'tagsCounter' => ['counter'],
         'taggedAssoc' => [
-            'className' => 'Tagged',
+            'className' => 'Tags.Tagged',
             'foreignKey' => 'fk_id'
         ],
         'implementedEvents' => [

@@ -63,9 +63,10 @@ class AppController extends Controller
         ]);
         $this->loadModel('MetaFields');
         $this->loadModel('MetaTemplates');
+        $table = $this->getTableLocator()->get($this->modelClass);
         $this->loadComponent('CRUD', [
             'request' => $this->request,
-            'table' => $this->{$this->modelClass},
+            'table' => $table,
             'MetaFields' => $this->MetaFields,
             'MetaTemplates' => $this->MetaTemplates
         ]);

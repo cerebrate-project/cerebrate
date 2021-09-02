@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Table;
+namespace Tags\Model\Table;
 
 use App\Model\Table\AppTable;
 use Cake\Validation\Validator;
@@ -13,7 +13,6 @@ class TagsTable extends AppTable
 
     public function initialize(array $config): void
     {
-        // $this->setTable('tags');
         $this->setTable('tags_tags');
         $this->setDisplayField('label'); // Change to name?
         $this->addBehavior('Timestamp');
