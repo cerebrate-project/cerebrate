@@ -1,6 +1,6 @@
 <?php
 
-namespace App\View\Helper;
+namespace Tags\View\Helper;
 
 use Cake\View\Helper;
 use Cake\Utility\Hash;
