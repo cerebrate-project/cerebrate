@@ -60,6 +60,10 @@ $cakeDescription = 'Cerebrate';
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
     <?= $this->Html->css('bootstrap-additional.css') ?>
+
+    <?= $this->Html->script('Tags.tagging') ?>
+    <?= $this->Html->css('Tags.tagging') ?>
+
     <?= $this->Html->meta('favicon.ico', '/img/favicon.ico', ['type' => 'icon']); ?>
 </head>
 <body>

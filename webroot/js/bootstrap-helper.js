@@ -1120,15 +1120,4 @@ class HtmlHelper {
         return $table
     }
 
-    static tag(options={}) {
-        if (!options.colour) {
-            options.colour = '#924da6'
-        }
-        const $tag = $('<span/>')
-            .addClass(['tag', 'badge', 'align-text-top'])
-            .css({color: getTextColour(options.colour), 'background-color': options.colour})
-            .text(options.text)
-
-        return $tag
-    }
 }
