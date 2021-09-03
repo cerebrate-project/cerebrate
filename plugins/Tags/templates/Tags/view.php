@@ -16,7 +16,7 @@ echo $this->element(
             [
                 'key' => __('Counter'),
                 'path' => 'counter',
-                'type' => 'json',
+                'type' => 'string',
             ],
             [
                 'key' => __('Colour'),
