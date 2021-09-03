@@ -10,9 +10,22 @@ if (isLeaf($panelSettings)) {
     $panelHTML = "<div>{$singleSetting}</div>";
 } else {
     $panelID = getResolvableID($sectionName, $panelName);
-    $panelHTML .= sprintf('<h4 id="%s"><a class="text-reset text-decoration-none" href="#%s">%s</a></h4>', $panelID, $panelID, h($panelName));
+    $panelHTML .= sprintf('<h4 id="%s"><a class="text-reset text-decoration-none" href="#%s">%s%s</a></h4>',
+        $panelID,
+        $panelID,
+        !empty($panelSettings['_icon']) ? $this->Bootstrap->icon($panelSettings['_icon'], ['class' => 'mr-1']) : '',
+        h($panelName)
+    );
+    if (!empty($panelSettings['_description'])) {
+        $panelHTML .= $this->Bootstrap->genNode('div', [
+            'class' => ['mb-1',],
+        ], h($panelSettings['_description']));
+    }
     $groupIssueSeverity = false;
     foreach ($panelSettings as $singleSettingName => $singleSetting) {
+        if (substr($singleSettingName, 0, 1) == '_') {
+            continue;
+        }
         $singleSettingHTML = $this->element('Settings/fieldGroup', [
             'panelName' => $panelName,
             'panelSettings' => $panelSettings,
