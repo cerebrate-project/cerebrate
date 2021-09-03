@@ -127,6 +127,10 @@ class AppController extends Controller
         $this->request->getParam('prefix');
         $this->set('darkMode', !empty(Configure::read('Cerebrate')['ui.dark']));
         $this->set('baseurl', Configure::read('App.fullBaseUrl'));
+
+        if ($this->modelClass == 'Tags.Tags') {
+            $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
+        }
     }
 
     private function authApiUser(): void
