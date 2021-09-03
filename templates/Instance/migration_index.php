@@ -27,6 +27,10 @@ foreach ($status as $i => &$update) {
     } else if ($update['status'] == 'down') {
         $update['_rowVariant'] = 'danger';
     }
+
+    if (!empty($update['plugin'])) {
+        $update['name'] = "{$update['plugin']}.{$update['name']}";
+    }
 }
 
 echo $this->Bootstrap->table([], [

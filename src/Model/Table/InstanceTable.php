@@ -9,6 +9,8 @@ use Migrations\Migrations;
 
 class InstanceTable extends AppTable
 {
+    protected $activePlugins = ['Tags'];
+    
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -23,6 +25,16 @@ class InstanceTable extends AppTable
     {
         $migrations = new Migrations();
         $status = $migrations->status();
+        foreach ($this->activePlugins as $pluginName) {
+            $pluginStatus = $migrations->status([
+                'plugin' => $pluginName
+            ]);
+            $pluginStatus = array_map(function ($entry) use ($pluginName) {
+                $entry['plugin'] = $pluginName;
+                return $entry;
+            }, $pluginStatus);
+            $status = array_merge($status, $pluginStatus);
+        }
         $status = array_reverse($status);
 
         $updateAvailables = array_filter($status, function ($update) {
