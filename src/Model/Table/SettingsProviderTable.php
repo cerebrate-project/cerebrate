@@ -51,6 +51,8 @@ class SettingsProviderTable extends AppTable
             'Application' => [
                 'General' => [
                     'Essentials' => [
+                        '_description' => __('Ensentials settings required for the application to run normally.'),
+                        '_icon' => 'user-cog',
                         'app.baseurl' => [
                             'name' => __('Base URL'),
                             'type' => 'string',
@@ -200,6 +202,9 @@ class SettingsProviderTable extends AppTable
     private function mergeSettingsIntoSettingConfiguration(array $settingConf, array $settings, string $path=''): array
     {
         foreach ($settingConf as $key => $value) {
+            if ($this->isSettingMetaKey($key)) {
+                continue;
+            }
             if ($this->isLeaf($value)) {
                 if (isset($settings[$key])) {
                     $settingConf[$key]['value'] = $settings[$key];
@@ -218,6 +223,9 @@ class SettingsProviderTable extends AppTable
     public function flattenSettingsConfiguration(array $settingsProvider, $flattenedSettings=[]): array
     {
         foreach ($settingsProvider as $key => $value) {
+            if ($this->isSettingMetaKey($key)) {
+                continue;
+            }
             if ($this->isLeaf($value)) {
                 $flattenedSettings[$key] = $value;
             } else {
@@ -237,6 +245,9 @@ class SettingsProviderTable extends AppTable
     {
         $notices = [];
         foreach ($settingsProvider as $key => $value) {
+            if ($this->isSettingMetaKey($key)) {
+                continue;
+            }
             if ($this->isLeaf($value)) {
                 if (!empty($value['error'])) {
                     if (empty($notices[$value['severity']])) {
@@ -319,6 +330,11 @@ class SettingsProviderTable extends AppTable
             }
         }
         return $functionResult;
+    }
+
+    function isSettingMetaKey($key)
+    {
+        return substr($key, 0, 1) == '_';
     }
 }
 

@@ -75,6 +75,12 @@ class BootstrapHelper extends Helper
         return $bsButton->button();
     }
 
+    public function icon($icon, $options=[])
+    {
+        $bsIcon = new BoostrapIcon($icon, $options);
+        return $bsIcon->icon();
+    }
+
     public function badge($options)
     {
         $bsBadge = new BoostrapBadge($options);
@@ -733,9 +739,10 @@ class BoostrapButton extends BootstrapGeneric {
 
     private function genIcon()
     {
-        return $this->genNode('span', [
-            'class' => ['mr-1', "fa fa-{$this->options['icon']}"],
+        $bsIcon = new BoostrapIcon($this->options['icon'], [
+            'class' => ['mr-1']
         ]);
+        return $bsIcon->icon();
     }
 
     private function genContent()
@@ -780,6 +787,40 @@ class BoostrapBadge extends BootstrapGeneric {
             ],
             'title' => $this->options['title']
         ], h($this->options['text']));
+        return $html;
+    }
+}
+
+class BoostrapIcon extends BootstrapGeneric {
+    private $icon = '';
+    private $defaultOptions = [
+        'class' => [],
+    ];
+
+    function __construct($icon, $options=[]) {
+        $this->icon = $icon;
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function icon()
+    {
+        return $this->genIcon();
+    }
+
+    private function genIcon()
+    {
+        $html = $this->genNode('span', [
+            'class' => array_merge(
+                is_array($this->options['class']) ? $this->options['class'] : [$this->options['class']],
+                ["fa fa-{$this->icon}"]
+            ),
+        ]);
         return $html;
     }
 }
