@@ -53,12 +53,16 @@ foreach ($chartData as $i => $entry) {
                 }
             },
             theme: '<?= !empty($darkMode) ? 'dark' : 'light' ?>'
-        }
+        },
     }
     const chartOptions = Object.assign({}, defaultOptions, passedOptions)
     new ApexCharts(document.querySelector('#<?= $chartId ?>'), chartOptions).render();
 
-    // const chart = new ApexCharts(document.querySelector("#<?= $chartId ?>"), options);
-    // chart.render();
 })()
 </script>
+
+<style>
+    .apexcharts-tooltip.apexcharts-theme-light {
+        color: black !important
+    }
+</style>
