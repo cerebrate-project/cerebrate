@@ -979,6 +979,7 @@ class BoostrapCard extends BootstrapGeneric
         'headerHTML' => '',
         'footerHTML' => '',
         'bodyHTML' => '',
+        'class' => '',
         'headerClass' => '',
         'bodyClass' => '',
         'footerClass' => '',
@@ -1010,6 +1011,7 @@ class BoostrapCard extends BootstrapGeneric
                 'card',
                 !empty($this->options['variant']) ? "bg-{$this->options['variant']}" : '',
                 !empty($this->options['variant']) ? $this->getTextClassForVariant($this->options['variant']) : '',
+                h($this->options['class']),
             ],
         ], implode('', [$this->genHeader(), $this->genBody(), $this->genFooter()]));
         return $card;
