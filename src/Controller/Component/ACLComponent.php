@@ -11,6 +11,7 @@ use Cake\ORM\TableRegistry;
 use Cake\Core\Configure;
 use Cake\Core\Configure\Engine\PhpConfig;
 use Cake\Utility\Inflector;
+use Cake\Routing\Router;
 
 class ACLComponent extends Component
 {
@@ -458,6 +459,7 @@ class ACLComponent extends Component
             'ContactDB' => [
                 'Individuals' => [
                     'label' => __('Individuals'),
+                    'icon' => 'address-book',
                     'url' => '/individuals/index',
                     'children' => [
                         'index' => [
@@ -493,6 +495,7 @@ class ACLComponent extends Component
                 ],
                 'Organisations' => [
                     'label' => __('Organisations'),
+                    'icon' => 'building',
                     'url' => '/organisations/index',
                     'children' => [
                         'index' => [
@@ -528,6 +531,7 @@ class ACLComponent extends Component
                 ],
                 'EncryptionKeys' => [
                     'label' => __('Encryption keys'),
+                    'icon' => 'key',
                     'url' => '/encryptionKeys/index',
                     'children' => [
                         'index' => [
@@ -552,6 +556,7 @@ class ACLComponent extends Component
             'Trust Circles' => [
                 'SharingGroups' => [
                     'label' => __('Sharing Groups'),
+                    'icon' => 'user-friends',
                     'url' => '/sharingGroups/index',
                     'children' => [
                         'index' => [
@@ -583,6 +588,7 @@ class ACLComponent extends Component
             'Sync' => [
                 'Broods' => [
                     'label' => __('Broods'),
+                    'icon' => 'network-wired',
                     'url' => '/broods/index',
                     'children' => [
                         'index' => [
@@ -620,6 +626,7 @@ class ACLComponent extends Component
             'Administration' => [
                 'Roles' => [
                     'label' => __('Roles'),
+                    'icon' => 'id-badge',
                     'url' => '/roles/index',
                     'children' => [
                         'index' => [
@@ -655,6 +662,7 @@ class ACLComponent extends Component
                 ],
                 'Users' => [
                     'label' => __('Users'),
+                    'icon' => 'users',
                     'url' => '/users/index',
                     'children' => [
                         'index' => [
@@ -690,6 +698,7 @@ class ACLComponent extends Component
                 ],
                 'Inbox' => [
                     'label' => __('Inbox'),
+                    'icon' => 'inbox',
                     'url' => '/inbox/index',
                     'children' => [
                         'index' => [
@@ -722,6 +731,7 @@ class ACLComponent extends Component
                 ],
                 'Outbox' => [
                     'label' => __('Outbox'),
+                    'icon' => 'inbox',
                     'url' => '/outbox/index',
                     'children' => [
                         'index' => [
@@ -751,6 +761,7 @@ class ACLComponent extends Component
                 ],
                 'MetaTemplates' => [
                     'label' => __('Meta Field Templates'),
+                    'icon' => 'object-group',
                     'url' => '/metaTemplates/index',
                     'children' => [
                         'index' => [
@@ -781,6 +792,7 @@ class ACLComponent extends Component
                 ],
                 'LocalTools' => [
                     'label' => __('Local Tools'),
+                    'icon' => 'tools',
                     'url' => '/localTools/index',
                     'children' => [
                         'index' => [
@@ -810,6 +822,7 @@ class ACLComponent extends Component
                 'Instance' => [
                     __('Instance'),
                     'url' => '/instance/home',
+                    'icon' => 'database',
                     'children' => [
                         'migration' => [
                             'url' => '/instance/migrationIndex',
@@ -821,6 +834,7 @@ class ACLComponent extends Component
             'Cerebrate' => [
                 'Roles' => [
                     'label' => __('Roles'),
+                    'icon' => 'id-badge',
                     'url' => '/roles/index',
                     'children' => [
                         'index' => [
@@ -845,6 +859,7 @@ class ACLComponent extends Component
                 'Instance' => [
                     __('Instance'),
                     'url' => '/instance/home',
+                    'icon' => 'home',
                     'children' => [
                         'home' => [
                             'url' => '/instance/home',
@@ -854,6 +869,7 @@ class ACLComponent extends Component
                 ],
                 'Users' => [
                     __('My Profile'),
+                    'icon' => 'user-circle',
                     'children' => [
                         'View My Profile' => [
                             'url' => '/users/view',
@@ -872,6 +888,7 @@ class ACLComponent extends Component
             'Open' => [
                 'Organisations' => [
                     'label' => __('Organisations'),
+                    'icon' => 'buildings',
                     'url' => '/open/organisations/index',
                     'children' => [
                         'index' => [
@@ -883,6 +900,7 @@ class ACLComponent extends Component
                 ],
                 'Individuals' => [
                     'label' => __('Individuals'),
+                    'icon' => 'address-book',
                     'url' => '/open/individuals/index',
                     'children' => [
                         'index' => [

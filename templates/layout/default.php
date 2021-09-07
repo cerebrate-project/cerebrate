@@ -35,6 +35,7 @@ $cakeDescription = 'Cerebrate';
     ?>
     <?= $this->Html->css('main.css') ?>
     <?= $this->Html->css('font-awesome') ?>
+    <?= $this->Html->css('layout.css') ?>
     <?= $this->Html->script('jquery-3.5.1.min.js') ?>
     <?= $this->Html->script('popper.min.js') ?>
     <?= $this->Html->script('bootstrap.bundle.js') ?>
@@ -48,27 +49,25 @@ $cakeDescription = 'Cerebrate';
     <?= $this->Html->meta('favicon.ico', '/img/favicon.ico', ['type' => 'icon']); ?>
 </head>
 <body>
-    <header>
-        <?= $this->element('header') ?>
-    </header>
-    <main role="main">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-1 d-none d-xl-block sidebar p-0">
-                    <?= $this->element('side_menu') ?>
-                </div>
-                <div role="main" class="col-xl-11 col-lg-12 ml-sm-auto pt-3 px-4">
-                    <div class="col-12 d-xl-none px-0"><?= $this->element('side_menu', ['minimal' => 1]) ?></div>
-                    <?= $this->Flash->render() ?>
-                    <?= $this->fetch('content') ?>
-                </div>
-            </div>
+    <div class="main-wrapper">
+        <header class="navbar top-navbar">
+            <?= $this->element('layouts/header') ?>
+        </header>
+        <div class="sidebar">
+            <?= $this->element('layouts/sidebar') ?>
         </div>
-    </main>
+        <main role="main" class="content">
+            <div class="container-fluid">
+                <?= $this->Flash->render() ?>
+                <?= $this->fetch('content') ?>
+            </div>
+        </main>
+    </div>
     <div id="mainModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel" aria-hidden="true"></div>
     <div id="mainToastContainer" style="position: absolute; top: 15px; right: 15px; z-index: 1080"></div>
     <div id="mainModalContainer"></div>
 </body>
+
 <script>
     const darkMode = (<?= empty($darkMode) ? 'false' : 'true' ?>)
 </script>

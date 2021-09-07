@@ -17,7 +17,7 @@
     color:black;
 }
 
-.sidebar {}
+/* .sidebar {}
 
 .side-bar-ul {
     top: 70px;
@@ -87,7 +87,7 @@
 .side-bar-ul>.sidebar-brand a:hover {
     color: #fff;
     background: none;
-}
+} */
 
 @media(min-width:768px) {
     #wrapper {

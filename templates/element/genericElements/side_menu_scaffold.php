@@ -1,4 +1,5 @@
 <?php
+// return;
 $children = '';
 $backgroundColour = $darkMode ? 'bg-dark' : 'bg-light';
 if (isset($menu[$metaGroup])) {
