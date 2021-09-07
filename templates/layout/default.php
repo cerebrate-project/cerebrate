@@ -56,6 +56,9 @@ $cakeDescription = 'Cerebrate';
     <?= $this->Html->css('CodeMirror/addon/lint/lint') ?>
     <?= $this->Html->css('select2.min') ?>
     <?= $this->Html->css('select2-bootstrap4.min') ?>
+    <?= $this->Html->script('apexcharts.min') ?>
+    <?= $this->Html->css('apexcharts') ?>
+
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
