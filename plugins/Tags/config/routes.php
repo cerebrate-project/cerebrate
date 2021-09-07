@@ -13,7 +13,7 @@ $routes->plugin(
             ['controller' => 'Tags']
         );
 
-        // $routes->get('/', ['controller' => 'Tags']);
+        $routes->get('/', ['controller' => 'Tags', 'action' => 'index']);
         // $routes->get('/{id}', ['controller' => 'Tags', 'action' => 'view']);
         // $routes->put('/{id}', ['controller' => 'Tags', 'action' => 'edit']);
     }

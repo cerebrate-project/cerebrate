@@ -17,8 +17,9 @@ $variationHtml = sprintf('<div class="%s"><span class="%s mr-2"></span>%s</div>'
     !empty($variation) ? h($variation) : ''
 );
 
+$titleHtml = isset($title) ? h($title) : ($titleHtml ?? '');
 $leftContent = sprintf('<div class="">%s</div><h2 class="my-2">%s</h2>%s',
-    h($title ?? ''),
+    $titleHtml,
     h($number ?? ''),
     $variationHtml
 );

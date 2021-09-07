@@ -14,51 +14,48 @@ foreach ($chartData as $i => $entry) {
 
 <div id="<?= $chartId ?>"></div>
 
-
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-(function() {
-    const passedOptions = <?= json_encode($chartOptions) ?>;
-    const defaultOptions = {
-        chart: {
-            id: '<?= $chartId ?>',
-            type: 'bar',
-            sparkline: {
-                enabled: true
+    $(document).ready(function() {
+        const passedOptions = <?= json_encode($chartOptions) ?>;
+        const defaultOptions = {
+            chart: {
+                id: '<?= $chartId ?>',
+                type: 'bar',
+                sparkline: {
+                    enabled: true
+                },
+                dropShadow: {
+                    enabled: true,
+                    top: 1,
+                    left: 1,
+                    blur: 2,
+                    opacity: 0.2,
+                },
+                animations: {
+                    enabled: false
+                },
             },
-            dropShadow: {
-                enabled: true,
-                top: 1,
-                left: 1,
-                blur: 2,
-                opacity: 0.2,
-            },
-            animations: {
-                enabled: false
-            },
-        },
-        series: [{
-            data: <?= json_encode($data) ?>,
-        }],
-        colors: ['var(--success)'],
-        tooltip: {
-            x: {
-                show: false
-            },
-            y: {
-                title: {
-                    formatter: function formatter(val) {
-                    return '';
+            series: [{
+                data: <?= json_encode($data) ?>,
+            }],
+            colors: ['var(--success)'],
+            tooltip: {
+                x: {
+                    show: false
+                },
+                y: {
+                    title: {
+                        formatter: function formatter(val) {
+                        return '';
+                        }
                     }
-                }
+                },
+                theme: '<?= !empty($darkMode) ? 'dark' : 'light' ?>'
             },
-            theme: '<?= !empty($darkMode) ? 'dark' : 'light' ?>'
-        },
-    }
-    const chartOptions = Object.assign({}, defaultOptions, passedOptions)
-    new ApexCharts(document.querySelector('#<?= $chartId ?>'), chartOptions).render();
-
-})()
+        }
+        const chartOptions = Object.assign({}, defaultOptions, passedOptions)
+        new ApexCharts(document.querySelector('#<?= $chartId ?>'), chartOptions).render();
+    })
 </script>
 
 <style>
