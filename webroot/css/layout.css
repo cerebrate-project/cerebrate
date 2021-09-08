@@ -52,6 +52,24 @@ main.content {
 
 .sidebar.expanded ~ main.content {
     margin-left: var(--sidebar-width-expanded);
+   
+}
+
+.sidebar ~ main.content:after {
+    z-index: 1500;
+    content: ' ';
+    transition: opacity 0.5s;
+    position: fixed;
+    top:0;
+    left:0;
+    background:#000;
+    opacity: 0;
+}
+
+.sidebar:hover:not(.expanded) ~ main.content:after {
+    bottom: 0;
+    right:0;
+    opacity: 0.5;
 }
 
 .left-navbar {
