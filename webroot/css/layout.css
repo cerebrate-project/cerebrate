@@ -208,16 +208,7 @@ ul.sidebar-elements > li ul li > ul > li > ul > li > ul > li > a.sidebar-link {
 }
 
 /* sidebar category */
-.sidebar.expanded ul.sidebar-elements > li.category,
-.sidebar:hover ul.sidebar-elements > li.category {
-    visibility: visible;
-}
-
-/* SHOW small separator when sidebar is collapsed! */
-/* Add support of active class! */
-
 ul.sidebar-elements > li.category {
-    visibility: hidden;
     white-space: nowrap;
     display: flex;
     padding: 15px 20px 0;
@@ -225,15 +216,21 @@ ul.sidebar-elements > li.category {
     
 }
 
+.sidebar.expanded ul.sidebar-elements > li.category > span.category-label,
+.sidebar:hover ul.sidebar-elements > li.category > span.category-label {
+    display: flex;
+}
+
 ul.sidebar-elements > li.category > span.category-label {
+    display: none;
     text-transform: uppercase;
     font-size: 0.75rem;
     font-weight: 600;
-    display: flex;
     margin-right: 15px;
 }
 
 ul.sidebar-elements > li.category > span.category-divider {
+    min-height: 30px;
     flex: 1 0 0%;
     display: flex;
     align-items: center;
