@@ -1,0 +1,1 @@
+<i class="<?= $this->FontAwesome->getClass('id-card') ?> fa-lg"></i>

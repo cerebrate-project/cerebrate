@@ -16,6 +16,7 @@ body {
 }
 
 .top-navbar {
+    min-height: var(--navbar-height);
     position: fixed;
     top: 0;
     left: 0;
@@ -50,18 +51,19 @@ body {
 }
 
 .left-navbar {
+    min-width: 70px;
 }
 
 .center-navbar {
     display: flex;
     flex: 1 1 auto;
-    line-height: var(--navbar-height);
     padding: 0 20px;
 }
 
 .right-navbar {
     display: flex;
-    flex: 0 0 auto;
+    justify-content: end;
+    flex: 1 0 auto;
     padding-right: 20px;
 }
 
@@ -240,4 +242,74 @@ ul.sidebar-elements > li.category > span.category-divider > hr {
     margin: 0;
     height: 1px;
     flex: 1 0 auto;
+}
+
+/* 
+    Header
+*/
+header.navbar-dark.top-navbar a:hover {
+    color: #d6d6d6 !important;
+}
+header.navbar-light.top-navbar a:hover {
+    color: #6c757d !important;
+}
+
+.center-navbar nav.header-breadcrumb {
+    color: white;
+    padding: 0.5rem 0.75rem;
+}
+
+.center-navbar nav.header-breadcrumb > ol {
+    display: flex;
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.center-navbar nav.header-breadcrumb li {
+    line-height: 1.5;
+}
+
+.center-navbar nav.header-breadcrumb li.header-breadcrumb-item {
+}
+
+.center-navbar nav.header-breadcrumb li.header-breadcrumb-separator {
+    padding: 0 0.75rem;
+}
+
+.navbar-dark .center-navbar nav.header-breadcrumb li.header-breadcrumb-separator {
+    /* color: black; */
+}
+.navbar-light .center-navbar nav.header-breadcrumb li.header-breadcrumb-separator {
+    /* color: white; */
+}
+
+.center-navbar nav.header-breadcrumb li.header-breadcrumb-item a {
+    text-decoration: none;
+}
+
+.navbar-dark .center-navbar nav.header-breadcrumb li.header-breadcrumb-item  a{
+    color: white;
+}
+.navbar-light .center-navbar nav.header-breadcrumb li.header-breadcrumb-item a {
+    color: black;
+}
+
+.header-breadcrumb-children {
+    background-color: #eeeeee;
+    border-radius: 0.25rem;
+    padding: 0 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.header-breadcrumb-children > a:not(:last-child) {
+    margin-right: 0.5rem;
+}
+
+.navbar-dark .right-navbar .header-menu a {
+    color: white;
+}
+.navbar-light .right-navbar .header-menu a {
+    color: black;
 }

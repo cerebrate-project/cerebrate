@@ -1,11 +1,11 @@
-<div class="container-fluid bg-success">
+<div class="container-fluid">
     <div class="left-navbar">
         <span class="navbar-brand">Logo</span>
     </div>
     <div class="center-navbar">
-        Breadcrumb
+        <?= $this->element('layouts/header/header-center'); ?>
     </div>
     <div class="right-navbar">
-        right
+    <?= $this->element('layouts/header/header-right'); ?>
     </div>
 </div>

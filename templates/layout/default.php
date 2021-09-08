@@ -50,7 +50,7 @@ $cakeDescription = 'Cerebrate';
 </head>
 <body>
     <div class="main-wrapper">
-        <header class="navbar top-navbar">
+        <header class="navbar top-navbar <?= empty($darkMode) ? 'bg-dark navbar-dark' : 'bg-light navbar-light' ?>">
             <?= $this->element('layouts/header') ?>
         </header>
         <div class="sidebar <?= empty($darkMode) ? 'bg-light' : 'bg-dark' ?>">
