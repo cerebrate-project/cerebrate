@@ -1,7 +1,13 @@
 /* layout */
 :root {
     --navbar-height: 60px;
-    --sidebar-width: 230px;
+    /* --sidebar-width: 230px; */
+    --sidebar-width-expanded: 230px;
+    --sidebar-width-collapsed: 65px;
+}
+
+body {
+    background-color: #eee;
 }
 
 .main-wrapper {
@@ -21,7 +27,7 @@
 .content {
     position: relative;
     left: 0;
-    margin-left: var(--sidebar-width);
+    margin-left: var(--sidebar-width-collapsed);
     min-height: 100%;
     background: red;
 }
@@ -32,8 +38,15 @@
     position: fixed;
     top: 0;
     bottom: 0;
-    width: var(--sidebar-width);
+    width: var(--sidebar-width-collapsed);
     left: 0;
+    transition: width .05s linear;
+    transform:translateZ(0) scale(1,1);
+    z-index:2000;
+}
+
+.sidebar.expanded, .sidebar:hover {
+    width: var(--sidebar-width-expanded);
 }
 
 .left-navbar {
@@ -88,11 +101,15 @@ li.parent {
 
 }
 
+.sidebar.expanded ul.sidebar-elements li > a.sidebar-link,
+.sidebar:hover ul.sidebar-elements li > a.sidebar-link {
+    text-overflow: ellipsis;
+}
+
 ul.sidebar-elements li > a.sidebar-link {
     display: block;
     padding: 0 20px;
     line-height: 35px;
-    text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
     text-decoration: none;
@@ -111,17 +128,24 @@ ul.sidebar-elements > li > a.sidebar-link > * {
 ul.sidebar-elements > li > a.sidebar-link > i.sidebar-icon {
     margin-right: 10px;
     font-size: 19px;
-    min-width: 19px;
+    min-width: 25px;
     line-height: 19px;
 }
 
+.sidebar.expanded ul.sidebar-elements > li > a.sidebar-link > span.text,
+.sidebar:hover ul.sidebar-elements > li > a.sidebar-link > span.text {
+    visibility: visible;
+}
+
 ul.sidebar-elements > li > a.sidebar-link > span.text {
+    visibility: hidden;
     line-height: 40px;
     white-space: nowrap;
 }
 
 /* sidebar sub-menu */
 ul.sidebar-elements li.parent > a.sidebar-link::before {
+    visibility: hidden;
     content: "\f0d7";
     float: right;
     font-family: 'Font Awesome 5 Free';
@@ -134,7 +158,22 @@ ul.sidebar-elements li.parent > a.sidebar-link:not(.collapsed)::before {
     content: "\f0d8";
 }
 
+.sidebar.expanded ul.sidebar-elements li.parent > a.sidebar-link::before,
+.sidebar:hover ul.sidebar-elements li.parent > a.sidebar-link::before {
+    visibility: visible;
+}
+
+.sidebar.expanded ul.sidebar-elements li ul.show,
+.sidebar.expanded ul.sidebar-elements li ul.collapsing,
+.sidebar.expanded ul.sidebar-elements li ul.in,
+.sidebar:hover ul.sidebar-elements li ul.show,
+.sidebar:hover ul.sidebar-elements li ul.collapsing,
+.sidebar:hover ul.sidebar-elements li ul.in {
+    display: block;
+}
+
 ul.sidebar-elements > li ul {
+    display: none;
     padding: 10px 0;
     list-style: none;
     line-height: 20px;
@@ -169,10 +208,21 @@ ul.sidebar-elements > li ul li > ul > li > ul > li > ul > li > a.sidebar-link {
 }
 
 /* sidebar category */
+.sidebar.expanded ul.sidebar-elements > li.category,
+.sidebar:hover ul.sidebar-elements > li.category {
+    visibility: visible;
+}
+
+/* SHOW small separator when sidebar is collapsed! */
+/* Add support of active class! */
+
 ul.sidebar-elements > li.category {
+    visibility: hidden;
+    white-space: nowrap;
+    display: flex;
     padding: 15px 20px 0;
     line-height: 30px;
-    display: flex;
+    
 }
 
 ul.sidebar-elements > li.category > span.category-label {

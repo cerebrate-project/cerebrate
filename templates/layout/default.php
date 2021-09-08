@@ -53,7 +53,7 @@ $cakeDescription = 'Cerebrate';
         <header class="navbar top-navbar">
             <?= $this->element('layouts/header') ?>
         </header>
-        <div class="sidebar">
+        <div class="sidebar <?= empty($darkMode) ? 'bg-light' : 'bg-dark' ?>">
             <?= $this->element('layouts/sidebar') ?>
         </div>
         <main role="main" class="content">
