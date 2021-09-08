@@ -24,6 +24,9 @@
 #globalSearch {
     padding-right: 26px;
 }
+#globalSearch {
+    padding-right: 26px;
+}
 
 .top-navbar .global-search-container > i.icon {
     position: absolute;

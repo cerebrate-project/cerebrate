@@ -1,1 +1,1 @@
-<i class="<?= $this->FontAwesome->getClass('id-card') ?> fa-lg"></i>
+<i class="<?= $this->FontAwesome->getClass('user-circle') ?> fa-lg"></i>
