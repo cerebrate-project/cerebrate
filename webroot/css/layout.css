@@ -25,7 +25,7 @@ body {
     margin-bottom: 0;
 }
 
-.content {
+main.content {
     position: relative;
     left: 0;
     margin-left: var(--sidebar-width-collapsed);
@@ -34,8 +34,8 @@ body {
 }
 
 .sidebar {
-    height: 100%;
     margin-top: var(--navbar-height);
+    overflow: hidden;
     position: fixed;
     top: 0;
     bottom: 0;
@@ -48,6 +48,10 @@ body {
 
 .sidebar.expanded, .sidebar:hover {
     width: var(--sidebar-width-expanded);
+}
+
+.sidebar.expanded ~ main.content {
+    margin-left: var(--sidebar-width-expanded);
 }
 
 .left-navbar {
@@ -67,6 +71,8 @@ body {
     padding-right: 20px;
 }
 
+
+
 /* sidebar */
 .sidebar-wrapper {
     width: 100%;
@@ -75,23 +81,26 @@ body {
 
 .sidebar-scroll {
     position: relative;
-    height: 100%;
     width: 100%;
-    overflow: hidden;
 }
 
 .sidebar-content {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
     padding-top: 10px;
 }
 
 ul.sidebar-elements {
     margin: 0;
     padding: 0;
+}
+
+.sidebar .lock-sidebar > a::before {
+    content: "\f101";
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+
+.sidebar.expanded .lock-sidebar > a::before {
+    content: "\f100";
 }
 
 /* sidebar entry */
