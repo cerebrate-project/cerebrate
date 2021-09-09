@@ -5,7 +5,7 @@
         </a>
     </div>
     <div class="center-navbar">
-        <?= $this->element('layouts/header/header-center'); ?>
+        <?= $this->element('layouts/header/header-breadcrumb'); ?>
     </div>
     <div class="right-navbar">
     <?= $this->element('layouts/header/header-right'); ?>

@@ -1,5 +1,6 @@
 <?php
     use Cake\Core\Configure;
+    use Cake\Routing\Router;
 
     $controller = $this->request->getParam('controller');
     $action = $this->request->getParam('action');
@@ -30,7 +31,7 @@
             if (!empty($entry['url_vars'])) {
                 $entry['url'] = $this->DataFromPath->buildStringFromDataPath($entry['url'], $entity, $entry['url_vars']);
             }
-            $this->Breadcrumbs->add($entry['label'], $entry['url']);
+            $this->Breadcrumbs->add($entry['label'], Router::url($entry['url']));
         }
     
         $lastCrumb = $breadcrumb[count($breadcrumb)-1];
@@ -46,7 +47,7 @@
                 }
                 $breadcrumbLinks .= sprintf('<a class="btn btn-%s btn-sm text-nowrap" role="button" href="%s">%s</a>',
                     $active ? 'secondary' : $navbarVariant,
-                    $linkEntry['url'],
+                    Router::url($linkEntry['url']),
                     $linkEntry['label']
                 );
             }
@@ -56,7 +57,7 @@
                 if (!empty($actionEntry['url_vars'])) {
                     $actionEntry['url'] = $this->DataFromPath->buildStringFromDataPath($actionEntry['url'], $entity, $actionEntry['url_vars']);
                 }
-                $breadcrumbAction .= sprintf('<a class="dropdown-item" href="%s">%s</a>', $actionEntry['url'], $actionEntry['label']);
+                $breadcrumbAction .= sprintf('<a class="dropdown-item" href="%s">%s</a>', Router::url($actionEntry['url']), $actionEntry['label']);
             }
         }
     }
