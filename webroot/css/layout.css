@@ -44,7 +44,7 @@ main.content {
     left: 0;
     transition: width .05s linear;
     transform:translateZ(0) scale(1,1);
-    z-index:1040;
+    z-index:1041;
 }
 
 .sidebar.expanded, .sidebar:hover {
