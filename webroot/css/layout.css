@@ -23,7 +23,7 @@ body {
     right: 0;
     padding: 0;
     margin-bottom: 0;
-    z-index: 1200;
+    z-index: 1020;
     box-shadow: 0 2px 2px 0 rgba(0,0,0,0.16),0 2px 6px 0 rgba(0,0,0,0.12);
 }
 
@@ -44,7 +44,7 @@ main.content {
     left: 0;
     transition: width .05s linear;
     transform:translateZ(0) scale(1,1);
-    z-index:2000;
+    z-index:1040;
 }
 
 .sidebar.expanded, .sidebar:hover {
@@ -57,7 +57,7 @@ main.content {
 }
 
 .sidebar ~ main.content:after {
-    z-index: 1500;
+    z-index: 1040;
     content: ' ';
     transition: opacity 0.5s;
     position: fixed;
