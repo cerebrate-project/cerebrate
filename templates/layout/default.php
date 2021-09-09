@@ -60,7 +60,7 @@ Configure::write('sidebarVariant', $sidebarVariant);
         <header class="navbar top-navbar <?= sprintf('bg-%s navbar-%s', $navbarVariant, $navbarIsDark ? 'light' : 'dark') ?>">
             <?= $this->element('layouts/header') ?>
         </header>
-        <div class="sidebar <?= empty($darkMode) ? 'bg-light' : 'bg-dark' ?>">
+        <div id="app-sidebar" class="collapse d-sm-block sidebar <?= empty($darkMode) ? 'bg-light' : 'bg-dark' ?>">
             <?= $this->element('layouts/sidebar') ?>
         </div>
         <main role="main" class="content">

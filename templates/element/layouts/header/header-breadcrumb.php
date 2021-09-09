@@ -7,13 +7,12 @@
     $curentPath = "{$controller}{$action}";
     $navbarVariant = Configure::read('navbarVariant');
     $navbarIsDark = Configure::read('navbarIsDark');
-    // $pass = $this->request->getParam('pass');
 
     $breadcrumbLinks = '';
     $breadcrumbAction = '';
     $this->Breadcrumbs->setTemplates([
         'wrapper' => sprintf(
-            '<nav class="header-breadcrumb"{{attrs}}><ol class="">{{content}}</ol></nav>'
+            '<nav class="header-breadcrumb d-xl-block d-none"{{attrs}}><ol class="">{{content}}</ol></nav>'
         ),
         'item' => sprintf(
             '<li class="header-breadcrumb-item"{{attrs}}><a href="{{url}}"{{innerAttrs}}>{{title}}</a></li>{{separator}}',
@@ -71,7 +70,7 @@
     );
 ?>
 <?php if (!empty($breadcrumbLinks)): ?>
-    <div class="header-breadcrumb-children">
+    <div class="header-breadcrumb-children d-none d-md-flex">
         <?= $breadcrumbLinks ?>
     </div>
 <?php endif; ?>

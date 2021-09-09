@@ -11,6 +11,44 @@ body {
     margin-left: var(--sidebar-width-collapsed)
 }
 
+/* navbar-toggler breakpoint */
+@media (max-width: 576px) {
+    body {
+        margin-left: 0;
+        padding-top: 0;
+        display: flex;
+    }
+
+    header.top-navbar {
+        position: relative;
+    }
+
+    .sidebar {
+        width: 100% !important;
+        position: relative !important;
+        margin-top: 0 !important;
+        box-shadow: 0 2px 2px 0 rgb(0 0 0 / 16%), 0 2px 6px 0 rgb(0 0 0 / 12%);
+    }
+
+    ul.sidebar-elements > li > a.sidebar-link > span.text {
+        visibility: visible !important;
+    }
+
+    ul.sidebar-elements > li.category > span.category-label {
+        display: block !important;
+    }
+
+    .sidebar:hover:not(.expanded) ~ main.content:after {
+        bottom: unset !important;
+        right: unset !important;
+        opacity: 0;
+    }
+
+    .sidebar.expanded ~ main.content {
+        margin-left: 0 !important;
+    }
+}
+
 .main-wrapper {
     min-height: 100%;
     /* padding-top: var(--navbar-height); */
@@ -53,8 +91,7 @@ main.content {
 }
 
 .sidebar.expanded ~ main.content {
-    margin-left: var(--sidebar-width-expanded);
-   
+    margin-left: calc(var(--sidebar-width-expanded) - var(--sidebar-width-collapsed));
 }
 
 .sidebar ~ main.content:after {
@@ -88,7 +125,6 @@ main.content {
     display: flex;
     justify-content: end;
     flex: 1 0 auto;
-    padding-right: 20px;
     height: var(--navbar-height);
 }
 

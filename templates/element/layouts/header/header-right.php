@@ -1,5 +1,5 @@
 <div class="d-flex">
-    <div class="global-search-container">
+    <div class="global-search-container d-md-block d-none">
         <input type="text" class="form-control d-inline-block" id="globalSearch" placeholder="<?= __('Search in Cerebrate') ?>">
         <i class="icon <?= $this->FontAwesome->getClass('search') ?>"></i>
     </div>

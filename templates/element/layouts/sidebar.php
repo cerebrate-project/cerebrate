@@ -14,9 +14,7 @@
             </ul>
         </div>
     </div>
-    <span class="lock-sidebar align-self-center mt-auto w-100" onclick="$('.sidebar').toggleClass('expanded')">
-        <a type="button" class="btn btn-<?= empty($darkMode) ? 'light' : 'dark' ?> btn-sm w-100">
-            <!-- <i class="<?= $this->FontAwesome->getClass('angle-double-right') ?>"></i> -->
-        </a>
+    <span class="lock-sidebar align-self-center mt-auto w-100 d-none d-sm-block" onclick="$('.sidebar').toggleClass('expanded')">
+        <a type="button" class="btn btn-<?= empty($darkMode) ? 'light' : 'dark' ?> btn-sm w-100"></a>
     </span>
 </div>
