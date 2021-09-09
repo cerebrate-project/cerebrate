@@ -4,15 +4,8 @@
         <i class="icon <?= $this->FontAwesome->getClass('search') ?>"></i>
     </div>
     <div class="header-menu d-flex ml-1">
-        <a class="nav-link px-2 text-decoration-none" href="#">
-            <i class="<?= $this->FontAwesome->getClass('bell') ?> fa-lg"></i>
-        </a>
-        <a class="nav-link px-2 text-decoration-none" href="#">
-            <i class="<?= $this->FontAwesome->getClass('cog') ?> fa-lg"></i>
-        </a>
-        <a class="nav-link px-2 text-decoration-none" href="#">
-            <?= $this->element('layouts/header/header-profile') ?>
-        </a>
+        <?= $this->element('layouts/header/header-notifications') ?>
+        <?= $this->element('layouts/header/header-profile') ?>
     </div>
 </div>
 
