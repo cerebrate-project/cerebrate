@@ -340,3 +340,17 @@ header.navbar-light.top-navbar a:hover {
 .navbar-light .right-navbar .header-menu a {
     color: black;
 }
+
+.navbar-dark .left-navbar .navbar-brand img {
+    filter: invert(1);
+}
+.navbar-light .left-navbar .navbar-brand img {
+    filter: invert(0);
+}
+
+.navbar-dark .left-navbar .navbar-brand:hover img {
+    filter: invert(1) drop-shadow(0px 0px 4px #fff);
+}
+.navbar-light .left-navbar .navbar-brand:hover img {
+    filter: invert(0) drop-shadow(0px 0px 4px #000);
+}
