@@ -5,7 +5,9 @@ namespace App\Controller\Component;
 use Cake\Controller\Component;
 use Cake\Core\Configure;
 use Cake\Utility\Inflector;
+use Cake\Utility\Hash;
 use Cake\Routing\Router;
+use Cake\ORM\TableRegistry;
 
 class NavigationComponent extends Component
 {
@@ -138,10 +140,13 @@ class NavigationComponent extends Component
 
     public function getBreadcrumb(): array
     {
-        $controller = Inflector::underscore($this->request->getParam('controller'));
-        $action = Inflector::underscore($this->request->getParam('action'));
+        $controller = $this->request->getParam('controller');
+        $action = $this->request->getParam('action');
         if (empty($this->fullBreadcrumb[$controller]['routes']["{$controller}:{$action}"])) {
-            return []; // no breadcrumb defined for this endpoint
+            return [[
+                'label' => $controller,
+                'url' => Router::url(['controller' => $controller, 'action' => $action]),
+            ]]; // no breadcrumb defined for this endpoint
         }
         $currentRoute = $this->fullBreadcrumb[$controller]['routes']["{$controller}:{$action}"];
         $breadcrumbPath = $this->getBreadcrumbPath("{$controller}:{$action}", $currentRoute);
@@ -221,57 +226,151 @@ class NavigationComponent extends Component
         return $config;
     }
 
-    public function genBreadcrumb(): array
+    public function getDefaultCRUDConfig(string $controller, array $overrides=[], array $merges=[]): array
     {
-        $fullConfig = [
-            'broods' => [
-                'defaults' => [
-                    'depth-1' => [
-                        'after' => 'broods:index',
-                        'textGetter' => 'name',
-                        'links' => [
-                            'broods:view',
-                            'broods:edit',
-                            'local_tools:brood_tools',
-                        ],
-                        'actions' => [
-                            'broods:delete',
-                        ],
-                    ]
-                ],
-                'routes' => [
-                    'broods:index' => [
-                        'label' => __('Broods'),
-                        'icon' => 'network-wired',
-                        'url' => '/broods/index',
+        $table = TableRegistry::getTableLocator()->get($controller);
+        $default = [
+            'defaults' => [
+                'depth-1' => [
+                    'after' => "{$controller}:index",
+                    'textGetter' => !empty($table->getDisplayField()) ? $table->getDisplayField() : 'id',
+                    'links' => [
+                        "{$controller}:view",
+                        "{$controller}:edit",
                     ],
-                    'broods:view' => [
-                        'label' => __('View'),
-                        'inherit' => 'depth-1',
-                        'url' => '/broods/view/{{id}}',
-                        'url_vars' => ['id' => 'id'],
-                    ],
-                    'broods:edit' => [
-                        'label' => __('Edit'),
-                        'inherit' => 'depth-1',
-                        'url' => '/broods/edit/{{id}}',
-                        'url_vars' => ['id' => 'id'],
-                    ],
-                    'broods:delete' => [
-                        'label' => __('Delete'),
-                        'inherit' => 'depth-1',
-                        'url' => '/broods/delete/{{id}}',
-                        'url_vars' => ['id' => 'id'],
+                    'actions' => [
+                        "{$controller}:delete",
                     ],
                 ]
             ],
-            'local_tools' => [
+            'routes' => [
+                "{$controller}:index" => [
+                    'label' => Inflector::humanize($controller),
+                    'icon' => 'network-wired',
+                    'url' => "/{$controller}/index",
+                ],
+                "{$controller}:view" => [
+                    'label' => __('View'),
+                    'inherit' => 'depth-1',
+                    'url' => "/{$controller}/view/{{id}}",
+                    'url_vars' => ['id' => 'id'],
+                ],
+                "{$controller}:edit" => [
+                    'label' => __('Edit'),
+                    'inherit' => 'depth-1',
+                    'url' => "/{$controller}/edit/{{id}}",
+                    'url_vars' => ['id' => 'id'],
+                ],
+                "{$controller}:delete" => [
+                    'label' => __('Delete'),
+                    'inherit' => 'depth-1',
+                    'url' => "/{$controller}/delete/{{id}}",
+                    'url_vars' => ['id' => 'id'],
+                ],
+            ]
+        ];
+        $merged = array_merge_recursive($default, $merges);
+        $overridden = array_replace_recursive($merged, $overrides);
+        return $overridden;
+    }
+
+    public function genBreadcrumb(): array
+    {
+        $fullConfig = [
+            'Individuals' => $this->getDefaultCRUDConfig('Individuals'),
+            'Organisations' => $this->getDefaultCRUDConfig('Organisations'),
+            'EncryptionKeys' => $this->getDefaultCRUDConfig('EncryptionKeys'),
+            'SharingGroups' => $this->getDefaultCRUDConfig('SharingGroups'),
+            'Broods' => $this->getDefaultCRUDConfig('Broods', [], [
+                'defaults' => ['depth-1' => ['links' => 'LocalTools:brood_tools']]
+            ]),
+            'Roles' => $this->getDefaultCRUDConfig('Roles'),
+            'Inbox' => $this->getDefaultCRUDConfig('Inbox', [
+                'defaults' => ['depth-1' => [
+                    'links' => ['Inbox:view', 'Inbox:process'],
+                    'actions' => ['Inbox:process', 'Inbox:delete'],
+                ]]
+            ], [
                 'routes' => [
-                    'local_tools:brood_tools' => [
+                    'Inbox:discard' => [
+                        'label' => __('Discard request'),
+                        'inherit' => 'depth-1',
+                        'url' => '/inbox/discard/{{id}}',
+                        'url_vars' => ['id' => 'id'],
+                    ],
+                    'Inbox:process' => [
+                        'label' => __('Process request'),
+                        'inherit' => 'depth-1',
+                        'url' => '/inbox/process/{{id}}',
+                        'url_vars' => ['id' => 'id'],
+                    ],
+                ]
+            ]),
+            'Outbox' => $this->getDefaultCRUDConfig('Outbox', [
+                'defaults' => ['depth-1' => [
+                    'links' => ['Outbox:view', 'Outbox:process'],
+                    'actions' => ['Outbox:process', 'Outbox:delete'],
+                ]]
+            ], [
+                'routes' => [
+                    'Outbox:discard' => [
+                        'label' => __('Discard request'),
+                        'inherit' => 'depth-1',
+                        'url' => '/outbox/discard/{{id}}',
+                        'url_vars' => ['id' => 'id'],
+                    ],
+                    'Outbox:process' => [
+                        'label' => __('Process request'),
+                        'inherit' => 'depth-1',
+                        'url' => '/outbox/process/{{id}}',
+                        'url_vars' => ['id' => 'id'],
+                    ],
+                ]
+            ]),
+            'MetaTemplates' => $this->getDefaultCRUDConfig('MetaTemplates', [
+                'defaults' => ['depth-1' => [
+                    'links' => ['MetaTemplates:view', ''], // '' to remove leftovers. Related to https://www.php.net/manual/en/function.array-replace-recursive.php#124705
+                    'actions' => ['MetaTemplates:toggle'],
+                ]]
+            ], [
+                'routes' => [
+                    'MetaTemplates:toggle' => [
+                        'label' => __('Toggle Meta-template'),
+                        'inherit' => 'depth-1',
+                        'url' => '/MetaTemplates/toggle/{{id}}',
+                        'url_vars' => ['id' => 'id'],
+                    ],
+                ]
+            ]),
+            'LocalTools' => [
+                'routes' => [
+                    'LocalTools:index' => [
+                        'label' => __('Local Tools'),
+                        'icon' => 'tools',
+                        'url' => '/localTools/index',
+                    ],
+                    'LocalTools:viewConnector' => [
+                        'label' => __('View'),
+                        'textGetter' => 'name',
+                        'icon' => 'tools',
+                        'url' => '/localTools/viewConnector/{{connector}}',
+                        'url_vars' => ['connector' => 'connector'],
+                        'after' => 'LocalTools:index',
+                    ],
+                    'LocalTools:broodTools' => [
                         'label' => __('Brood Tools'),
                         'icon' => 'tools',
                         'url' => '/localTools/broodTools/{{id}}',
                         'url_vars' => ['id' => 'id'],
+                    ],
+                ]
+            ],
+            'Instance' => [
+                'routes' => [
+                    'Instance:migrationIndex' => [
+                        'label' => __('Database Migration'),
+                        'icon' => 'database',
+                        'url' => '/instance/migrationIndex',
                     ]
                 ]
             ]
@@ -283,42 +382,5 @@ class NavigationComponent extends Component
             $fullConfig[$controller] = $this->insertRelated($config, $fullConfig);
         }
         return $fullConfig;
-
-
-        // return [
-        //     'Broods' => [
-        //         'index' => [
-        //             'label' => 'Broods',
-        //             'icon' => 'network-wired',
-        //             'url' => ['controller' => 'Broods', 'action' => 'index'],
-        //             'children' => [
-        //                 'view' => [
-        //                     'textGetter' => 'name',
-        //                     'url' => ['controller' => 'Broods', 'action' => 'view', 'argsGetter' => ['id']],
-        //                     'links' => [
-        //                         'view' => [
-        //                             'label' => __('View'),
-        //                             'url' => ['controller' => 'Broods', 'action' => 'view', 'argsGetter' => ['id']],
-        //                         ],
-        //                         'local_tools' => [
-        //                             'textGetter' => 'name',
-        //                             'url' => ['controller' => 'Broods', 'action' => 'delete', 'argsGetter' => ['id']],
-        //                         ],
-        //                     ],
-        //                     'actions' => [
-        //                         'edit' => [
-        //                             'label' => __('Edit'),
-        //                             'url' => ['controller' => 'Broods', 'action' => 'edit', 'argsGetter' => ['id']],
-        //                         ],
-        //                         'delete' => [
-        //                             'label' => __('Delete'),
-        //                             'url' => ['controller' => 'Broods', 'action' => 'delete', 'argsGetter' => ['id']],
-        //                         ],
-        //                     ],
-        //                 ],
-        //             ],
-        //         ],
-        //     ],
-        // ];
     }
 }
