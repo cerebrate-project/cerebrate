@@ -7,12 +7,13 @@
 }
 
 body {
-    /* background-color: #eee; */
+    padding-top: var(--navbar-height);
+    margin-left: var(--sidebar-width-collapsed)
 }
 
 .main-wrapper {
     min-height: 100%;
-    padding-top: var(--navbar-height);
+    /* padding-top: var(--navbar-height); */
 }
 
 .top-navbar {
@@ -30,7 +31,7 @@ body {
 main.content {
     position: relative;
     left: 0;
-    margin-left: var(--sidebar-width-collapsed);
+    /* margin-left: var(--sidebar-width-collapsed); */
     min-height: 100%;
 }
 
@@ -302,6 +303,10 @@ header.navbar-light.top-navbar .header-breadcrumb .header-breadcrumb-item > a:ho
 }
 
 .center-navbar nav.header-breadcrumb li.header-breadcrumb-item {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .center-navbar nav.header-breadcrumb li.header-breadcrumb-separator {
