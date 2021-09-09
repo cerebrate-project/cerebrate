@@ -40,6 +40,7 @@ class AppController extends Controller
     public $isRest = null;
     public $restResponsePayload = null;
     public $user = null;
+    public $breadcrumb = [];
 
     /**
      * Initialization hook method.
@@ -73,6 +74,9 @@ class AppController extends Controller
         $this->loadComponent('ACL', [
             'request' => $this->request,
             'Authentication' => $this->Authentication
+        ]);
+        $this->loadComponent('Navigation', [
+            'request' => $this->request,
         ]);
         if (Configure::read('debug')) {
             Configure::write('DebugKit.panels', ['DebugKit.Packages' => true]);
@@ -122,6 +126,7 @@ class AppController extends Controller
 
         $this->ACL->checkAccess();
         $this->set('menu', $this->ACL->getMenu());
+        $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
         $this->set('darkMode', !empty(Configure::read('Cerebrate.dark')));

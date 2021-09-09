@@ -13,8 +13,15 @@
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  * @var \App\View\AppView $this
  */
+use Cake\Core\Configure;
 
 $cakeDescription = 'Cerebrate';
+$navbarVariant = !empty($darkMode) ? 'primary' : 'dark';
+$navbarIsDark = false;
+$sidebarVariant = !empty($darkMode) ? 'dark' : 'dark';
+Configure::write('navbarVariant', $navbarVariant);
+Configure::write('navbarIsDark', $navbarIsDark);
+Configure::write('sidebarVariant', $sidebarVariant);
 ?>
 <!DOCTYPE html>
 <html>
@@ -50,14 +57,14 @@ $cakeDescription = 'Cerebrate';
 </head>
 <body>
     <div class="main-wrapper">
-        <header class="navbar top-navbar <?= empty($darkMode) ? 'bg-dark navbar-dark' : 'bg-light navbar-light' ?>">
+        <header class="navbar top-navbar <?= sprintf('bg-%s navbar-%s', $navbarVariant, $navbarIsDark ? 'light' : 'dark') ?>">
             <?= $this->element('layouts/header') ?>
         </header>
         <div class="sidebar <?= empty($darkMode) ? 'bg-light' : 'bg-dark' ?>">
             <?= $this->element('layouts/sidebar') ?>
         </div>
         <main role="main" class="content">
-            <div class="container-fluid">
+            <div class="container-fluid mt-1">
                 <?= $this->Flash->render() ?>
                 <?= $this->fetch('content') ?>
             </div>

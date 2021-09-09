@@ -1,3 +1,7 @@
+:root {
+    --cerebrate-color: #924da6;
+}
+
 .pagination li.page-item > a.page-link > .ellipsis {
     line-height: 12px;
     vertical-align: top;

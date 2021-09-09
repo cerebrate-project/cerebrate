@@ -49,7 +49,7 @@ class DataFromPathHelper extends Helper
                 if (empty($strArg['function'])) {
                     $varValue = $options['sanitize'] ? h($varValue) : $varValue;
                 }
-                $extractedVars[] = $varValue;
+                $extractedVars[$i] = $varValue;
             }
             foreach ($extractedVars as $i => $value) {
                 $value = $options['highlight'] ? "<span class=\"font-weight-light\">${value}</span>" : $value;

@@ -1,6 +1,8 @@
 <div class="container-fluid">
     <div class="left-navbar">
-        <span class="navbar-brand">Logo</span>
+        <a class="navbar-brand" href="<?= $baseurl ?>">
+            <?= $this->Html->image('cerebrate-icon.svg', ['alt' => 'Cerebrate', 'height' => 50]) ?>
+        </a>
     </div>
     <div class="center-navbar">
         <?= $this->element('layouts/header/header-center'); ?>
