@@ -15,7 +15,7 @@
             '<nav class="header-breadcrumb d-xl-block d-none"{{attrs}}><ol class="">{{content}}</ol></nav>'
         ),
         'item' => sprintf(
-            '<li class="header-breadcrumb-item"{{attrs}}><a href="{{url}}"{{innerAttrs}}>{{title}}</a></li>{{separator}}',
+            '<li class="header-breadcrumb-item"{{attrs}}><i class="{{icon}} mr-1"></i><a href="{{url}}"{{innerAttrs}}>{{title}}</a></li>{{separator}}',
             empty($darkMode) ? 'light' : 'dark'
         ),
         'itemWithoutLink' => '<li class="header-breadcrumb-item"{{attrs}}><span{{innerAttrs}}>{{title}}</span></li>{{separator}}',
@@ -30,7 +30,12 @@
             if (!empty($entry['url_vars'])) {
                 $entry['url'] = $this->DataFromPath->buildStringFromDataPath($entry['url'], $entity, $entry['url_vars']);
             }
-            $this->Breadcrumbs->add(h($entry['label']), Router::url($entry['url']), ['title' => h($entry['label'])]);
+            $this->Breadcrumbs->add(h($entry['label']), Router::url($entry['url']), [
+                'title' => h($entry['label']),
+                'templateVars' => [
+                    'icon' => !empty($entry['icon']) ? $this->FontAwesome->getClass(h($entry['icon'])) : ''
+                ]
+            ]);
         }
     
         $lastCrumb = $breadcrumb[count($breadcrumb)-1];

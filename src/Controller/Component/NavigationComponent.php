@@ -13,6 +13,20 @@ class NavigationComponent extends Component
 {
     private $user = null;
     public $breadcrumb = null;
+    public $iconToTableMapping = [
+        'Individuals' => 'address-book',
+        'Organisations' => 'building',
+        'EncryptionKeys' => 'key',
+        'SharingGroups' => 'user-friends',
+        'Broods' => 'network-wired',
+        'Roles' => 'id-badge',
+        'Users' => 'users',
+        'Inbox' => 'inbox',
+        'Outbox' => 'inbox',
+        'MetaTemplates' => 'object-group',
+        'LocalTools' => 'tools',
+        'Instance' => 'server',
+    ];
 
     public function initialize(array $config): void
     {
@@ -250,8 +264,8 @@ class NavigationComponent extends Component
             'routes' => [
                 "{$controller}:index" => [
                     'label' => Inflector::humanize($controller),
-                    'icon' => 'network-wired',
                     'url' => "/{$controller}/index",
+                    'icon' => $this->iconToTableMapping[$controller]
                 ],
                 "{$controller}:view" => [
                     'label' => __('View'),
@@ -289,6 +303,7 @@ class NavigationComponent extends Component
                 'defaults' => ['depth-1' => ['links' => 'LocalTools:brood_tools']]
             ]),
             'Roles' => $this->getDefaultCRUDConfig('Roles'),
+            'Users' => $this->getDefaultCRUDConfig('Users'),
             'Inbox' => $this->getDefaultCRUDConfig('Inbox', [
                 'defaults' => ['depth-1' => [
                     'links' => ['Inbox:view', 'Inbox:process'],
@@ -350,20 +365,18 @@ class NavigationComponent extends Component
                 'routes' => [
                     'LocalTools:index' => [
                         'label' => __('Local Tools'),
-                        'icon' => 'tools',
                         'url' => '/localTools/index',
+                        'icon' => $this->iconToTableMapping['LocalTools'],
                     ],
                     'LocalTools:viewConnector' => [
                         'label' => __('View'),
                         'textGetter' => 'name',
-                        'icon' => 'tools',
                         'url' => '/localTools/viewConnector/{{connector}}',
                         'url_vars' => ['connector' => 'connector'],
                         'after' => 'LocalTools:index',
                     ],
                     'LocalTools:broodTools' => [
                         'label' => __('Brood Tools'),
-                        'icon' => 'tools',
                         'url' => '/localTools/broodTools/{{id}}',
                         'url_vars' => ['id' => 'id'],
                     ],
@@ -373,8 +386,8 @@ class NavigationComponent extends Component
                 'routes' => [
                     'Instance:migrationIndex' => [
                         'label' => __('Database Migration'),
-                        'icon' => 'database',
                         'url' => '/instance/migrationIndex',
+                        'icon' => 'database'
                     ]
                 ]
             ]
