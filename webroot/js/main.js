@@ -99,11 +99,14 @@ function syntaxHighlightJson(json, indent) {
     });
 }
 
-function performGlobalSearch() {
+function performGlobalSearch(evt) {
     const $input = $('#globalSearch')
-    // const $resultContainer = $('.global-search-result-container')
-    const $resultContainer = $('.content')
+    const $resultContainer = $('.global-search-result-container')
     const value = $input.val()
+    if (value.length < 3 && evt.keyCode != 13) {
+        $('#dropdownMenuSearchAll').dropdown('hide')
+        return;
+    }
     const endpoint = '/instance/searchAll'
     const searchParams = new URLSearchParams({search: value});
     const url = endpoint + '?' + searchParams
@@ -111,7 +114,7 @@ function performGlobalSearch() {
         statusNode: $resultContainer
     }
 
-    $resultContainer.dropdown('show')
+    $('#dropdownMenuSearchAll').dropdown('show')
     AJAXApi.quickFetchURL(url, options).then((theHTML) => {
         $resultContainer.html(theHTML)
         $input.focus()
@@ -126,5 +129,5 @@ $(document).ready(() => {
     }
 
     const debouncedGlobalSearch = debounce(performGlobalSearch, 400)
-    $('#globalSearch').keypress(debouncedGlobalSearch);
+    $('#globalSearch').keydown(debouncedGlobalSearch);
 })

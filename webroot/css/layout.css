@@ -139,6 +139,21 @@ main.content {
     margin: auto 0;
 }
 
+.global-search-result-container .search-container-model .model-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.global-search-result-container .search-container-model .search-container-divider {
+    flex: 1 0 0;
+    min-height: 20px;
+}
+
+.global-search-result-container .search-container-model .search-container-divider > hr {
+    height: 1px;
+    flex: 1 0 auto
+}
+
 .right-navbar div.header-menu  a.nav-link {
     margin: auto 0;
 }

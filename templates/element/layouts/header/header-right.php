@@ -4,7 +4,8 @@
             <input type="text" class="form-control d-inline-block" id="globalSearch" placeholder="<?= __('Search in Cerebrate...') ?>">
             <i class="icon <?= $this->FontAwesome->getClass('search') ?>"></i>
         </span>
-        <div class="global-search-result-container dropdown-menu p-0">
+        <button type="button" class="dropdown-toggle d-none" id="dropdownMenuSearchAll" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-reference="parent"></button>
+        <div class="global-search-result-container dropdown-menu dropdown-menu-right p-0 pt-2" aria-labelledby="dropdownMenuSearchAll">
             <?= __('- No result -') ?>
         </div>
     </div>
