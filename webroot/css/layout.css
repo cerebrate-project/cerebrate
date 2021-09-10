@@ -242,6 +242,19 @@ ul.sidebar-elements li > a.sidebar-link {
     color: unset;
 }
 
+ul.sidebar-elements li > a.sidebar-link.active {
+    background-color: #ebebeb;
+}
+
+.sidebar ul.sidebar-elements li > a.sidebar-link.have-active-child {
+    background-color: #ebebeb;
+}
+
+.sidebar.expanded ul.sidebar-elements li > a.sidebar-link.have-active-child,
+.sidebar:hover ul.sidebar-elements li > a.sidebar-link.have-active-child {
+    background-color: unset;
+}
+
 ul.sidebar-elements > li > a.sidebar-link:hover {
     background-color: #f0f0f0;
 }
