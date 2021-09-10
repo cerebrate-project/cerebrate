@@ -24,4 +24,8 @@
         $sections[] = $section;
     }
 
-    echo implode('', $sections);
+    if (!empty($sections)) {
+        echo implode('', $sections);
+    } else {
+        echo sprintf('<span class="dropdown-item p-0 pb-1 text-center">%s</span>', __('- No result -'));
+    }

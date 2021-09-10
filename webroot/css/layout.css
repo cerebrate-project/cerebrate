@@ -154,6 +154,20 @@ main.content {
     flex: 1 0 auto
 }
 
+.top-navbar .global-search-container {
+    position: relative;
+}
+
+.global-search-container #globalSearch {
+    padding-right: 26px;
+}
+
+.top-navbar .global-search-container .search-input-container > i.icon {
+    position: absolute;
+    right: 8px;
+    line-height: 38px;
+}
+
 .right-navbar div.header-menu  a.nav-link {
     margin: auto 0;
 }
