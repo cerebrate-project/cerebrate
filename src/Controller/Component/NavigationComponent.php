@@ -45,48 +45,48 @@ class NavigationComponent extends Component
             'ContactDB' => [
                 'Individuals' => [
                     'label' => __('Individuals'),
-                    'icon' => 'address-book',
+                    'icon' => $this->iconToTableMapping['Individuals'],
                     'url' => '/individuals/index',
                 ],
                 'Organisations' => [
                     'label' => __('Organisations'),
-                    'icon' => 'building',
+                    'icon' => $this->iconToTableMapping['Organisations'],
                     'url' => '/organisations/index',
                 ],
                 'EncryptionKeys' => [
                     'label' => __('Encryption keys'),
-                    'icon' => 'key',
+                    'icon' => $this->iconToTableMapping['EncryptionKeys'],
                     'url' => '/encryptionKeys/index',
                 ]
             ],
             'Trust Circles' => [
                 'SharingGroups' => [
                     'label' => __('Sharing Groups'),
-                    'icon' => 'user-friends',
+                    'icon' => $this->iconToTableMapping['SharingGroups'],
                     'url' => '/sharingGroups/index',
                 ]
             ],
             'Sync' => [
                 'Broods' => [
                     'label' => __('Broods'),
-                    'icon' => 'network-wired',
+                    'icon' => $this->iconToTableMapping['Broods'],
                     'url' => '/broods/index',
                 ]
             ],
             'Administration' => [
                 'Roles' => [
                     'label' => __('Roles'),
-                    'icon' => 'id-badge',
+                    'icon' => $this->iconToTableMapping['Roles'],
                     'url' => '/roles/index',
                 ],
                 'Users' => [
                     'label' => __('Users'),
-                    'icon' => 'users',
+                    'icon' => $this->iconToTableMapping['Users'],
                     'url' => '/users/index',
                 ],
                 'Messages' => [
                     'label' => __('Messages'),
-                    'icon' => 'inbox',
+                    'icon' => $this->iconToTableMapping['Inbox'],
                     'url' => '/inbox/index',
                     'children' => [
                         'index' => [
@@ -105,19 +105,19 @@ class NavigationComponent extends Component
                     'children' => [
                         'MetaTemplates.index' => [
                             'label' => __('Meta Field Templates'),
-                            'icon' => 'object-group',
+                            'icon' => $this->iconToTableMapping['MetaTemplates'],
                             'url' => '/metaTemplates/index',
                         ],
                         'LocalTools.index' => [
                             'label' => __('Local Tools'),
-                            'icon' => 'tools',
+                            'icon' => $this->iconToTableMapping['LocalTools'],
                             'url' => '/localTools/index',
                         ]
                     ]
                 ],
-                'Instance' => [
+                'LocalTools' => [
                     'label' => __('Instance'),
-                    'icon' => 'server',
+                    'icon' => $this->iconToTableMapping['LocalTools'],
                     'children' => [
                         'Database' => [
                             'label' => __('Database'),
@@ -130,7 +130,7 @@ class NavigationComponent extends Component
             'Open' => [
                 'Organisations' => [
                     'label' => __('Organisations'),
-                    'icon' => 'buildings',
+                    'icon' => $this->iconToTableMapping['Organisations'],
                     'url' => '/open/organisations/index',
                     'children' => [
                         'index' => [
@@ -142,7 +142,7 @@ class NavigationComponent extends Component
                 ],
                 'Individuals' => [
                     'label' => __('Individuals'),
-                    'icon' => 'address-book',
+                    'icon' => $this->iconToTableMapping['Individuals'],
                     'url' => '/open/individuals/index',
                     'children' => [
                         'index' => [
