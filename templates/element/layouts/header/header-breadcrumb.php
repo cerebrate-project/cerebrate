@@ -30,7 +30,7 @@
             if (!empty($entry['url_vars'])) {
                 $entry['url'] = $this->DataFromPath->buildStringFromDataPath($entry['url'], $entity, $entry['url_vars']);
             }
-            $this->Breadcrumbs->add($entry['label'], Router::url($entry['url']));
+            $this->Breadcrumbs->add(h($entry['label']), Router::url($entry['url']), ['title' => h($entry['label'])]);
         }
     
         $lastCrumb = $breadcrumb[count($breadcrumb)-1];
@@ -47,7 +47,7 @@
                 $breadcrumbLinks .= sprintf('<a class="btn btn-%s btn-sm text-nowrap" role="button" href="%s">%s</a>',
                     $active ? 'secondary' : $navbarVariant,
                     Router::url($linkEntry['url']),
-                    $linkEntry['label']
+                    h($linkEntry['label'])
                 );
             }
         }
@@ -56,7 +56,7 @@
                 if (!empty($actionEntry['url_vars'])) {
                     $actionEntry['url'] = $this->DataFromPath->buildStringFromDataPath($actionEntry['url'], $entity, $actionEntry['url_vars']);
                 }
-                $breadcrumbAction .= sprintf('<a class="dropdown-item" href="%s">%s</a>', Router::url($actionEntry['url']), $actionEntry['label']);
+                $breadcrumbAction .= sprintf('<a class="dropdown-item" href="%s">%s</a>', Router::url($actionEntry['url']), h($actionEntry['label']));
             }
         }
     }
@@ -76,7 +76,7 @@
 <?php endif; ?>
 
 <?php if (!empty($breadcrumbAction)): ?>
-<div class="dropdown ml-3 d-flex align-items-center">
+<div class="header-breadcrumb-actions dropdown d-flex align-items-center">
     <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuBreadcrumbAction" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <?= __('Actions') ?>
     </a>
