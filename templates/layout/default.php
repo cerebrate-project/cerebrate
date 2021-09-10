@@ -47,6 +47,7 @@ Configure::write('sidebarVariant', $sidebarVariant);
     <?= $this->Html->script('popper.min.js') ?>
     <?= $this->Html->script('bootstrap.bundle.js') ?>
     <?= $this->Html->script('main.js') ?>
+    <?= $this->Html->script('utils.js') ?>
     <?= $this->Html->script('bootstrap-helper.js') ?>
     <?= $this->Html->script('api-helper.js') ?>
     <?= $this->fetch('meta') ?>

@@ -9,6 +9,9 @@ use \Cake\Database\Expression\QueryExpression;
 
 class MetaTemplatesController extends AppController
 {
+    public $quickFilterFields = ['name', 'uuid', 'scope'];
+    public $filterFields = ['name', 'uuid', 'scope', 'namespace'];
+    public $containFields = ['MetaTemplateFields'];
 
     public function update()
     {
@@ -34,8 +37,8 @@ class MetaTemplatesController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['name', 'uuid', 'scope', 'namespace'],
-            'quickFilters' => ['name', 'uuid', 'scope'],
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields,
             'contextFilters' => [
                 'fields' => ['scope'],
                 'custom' => [
@@ -49,7 +52,7 @@ class MetaTemplatesController extends AppController
                     ],
                 ]
             ],
-            'contain' => ['MetaTemplateFields']
+            'contain' => $this->containFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

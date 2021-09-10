@@ -14,12 +14,16 @@ use Cake\Error\Debugger;
 
 class AuthKeysController extends AppController
 {
+    public $filterFields = ['Users.username', 'authkey', 'comment', 'Users.id'];
+    public $quickFilterFields = ['authkey', ['comment' => true]];
+    public $containFields = ['Users'];
+
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['Users.username', 'authkey', 'comment', 'Users.id'],
-            'quickFilters' => ['authkey', 'comment'],
-            'contain' => ['Users'],
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields,
+            'contain' => $this->containFields,
             'exclude_fields' => ['authkey']
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();

@@ -17,6 +17,10 @@ class NavigationComponent extends Component
     public function initialize(array $config): void
     {
         $this->request = $config['request'];
+    }
+
+    public function beforeFilter($event)
+    {
         $this->fullBreadcrumb = $this->genBreadcrumb();
         $this->breadcrumb = $this->getBreadcrumb();
     }

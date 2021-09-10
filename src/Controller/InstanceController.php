@@ -6,6 +6,7 @@ use App\Controller\AppController;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
+use Cake\ORM\TableRegistry;
 use Cake\Event\EventInterface;
 
 class InstanceController extends AppController
@@ -18,7 +19,7 @@ class InstanceController extends AppController
 
     public function home()
     {
-        $this->set('md', file_get_contents(ROOT . '/README.md'));
+        // $this->set('md', file_get_contents(ROOT . '/README.md'));
     }
 
     public function status()
@@ -27,6 +28,19 @@ class InstanceController extends AppController
         $data = json_decode($data, true);
         $data['user'] = $this->ACL->getUser();
         return $this->RestResponse->viewData($data, 'json');
+    }
+
+    public function searchAll()
+    {
+        $searchValue = $this->request->getQuery('search');
+        $data = [];
+        if (!empty($searchValue)) {
+            $data = $this->Instance->searchAll($searchValue);
+        }
+        if ($this->ParamHandler->isRest()) {
+            return $this->RestResponse->viewData($data, 'json');
+        }
+        $this->set('data', $data);
     }
 
     public function migrationIndex()

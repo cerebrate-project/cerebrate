@@ -99,9 +99,32 @@ function syntaxHighlightJson(json, indent) {
     });
 }
 
+function performGlobalSearch() {
+    const $input = $('#globalSearch')
+    // const $resultContainer = $('.global-search-result-container')
+    const $resultContainer = $('.content')
+    const value = $input.val()
+    const endpoint = '/instance/searchAll'
+    const searchParams = new URLSearchParams({search: value});
+    const url = endpoint + '?' + searchParams
+    const options = {
+        statusNode: $resultContainer
+    }
+
+    $resultContainer.dropdown('show')
+    AJAXApi.quickFetchURL(url, options).then((theHTML) => {
+        $resultContainer.html(theHTML)
+        $input.focus()
+    })
+
+}
+
 var UI
 $(document).ready(() => {
     if (typeof UIFactory !== "undefined") {
         UI = new UIFactory()
     }
+
+    const debouncedGlobalSearch = debounce(performGlobalSearch, 400)
+    $('#globalSearch').keypress(debouncedGlobalSearch);
 })

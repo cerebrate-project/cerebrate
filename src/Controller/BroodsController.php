@@ -10,17 +10,21 @@ use Cake\ORM\TableRegistry;
 
 class BroodsController extends AppController
 {
+    public $filterFields = ['Broods.name', 'Broods.uuid', 'Broods.url', 'Broods.description', 'Organisations.id', 'Broods.trusted', 'pull', 'authkey'];
+    public $quickFilterFields = [['Broods.name' => true], 'Broods.uuid', ['Broods.description' => true]];
+    public $containFields = ['Organisations'];
+
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['Broods.name', 'Broods.uuid', 'Broods.url', 'Broods.description', 'Organisations.id', 'Broods.trusted', 'pull', 'authkey'],
-            'quickFilters' => [['Broods.name' => true], 'Broods.uuid', ['Broods.description' => true]],
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields,
             'contextFilters' => [
                 'fields' => [
                     'pull',
                 ]
             ],
-            'contain' => ['Organisations']
+            'contain' => $this->containFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

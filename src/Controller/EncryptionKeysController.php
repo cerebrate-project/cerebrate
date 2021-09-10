@@ -14,17 +14,21 @@ use Cake\Error\Debugger;
 
 class EncryptionKeysController extends AppController
 {
+    public $filterFields = ['owner_model', 'organisation_id', 'individual_id', 'encryption_key'];
+    public $quickFilterFields = ['encryption_key'];
+    public $containFields = ['Individuals', 'Organisations'];
+
     public function index()
     {
         $this->CRUD->index([
-            'quickFilters' => ['encryption_key'],
-            'filters' => ['owner_model', 'organisation_id', 'individual_id', 'encryption_key'],
+            'quickFilters' => $this->quickFilterFields,
+            'filters' => $this->filterFields,
             'contextFilters' => [
                 'fields' => [
                     'type'
                 ]
             ],
-            'contain' => ['Individuals', 'Organisations']
+            'contain' => $this->containFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
