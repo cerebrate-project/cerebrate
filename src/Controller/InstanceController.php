@@ -30,12 +30,12 @@ class InstanceController extends AppController
         return $this->RestResponse->viewData($data, 'json');
     }
 
-    public function searchAll()
+    public function searchAll($limit = 5)
     {
         $searchValue = $this->request->getQuery('search');
         $data = [];
         if (!empty($searchValue)) {
-            $data = $this->Instance->searchAll($searchValue);
+            $data = $this->Instance->searchAll($searchValue, $limit);
         }
         if ($this->ParamHandler->isRest()) {
             return $this->RestResponse->viewData($data, 'json');

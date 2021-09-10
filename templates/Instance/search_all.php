@@ -1,6 +1,9 @@
 <?php
     $sections = [];
     foreach ($data as $tableName => $tableResult) {
+        if (empty($tableResult['amount'])) {
+            continue;
+        }
         $section = '';
         $table = Cake\ORM\TableRegistry::get($tableName);
         $fieldPath = !empty($table->getDisplayField()) ? $table->getDisplayField() : 'id';
@@ -11,7 +14,7 @@
             </span>
         </span>', h($tableName));
 
-        foreach ($tableResult as $entry) {
+        foreach ($tableResult['entries'] as $entry) {
             $section .= sprintf('<a class="dropdown-item" href="%s">%s</a>',
                 Cake\Routing\Router::URL([
                     'controller' => Cake\Utility\Inflector::pluralize($entry->getSource()),
@@ -19,6 +22,13 @@
                     h($entry['id'])
                 ]),
                 h($entry[$fieldPath])
+            );
+        }
+        $remaining = $tableResult['amount'] - count($tableResult['entries']);
+        if ($remaining > 0) {
+            $section .= sprintf('<span class="total-found d-block pr-2"><strong class="total-found-number text-primary">%s</strong><span class="total-found-text d-inline ml-1" href="#">%s</span></span>',
+                $remaining,
+                __('more results')
             );
         }
         $sections[] = $section;

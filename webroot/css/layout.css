@@ -139,6 +139,16 @@ main.content {
     margin: auto 0;
 }
 
+.global-search-result-container .total-found {
+    font-size: 0.75rem;
+    padding-top: 0rem;
+    text-align: end;
+}
+
+.global-search-result-container .total-found .total-found-number {
+    font-size: 0.9rem;
+}
+
 .global-search-result-container .search-container-model .model-text {
     font-size: 0.75rem;
     font-weight: 600;

@@ -24,7 +24,7 @@ class InstanceTable extends AppTable
         return $validator;
     }
 
-    public function searchAll($value)
+    public function searchAll($value, $limit=5)
     {
         $results = [];
         foreach ($this->seachAllTables as $tableName) {
@@ -41,12 +41,12 @@ class InstanceTable extends AppTable
             if (!empty($containFields)) {
                 $query->contain($containFields);
             }
-            $result = $query->limit(5)->all()->toList();
+            $results[$tableName]['amount'] = $query->count();
+            $result = $query->limit($limit)->all()->toList();
             if (!empty($result)) {
-                $results[$tableName] = $result;
+                $results[$tableName]['entries'] = $result;
             }
         }
-
         return $results;
     }
 
