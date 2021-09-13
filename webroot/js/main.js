@@ -103,6 +103,14 @@ function performGlobalSearch(evt) {
     const $input = $('#globalSearch')
     const $resultContainer = $('.global-search-result-container')
     const value = $input.val()
+    const leftKey = 37,
+        upKey = 38,
+        rightKey = 39,
+        downKey = 40,
+        ingoredKeys = [leftKey, upKey, rightKey, downKey]
+    if (ingoredKeys.indexOf(evt.keyCode) != -1) {
+        return;
+    }
     if (value.length < 3 && evt.keyCode != 13) {
         $('#dropdownMenuSearchAll').dropdown('hide')
         return;
@@ -117,9 +125,15 @@ function performGlobalSearch(evt) {
     $('#dropdownMenuSearchAll').dropdown('show')
     AJAXApi.quickFetchURL(url, options).then((theHTML) => {
         $resultContainer.html(theHTML)
-        $input.focus()
     })
+}
 
+function focusSearchResults(evt) {
+    const upKey = 38,
+        downKey = 40
+    if ([upKey, downKey].indexOf(evt.keyCode) != -1) {
+        $('.global-search-result-container').find('.dropdown-item').first().focus()
+    }
 }
 
 var UI
@@ -129,5 +143,7 @@ $(document).ready(() => {
     }
 
     const debouncedGlobalSearch = debounce(performGlobalSearch, 400)
-    $('#globalSearch').keydown(debouncedGlobalSearch);
+    $('#globalSearch')
+        .keydown(debouncedGlobalSearch)
+        .keydown(focusSearchResults);
 })

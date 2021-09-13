@@ -149,6 +149,10 @@ main.content {
     margin: auto 0;
 }
 
+.global-search-result-container {
+    min-width: 280px;
+}
+
 .global-search-result-container .total-found {
     font-size: 0.75rem;
     padding-top: 0rem;

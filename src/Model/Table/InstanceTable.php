@@ -24,10 +24,18 @@ class InstanceTable extends AppTable
         return $validator;
     }
 
-    public function searchAll($value, $limit=5)
+    public function searchAll($value, $limit=5, $model=null)
     {
         $results = [];
-        foreach ($this->seachAllTables as $tableName) {
+        $models = $this->seachAllTables;
+        if (!is_null($model)) {
+            if (in_array($model, $this->seachAllTables)) {
+                $models = [$model];
+            } else {
+                return $results; // Cannot search in this model
+            }
+        }
+        foreach ($models as $tableName) {
             $controller = $this->getController($tableName);
             $table = TableRegistry::get($tableName);
             $query = $table->find();
