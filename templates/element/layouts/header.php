@@ -1,7 +1,9 @@
 <div class="container-fluid">
     <div class="left-navbar">
         <a class="navbar-brand d-sm-block d-none" href="<?= $baseurl ?>">
-            <?= $this->Html->image('cerebrate-icon.svg', ['alt' => 'Cerebrate', 'height' => 50]) ?>
+            <div class="composed-app-icon-container">
+                <span class="app-icon w-100 h-100" title="<?= __('Cerebrate') ?>"></span>
+            </div>
         </a>
         <button class="navbar-toggler d-sm-none" type="button" data-toggle="collapse" data-target="#app-sidebar" aria-controls="app-sidebar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>

@@ -479,3 +479,38 @@ header.navbar-light.top-navbar .header-breadcrumb .header-breadcrumb-item > a:ho
     filter: invert(0) drop-shadow(0px 0px 3px #000);
 }
 
+.composed-app-icon-container {
+    height: 50px;
+    width: 51px;
+    position: relative;
+    display: block;
+}
+
+.navbar-light .composed-app-icon-container > .app-icon {
+    background-color: black;
+}
+.navbar-dark .composed-app-icon-container > .app-icon {
+    background-color: white;
+}
+
+.composed-app-icon-container > .app-icon {
+    display: inline-block;
+    mask-image: url(/img/icon-composition/sheet-all.svg), url(/img/icon-composition/z.svg);
+    mask-position: 0 0, 2.4px 26px;
+    mask-repeat: no-repeat;
+    mask-size: contain, cover;
+    mask-composite: source-out;
+    -webkit-mask-image: url(/img/icon-composition/sheet-all.svg), url(/img/icon-composition/z.svg);
+    -webkit-mask-position: 0 0, 2.4px 26px;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain, cover;
+    -webkit-mask-composite: source-out;
+    transition-timing-function: ease-out;
+    transition-duration: 0.2s;
+    transition-property: -webkit-mask-position;
+}
+
+.composed-app-icon-container > .app-icon:hover {
+    mask-position: 0 0, 2.4px 23.5px;
+    -webkit-mask-position: 0 0, 2.4px 23.5px;
+}
