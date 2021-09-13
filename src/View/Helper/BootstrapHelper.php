@@ -110,6 +110,12 @@ class BootstrapHelper extends Helper
         $bsProgressTimeline = new BoostrapProgressTimeline($options, $this);
         return $bsProgressTimeline->progressTimeline();
     }
+
+    public function switch($options)
+    {
+        $bsSwitch = new BoostrapSwitch($options, $this);
+        return $bsSwitch->switch();
+    }
 }
 
 class BootstrapGeneric
@@ -1012,6 +1018,58 @@ class BoostrapCard extends BootstrapGeneric
             ],
         ], $content);
         return $footer;
+    }
+}
+
+class BoostrapSwitch extends BootstrapGeneric {
+    private $defaultOptions = [
+        'label' => '',
+        'variant' => 'primary',
+        'disabled' => false,
+        'checked' => false,
+        'title' => ''
+    ];
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+        ];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function switch()
+    {
+        return $this->genSwitch();
+    }
+
+    private function genSwitch()
+    {
+        $tmpId = 'tmp-' . mt_rand();
+        $html = $this->genNode('div', [
+            'class' => [
+                'custom-control custom-switch',
+            ],
+            'title' => $this->options['title']
+        ], implode('', [
+            $this->genNode('input', [
+                'type' => "checkbox",
+                'class' => 'custom-control-input',
+                'id' => $tmpId,
+                ($this->options['disabled'] ? 'disabled' : '') => '',
+                ($this->options['checked'] ? 'checked' : '') => $this->options['checked'] ? 'checked' : ''
+            ]),
+            $this->genNode('label', [
+                'class' => 'custom-control-label',
+                'for' => $tmpId,
+            ], h($this->options['label']))
+        ]));
+        return $html;
     }
 }
 
