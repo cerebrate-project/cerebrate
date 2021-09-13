@@ -14,7 +14,7 @@ body {
 
 .sub-container {
     background-color: white;
-    padding: 0.5rem;
+    padding: 0.75rem;
     border-radius: 0.25rem;
     margin-top: 0.75rem;
     margin-bottom: 1rem;
@@ -100,7 +100,7 @@ main.content {
     left: 0;
     transition: width .05s linear;
     transform:translateZ(0) scale(1,1);
-    z-index:1041;
+    z-index:1039;
 }
 
 .sidebar.expanded, .sidebar:hover {
@@ -112,7 +112,7 @@ main.content {
 }
 
 .sidebar ~ main.content:after {
-    z-index: 1040;
+    z-index: 1038;
     content: ' ';
     transition: opacity 0.5s;
     position: fixed;

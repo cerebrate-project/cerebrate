@@ -111,10 +111,10 @@
         $title;
     echo sprintf(
         "<div id=\"single-view-table-container-%s\">
-            <h2>%s</h2>
+            <h2 class=\"font-weight-light\">%s</h2>
             %s%s
-            <div class=\"px-3\">
-                <table id=\"single-view-table-%s\" class=\"table table-striped col-sm-8\">%s</table>
+            <div class=\"px-3 col-sm-8 sub-container\">
+                <table id=\"single-view-table-%s\" class=\"table table-striped\">%s</table>
             </div>
             <div id=\"metaTemplates\" class=\"col-lg-8 px-0\">%s</div>
             <div id=\"accordion\">%s</div>

@@ -98,7 +98,7 @@
             'body' => sprintf(
                 '%s%s%s%s%s%s',
                 empty($data['description']) ? '' : sprintf(
-                    '<div class="pb-2">%s</div>',
+                    '<div class="pb-2 font-weight-light">%s</div>',
                     $data['description']
                 ),
                 $ajaxFlashMessage,
@@ -135,16 +135,16 @@
         );
     } else {
         echo sprintf(
-            '%s<h2>%s</h2>%s%s%s%s%s%s%s%s%s',
+            '%s<h2 class="font-weight-light">%s</h2>%s%s%s%s%s%s%s%s%s',
             empty($ajax) ? '<div class="col-8">' : '',
             empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
             $formCreate,
             $ajaxFlashMessage,
             empty($data['description']) ? '' : sprintf(
-                '<div class="pb-3">%s</div>',
+                '<div class="pb-3 font-weight-light">%s</div>',
                 $data['description']
             ),
-            $fieldsString,
+            sprintf('<div class="sub-container">%s</div>', $fieldsString),
             empty($metaTemplateString) ? '' : $this->element(
                 'genericElements/accordion_scaffold', [
                     'body' => $metaTemplateString,

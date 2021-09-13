@@ -15,7 +15,7 @@
             '<nav class="header-breadcrumb d-xl-block d-none"{{attrs}}><ol class="">{{content}}</ol></nav>'
         ),
         'item' => sprintf(
-            '<li class="header-breadcrumb-item"{{attrs}}><i class="{{icon}} mr-1"></i><a href="{{url}}"{{innerAttrs}}>{{title}}</a></li>{{separator}}',
+            '<li class="header-breadcrumb-item"{{attrs}}><i class="{{icon}} mr-1"></i><a class="{{linkClass}}" href="{{url}}"{{innerAttrs}}>{{title}}</a></li>{{separator}}',
             empty($darkMode) ? 'light' : 'dark'
         ),
         'itemWithoutLink' => '<li class="header-breadcrumb-item"{{attrs}}><span{{innerAttrs}}>{{title}}</span></li>{{separator}}',
@@ -23,7 +23,7 @@
     ]);
 
     if (!empty($breadcrumb)) {
-        foreach ($breadcrumb as $entry) {
+        foreach ($breadcrumb as $i => $entry) {
             if (!empty($entry['textGetter'])) {
                 $entry['label'] = Cake\Utility\Hash::get($entity, $entry['textGetter']);
             }
@@ -33,6 +33,7 @@
             $this->Breadcrumbs->add(h($entry['label']), Router::url($entry['url']), [
                 'title' => h($entry['label']),
                 'templateVars' => [
+                    'linkClass' => $i == 0 ? 'font-weight-light' : '',
                     'icon' => !empty($entry['icon']) ? $this->FontAwesome->getClass(h($entry['icon'])) : ''
                 ]
             ]);
