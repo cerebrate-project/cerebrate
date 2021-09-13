@@ -8,7 +8,17 @@
 
 body {
     padding-top: var(--navbar-height);
-    margin-left: var(--sidebar-width-collapsed)
+    margin-left: var(--sidebar-width-collapsed);
+    background-color: #f1f2f4;
+}
+
+.sub-container {
+    background-color: white;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    margin-top: 0.75rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 35px 0 rgb(154 161 171 / 15%);
 }
 
 /* navbar-toggler breakpoint */
@@ -233,6 +243,7 @@ li.parent {
 }
 
 ul.sidebar-elements li > a.sidebar-link {
+    position: relative;
     display: block;
     padding: 0 20px;
     line-height: 35px;
@@ -246,6 +257,16 @@ ul.sidebar-elements li > a.sidebar-link.active {
     background-color: #ebebeb;
 }
 
+ul.sidebar-elements li > a.sidebar-link.active::after {
+    content: ' ';
+    width: 3px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--cerebrate-color);
+    position: absolute;
+}
+
 .sidebar ul.sidebar-elements li > a.sidebar-link.have-active-child {
     background-color: #ebebeb;
 }
@@ -253,6 +274,21 @@ ul.sidebar-elements li > a.sidebar-link.active {
 .sidebar.expanded ul.sidebar-elements li > a.sidebar-link.have-active-child,
 .sidebar:hover ul.sidebar-elements li > a.sidebar-link.have-active-child {
     background-color: unset;
+}
+
+.sidebar ul.sidebar-elements li > a.sidebar-link.have-active-child::after {
+    content: ' ';
+    width: 3px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--cerebrate-color);
+    position: absolute;
+}
+
+.sidebar.expanded ul.sidebar-elements li > a.sidebar-link.have-active-child::after,
+.sidebar:hover ul.sidebar-elements li > a.sidebar-link.have-active-child::after {
+    content: unset;
 }
 
 ul.sidebar-elements > li > a.sidebar-link:hover {
@@ -357,15 +393,24 @@ ul.sidebar-elements > li.category {
 
 .sidebar.expanded ul.sidebar-elements > li.category > span.category-label,
 .sidebar:hover ul.sidebar-elements > li.category > span.category-label {
-    display: flex;
+    opacity: 1;
+    position: relative;
+    height: auto;
+    width: auto;
 }
 
 ul.sidebar-elements > li.category > span.category-label {
-    display: none;
+    display: flex;
+    position: absolute;
+    height: 0;
+    width: 0;
+    overflow: hidden;
     text-transform: uppercase;
     font-size: 0.75rem;
     font-weight: 600;
     margin-right: 15px;
+    opacity: 0;
+    transition: opacity 0.2s linear;
 }
 
 ul.sidebar-elements > li.category > span.category-divider {

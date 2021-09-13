@@ -27,6 +27,7 @@
             empty($data['description']) ? '' : h($data['description'])
         );
     }
+    echo '<div class="sub-container">';
     if (!empty($data['html'])) {
         echo sprintf('<div>%s</div>', $data['html']);
     }
@@ -120,6 +121,7 @@
         echo $this->element('/genericElements/IndexTable/pagination_counter', $paginationData);
         echo $this->element('/genericElements/IndexTable/pagination_links');
     }
+    echo '</div>';
     echo '</div>';
 ?>
 <script type="text/javascript">
