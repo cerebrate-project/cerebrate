@@ -119,9 +119,12 @@
 .text-black {color:black;}
 .text-white {color:white;}
 
-.link-unstyled, .link-unstyled:link, .link-unstyled:hover {
-  color: inherit;
-  text-decoration: inherit;
+.table-link-action {
+    filter: invert(0.4);
+}
+
+.table-link-action:hover {
+    filter: unset;
 }
 
 .btn-group > .btn:last-of-type:not(.dropdown-toggle), .btn-group > .btn-group:not(:last-of-type) > .btn {
