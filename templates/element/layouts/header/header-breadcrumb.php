@@ -5,8 +5,6 @@
     $controller = $this->request->getParam('controller');
     $action = $this->request->getParam('action');
     $curentPath = "{$controller}{$action}";
-    $navbarVariant = Configure::read('navbarVariant');
-    $navbarIsDark = Configure::read('navbarIsDark');
 
     $breadcrumbLinks = '';
     $breadcrumbAction = '';
@@ -14,10 +12,7 @@
         'wrapper' => sprintf(
             '<nav class="header-breadcrumb d-xl-block d-none"{{attrs}}><ol class="">{{content}}</ol></nav>'
         ),
-        'item' => sprintf(
-            '<li class="header-breadcrumb-item"{{attrs}}><i class="{{icon}} mr-1"></i><a class="{{linkClass}}" href="{{url}}"{{innerAttrs}}>{{title}}</a></li>{{separator}}',
-            empty($darkMode) ? 'light' : 'dark'
-        ),
+        'item' => '<li class="header-breadcrumb-item"{{attrs}}><i class="{{icon}} mr-1"></i><a class="{{linkClass}}" href="{{url}}"{{innerAttrs}}>{{title}}</a></li>{{separator}}',
         'itemWithoutLink' => '<li class="header-breadcrumb-item"{{attrs}}><span{{innerAttrs}}>{{title}}</span></li>{{separator}}',
         'separator' => '<li class="header-breadcrumb-separator"{{attrs}}><span{{innerAttrs}}><i class="fa fa-sm fa-angle-right"></i></span></li>'
     ]);
@@ -51,7 +46,7 @@
                     $linkEntry['url'] = $this->DataFromPath->buildStringFromDataPath($linkEntry['url'], $entity, $linkEntry['url_vars']);
                 }
                 $breadcrumbLinks .= sprintf('<a class="btn btn-%s btn-sm text-nowrap" role="button" href="%s">%s</a>',
-                    $active ? 'secondary' : $navbarVariant,
+                    $active ? 'secondary' : 'dark',
                     Router::url($linkEntry['url']),
                     h($linkEntry['label'])
                 );

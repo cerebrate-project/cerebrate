@@ -144,7 +144,7 @@
                 '<div class="pb-3 font-weight-light">%s</div>',
                 $data['description']
             ),
-            sprintf('<div class="sub-container">%s</div>', $fieldsString),
+            sprintf('<div class="panel">%s</div>', $fieldsString),
             empty($metaTemplateString) ? '' : $this->element(
                 'genericElements/accordion_scaffold', [
                     'body' => $metaTemplateString,

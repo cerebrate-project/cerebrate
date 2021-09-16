@@ -129,8 +129,9 @@ class AppController extends Controller
         $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
-        $this->set('darkMode', !empty(Configure::read('Cerebrate.dark')));
         $this->set('baseurl', Configure::read('App.fullBaseUrl'));
+        Configure::write('app.bsTheme', 'default');
+        $this->set('bsTheme',Configure::read('app.bsTheme'));
     }
 
     private function authApiUser(): void

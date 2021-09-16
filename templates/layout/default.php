@@ -16,12 +16,6 @@
 use Cake\Core\Configure;
 
 $cakeDescription = 'Cerebrate';
-$navbarVariant = !empty($darkMode) ? 'primary' : 'dark';
-$navbarIsDark = false;
-$sidebarVariant = !empty($darkMode) ? 'dark' : 'dark';
-Configure::write('navbarVariant', $navbarVariant);
-Configure::write('navbarIsDark', $navbarIsDark);
-Configure::write('sidebarVariant', $sidebarVariant);
 ?>
 <!DOCTYPE html>
 <html>
@@ -34,11 +28,8 @@ Configure::write('sidebarVariant', $sidebarVariant);
     </title>
     <?= $this->Html->meta('icon') ?>
     <?php
-        if (empty($darkMode)) {
-            echo $this->Html->css('bootstrap.css');
-        } else {
-            echo $this->Html->css('darkly-bootstrap.css');
-        }
+        echo $this->Html->css('themes/bootstrap-' . $bsTheme);
+        echo $this->Html->css('themes/theme-' . $bsTheme);
     ?>
     <?= $this->Html->css('main.css') ?>
     <?= $this->Html->css('font-awesome') ?>
@@ -58,12 +49,12 @@ Configure::write('sidebarVariant', $sidebarVariant);
 </head>
 <body>
     <div class="main-wrapper">
-        <header class="navbar top-navbar <?= sprintf('bg-%s navbar-%s', $navbarVariant, $navbarIsDark ? 'light' : 'dark') ?>">
+        <header class="navbar top-navbar">
             <?= $this->element('layouts/header') ?>
         </header>
-        <div id="app-sidebar" class="collapse d-sm-block sidebar <?= empty($darkMode) ? 'bg-light' : 'bg-dark' ?>">
+        <nav id="app-sidebar" class="collapse d-sm-block sidebar">
             <?= $this->element('layouts/sidebar') ?>
-        </div>
+        </nav>
         <main role="main" class="content">
             <div class="container-fluid mt-1">
                 <?= $this->Flash->render() ?>
@@ -77,6 +68,6 @@ Configure::write('sidebarVariant', $sidebarVariant);
 </body>
 
 <script>
-    const darkMode = (<?= empty($darkMode) ? 'false' : 'true' ?>)
+    const bsTheme = '<?= h($bsTheme); ?>'
 </script>
 </html>

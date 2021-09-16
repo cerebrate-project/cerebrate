@@ -113,7 +113,7 @@
         "<div id=\"single-view-table-container-%s\">
             <h2 class=\"font-weight-light\">%s</h2>
             %s%s
-            <div class=\"px-3 col-sm-8 sub-container\">
+            <div class=\"px-3 col-sm-8 panel\">
                 <table id=\"single-view-table-%s\" class=\"table table-striped\">%s</table>
             </div>
             <div id=\"metaTemplates\" class=\"col-lg-8 px-0\">%s</div>

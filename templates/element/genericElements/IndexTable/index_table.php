@@ -27,7 +27,7 @@
             empty($data['description']) ? '' : h($data['description'])
         );
     }
-    echo '<div class="sub-container">';
+    echo '<div class="panel">';
     if (!empty($data['html'])) {
         echo sprintf('<div>%s</div>', $data['html']);
     }
