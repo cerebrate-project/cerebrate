@@ -813,11 +813,7 @@ class OverlayFactory {
     constructor(node, options={}) {
         this.node = node
         this.$node = $(this.node)
-        if (darkMode) {
-            this.options = Object.assign({}, OverlayFactory.defaultOptionsDarkTheme, options)
-        } else {
-            this.options = Object.assign({}, OverlayFactory.defaultOptions, options)
-        }
+        this.options = Object.assign({}, OverlayFactory.defaultOptions, options)
         this.options.auto = options.auto ? this.options.auto : !(options.variant || options.spinnerVariant)
         if (this.options.auto) {
             this.adjustOptionsBasedOnNode()
@@ -835,18 +831,6 @@ class OverlayFactory {
      * @property {boolean} spinnerSmall   - If the spinner inside the overlay should be small
      * @property {string=('border'|'grow')} spinnerSmall   - If the spinner inside the overlay should be small
      */
-    static defaultOptionsDarkTheme = {
-        text: '',
-        variant: 'light',
-        opacity: 0.25,
-        blur: '2px',
-        rounded: false,
-        auto: true,
-        spinnerVariant: '',
-        spinnerSmall: false,
-        spinnerType: 'border',
-        fallbackBoostrapVariant: 'light'
-    }
     static defaultOptions = {
         text: '',
         variant: 'light',
@@ -862,7 +846,7 @@ class OverlayFactory {
 
     static overlayWrapper = '<div aria-busy="true" class="position-relative"/>'
     static overlayContainer = '<div class="position-absolute text-nowrap" style="inset: 0px; z-index: 10;"/>'
-    static overlayBg = '<div class="position-absolute" style="inset: 0px;"/>'
+    static overlayBg = '<div class="position-absolute loading-overlay" style="inset: 0px;"/>'
     static overlaySpinner = '<div class="position-absolute" style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);"><span aria-hidden="true" class=""><!----></span></div></div>'
     static overlayText = '<span class="ml-1 align-text-top"></span>'
 
