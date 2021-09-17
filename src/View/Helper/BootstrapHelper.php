@@ -65,8 +65,14 @@ class BootstrapHelper extends Helper
 
     public function table($options, $data)
     {
-        $bsTable = new BoostrapTable($options, $data);
+        $bsTable = new BoostrapTable($options, $data, $this);
         return $bsTable->table();
+    }
+
+    public function listTable($options, $data)
+    {
+        $bsListTable = new BoostrapListTable($options, $data, $this);
+        return $bsListTable->table();
     }
 
     public function button($options)
@@ -203,6 +209,7 @@ class BootstrapTabs extends BootstrapGeneric
         'card' => false,
         'header-variant' => 'light',
         'body-variant' => '',
+        'body-class' => [],
         'nav-class' => [],
         'nav-item-class' => [],
         'content-class' => [],
@@ -321,7 +328,13 @@ class BootstrapTabs extends BootstrapGeneric
         $html .= $this->genNav();
         if ($this->options['card']) {
             $html .= $this->closeNode('div');
-            $html .= $this->openNode('div', ['class' => array_merge(['card-body'], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
+            $html .= $this->openNode('div', [
+                'class' => array_merge(
+                    ['card-body'],
+                    $this->options['body-class'] ?? [],
+                    ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"]
+                )
+            ]);
         }
         $html .= $this->genContent();
         if ($this->options['card']) {
@@ -337,7 +350,13 @@ class BootstrapTabs extends BootstrapGeneric
             $html .= $this->openNode('div', ['class' => array_merge(['col-' . $this->options['vertical-size'], ($this->options['card'] ? 'card-header border-right' : '')], ["bg-{$this->options['header-variant']}", "text-{$this->options['header-text-variant']}", "border-{$this->options['header-border-variant']}"])]);
                 $html .= $this->genNav();
             $html .= $this->closeNode('div');
-            $html .= $this->openNode('div', ['class' => array_merge(['col-' . (12 - $this->options['vertical-size']), ($this->options['card'] ? 'card-body2' : '')], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
+            $html .= $this->openNode('div', [
+                'class' => array_merge(
+                    ['col-' . (12 - $this->options['vertical-size']), ($this->options['card'] ? 'card-body2' : '')],
+                    $this->options['body-class'] ?? [],
+                    ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"]
+                )
+            ]);
                 $html .= $this->genContent();
             $html .= $this->closeNode('div');
         $html .= $this->closeNode('div');
@@ -487,7 +506,7 @@ class BoostrapTable extends BootstrapGeneric {
 
     private $bsClasses = null;
 
-    function __construct($options, $data) {
+    function __construct($options, $data, $btHelper) {
         $this->allowedOptionValues = [
             'variant' => array_merge(BootstrapGeneric::$variants, [''])
         ];
@@ -495,6 +514,7 @@ class BoostrapTable extends BootstrapGeneric {
         $this->fields = $data['fields'];
         $this->items = $data['items'];
         $this->caption = !empty($data['caption']) ? $data['caption'] : '';
+        $this->btHelper = $btHelper;
     }
 
     private function processOptions($options)
@@ -603,6 +623,11 @@ class BoostrapTable extends BootstrapGeneric {
     {
         if (isset($field['formatter'])) {
             $cellContent = $field['formatter']($value, $row);
+        } else if (isset($field['element'])) {
+            $cellContent = $this->btHelper->getView()->element($field['element'], [
+                'data' => [$value],
+                'field' => ['path' => '0']
+            ]);
         } else {
             $cellContent = h($value);
         }
@@ -611,6 +636,145 @@ class BoostrapTable extends BootstrapGeneric {
                 !empty($row['_cellVariant']) ? "bg-{$row['_cellVariant']}" : ''
             ]
         ], $cellContent);
+    }
+
+    private function genCaption()
+    {
+        return !empty($this->caption) ? $this->genNode('caption', [], h($this->caption)) : '';
+    }
+}
+
+class BoostrapListTable extends BootstrapGeneric {
+    private $defaultOptions = [
+        'striped' => true,
+        'bordered' => false,
+        'borderless' => false,
+        'hover' => true,
+        'small' => false,
+        'variant' => '',
+        'tableClass' => [],
+        'bodyClass' => [],
+    ];
+
+    private $bsClasses = null;
+
+    function __construct($options, $data, $btHelper) {
+        $this->allowedOptionValues = [
+            'variant' => array_merge(BootstrapGeneric::$variants, [''])
+        ];
+        $this->processOptions($options);
+        $this->fields = $data['fields'];
+        $this->item = $data['item'];
+        $this->caption = !empty($data['caption']) ? $data['caption'] : '';
+        $this->btHelper = $btHelper;
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function table()
+    {
+        return $this->genTable();
+    }
+
+    private function genTable()
+    {
+        $html = $this->openNode('table', [
+            'class' => [
+                'table',
+                "table-{$this->options['variant']}",
+                $this->options['striped'] ? 'table-striped' : '',
+                $this->options['bordered'] ? 'table-bordered' : '',
+                $this->options['borderless'] ? 'table-borderless' : '',
+                $this->options['hover'] ? 'table-hover' : '',
+                $this->options['small'] ? 'table-sm' : '',
+                !empty($this->options['variant']) ? "table-{$this->options['variant']}" : '',
+                !empty($this->options['tableClass']) ? (is_array($this->options['tableClass']) ? implode(' ', $this->options['tableClass']) : $this->options['tableClass']) : ''
+            ],
+            'id' => $this->options['id'] ?? ''
+        ]);
+
+        $html .= $this->genCaption();
+        $html .= $this->genBody();
+        
+        $html .= $this->closeNode('table');
+        return $html;
+    }
+
+    private function genBody()
+    {
+        $body =  $this->openNode('tbody', [
+            'class' => [
+                !empty($this->options['bodyClass']) ? (is_array($this->options['bodyClass']) ? implode(' ', $this->options['bodyClass']) : $this->options['bodyClass']) : ''
+            ],
+        ]);
+        foreach ($this->fields as $i => $field) {
+            $body .= $this->genRow($field);
+        }
+        $body .= $this->closeNode('tbody');
+        return $body;
+    }
+
+    private function genRow($field)
+    {
+        $rowValue = $this->genCell($field);
+        $rowKey = $this->genNode('th', [
+            'class' => [
+                'col-sm-2'
+            ],
+            'scope' => 'row'
+        ], h($field['key']));
+        $row = $this->genNode('tr',[
+            'class' => [
+                'd-flex',
+                !empty($field['_rowVariant']) ? "table-{$field['_rowVariant']}" : ''
+            ]
+        ], implode('', [$rowKey, $rowValue]));
+        return $row;
+    }
+
+    private function genCell($field=[])
+    {
+        if (isset($field['raw'])) {
+            $cellContent = h($field['raw']);
+        } else if (isset($field['formatter'])) {
+            $cellContent = $field['formatter']($this->getValueFromObject($field), $this->item);
+        } else if (isset($field['type'])) {
+            $cellContent = $this->btHelper->getView()->element($this->getElementPath($field['type']), [
+                'data' => $this->item,
+                'field' => $field
+            ]);
+        } else {
+            $cellContent = h($this->getValueFromObject($field));
+        }
+        return $this->genNode('td', [
+            'class' => [
+                'col-sm-10',
+                !empty($row['_cellVariant']) ? "bg-{$row['_cellVariant']}" : ''
+            ]
+        ], $cellContent);
+    }
+
+    private function getValueFromObject($field)
+    {
+        if (is_array($field)) {
+            $key = $field['path'];
+        } else {
+            $key = $field;
+        }
+        $cellValue = Hash::get($this->item, $key);
+        return $cellValue;
+    }
+
+    private function getElementPath($type)
+    {
+        return sprintf('%s%sField',
+            $this->options['elementsRootPath'] ?? '',
+            $type
+        );
     }
 
     private function genCaption()
