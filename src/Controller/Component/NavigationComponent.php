@@ -384,11 +384,16 @@ class NavigationComponent extends Component
             ],
             'Instance' => [
                 'routes' => [
+                    'Instance:home' => [
+                        'label' => __('Home'),
+                        'url' => '/',
+                        'icon' => 'home'
+                    ],
                     'Instance:migrationIndex' => [
                         'label' => __('Database Migration'),
                         'url' => '/instance/migrationIndex',
                         'icon' => 'database'
-                    ]
+                    ],
                 ]
             ]
         ];
