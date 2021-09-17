@@ -833,7 +833,7 @@ class OverlayFactory {
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} variant - The variant of the overlay
      * @property {number}  opacity        - The opacity of the overlay
      * @property {boolean} rounded        - If the overlay should be rounded
-     * @property {number}  auto           - Whether overlay and spinner options should be adapted automatically based on the node
+     * @property {boolean}  auto           - Whether overlay and spinner options should be adapted automatically based on the node
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} spinnerVariant - The variant of the spinner
      * @property {boolean} spinnerSmall   - If the spinner inside the overlay should be small
      * @property {string=('border'|'grow')} spinnerSmall   - If the spinner inside the overlay should be small

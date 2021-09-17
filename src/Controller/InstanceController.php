@@ -7,6 +7,7 @@ use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
 use Cake\Event\EventInterface;
+use Cake\Core\Configure;
 
 class InstanceController extends AppController
 {
@@ -100,5 +101,37 @@ class InstanceController extends AppController
         $this->set('actionName', __('Run rollback'));
         $this->set('path', ['controller' => 'instance', 'action' => 'rollback']);
         $this->render('/genericTemplates/confirm');
+    }
+
+    public function settings()
+    {
+        $this->Settings = $this->getTableLocator()->get('Settings');
+        $all = $this->Settings->getSettings(true);
+        $this->set('settingsProvider', $all['settingsProvider']);
+        $this->set('settings', $all['settings']);
+        $this->set('settingsFlattened', $all['settingsFlattened']);
+        $this->set('notices', $all['notices']);
+    }
+
+    public function saveSetting()
+    {
+        if ($this->request->is('post')) {
+            $data = $this->ParamHandler->harvestParams([
+                'name',
+                'value'
+            ]);
+            $this->Settings = $this->getTableLocator()->get('Settings');
+            $errors = $this->Settings->saveSetting($data['name'], $data['value']);
+            $message = __('Could not save setting `{0}`', $data['name']);
+            if (empty($errors)) {
+                $message = __('Setting `{0}` saved', $data['name']);
+                $data = $this->Settings->getSetting($data['name']);
+            }
+            $this->CRUD->setResponseForController('saveSetting', empty($errors), $message, $data, $errors);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
+            }
+        }
     }
 }

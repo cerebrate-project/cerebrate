@@ -68,6 +68,49 @@ class AJAXApi {
         }
     }
 
+    provideSuccessFeedback(response, toastOptions, skip=false) {
+        let alteredToastOptions = Object.assign(
+            {
+                'variant': 'success'
+            },
+            AJAXApi.defaultOptions.successToastOptions,
+            toastOptions
+        )
+        alteredToastOptions.body = response.message
+        if (!skip && this.options.provideFeedback) {
+            UI.toast(alteredToastOptions)
+        }
+    }
+
+    provideFailureFeedback(response, toastOptions, skip=false) {
+        let alteredToastOptions = Object.assign(
+            {
+                'variant': 'danger'
+            },
+            AJAXApi.defaultOptions.errorToastOptions,
+            toastOptions
+        )
+        if (response.message && response.errors) {
+            if (Array.isArray(response.errors)) {
+                alteredToastOptions.title = response.message
+                alteredToastOptions.body = response.errors.join(', ')
+            } else if (typeof response.errors === 'string') {
+                alteredToastOptions.title = response.message
+                alteredToastOptions.body = response.errors
+            } else {
+                alteredToastOptions.title = 'There has been a problem with the operation'
+                alteredToastOptions.body = response.message
+            }
+        } else {
+            alteredToastOptions.title = 'There has been a problem with the operation'
+            alteredToastOptions.body = response.message
+        }
+        if (!skip && this.options.provideFeedback) {
+            UI.toast(alteredToastOptions)
+            console.warn(alteredToastOptions.body)
+        }
+    }
+
     /**
      * Merge newOptions configuration into the current object
      * @param {Object} The options supported by AJAXApi#defaultOptions
@@ -149,6 +192,7 @@ class AJAXApi {
     /**
      * @param {string} url              - The URL from which to fetch the form
      * @param {Object} [dataToMerge={}] - Additional data to be integrated or modified in the form
+     * @param {Object} [options={}]     - The options supported by AJAXApi#defaultOptions 
      * @return {Promise<Object>} Promise object resolving to the result of the POST operation
      */
     static async quickFetchAndPostForm(url, dataToMerge={}, options={}) {
@@ -174,17 +218,10 @@ class AJAXApi {
                 throw new Error(`Network response was not ok. \`${response.statusText}\``)
             }
             const dataHtml = await response.text();
-            this.provideFeedback({
-                variant: 'success',
-                title: 'URL fetched',
-            }, false, skipFeedback);
+            this.provideSuccessFeedback({message: 'URL fetched'}, {}, skipFeedback)
             toReturn = dataHtml;
         } catch (error) {
-            this.provideFeedback({
-                variant: 'danger',
-                title: 'There has been a problem with the operation',
-                body: error.message
-            }, true, skipFeedback);
+            this.provideFailureFeedback(error, {}, skipFeedback)
             toReturn = Promise.reject(error);
         } finally {
             if (!skipRequestHooks) {
@@ -211,17 +248,10 @@ class AJAXApi {
                 throw new Error(`Network response was not ok. \`${response.statusText}\``)
             }
             const dataJson = await response.json();
-            this.provideFeedback({
-                variant: 'success',
-                title: 'URL fetched',
-            }, false, skipFeedback);
+            this.provideSuccessFeedback({message: 'JSON fetched'}, {}, skipFeedback)
             toReturn = dataJson;
         } catch (error) {
-            this.provideFeedback({
-                variant: 'danger',
-                title: 'There has been a problem with the operation',
-                body: error.message
-            }, true, skipFeedback);
+            this.provideFailureFeedback(error, {}, skipFeedback)
             toReturn = Promise.reject(error);
         } finally {
             if (!skipRequestHooks) {
@@ -256,11 +286,7 @@ class AJAXApi {
             }
             toReturn = form[0];
         } catch (error) {
-            this.provideFeedback({
-                variant: 'danger',
-                title: 'There has been a problem with the operation',
-                body: error.message
-            }, true, skipFeedback);
+            this.provideFailureFeedback(error, {}, skipFeedback)
             toReturn = Promise.reject(error);
         } finally {
             if (!skipRequestHooks) {
@@ -301,13 +327,10 @@ class AJAXApi {
                     variant: 'success',
                     body: data.message
                 }, false, skipFeedback);
+                this.provideSuccessFeedback(data, {}, skipFeedback)
                 toReturn = data;
             } else {
-                this.provideFeedback({
-                    variant: 'danger',
-                    title: 'There has been a problem with the operation',
-                    body: data.message
-                }, true, skipFeedback);
+                this.provideFailureFeedback(data, {}, skipFeedback)
                 toReturn = Promise.reject(data.errors);
             }
         } catch (error) {
@@ -326,7 +349,7 @@ class AJAXApi {
     }
 
      /**
-     * @param {HTMLFormElement}  form                     - The form to be posted
+     * @param {HTMLFormElement}  form            - The form to be posted
      * @param {Object} [dataToMerge={}]          - Additional data to be integrated or modified in the form
      * @param {boolean} [skipRequestHooks=false] - If true, default request hooks will be skipped
      * @param {boolean} [skipFeedback=false]     - Pass this value to the AJAXApi.provideFeedback function
@@ -355,17 +378,10 @@ class AJAXApi {
                 try {
                     const data = await response.json()
                     if (data.success) {
-                        this.provideFeedback({
-                            variant: 'success',
-                            body: data.message
-                        }, false, skipFeedback);
+                        this.provideSuccessFeedback(data, {}, skipFeedback)
                         toReturn = data;
                     } else {
-                        this.provideFeedback({
-                            variant: 'danger',
-                            title: 'There has been a problem with the operation',
-                            body: data.message
-                        }, true, skipFeedback);
+                        this.provideFailureFeedback(data, {}, skipFeedback)
                         feedbackShown = true
                         this.injectFormValidationFeedback(form, data.errors)
                         toReturn = Promise.reject(data.errors);

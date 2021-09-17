@@ -89,9 +89,4 @@ return [
             'url' => env('EMAIL_TRANSPORT_DEFAULT_URL', null),
         ],
     ],
-    'Cerebrate' => [
-	'open' => [],
-    'dark' => 0,
-    'baseurl' => ''
-    ]
 ];

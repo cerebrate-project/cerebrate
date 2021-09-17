@@ -124,7 +124,7 @@ class AppController extends Controller
         $this->set('menu', $this->ACL->getMenu());
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
-        $this->set('darkMode', !empty(Configure::read('Cerebrate.dark')));
+        $this->set('darkMode', !empty(Configure::read('Cerebrate')['ui.dark']));
         $this->set('baseurl', Configure::read('App.fullBaseUrl'));
     }
 
