@@ -31,7 +31,8 @@ header.top-navbar .header-breadcrumb .header-breadcrumb-item > a:hover {
   background-color: #fff; }
 
 .breadcrumb-link-container {
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.16), 0 2px 6px 0 rgba(0, 0, 0, 0.12); }
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.16), 0 2px 6px 0 rgba(0, 0, 0, 0.12);
+  background-color: #f8f9fa; }
 
 /* Sidebar */
 .sidebar {
