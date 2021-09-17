@@ -656,7 +656,7 @@ class CRUDComponent extends Component
         return $massagedFilters;
     }
 
-    protected function setQuickFilters(array $params, \Cake\ORM\Query $query, array $quickFilterFields): \Cake\ORM\Query
+    public function setQuickFilters(array $params, \Cake\ORM\Query $query, array $quickFilterFields): \Cake\ORM\Query
     {
         $queryConditions = [];
         $this->Controller->set('quickFilter', empty($quickFilterFields) ? [] : $quickFilterFields);

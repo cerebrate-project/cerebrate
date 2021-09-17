@@ -10,11 +10,16 @@ use Cake\Error\Debugger;
 
 class SharingGroupsController extends AppController
 {
+    public $filterFields = ['SharingGroups.uuid', 'SharingGroups.name', 'description', 'releasability', 'Organisations.name', 'Organisations.uuid'];
+    public $quickFilterFields = ['SharingGroups.uuid', ['SharingGroups.name' => true], ['description' => true], ['releasability' => true]];
+    public $containFields = ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]];
+
     public function index()
     {
         $this->CRUD->index([
-            'contain' => ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]],
-            'filters' => ['uuid', 'description', 'releasability', 'Organisations.name', 'Organisations.uuid']
+            'contain' => $this->containFields,
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

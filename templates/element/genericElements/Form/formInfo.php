@@ -17,7 +17,7 @@
         }
     }
     echo sprintf(
-        '<span id = "%sInfoPopover" class="icon-info-sign" data-toggle="popover" data-trigger="hover"></span>',
+        '<span id = "%sInfoPopover" class="icon-info-sign" data-bs-toggle="popover" data-bs-trigger="hover"></span>',
         h($field['field'])
     );
 ?>

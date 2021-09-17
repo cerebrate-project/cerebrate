@@ -17,7 +17,7 @@
      *    - function($row, $options): the lambda function. $row contain the row data
      *    - options: array of options. datapaths described in the datapath keyname will be extracted and replaced with the actual row value
     */
-    echo '<td class="action-links text-right text-nowrap">';
+    echo '<td class="action-links text-end text-nowrap">';
     foreach ($actions as $action) {
         if (isset($action['requirement']) && !$action['requirement']) {
             continue;
@@ -100,7 +100,7 @@
                 $action['onclick'] = sprintf('UI.submissionModalForIndex(\'%s\', \'%s\', \'%s\')', $modal_url, $reload_url, $tableRandomValue);
             }
             echo sprintf(
-                '<a href="%s" title="%s" aria-label="%s" %s %s class="link-unstyled"><i class="%s"></i></a> ',
+                '<a href="%s" title="%s" aria-label="%s" %s %s class="text-decoration-none text-reset table-link-action"><i class="%s"></i></a> ',
                 $url,
                 empty($action['title']) ? '' : h($action['title']),
                 empty($action['title']) ? '' : h($action['title']),

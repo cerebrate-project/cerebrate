@@ -36,7 +36,7 @@
             $filteringButton = $this->Bootstrap->button($buttonConfig);
         }
         $button = empty($data['button']) && empty($data['fa-icon']) ? '' : sprintf(
-            '<div class="input-group-append"><button class="btn btn-primary" %s id="quickFilterButton-%s" %s>%s%s</button>%s</div>',
+            '<button class="btn btn-primary" %s id="quickFilterButton-%s" %s>%s%s</button>%s',
             empty($data['data']) ? '' : h($data['data']),
             h($tableRandomValue),
             $filterEffective ? '' : 'disabled="disabled"',

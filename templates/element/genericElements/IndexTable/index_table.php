@@ -19,14 +19,15 @@
     $tableRandomValue = Cake\Utility\Security::randomString(8);
     echo '<div id="table-container-' . h($tableRandomValue) . '">';
     if (!empty($data['title'])) {
-        echo sprintf('<h2>%s</h2>', h($data['title']));
+        echo sprintf('<h2 class="fw-light">%s</h2>', h($data['title']));
     }
     if (!empty($data['description'])) {
         echo sprintf(
-            '<div>%s</div>',
+            '<div class="fw-light">%s</div>',
             empty($data['description']) ? '' : h($data['description'])
         );
     }
+    echo '<div class="panel">';
     if (!empty($data['html'])) {
         echo sprintf('<div>%s</div>', $data['html']);
     }
@@ -120,6 +121,7 @@
         echo $this->element('/genericElements/IndexTable/pagination_counter', $paginationData);
         echo $this->element('/genericElements/IndexTable/pagination_links');
     }
+    echo '</div>';
     echo '</div>';
 ?>
 <script type="text/javascript">

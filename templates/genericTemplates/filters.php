@@ -119,11 +119,11 @@ echo $this->Bootstrap->modal([
 
     function addControlRow($filteringTable) {
         const availableFilters = <?= json_encode($filters) ?>;
-        const $selectField = $('<select/>').addClass('fieldSelect custom-select custom-select-sm')
+        const $selectField = $('<select/>').addClass('fieldSelect form-select form-select-sm')
         availableFilters.forEach(filter => {
             $selectField.append($('<option/>').text(filter))
         });
-        const $selectOperator = $('<select/>').addClass('fieldOperator custom-select custom-select-sm')
+        const $selectOperator = $('<select/>').addClass('fieldOperator form-select form-select-sm')
             .append([
                 $('<option/>').text('=').val('='),
                 $('<option/>').text('!=').val('!='),
@@ -145,7 +145,7 @@ echo $this->Bootstrap->modal([
     }
 
     function addFilteringRow($filteringTable, field, value, operator) {
-        const $selectOperator = $('<select/>').addClass('fieldOperator custom-select custom-select-sm')
+        const $selectOperator = $('<select/>').addClass('fieldOperator form-select form-select-sm')
             .append([
                 $('<option/>').text('=').val('='),
                 $('<option/>').text('!=').val('!='),

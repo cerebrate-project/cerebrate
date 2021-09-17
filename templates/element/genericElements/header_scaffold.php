@@ -41,7 +41,7 @@ foreach ($data['menu'] as $name => $menuElement) {
         $navdata .= sprintf(
             '<li class="nav-item dropdown">%s%s</li>',
             sprintf(
-                '<a class="nav-link dropdown-toggle" href="#" id="%s" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">%s</a>',
+                '<a class="nav-link dropdown-toggle" href="#" id="%s" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">%s</a>',
                 'dropdown-label-' . h($i),
                 h($name)
             ),
@@ -58,7 +58,7 @@ $logoutButton = sprintf(
     __('Logout')
 );
 $navdata = sprintf(
-    '<div class="collapse navbar-collapse" id="navbarCollapse"><ul class="navbar-nav mr-auto">%s%s</ul></div>',
+    '<div class="collapse navbar-collapse" id="navbarCollapse"><ul class="navbar-nav me-auto">%s%s</ul></div>',
     $navdata,
     $logoutButton
 );
@@ -73,6 +73,6 @@ echo sprintf(
     '<nav class="navbar navbar-expand-lg navbar-dark %s">%s%s%s</nav>',
     $darkMode ? 'bg-primary' : 'bg-dark',
     $homeButton,
-    '<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>',
+    '<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>',
     $navdata
 );

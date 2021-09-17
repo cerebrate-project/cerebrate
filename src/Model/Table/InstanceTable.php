@@ -7,11 +7,13 @@ use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 use Migrations\Migrations;
+use Cake\Http\Exception\MethodNotAllowedException;
 
 class InstanceTable extends AppTable
 {
     protected $activePlugins = ['Tags'];
-    
+    public $seachAllTables = ['Broods', 'Individuals', 'Organisations', 'SharingGroups', 'Users', 'EncryptionKeys', ];
+
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -39,9 +41,9 @@ class InstanceTable extends AppTable
                     ->order(['date']);
                 $data = $query->toArray();
                 $interval = new \DateInterval('P1D');
-                $period = new \DatePeriod(new \DateTime("-{$days} days"), $interval ,new \DateTime());
+                $period = new \DatePeriod(new \DateTime("-{$days} days"), $interval, new \DateTime());
                 $timeline = [];
-                foreach($period as $date){
+                foreach ($period as $date) {
                     $timeline[$date->format("Y-m-d")] = [
                         'time' => $date->format("Y-m-d"),
                         'count' => 0
@@ -61,6 +63,60 @@ class InstanceTable extends AppTable
             }
         }
         return $statistics;
+    }
+
+    public function searchAll($value, $limit=5, $model=null)
+    {
+        $results = [];
+        $models = $this->seachAllTables;
+        if (!is_null($model)) {
+            if (in_array($model, $this->seachAllTables)) {
+                $models = [$model];
+            } else {
+                return $results; // Cannot search in this model
+            }
+        }
+        foreach ($models as $tableName) {
+            $controller = $this->getController($tableName);
+            $table = TableRegistry::get($tableName);
+            $query = $table->find();
+            $quickFilterOptions = $this->getQuickFiltersFieldsFromController($controller);
+            $containFields = $this->getContainFieldsFromController($controller);
+            if (empty($quickFilterOptions)) {
+                continue; // make sure we are filtering on something
+            }
+            $params = ['quickFilter' => $value];
+            $query = $controller->CRUD->setQuickFilters($params, $query, $quickFilterOptions);
+            if (!empty($containFields)) {
+                $query->contain($containFields);
+            }
+            $results[$tableName]['amount'] = $query->count();
+            $result = $query->limit($limit)->all()->toList();
+            if (!empty($result)) {
+                $results[$tableName]['entries'] = $result;
+            }
+        }
+        return $results;
+    }
+
+    public function getController($name)
+    {
+        $controllerName = "\\App\\Controller\\{$name}Controller";
+        if (!class_exists($controllerName)) {
+            throw new MethodNotAllowedException(__('Model `{0}` does not exists', $model));
+        }
+        $controller = new $controllerName;
+        return $controller;
+    }
+
+    public function getQuickFiltersFieldsFromController($controller)
+    {
+        return !empty($controller->quickFilterFields) ? $controller->quickFilterFields : [];
+    }
+
+    public function getContainFieldsFromController($controller)
+    {
+        return !empty($controller->containFields) ? $controller->containFields : [];
     }
 
     public function getMigrationStatus()

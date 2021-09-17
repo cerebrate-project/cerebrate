@@ -133,6 +133,12 @@ class BootstrapHelper extends Helper
     {
         return BootstrapGeneric::genNode($node, $params, $content);
     }
+
+    public function switch($options)
+    {
+        $bsSwitch = new BoostrapSwitch($options, $this);
+        return $bsSwitch->switch();
+    }
 }
 
 class BootstrapGeneric
@@ -201,12 +207,10 @@ class BootstrapGeneric
     {
         return BootstrapGeneric::genNode('button', [
             'type' => 'button',
-            'class' => 'close',
-            'data-dismiss' => $dismissTarget,
+            'class' => 'btn-close',
+            'data-bs-dismiss' => $dismissTarget,
             'arial-label' => __('Close')
-        ], BootstrapGeneric::genNode('span', [
-            'arial-hidden' => 'true'
-        ], '&times;'));
+        ]);
     }
 
     protected static function getTextClassForVariant($variant)
@@ -377,7 +381,7 @@ class BootstrapTabs extends BootstrapGeneric
             $html .= $this->openNode('div', ['class' => array_merge(
                 [
                     ($this->options['vertical-size'] != 'auto' ? 'col-' . $this->options['vertical-size'] : ''),
-                    ($this->options['card'] ? 'card-header border-right' : '')
+                    ($this->options['card'] ? 'card-header border-end' : '')
                 ],
                 [
                     "bg-{$this->options['header-variant']}",
@@ -426,7 +430,7 @@ class BootstrapTabs extends BootstrapGeneric
                 [!empty($navItem['active']) ? 'active' : ''],
                 [!empty($navItem['disabled']) ? 'disabled' : '']
             ),
-            'data-toggle' => $this->options['pills'] ? 'pill' : 'tab',
+            'data-bs-toggle' => $this->options['pills'] ? 'pill' : 'tab',
             'id' => $navItem['id'] . '-tab',
             'href' => '#' . $navItem['id'],
             'aria-controls' => $navItem['id'],
@@ -829,7 +833,6 @@ class BoostrapButton extends BootstrapGeneric {
         'variant' => 'primary',
         'outline' => false,
         'size' => '',
-        'block' => false,
         'icon' => null,
         'class' => [],
         'type' => 'button',
@@ -868,9 +871,6 @@ class BoostrapButton extends BootstrapGeneric {
         if (!empty($this->options['size'])) {
             $this->bsClasses[] = "btn-{$this->options['size']}";
         }
-        if ($this->options['block']) {
-            $this->bsClasses[] = 'btn-block';
-        }
         if ($this->options['variant'] == 'text') {
             $this->bsClasses[] = 'p-0';
             $this->bsClasses[] = 'lh-1';
@@ -904,7 +904,7 @@ class BoostrapButton extends BootstrapGeneric {
     private function genIcon()
     {
         $bsIcon = new BoostrapIcon($this->options['icon'], [
-            'class' => ['mr-1']
+            'class' => ['me-1']
         ]);
         return $bsIcon->icon();
     }
@@ -947,8 +947,8 @@ class BoostrapBadge extends BootstrapGeneric {
         $html = $this->genNode('span', [
             'class' => array_merge($this->options['class'], [
                 'badge',
-                "badge-{$this->options['variant']}",
-                $this->options['pill'] ? 'badge-pill' : '',
+                "bg-{$this->options['variant']}",
+                $this->options['pill'] ? 'rounded-pill' : '',
             ]),
             'title' => $this->options['title']
         ], h($this->options['text']));
@@ -1115,7 +1115,7 @@ class BoostrapModal extends BootstrapGeneric {
             'variant' => 'primary',
             'text' => __('Ok'),
             'params' => [
-                'data-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
+                'data-bs-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
                 'onclick' => $this->options['confirmFunction']
             ]
         ]))->button();
@@ -1132,7 +1132,7 @@ class BoostrapModal extends BootstrapGeneric {
             'variant' => 'secondary',
             'text' => h($this->options['cancelText']),
             'params' => [
-                'data-dismiss' => 'modal',
+                'data-bs-dismiss' => 'modal',
                 'onclick' => $this->options['cancelFunction']
             ]
         ]))->button();
@@ -1142,7 +1142,7 @@ class BoostrapModal extends BootstrapGeneric {
             'text' => h($this->options['confirmText']),
             'class' => 'modal-confirm-button',
             'params' => [
-                // 'data-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
+                // 'data-bs-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
                 'data-confirmFunction' => sprintf('%s', $this->options['confirmFunction'])
             ]
         ]))->button();
@@ -1158,7 +1158,7 @@ class BoostrapModal extends BootstrapGeneric {
                 'text' => h($buttonConfig['text']),
                 'class' => 'modal-confirm-button',
                 'params' => [
-                    'data-dismiss' => !empty($buttonConfig['clickFunction']) ? '' : 'modal',
+                    'data-bs-dismiss' => !empty($buttonConfig['clickFunction']) ? '' : 'modal',
                     'data-clickFunction' => sprintf('%s', $buttonConfig['clickFunction'])
                 ]
             ]))->button();
@@ -1261,6 +1261,58 @@ class BoostrapCard extends BootstrapGeneric
     }
 }
 
+class BoostrapSwitch extends BootstrapGeneric {
+    private $defaultOptions = [
+        'label' => '',
+        'variant' => 'primary',
+        'disabled' => false,
+        'checked' => false,
+        'title' => ''
+    ];
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+        ];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function switch()
+    {
+        return $this->genSwitch();
+    }
+
+    private function genSwitch()
+    {
+        $tmpId = 'tmp-' . mt_rand();
+        $html = $this->genNode('div', [
+            'class' => [
+                'form-check form-switch',
+            ],
+            'title' => $this->options['title']
+        ], implode('', [
+            $this->genNode('input', [
+                'type' => "checkbox",
+                'class' => 'orm-check-input',
+                'id' => $tmpId,
+                ($this->options['disabled'] ? 'disabled' : '') => '',
+                ($this->options['checked'] ? 'checked' : '') => $this->options['checked'] ? 'checked' : ''
+            ]),
+            $this->genNode('label', [
+                'class' => 'orm-check-label',
+                'for' => $tmpId,
+            ], h($this->options['label']))
+        ]));
+        return $html;
+    }
+}
+
 class BoostrapProgress extends BootstrapGeneric {
     private $defaultOptions = [
         'value' => 0,
@@ -1349,7 +1401,7 @@ class BoostrapCollapse extends BootstrapGeneric {
     {
         $html = $this->genNode('a', [
             'class' => ['text-decoration-none'],
-            'data-toggle' => 'collapse',
+            'data-bs-toggle' => 'collapse',
             'href' => '#collapseExample',
             'role' => 'button',
             'aria-expanded' => 'false',
@@ -1459,7 +1511,7 @@ class BoostrapProgressTimeline extends BootstrapGeneric {
         return $this->genNode('li', [
             'class' => [
                 'text-center',
-                'font-weight-bold',
+                'fw-bold',
                 $isActive ? 'progress-active' : 'progress-inactive',
             ],
         ], h($step['text'] ?? ''));

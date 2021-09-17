@@ -1,0 +1,17 @@
+// Your variable overrides can go here, e.g.:
+// $h1-font-size: 3rem;
+$theme: "app-flatly";
+
+@import "flatly/variables";
+
+$topNavbarColor: $primary;
+$navbarActiveColor: #d6d6d6;
+
+$sidebarBgColor: $light;
+$sidebarBorder: none;
+$sidebarActiveColor: $success;
+$sidebarShadows: none;
+$sidebarLockButton: unset;
+$activeSidebarLinkColor: $success;
+
+@import "theme-default";

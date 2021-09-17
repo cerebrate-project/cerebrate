@@ -1,0 +1,17 @@
+{
+  "name": "theme",
+  "version": "1.0.0",
+  "description": "Create theme for the application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "autobuild": "node-sass --watch scss -o ../css/themes",
+    "build": "node-sass scss -o ../css/themes"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bootstrap": "4.6",
+    "node-sass": "^6.0.1"
+  }
+}

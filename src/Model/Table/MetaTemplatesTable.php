@@ -19,7 +19,7 @@ class MetaTemplatesTable extends AppTable
                 'foreignKey' => 'meta_template_id'
             ]
         );
-        $this->setDisplayField('field');
+        $this->setDisplayField('name');
     }
 
     public function validationDefault(Validator $validator): Validator

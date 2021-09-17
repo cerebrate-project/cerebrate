@@ -1,5 +1,5 @@
 :root {
-    --cerebrate: #924da6;
+    --cerebrate-color: #924da6;
 }
 
 .pagination li.page-item > a.page-link > .ellipsis {
@@ -21,7 +21,7 @@
     color:black;
 }
 
-.sidebar {}
+/* .sidebar {}
 
 .side-bar-ul {
     top: 70px;
@@ -91,7 +91,7 @@
 .side-bar-ul>.sidebar-brand a:hover {
     color: #fff;
     background: none;
-}
+} */
 
 @media(min-width:768px) {
     #wrapper {
@@ -129,6 +129,14 @@
 .link-unstyled, .link-unstyled:link, .link-unstyled:hover {
   color: inherit;
   text-decoration: inherit;
+}
+
+.table-link-action {
+    filter: invert(0.4);
+}
+
+.table-link-action:hover {
+    filter: unset;
 }
 
 .btn-group > .btn:last-of-type:not(.dropdown-toggle), .btn-group > .btn-group:not(:last-of-type) > .btn {

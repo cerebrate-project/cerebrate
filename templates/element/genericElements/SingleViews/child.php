@@ -18,13 +18,13 @@
             '<div class="card-header" id="heading-%s"><h5 class="mb0">%s</h5></div>',
             $randomId,
             sprintf(
-                '<button class="btn btn-link" data-toggle="collapse" data-target="#view-child-%s" aria-expanded="true" aria-controls="collapseOne">%s</button>',
+                '<button class="btn btn-link" data-bs-toggle="collapse" data-bs-target="#view-child-%s" aria-expanded="true" aria-controls="collapseOne">%s</button>',
                 $randomId,
                 h($child['title'])
             )
         ),
         sprintf(
-            '<div class="collapse %s" id="view-child-%s" data-parent="#accordion" labelledby="heading-%s"><div id="view-child-body-%s" class="card-body" data-content-url="%s" data-load-on="%s"></div></div>',
+            '<div class="collapse %s" id="view-child-%s" data-bs-parent="#accordion" labelledby="heading-%s"><div id="view-child-body-%s" class="card-body" data-content-url="%s" data-load-on="%s"></div></div>',
             !empty($child['collapsed']) ? 'show' : 'collapsed',
             $randomId,
             $randomId,

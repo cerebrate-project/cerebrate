@@ -9,12 +9,16 @@ use \Cake\Database\Expression\QueryExpression;
 
 class UsersController extends AppController
 {
+    public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name'];
+    public $quickFilterFields = ['Individuals.uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'];
+    public $containFields = ['Individuals', 'Roles'];
+
     public function index()
     {
         $this->CRUD->index([
-            'contain' => ['Individuals', 'Roles'],
-            'filters' => ['Users.email', 'uuid'],
-            'quickFilters' => ['uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'],
+            'contain' => $this->containFields,
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields,
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

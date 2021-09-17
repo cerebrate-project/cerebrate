@@ -15,7 +15,7 @@
             ]);
         }
         echo sprintf(
-            '<div class="multi_select_actions btn-group mr-2 flex-wrap collapse" role="group" aria-label="button-group" data-table-random-value="%s">%s</div>',
+            '<div class="multi_select_actions btn-group me-2 flex-wrap collapse" role="group" aria-label="button-group" data-table-random-value="%s">%s</div>',
             $tableRandomValue,
             $buttons
         );

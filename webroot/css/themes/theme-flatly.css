@@ -1,0 +1,79 @@
+/* Body */
+.panel {
+  background-color: #fff;
+  border: none;
+  box-shadow: 0 0 35px 0 rgba(154, 161, 171, 0.25); }
+
+/* Top navbar */
+.top-navbar {
+  background-color: #2c3e50; }
+
+.center-navbar nav.header-breadcrumb {
+  color: #fff; }
+
+header.top-navbar .header-menu > a:hover,
+header.top-navbar .header-breadcrumb .header-breadcrumb-item > a:hover {
+  color: #d6d6d6 !important; }
+
+.top-navbar .center-navbar nav.header-breadcrumb li.header-breadcrumb-item a {
+  color: #fff; }
+
+.top-navbar .right-navbar .header-menu a.nav-link {
+  color: #fff; }
+
+.top-navbar .left-navbar .navbar-brand img {
+  filter: invert(1); }
+
+.top-navbar .left-navbar .navbar-brand:hover img {
+  filter: invert(1) drop-shadow(0px 0px 3px #fff); }
+
+.top-navbar .composed-app-icon-container > .app-icon {
+  background-color: #fff; }
+
+.breadcrumb-link-container {
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.16), 0 2px 6px 0 rgba(0, 0, 0, 0.12);
+  background-color: #ecf0f1; }
+
+/* Sidebar */
+.sidebar {
+  transition: width .08s linear;
+  box-shadow: none;
+  background-color: #ecf0f1; }
+
+.sidebar ~ main.content:after {
+  background: #000; }
+
+.sidebar .sidebar-wrapper {
+  border-right: 1px solid none; }
+
+.sidebar .sidebar-wrapper {
+  border-right: 1px solid rgba(0, 0, 0, 0.125); }
+
+.sidebar ul.sidebar-elements li > a.sidebar-link {
+  color: #000; }
+
+.sidebar ul.sidebar-elements li > a.sidebar-link.active {
+  background-color: #dbdbdb;
+  color: #18bc9c; }
+
+.sidebar ul.sidebar-elements li > a.sidebar-link.have-active-child {
+  background-color: #dbdbdb;
+  color: #18bc9c; }
+
+.sidebar ul.sidebar-elements li > a.sidebar-link:hover {
+  background-color: #ebebeb;
+  color: #18bc9c; }
+
+.sidebar.expanded ul.sidebar-elements li > a.sidebar-link.have-active-child,
+.sidebar:hover ul.sidebar-elements li > a.sidebar-link.have-active-child {
+  background-color: unset; }
+
+.sidebar.expanded ul.sidebar-elements li > a.sidebar-link.have-active-child:hover,
+.sidebar:hover ul.sidebar-elements li > a.sidebar-link.have-active-child:hover {
+  background-color: #ebebeb; }
+
+ul.sidebar-elements li > a.sidebar-link.active::after {
+  background-color: #18bc9c; }
+
+.lock-sidebar > a.btn {
+  background-color: unset; }

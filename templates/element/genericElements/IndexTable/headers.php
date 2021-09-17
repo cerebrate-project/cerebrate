@@ -29,7 +29,7 @@
     }
     if ($actions) {
         $headersHtml .= sprintf(
-            '<th class="actions text-right">%s</th>',
+            '<th class="actions text-end">%s</th>',
             __('Actions')
         );
     }

@@ -13,19 +13,21 @@ use Cake\ORM\TableRegistry;
 
 class IndividualsController extends AppController
 {
-    public $filters = ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'];
+    public $quickFilterFields = ['uuid', ['email' => true], ['first_name' => true], ['last_name' => true], 'position'];
+    public $filterFields = ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'];
+    public $containFields = ['Alignments' => 'Organisations'];
 
     public function index()
     {
         $this->CRUD->index([
-            'filters' => $this->filters,
-            'quickFilters' => ['uuid', 'email', 'first_name', 'last_name', 'position'],
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields,
             'contextFilters' => [
                 'fields' => [
                     'Alignments.type'
                 ]
             ],
-            'contain' => ['Alignments' => 'Organisations']
+            'contain' => $this->containFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

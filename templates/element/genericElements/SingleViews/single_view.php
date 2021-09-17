@@ -79,7 +79,7 @@
         $title;
     echo sprintf(
         "<div id=\"single-view-table-container-%s\">
-            <h2>%s</h2>
+            <h2 class=\"fw-light\">%s</h2>
             %s%s
             <div>%s</div>
             <div id=\"metafieldsPanel\" class=\"col-lg-8 px-0\">%s</div>
