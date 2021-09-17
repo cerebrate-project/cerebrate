@@ -128,7 +128,7 @@ function performGlobalSearch(evt) {
         return;
     }
     if (value.length < 3 && evt.keyCode != 13) {
-        bootstrap.Popover.getInstance('#dropdownMenuSearchAll').hide()
+        bootstrap.Dropdown.getOrCreateInstance('#dropdownMenuSearchAll').hide()
         return;
     }
     const endpoint = '/instance/searchAll'
@@ -138,7 +138,7 @@ function performGlobalSearch(evt) {
         statusNode: $resultContainer
     }
 
-    bootstrap.Popover.getInstance('#dropdownMenuSearchAll').show()
+    bootstrap.Dropdown.getOrCreateInstance('#dropdownMenuSearchAll').show()
     AJAXApi.quickFetchURL(url, options).then((theHTML) => {
         $resultContainer.html(theHTML)
     })
