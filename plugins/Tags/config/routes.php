@@ -1,0 +1,20 @@
+<?php
+use Cake\Routing\Route\DashedRoute;
+use Cake\Routing\RouteBuilder;
+
+$routes->plugin(
+    'Tags',
+    ['path' => '/tags'],
+    function ($routes) {
+        $routes->setRouteClass(DashedRoute::class);
+
+        $routes->connect(
+            '/{action}/*',
+            ['controller' => 'Tags']
+        );
+
+        // $routes->get('/', ['controller' => 'Tags']);
+        // $routes->get('/{id}', ['controller' => 'Tags', 'action' => 'view']);
+        // $routes->put('/{id}', ['controller' => 'Tags', 'action' => 'edit']);
+    }
+);

@@ -217,8 +217,9 @@ class UIFactory {
         return AJAXApi.quickFetchURL(url, {
             statusNode: $statusNode[0],
         }).then((theHTML) => {
-            $container.replaceWith(theHTML)
-            return $container
+            var $tmp = $(theHTML);
+            $container.replaceWith($tmp)
+            return $tmp;
         }).finally(() => {
             otherStatusNodes.forEach(overlay => {
                 overlay.hide()
@@ -267,9 +268,9 @@ class Toaster {
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} variant - The variant of the toast
      * @property {boolean} autohide    - If the toast show be hidden after some time defined by the delay
      * @property {number}  delay        - The number of milliseconds the toast should stay visible before being hidden
-     * @property {string}  titleHtml    - The raw HTML title's content of the toast
-     * @property {string}  mutedHtml    - The raw HTML muted's content of the toast
-     * @property {string}  bodyHtml     - The raw HTML body's content of the toast
+     * @property {(jQuery|string)}  titleHtml    - The raw HTML title's content of the toast
+     * @property {(jQuery|string)}  mutedHtml    - The raw HTML muted's content of the toast
+     * @property {(jQuery|string)}  bodyHtml     - The raw HTML body's content of the toast
      * @property {boolean} closeButton - If the toast's title should include a close button
      */
     static defaultOptions = {
@@ -290,6 +291,7 @@ class Toaster {
     makeToast() {
         if (this.isValid()) {
             this.$toast = Toaster.buildToast(this.options)
+            this.$toast.data('toastObject', this)
             $('#mainToastContainer').append(this.$toast)
         }
     }
@@ -300,6 +302,19 @@ class Toaster {
             var that = this
             this.$toast.toast(this.bsToastOptions)
                 .toast('show')
+                .on('hide.bs.toast', function (evt) {
+                    const $toast = $(this)
+                    const hoveredElements = $(':hover').filter(function() {
+                        return $(this).is($toast)
+                    });
+                    if (hoveredElements.length > 0) {
+                        console.log('Toast hovered. Not hidding')
+                        evt.preventDefault()
+                        setTimeout(() => {
+                            $toast.toast('hide')
+                        }, that.options.delay);
+                    }
+                })
                 .on('hidden.bs.toast', function () {
                     that.removeToast()
                 })
@@ -354,7 +369,10 @@ class Toaster {
                 $toastHeader.append($toastHeaderMuted)
             }
             if (options.closeButton) {
-                var $closeButton = $('<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+                var $closeButton = $('<button type="button" class="ml-2 mb-1 close" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+                    .click(function() {
+                        $(this).closest('.toast').data('toastObject').removeToast()
+                    })
                 $toastHeader.append($closeButton)
             }
             $toast.append($toastHeader)
@@ -860,7 +878,8 @@ class OverlayFactory {
         spinnerVariant: '',
         spinnerSmall: false,
         spinnerType: 'border',
-        fallbackBoostrapVariant: ''
+        fallbackBoostrapVariant: '',
+        wrapperCSSDisplay: '',
     }
 
     static overlayWrapper = '<div aria-busy="true" class="position-relative"/>'
@@ -875,6 +894,14 @@ class OverlayFactory {
      /** Create the HTML of the overlay */
     buildOverlay() {
         this.$overlayWrapper = $(OverlayFactory.overlayWrapper)
+        if (this.options.wrapperCSSDisplay) {
+            this.$overlayWrapper.css('display', this.options.wrapperCSSDisplay)
+        }
+        if (this.$node[0]) {
+            const boundingRect = this.$node[0].getBoundingClientRect()
+            this.$overlayWrapper.css('min-height', boundingRect.height)
+            this.$overlayWrapper.css('min-width', boundingRect.width)
+        }
         this.$overlayContainer = $(OverlayFactory.overlayContainer)
         this.$overlayBg = $(OverlayFactory.overlayBg)
             .addClass([`bg-${this.options.variant}`, (this.options.rounded ? 'rounded' : '')])
@@ -940,7 +967,8 @@ class OverlayFactory {
         }
         if (this.$node.is('input[type="checkbox"]') || this.$node.css('border-radius') !== '0px') {
             this.options.rounded = true
-        } 
+        }
+        this.options.wrapperCSSDisplay = this.$node.css('display')
         let classes = this.$node.attr('class')
         if (classes !== undefined) {
             classes = classes.split(' ')
@@ -1108,4 +1136,5 @@ class HtmlHelper {
         }
         return $table
     }
+
 }

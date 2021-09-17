@@ -14,6 +14,7 @@ class IndividualsTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
+        $this->addBehavior('Tags.Tag');
         $this->hasMany(
             'Alignments',
             [

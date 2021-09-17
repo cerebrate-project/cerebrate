@@ -29,6 +29,9 @@ use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
 use Authentication\Middleware\AuthenticationMiddleware;
 use Psr\Http\Message\ServerRequestInterface;
+
+use Tags\Plugin as TagsPlugin;
+
 /**
  * Application setup class.
  *
@@ -59,6 +62,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             $this->addPlugin('DebugKit');
         }
         $this->addPlugin('Authentication');
+        $this->addPlugin('Tags', ['routes' => true]);
         // Load more plugins here
     }
 

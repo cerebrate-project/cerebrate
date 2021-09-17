@@ -7,6 +7,7 @@ use Cake\Error\Debugger;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 use Cake\View\ViewBuilder;
+use Cake\ORM\TableRegistry;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 
@@ -34,6 +35,9 @@ class CRUDComponent extends Component
             $options['filters'][] = 'quickFilter';
         }
         $options['filters'][] = 'filteringLabel';
+        if ($this->taggingSupported()) {
+            $options['filters'][] = 'filteringTags';
+        }
 
         $optionFilters = empty($options['filters']) ? [] : $options['filters'];
         foreach ($optionFilters as $i => $filter) {
@@ -48,6 +52,9 @@ class CRUDComponent extends Component
         $query = $this->setQuickFilters($params, $query, empty($options['quickFilters']) ? [] : $options['quickFilters']);
         if (!empty($options['contain'])) {
             $query->contain($options['contain']);
+        }
+        if ($this->taggingSupported()) {
+            $query->contain('Tags');
         }
         if (!empty($options['fields'])) {
             $query->select($options['fields']);
@@ -72,15 +79,17 @@ class CRUDComponent extends Component
                     $data = $this->Table->{$options['afterFind']}($data);
                 }
             }
-            if (!empty($options['contextFilters'])) {
-                $this->setFilteringContext($options['contextFilters'], $params);
-            }
+            $this->setFilteringContext($options['contextFilters'] ?? [], $params);
             $this->Controller->set('data', $data);
         }
     }
 
     public function filtering(): void
     {
+        if ($this->taggingSupported()) {
+            $this->Controller->set('taggingEnabled', true);
+            $this->setAllTags();
+        }
         $filters = !empty($this->Controller->filters) ? $this->Controller->filters : [];
         $this->Controller->set('filters', $filters);
         $this->Controller->viewBuilder()->setLayout('ajax');
@@ -243,7 +252,11 @@ class CRUDComponent extends Component
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
         $this->getMetaTemplates();
-        $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : []);
+        if ($this->taggingSupported()) {
+            $params['contain'][] = 'Tags';
+            $this->setAllTags();
+        }
+        $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : $params);
         $data = $this->getMetaFields($id, $data);
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
@@ -350,6 +363,11 @@ class CRUDComponent extends Component
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
 
+        if ($this->taggingSupported()) {
+            $params['contain'][] = 'Tags';
+            $this->setAllTags();
+        }
+
         $data = $this->Table->get($id, $params);
         $data = $this->attachMetaData($id, $data);
         if (isset($params['afterFind'])) {
@@ -402,6 +420,149 @@ class CRUDComponent extends Component
         $this->Controller->set('scope', 'users');
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/delete');
+    }
+
+    public function tag($id=false): void
+    {
+        if (!$this->taggingSupported()) {
+            throw new Exception("Table {$this->TableAlias} does not support tagging");
+        }
+        if ($this->request->is('get')) {
+            $this->setAllTags();
+            if(!empty($id)) {
+                $params = [
+                    'contain' => 'Tags',
+                ];
+                $entity = $this->Table->get($id, $params);
+                $this->Controller->set('id', $entity->id);
+                $this->Controller->set('data', $entity);
+                $this->Controller->set('bulkEnabled', false);
+            } else {
+                $this->Controller->set('bulkEnabled', true);
+            }
+        } else if ($this->request->is('post') || $this->request->is('delete')) {
+            $ids = $this->getIdsOrFail($id);
+            $isBulk = count($ids) > 1;
+            $bulkSuccesses = 0;
+            foreach ($ids as $id) {
+                $params = [
+                    'contain' => 'Tags',
+                ];
+                $entity = $this->Table->get($id, $params);
+                $input = $this->request->getData();
+                $tagsToAdd = json_decode($input['tag_list']);
+                // patching will mirror tag in the DB, however, we only want to add tags
+                $input['tags'] = array_merge($tagsToAdd, $entity->tags);
+                $patchEntityParams = [
+                    'fields' => ['tags'],
+                ];
+                $entity = $this->Table->patchEntity($entity, $input, $patchEntityParams);
+                $savedData = $this->Table->save($entity);
+                $success = true;
+                if ($success) {
+                    $bulkSuccesses++;
+                }
+            }
+            $message = $this->getMessageBasedOnResult(
+                $bulkSuccesses == count($ids),
+                $isBulk,
+                __('{0} tagged with `{1}`.', $this->ObjectAlias, $input['tag_list']),
+                __('All {0} have been tagged.', Inflector::pluralize($this->ObjectAlias)),
+                __('Could not tag {0} with `{1}`.', $this->ObjectAlias, $input['tag_list']),
+                __('{0} / {1} {2} have been tagged.',
+                    $bulkSuccesses,
+                    count($ids),
+                    Inflector::pluralize($this->ObjectAlias)
+                )
+            );
+            $this->setResponseForController('tag', $bulkSuccesses, $message, $savedData);
+        }
+        $this->Controller->viewBuilder()->setLayout('ajax');
+        $this->Controller->render('/genericTemplates/tagForm');
+    }
+
+    public function untag($id=false): void
+    {
+        if (!$this->taggingSupported()) {
+            throw new Exception("Table {$this->TableAlias} does not support tagging");
+        }
+        if ($this->request->is('get')) {
+            $this->setAllTags();
+            if(!empty($id)) {
+                $params = [
+                    'contain' => 'Tags',
+                ];
+                $entity = $this->Table->get($id, $params);
+                $this->Controller->set('id', $entity->id);
+                $this->Controller->set('data', $entity);
+                $this->Controller->set('bulkEnabled', false);
+            } else {
+                $this->Controller->set('bulkEnabled', true);
+            }
+        } else if ($this->request->is('post') || $this->request->is('delete')) {
+            $ids = $this->getIdsOrFail($id);
+            $isBulk = count($ids) > 1;
+            $bulkSuccesses = 0;
+            foreach ($ids as $id) {
+                $params = [
+                    'contain' => 'Tags',
+                ];
+                $entity = $this->Table->get($id, $params);
+                $input = $this->request->getData();
+                $tagsToRemove = json_decode($input['tag_list']);
+                // patching will mirror tag in the DB, however, we only want to remove tags
+                $input['tags'] = array_filter($entity->tags, function ($existingTag) use ($tagsToRemove) {
+                    return !in_array($existingTag->label, $tagsToRemove);
+                });
+                $patchEntityParams = [
+                    'fields' => ['tags'],
+                ];
+                $entity = $this->Table->patchEntity($entity, $input, $patchEntityParams);
+                $savedData = $this->Table->save($entity);
+                $success = true;
+                if ($success) {
+                    $bulkSuccesses++;
+                }
+            }
+            $message = $this->getMessageBasedOnResult(
+                $bulkSuccesses == count($ids),
+                $isBulk,
+                __('{0} untagged with `{1}`.', $this->ObjectAlias, implode(', ', $tagsToRemove)),
+                __('All {0} have been untagged.', Inflector::pluralize($this->ObjectAlias)),
+                __('Could not untag {0} with `{1}`.', $this->ObjectAlias, $input['tag_list']),
+                __('{0} / {1} {2} have been untagged.',
+                    $bulkSuccesses,
+                    count($ids),
+                    Inflector::pluralize($this->ObjectAlias)
+                )
+            );
+            $this->setResponseForController('tag', $bulkSuccesses, $message, $entity);
+        }
+        $this->Controller->viewBuilder()->setLayout('ajax');
+        $this->Controller->render('/genericTemplates/tagForm');
+    }
+
+    public function viewTags(int $id, array $params = []): void
+    {
+        if (!$this->taggingSupported()) {
+            throw new Exception("Table {$this->TableAlias} does not support tagging");
+        }
+        if (empty($id)) {
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+        }
+
+        $params['contain'][] = 'Tags';
+        $data = $this->Table->get($id, $params);
+        if (isset($params['afterFind'])) {
+            $data = $params['afterFind']($data);
+        }
+        if ($this->Controller->ParamHandler->isRest()) {
+            $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+        }
+        $this->Controller->set('entity', $data);
+        $this->setAllTags();
+        $this->Controller->viewBuilder()->setLayout('ajax');
+        $this->Controller->render('/genericTemplates/tag');
     }
 
     public function setResponseForController($action, $success, $message, $data=[], $errors=null)
@@ -522,6 +683,8 @@ class CRUDComponent extends Component
     {
         $filteringLabel = !empty($params['filteringLabel']) ? $params['filteringLabel'] : '';
         unset($params['filteringLabel']);
+        $filteringTags = !empty($params['filteringTags']) && $this->taggingSupported() ? $params['filteringTags'] : '';
+        unset($params['filteringTags']);
         $customFilteringFunction = '';
         $chosenFilter = '';
         if (!empty($options['contextFilters']['custom'])) {
@@ -565,8 +728,24 @@ class CRUDComponent extends Component
                 }
             }
         }
+
+        if ($this->taggingSupported() && !empty($filteringTags)) {
+            $activeFilters['filteringTags'] = $filteringTags;
+            $query = $this->setTagFilters($query, $filteringTags);
+        }
+
         $this->Controller->set('activeFilters', $activeFilters);
         return $query;
+    }
+
+    protected function setTagFilters($query, $tags)
+    {
+        $modelAlias = $this->Table->getAlias();
+        $subQuery = $this->Table->find('tagged', [
+            'label' => $tags,
+            'forceAnd' => true
+        ])->select($modelAlias . '.id');
+        return $query->where([$modelAlias . '.id IN' => $subQuery]);
     }
 
     protected function setNestedRelatedCondition($query, $filterParts, $filterValue)
@@ -681,6 +860,18 @@ class CRUDComponent extends Component
             $prefixedConditions["${prefix}.${condField}"] = $condValue;
         }
         return $prefixedConditions;
+    }
+
+    public function taggingSupported()
+    {
+        return $this->Table->behaviors()->has('Tag');
+    }
+
+    public function setAllTags()
+    {
+        $this->Tags = TableRegistry::getTableLocator()->get('Tags.Tags');
+        $allTags = $this->Tags->find()->all()->toList();
+        $this->Controller->set('allTags', $allTags);
     }
 
     public function toggle(int $id, string $fieldName = 'enabled', array $params = []): void

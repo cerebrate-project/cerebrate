@@ -747,6 +747,30 @@ class ACLComponent extends Component
                             'label' => __('List Outbox Processors'),
                             'skipTopMenu' => 1
                         ]
+                    ],
+                    'skipTopMenu' => true,
+                ],
+                'Tags' => [
+                    'label' => __('Tags'),
+                    'url' => '/tags/index',
+                    'children' => [
+                        'index' => [
+                            'url' => '/tags/index',
+                            'label' => __('List Tags'),
+                        ],
+                        'view' => [
+                            'url' => '/tags/view/{{id}}',
+                            'label' => __('View Tags'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => true,
+                        ],
+                        'delete' => [
+                            'url' => '/tags/delete/{{id}}',
+                            'label' => __('Delete Tag'),
+                            'actions' => ['delete', 'edit', 'view'],
+                            'skipTopMenu' => true,
+                            'popup' => 1
+                        ],
                     ]
                 ],
                 'MetaTemplates' => [

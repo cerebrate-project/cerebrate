@@ -5,25 +5,11 @@
             'model' => 'Organisations',
             'fields' => array(
                 array(
-                    'field' => 'email'
+                    'field' => 'label'
                 ),
                 array(
-                    'field' => 'uuid',
-                    'label' => 'UUID',
-                    'type' => 'uuid'
-                ),
-                array(
-                    'field' => 'first_name'
-                ),
-                array(
-                    'field' => 'last_name'
-                ),
-                array(
-                    'field' => 'position'
-                ),
-                array(
-                    'field' => 'tag_list',
-                    'type' => 'tags'
+                    'field' => 'colour',
+                    'type' => 'color',
                 ),
             ),
             'metaTemplates' => empty($metaTemplates) ? [] : $metaTemplates,

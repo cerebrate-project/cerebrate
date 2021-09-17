@@ -29,6 +29,10 @@ echo $this->element(
                 'path' => 'position'
             ],
             [
+                'key' => __('Tags'),
+                'type' => 'tags',
+            ],
+            [
                 'key' => __('Alignments'),
                 'type' => 'alignment',
                 'path' => '',
