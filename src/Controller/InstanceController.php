@@ -19,7 +19,9 @@ class InstanceController extends AppController
 
     public function home()
     {
-        $this->set('md', file_get_contents(ROOT . '/README.md'));
+        // $this->set('md', file_get_contents(ROOT . '/README.md'));
+        $statistics = $this->Instance->getStatistics();
+        $this->set('statistics', $statistics);
     }
 
     public function status()

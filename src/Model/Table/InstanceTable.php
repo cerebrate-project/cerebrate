@@ -4,6 +4,7 @@ namespace App\Model\Table;
 
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
+use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 use Migrations\Migrations;
 
@@ -19,6 +20,47 @@ class InstanceTable extends AppTable
     public function validationDefault(Validator $validator): Validator
     {
         return $validator;
+    }
+
+    public function getStatistics($days=7): array
+    {
+        $models = ['Individuals', 'Organisations', 'Alignments', 'EncryptionKeys', 'SharingGroups', 'Users', 'Tags.Tags'];
+        foreach ($models as $model) {
+            $table = TableRegistry::getTableLocator()->get($model);
+            $statistics[$model]['amount'] = $table->find()->all()->count();
+            if ($table->behaviors()->has('Timestamp')) {
+                $query = $table->find();
+                $query->select([
+                        'count' => $query->func()->count('id'),
+                        'date' => 'DATE(modified)',
+                    ])
+                    ->where(['modified >' => new \DateTime("-{$days} days")])
+                    ->group(['date'])
+                    ->order(['date']);
+                $data = $query->toArray();
+                $interval = new \DateInterval('P1D');
+                $period = new \DatePeriod(new \DateTime("-{$days} days"), $interval ,new \DateTime());
+                $timeline = [];
+                foreach($period as $date){
+                    $timeline[$date->format("Y-m-d")] = [
+                        'time' => $date->format("Y-m-d"),
+                        'count' => 0
+                    ];
+                }
+                foreach ($data as $entry) {
+                    $timeline[$entry->date]['count'] = $entry->count;
+                }
+                $statistics[$model]['timeline'] = array_values($timeline);
+                
+                $startCount = $table->find()->where(['modified <' => new \DateTime("-{$days} days")])->all()->count();
+                $endCount = $statistics[$model]['amount'];
+                $statistics[$model]['variation'] = $endCount - $startCount;
+            } else {
+                $statistics[$model]['timeline'] = [];
+                $statistics[$model]['variation'] = 0;
+            }
+        }
+        return $statistics;
     }
 
     public function getMigrationStatus()
