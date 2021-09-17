@@ -5,7 +5,7 @@
     if (!empty($setting['dependsOn'])) {
         $dependsOnHtml = $this->Bootstrap->genNode('span', [
             'class' => [
-                'ml-1',
+                'ms-1',
                 'd-inline-block',
                 'depends-on-icon'
             ],
@@ -16,7 +16,7 @@
         ]));
     }
     $label = $this->Bootstrap->genNode('label', [
-        'class' => ['font-weight-bolder', 'mb-0'],
+        'class' => ['form-label', 'fw-bolder', 'mb-0'],
         'for' => $settingId
     ], sprintf('<a id="lb-%s" href="#lb-%s" class="text-reset text-decoration-none">%s</a>', h($settingId), h($settingId), h($setting['name'])) . $dependsOnHtml);
 
@@ -57,7 +57,7 @@
     ], implode('', [$input, $inputGroupSave]));
 
     $container = $this->Bootstrap->genNode('div', [
-        'class' => ['form-group', 'mb-2']
+        'class' => ['setting-group', 'row', 'mb-2']
     ], implode('', [$label, $inputGroup, $description, $validationError]));
     
     echo $container;

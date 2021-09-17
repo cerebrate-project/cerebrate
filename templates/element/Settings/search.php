@@ -100,10 +100,10 @@
         const $state = $('<div/>').append(
             $('<div/>').addClass('d-flex justify-content-between')
                 .append(
-                    $('<span/>').addClass('font-weight-bold').text(state.text),
-                    $('<span/>').addClass('font-weight-light').text(state.setting['setting-path'].replaceAll('.', ' ▸ '))
+                    $('<span/>').addClass('fw-bold').text(state.text),
+                    $('<span/>').addClass('fw-light').text(state.setting['setting-path'].replaceAll('.', ' ▸ '))
                 ),
-            $('<div/>').addClass('font-italic font-weight-light ml-3').text(state.setting['description'])
+            $('<div/>').addClass('font-italic fw-light ms-3').text(state.setting['description'])
         )
         return $state
     }

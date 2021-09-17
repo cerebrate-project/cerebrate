@@ -23,7 +23,7 @@
 ?>
 <script type="text/javascript">
     $(document).ready(function() {
-        $('#<?php echo h($field['field']); ?>InfoPopover').popover({
+        new bootstrap.Popover('#<?php echo h($field['field']); ?>InfoPopover', {
             html: true,
             content: function() {
                 var tempSelector = '#<?php echo h($modelForForm . \Cake\Utility\Inflector::camelize($field['field'])); ?>';

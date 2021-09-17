@@ -83,7 +83,7 @@ function genContentForNav($sectionSettings, $appView)
     $mainPanelHeight = 'calc(100vh - 42px - 1rem - 56px - 38px - 1rem)';
     $container =  '<div class="d-flex">';
     $container .=   "<div class=\"\" style=\"flex: 0 0 10em;\">{$scrollspyNav}</div>";
-    $container .=   "<div data-spy=\"scroll\" data-target=\"#navbar-scrollspy-setting\" data-offset=\"25\" style=\"height: {$mainPanelHeight}\" class=\"p-3 overflow-auto position-relative flex-grow-1\">{$contentHtml}</div>";
+    $container .=   "<div data-bs-spy=\"scroll\" data-bs-target=\"#navbar-scrollspy-setting\" data-bs-offset=\"25\" style=\"height: {$mainPanelHeight}\" class=\"p-3 overflow-auto position-relative flex-grow-1\">{$contentHtml}</div>";
     $container .= '</div>';
     return $container;
 }
@@ -137,19 +137,19 @@ function getResolvableID($sectionName, $panelName=false)
 
 <script>
     $(document).ready(function() {
-        $('.depends-on-icon').tooltip({
+        new bootstrap.Tooltip('.depends-on-icon', {
             placement: 'right',
         })
         $('select.custom-select[multiple]').select2()
 
-        $('.settings-tabs a[data-toggle="tab"]').on('shown.bs.tab', function (event) {
-            $('[data-spy="scroll"]').trigger('scroll.bs.scrollspy')
+        $('.settings-tabs a[data-bs-toggle="tab"]').on('shown.bs.tab', function (event) {
+            $('[data-bs-spy="scroll"]').trigger('scroll.bs.scrollspy')
         })
 
         $('.tab-content input, .tab-content select').on('input', function() {
             if ($(this).attr('type') == 'checkbox') {
                 const $input = $(this)
-                const $inputGroup = $(this).closest('.form-group')
+                const $inputGroup = $(this).closest('.setting-group')
                 const settingName = $(this).data('setting-name')
                 const settingValue = $(this).is(':checked') ? 1 : 0
                 saveSetting($inputGroup[0], $input, settingName, settingValue)
@@ -274,7 +274,7 @@ function getResolvableID($sectionName, $panelName=false)
             .on('shown.bs.tab.after-redirect', () => {
                 $settingToFocus[0].scrollIntoView()
                 const inputID = $settingToFocus.parent().attr('for')
-                $settingToFocus.closest('.form-group').find(`#${inputID}`).focus()
+                $settingToFocus.closest('.setting-group').find(`#${inputID}`).focus()
                 $navController.off('shown.bs.tab.after-redirect')
             })
             .tab('show')

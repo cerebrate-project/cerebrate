@@ -25,7 +25,7 @@ $filteringForm = $this->Bootstrap->table(
 
 if ($taggingEnabled) {
     $helpText = $this->Bootstrap->genNode('sup', [
-        'class' => ['ml-1 fa fa-info'],
+        'class' => ['ms-1 fa fa-info'],
         'title' => __('Supports negation matches (with the `!` character) and LIKE matches (with the `%` character).&#10;Example: `!exportable`, `%able`'),
     ]);
     $filteringTags = $this->Bootstrap->genNode('h5', [], __('Tags') . $helpText);

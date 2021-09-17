@@ -4,7 +4,7 @@
             <a class="nav-link main-group text-reset p-1" href="#<?= getResolvableID($group) ?>"><?= h($group) ?></a>
                 <nav class="nav nav-pills sub-group collapse flex-column" data-maingroup="<?= getResolvableID($group) ?>">
                     <?php foreach ($sections as $section): ?>
-                        <a class="nav-link nav-link-group text-reset ml-3 my-1 p-1" href="#<?= getResolvableID($group, $section) ?>"><?= h($section) ?></a>
+                        <a class="nav-link nav-link-group text-reset ms-3 my-1 p-1" href="#<?= getResolvableID($group, $section) ?>"><?= h($section) ?></a>
                     <?php endforeach; ?>
                 </nav>
             </a>
@@ -14,7 +14,7 @@
 
 <script>
     $(document).ready(function() {
-        $('[data-spy="scroll"]').on('activate.bs.scrollspy', function(evt, {relatedTarget}) {
+        $('[data-bs-spy="scroll"]').on('activate.bs.scrollspy', function(evt, {relatedTarget}) {
             const $associatedLink = $(`#navbar-scrollspy-setting nav.nav-pills .nav-link[href="${relatedTarget}"]`)
             let $associatedNav
             if ($associatedLink.hasClass('main-group')) {

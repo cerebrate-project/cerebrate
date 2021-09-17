@@ -904,7 +904,7 @@ class BoostrapButton extends BootstrapGeneric {
     private function genIcon()
     {
         $bsIcon = new BoostrapIcon($this->options['icon'], [
-            'class' => ['me-1']
+            'class' => [(!empty($this->options['title']) ? 'me-1' : '')]
         ]);
         return $bsIcon->icon();
     }
@@ -1627,7 +1627,7 @@ class BootstrapListGroup extends BootstrapGeneric
             return '';
         }
         return $this->genNode('span', [
-            'class' => ['badge badge-pill', (!empty($item['badge-variant']) ? "badge-{$item['badge-variant']}" : 'badge-primary')],
+            'class' => ['badge rounded-pill', (!empty($item['badge-variant']) ? "bg-{$item['badge-variant']}" : 'bg-primary')],
         ], h($item['badge']));
     }
 

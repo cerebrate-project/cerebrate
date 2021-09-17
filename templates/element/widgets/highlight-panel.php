@@ -11,7 +11,7 @@ if ($variation == 0) {
     $variationClass = 'text-danger';
 }
 
-$variationHtml = sprintf('<div class="%s"><span class="%s mr-2"></span>%s</div>',
+$variationHtml = sprintf('<div class="%s"><span class="%s me-2"></span>%s</div>',
     $variationClass,
     $this->FontAwesome->getClass($variationIcon),
     !empty($variation) ? h($variation) : ''

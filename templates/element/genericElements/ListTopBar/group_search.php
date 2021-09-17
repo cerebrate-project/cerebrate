@@ -81,9 +81,10 @@
             }
         ?>
         var randomValue = '<?= h($tableRandomValue) ?>';
-        $(`#quickFilterField-${randomValue}`).popover({
+        new bootstrap.Popover(`#quickFilterField-${randomValue}`, {
             title: '<?= __('Searcheable fields') ?>',
             content: function() { return buildPopoverQuickFilterBody(quickFilter) },
+            placement: 'left',
             html: true,
             sanitize: false,
             trigger: 'manual',
@@ -97,9 +98,9 @@
                 doFilter($button)
             }
         }).on('focus', (e) => {
-            $(`#quickFilterField-${randomValue}`).popover('show')
+            bootstrap.Popover.getInstance(`#quickFilterField-${randomValue}`).show()
         }).on('focusout', (e) => {
-            $(`#quickFilterField-${randomValue}`).popover('hide')
+            bootstrap.Popover.getInstance(`#quickFilterField-${randomValue}`).hide()
         });
 
         $(`#toggleFilterButton-${randomValue}`)
@@ -111,7 +112,7 @@
             })
 
         function doFilter($button) {
-            $(`#quickFilterField-${randomValue}`).popover('hide')
+            bootstrap.Popover.getInstance(`#quickFilterField-${randomValue}`).hide()
             const encodedFilters = encodeURIComponent($(`#quickFilterField-${randomValue}`).val())
             const url = `/${controller}/${action}${additionalUrlParams}?quickFilter=${encodedFilters}`
             UI.reload(url, $(`#table-container-${randomValue}`), $(`#table-container-${randomValue} table.table`), [{

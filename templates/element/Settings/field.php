@@ -7,7 +7,7 @@
                 [
                     'class' => [
                         'form-control',
-                        'pr-4',
+                        'pe-4',
                         (!empty($setting['error']) ? 'is-invalid' : ''),
                         (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
                         (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
@@ -46,7 +46,7 @@
             $container = $appView->Bootstrap->genNode('div', [
                 'class' => [
                     'custom-control',
-                    'custom-switch',
+                    'form-switch',
                 ],
             ], implode('', [$switch, $label]));
             return $container;
@@ -90,8 +90,8 @@
             $options = implode('', $options);
             return $appView->Bootstrap->genNode('select', [
                 'class' => [
-                    'custom-select',
-                    'pr-4',
+                    'form-select',
+                    'pe-4',
                     (!empty($setting['error']) ? 'is-invalid' : ''),
                     (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
                     (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),

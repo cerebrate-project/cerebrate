@@ -13,7 +13,7 @@ if (isLeaf($panelSettings)) {
     $panelHTML .= sprintf('<h4 id="%s"><a class="text-reset text-decoration-none" href="#%s">%s%s</a></h4>',
         $panelID,
         $panelID,
-        !empty($panelSettings['_icon']) ? $this->Bootstrap->icon($panelSettings['_icon'], ['class' => 'mr-1']) : '',
+        !empty($panelSettings['_icon']) ? $this->Bootstrap->icon($panelSettings['_icon'], ['class' => 'me-1']) : '',
         h($panelName)
     );
     if (!empty($panelSettings['_description'])) {
@@ -32,7 +32,7 @@ if (isLeaf($panelSettings)) {
             'settingName' => $singleSettingName,
             'setting' => $singleSetting,
         ]);
-        $panelHTML .= sprintf('<div class="ml-3">%s</div>', $singleSettingHTML);
+        $panelHTML .= sprintf('<div class="ms-3">%s</div>', $singleSettingHTML);
         if (!empty($singleSetting['error'])) {
             $settingVariant = $this->get('variantFromSeverity')[$singleSetting['severity']];
             if ($groupIssueSeverity != 'danger') {

@@ -52,7 +52,7 @@ function attachTestConnectionResultHtml(result, $container) {
     $container.find('div.tester-result').remove()
     $testResultDiv = $('<div class="tester-result"></div>');
     if (typeof result !== 'object') {
-        $testResultDiv.append(getKVHtml('Internal error', result, ['text-danger font-weight-bold']))
+        $testResultDiv.append(getKVHtml('Internal error', result, ['text-danger fw-bold']))
     } else {
         if (result['error']) {
             $testResultDiv.append(
@@ -128,7 +128,7 @@ function performGlobalSearch(evt) {
         return;
     }
     if (value.length < 3 && evt.keyCode != 13) {
-        $('#dropdownMenuSearchAll').dropdown('hide')
+        bootstrap.Popover.getInstance('#dropdownMenuSearchAll').hide()
         return;
     }
     const endpoint = '/instance/searchAll'
@@ -138,7 +138,7 @@ function performGlobalSearch(evt) {
         statusNode: $resultContainer
     }
 
-    $('#dropdownMenuSearchAll').dropdown('show')
+    bootstrap.Popover.getInstance('#dropdownMenuSearchAll').show()
     AJAXApi.quickFetchURL(url, options).then((theHTML) => {
         $resultContainer.html(theHTML)
     })

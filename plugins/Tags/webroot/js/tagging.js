@@ -7,13 +7,13 @@ function createTagPicker(clicked) {
 
     function getEditableButtons($select, $container) {
         const $saveButton = $('<button></button>').addClass(['btn btn-primary btn-sm', 'align-self-start']).attr('type', 'button')
-        .append($('<span></span>').text('Save').addClass('text-nowrap').prepend($('<i></i>').addClass('fa fa-save mr-1')))
+        .append($('<span></span>').text('Save').addClass('text-nowrap').prepend($('<i></i>').addClass('fa fa-save me-1')))
         .click(function() {
             const tags = $select.select2('data').map(tag => tag.text)
             addTags($select.data('url'), tags, $(this))
         })
         const $cancelButton = $('<button></button>').addClass(['btn btn-secondary btn-sm', 'align-self-start']).attr('type', 'button')
-            .append($('<span></span>').text('Cancel').addClass('text-nowrap').prepend($('<i></i>').addClass('fa fa-times mr-1')))
+            .append($('<span></span>').text('Cancel').addClass('text-nowrap').prepend($('<i></i>').addClass('fa fa-times me-1')))
             .click(function() {
                 closePicker($select, $container)
             })
@@ -55,7 +55,7 @@ function deleteTag(url, tags, clicked) {
             title: apiResult.message,
             bodyHtml: $('<div/>').append(
                 $('<span/>').text('Cancel untag operation.'),
-                $('<button/>').addClass(['btn', 'btn-primary', 'btn-sm', 'ml-3']).text('Restore tag').click(function() {
+                $('<button/>').addClass(['btn', 'btn-primary', 'btn-sm', 'ms-3']).text('Restore tag').click(function() {
                     const split = url.split('/')
                     const controllerName = split[1]
                     const id = split[3]
