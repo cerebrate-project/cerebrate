@@ -145,16 +145,16 @@ class BootstrapGeneric
 {
     public static $variants = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'];
     public static $textClassByVariants = [
-        'primary' => 'text-white',
-        'secondary' => 'text-white',
-        'success' => 'text-white',
-        'danger' => 'text-white',
-        'warning' => 'text-black',
-        'info' => 'text-white',
-        'light' => 'text-black',
-        'dark' => 'text-white',
-        'white' => 'text-black',
-        'transparent' => 'text-black'
+        'primary' => 'text-light',
+        'secondary' => 'text-light',
+        'success' => 'text-light',
+        'danger' => 'text-light',
+        'warning' => 'text-dark',
+        'info' => 'text-light',
+        'light' => 'text-dark',
+        'dark' => 'text-light',
+        'white' => 'text-dark',
+        'transparent' => 'text-dark'
     ];
     protected $allowedOptionValues = [];
     protected $options = [];
@@ -946,8 +946,10 @@ class BoostrapBadge extends BootstrapGeneric {
     {
         $html = $this->genNode('span', [
             'class' => array_merge($this->options['class'], [
+                'ms-1',
                 'badge',
                 "bg-{$this->options['variant']}",
+                $this->getTextClassForVariant($this->options['variant']),
                 $this->options['pill'] ? 'rounded-pill' : '',
             ]),
             'title' => $this->options['title']

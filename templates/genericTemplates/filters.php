@@ -27,6 +27,7 @@ if ($taggingEnabled) {
     $helpText = $this->Bootstrap->genNode('sup', [
         'class' => ['ms-1 fa fa-info'],
         'title' => __('Supports negation matches (with the `!` character) and LIKE matches (with the `%` character).&#10;Example: `!exportable`, `%able`'),
+        'data-bs-toggle' => 'tooltip',
     ]);
     $filteringTags = $this->Bootstrap->genNode('h5', [], __('Tags') . $helpText);
     $filteringTags .= $this->Tag->tags([], [

@@ -168,3 +168,7 @@ input[type="checkbox"]:disabled.change-cursor {
     border-top-left-radius: 0 !important;
     border-bottom-left-radius: 0 !important;
 }
+
+.select2-container {
+    z-index: 1060;
+}
