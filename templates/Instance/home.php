@@ -1,3 +1,1 @@
-<?php
-$Parsedown = new Parsedown();
-echo $Parsedown->text($md);
+<h1><?= __('Welcome!') ?></h1>

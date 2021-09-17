@@ -5,7 +5,7 @@ $canRemove = $this->request->getParam('prefix') !== 'Open';
 if ($field['scope'] === 'individuals') {
     foreach ($raw_alignments as $alignment) {
         $alignments .= sprintf(
-            '<div><span class="font-weight-bold">%s</span> @ %s <a href="#" class="fas fa-trash .text-reset .text-decoration-none" onClick="%s"></a></div>',
+            '<div><span class="fw-bold">%s</span> @ %s <a href="#" class="fas fa-trash .text-reset .text-decoration-none" onClick="%s"></a></div>',
             h($alignment['type']),
             sprintf(
                 '<a href="%sorganisations/view/%s">%s</a>',
@@ -25,7 +25,7 @@ if ($field['scope'] === 'individuals') {
 } else if ($field['scope'] === 'organisations') {
     foreach ($raw_alignments as $alignment) {
         $alignments .= sprintf(
-            '<div>[<span class="font-weight-bold">%s</span>] %s <a href="#" class="fas fa-trash .text-reset .text-decoration-none" onClick="%s"></a></div>',
+            '<div>[<span class="fw-bold">%s</span>] %s <a href="#" class="fas fa-trash .text-reset .text-decoration-none" onClick="%s"></a></div>',
             h($alignment['type']),
             sprintf(
                 '<a href="%sindividuals/view/%s">%s</a>',

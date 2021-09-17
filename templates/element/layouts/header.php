@@ -5,7 +5,7 @@
                 <span class="app-icon w-100 h-100" title="<?= __('Cerebrate') ?>"></span>
             </div>
         </a>
-        <button class="navbar-toggler d-sm-none" type="button" data-toggle="collapse" data-target="#app-sidebar" aria-controls="app-sidebar" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler d-sm-none" type="button" data-bs-toggle="collapse" data-bs-target="#app-sidebar" aria-controls="app-sidebar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
     </div>

@@ -37,7 +37,7 @@
             }
             $listElements .= sprintf(
                 "<tr class=\"row\">
-                    <td class=\"col-sm-2 font-weight-bold\">%s</td>
+                    <td class=\"col-sm-2 fw-bold\">%s</td>
                     <td class=\"col-sm-10\">%s</td>
                 </tr>",
                 h($field['key']),
@@ -69,7 +69,7 @@
                 foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
                     $metaField = $metaTemplateField->meta_fields[0];
                     $fieldsHtml .= sprintf(
-                        '<tr class="row"><td class="col-sm-2 font-weight-bold">%s</td><td class="col-sm-10">%s</td></tr>',
+                        '<tr class="row"><td class="col-sm-2 fw-bold">%s</td><td class="col-sm-10">%s</td></tr>',
                         h($metaField->field),
                         $this->element(
                             '/genericElements/SingleViews/Fields/genericField',
@@ -111,7 +111,7 @@
         $title;
     echo sprintf(
         "<div id=\"single-view-table-container-%s\">
-            <h2 class=\"font-weight-light\">%s</h2>
+            <h2 class=\"fw-light\">%s</h2>
             %s%s
             <div class=\"px-3 col-sm-8 panel\">
                 <table id=\"single-view-table-%s\" class=\"table table-striped\">%s</table>

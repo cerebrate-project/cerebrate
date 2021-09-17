@@ -8,11 +8,11 @@
         $table = Cake\ORM\TableRegistry::get($tableName);
         $fieldPath = !empty($table->getDisplayField()) ? $table->getDisplayField() : 'id';
         $section .= sprintf('<span class="d-flex text-nowrap px-2 search-container-model">
-            <span class="text-uppercase text-muted mr-3 model-text">%s</span>
+            <span class="text-uppercase text-muted me-3 model-text">%s</span>
             <span class="d-flex align-items-center search-container-divider">
                 <hr class="m-0"/>
             </span>
-            <span class="font-weight-light text-muted ml-3 model-text">%s</span>
+            <span class="fw-light text-muted ms-3 model-text">%s</span>
         </span>', h($tableName), $tableResult['amount']);
 
         foreach ($tableResult['entries'] as $entry) {
@@ -27,7 +27,7 @@
         }
         $remaining = $tableResult['amount'] - count($tableResult['entries']);
         if ($remaining > 0) {
-            $section .= sprintf('<a href="%s" class="dropdown-item total-found d-block pr-2">%s <strong class="total-found-number text-primary">%s</strong><span class="total-found-text d-inline ml-1" href="#">%s</span></a>',
+            $section .= sprintf('<a href="%s" class="dropdown-item total-found d-block pe-2">%s <strong class="total-found-number text-primary">%s</strong><span class="total-found-text d-inline ms-1" href="#">%s</span></a>',
                 Cake\Routing\Router::URL([
                     'controller' => 'instance',
                     'action' => 'search_all',
@@ -46,7 +46,7 @@
     }
 
     if (!empty($ajax)) {
-        $sections[] = sprintf('<a class="dropdown-item border-top text-center text-muted p-2" href="%s"><i class="%s mr-2"></i>%s</a>',
+        $sections[] = sprintf('<a class="dropdown-item border-top text-center text-muted p-2" href="%s"><i class="%s me-2"></i>%s</a>',
             Cake\Routing\Router::URL([
                 'controller' => 'instance',
                 'action' => 'search_all',
@@ -58,7 +58,7 @@
             __('View all results')
         );
     } else {
-        echo sprintf('<h2 class="font-weight-light mb-4">%s <span class="text-monospace">%s</span></h2>', __('Global search results for:'), h($this->request->getParam('?')['search'] ?? ''));
+        echo sprintf('<h2 class="fw-light mb-4">%s <span class="font-monospace">%s</span></h2>', __('Global search results for:'), h($this->request->getParam('?')['search'] ?? ''));
     }
 
     if (!empty($sections)) {

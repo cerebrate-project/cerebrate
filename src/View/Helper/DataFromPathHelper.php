@@ -52,7 +52,7 @@ class DataFromPathHelper extends Helper
                 $extractedVars[$i] = $varValue;
             }
             foreach ($extractedVars as $i => $value) {
-                $value = $options['highlight'] ? "<span class=\"font-weight-light\">${value}</span>" : $value;
+                $value = $options['highlight'] ? "<span class=\"fw-light\">${value}</span>" : $value;
                 $str = str_replace(
                     "{{{$i}}}",
                     $value,

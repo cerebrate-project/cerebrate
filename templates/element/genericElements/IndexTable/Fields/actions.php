@@ -17,7 +17,7 @@
      *    - function($row, $options): the lambda function. $row contain the row data
      *    - options: array of options. datapaths described in the datapath keyname will be extracted and replaced with the actual row value
     */
-    echo '<td class="action-links text-right text-nowrap">';
+    echo '<td class="action-links text-end text-nowrap">';
     foreach ($actions as $action) {
         if (isset($action['requirement']) && !$action['requirement']) {
             continue;

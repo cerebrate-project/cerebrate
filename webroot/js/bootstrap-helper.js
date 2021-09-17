@@ -351,7 +351,7 @@ class Toaster {
                 $toastHeader.append($toastHeaderMuted)
             }
             if (options.closeButton) {
-                var $closeButton = $('<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+                var $closeButton = $('<button type="button" class="ml-2 mb-1 close" data-bs-dismiss="toast" aria-label="Close"></button>')
                 $toastHeader.append($closeButton)
             }
             $toast.append($toastHeader)
@@ -510,13 +510,14 @@ class ModalFactory {
         'confirm-danger',
     ]
 
-    static closeButtonHtml = '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>'
+    static closeButtonHtml = '<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"></button>'
 
     /** Create the HTML of the modal and inject it into the DOM */
     makeModal() {
         if (this.isValid()) {
             this.$modal = this.buildModal()
             $('#mainModalContainer').append(this.$modal)
+            this.modalInstance = new bootstrap.Modal(this.$modal[0], this.bsModalOptions)
         } else {
             console.log('Modal not valid')
         }
@@ -526,7 +527,8 @@ class ModalFactory {
     show() {
         if (this.isValid()) {
             var that = this
-            this.$modal.modal(this.bsModalOptions)
+            this.modalInstance.show()
+            this.$modal
                 .on('hidden.bs.modal', function () {
                     that.removeModal()
                     that.options.hiddenCallback(that)
@@ -537,6 +539,17 @@ class ModalFactory {
                         that.findSubmitButtonAndAddListener()
                     }
                 })
+            // this.$modal.modal(this.bsModalOptions)
+            //     .on('hidden.bs.modal', function () {
+            //         that.removeModal()
+            //         that.options.hiddenCallback(that)
+            //     })
+            //     .on('shown.bs.modal', function () {
+            //         that.options.shownCallback(that)
+            //         if (that.attachSubmitButtonListener) {
+            //             that.findSubmitButtonAndAddListener()
+            //         }
+            //     })
         } else {
             console.log('Modal not valid')
         }
@@ -544,7 +557,8 @@ class ModalFactory {
 
     /** Hide the modal using the bootstrap modal's hide command */
     hide() {
-        this.$modal.modal('hide')
+        // this.$modal.modal('hide')
+        this.modalInstance.hide()
     }
     
     /** Remove the modal from the DOM */
@@ -567,7 +581,7 @@ class ModalFactory {
      * @return {jQuery} The modal jQuery object
      */
     buildModal() {
-        const $modal = $('<div class="modal fade" tabindex="-1" aria-hidden="true"/>')
+        const $modal = $('<div class="modal fade" tabindex="-1"/>')
         if (this.options.id !== false) {
             $modal.attr('id', this.options.id)
             $modal.attr('aria-labelledby', this.options.id)
@@ -642,7 +656,7 @@ class ModalFactory {
     getFooterOkOnly() {
         return [
             $('<button type="button" class="btn btn-primary">OK</button>')
-                .attr('data-dismiss', 'modal'),
+                .attr('data-bs-dismiss', 'modal'),
         ]
     }
 
@@ -650,19 +664,19 @@ class ModalFactory {
     getFooterConfirm() {
         let variant = this.options.type.split('-')[1]
         variant = variant !== undefined ? variant : 'primary'
-        const $buttonCancel = $('<button type="button" class="btn btn-secondary" data-dismiss="modal"></button>')
+        const $buttonCancel = $('<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"></button>')
                 .text(this.options.cancelText)
                 .click(
                     (evt) => {
                         this.options.cancel(() => { this.hide() }, this, evt)
                     }
                 )
-                .attr('data-dismiss', (this.options.closeManually || !this.options.closeOnSuccess) ? '' : 'modal')
+                .attr('data-bs-dismiss', (this.options.closeManually || !this.options.closeOnSuccess) ? '' : 'modal')
 
         const $buttonConfirm = $('<button type="button" class="btn"></button>')
                 .addClass('btn-' + variant)
                 .text(this.options.confirmText)
-                .attr('data-dismiss', (this.options.closeManually || this.options.closeOnSuccess) ? '' : 'modal')
+                .attr('data-bs-dismiss', (this.options.closeManually || this.options.closeOnSuccess) ? '' : 'modal')
         $buttonConfirm.click(this.getConfirmationHandlerFunction($buttonConfirm))
         return [$buttonCancel, $buttonConfirm]
     }

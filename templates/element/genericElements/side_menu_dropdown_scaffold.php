@@ -36,7 +36,7 @@ if (isset($menu[$metaGroup])) {
 echo sprintf(
     '<div class="dropdown show">%s%s</div>',
     sprintf(
-        '<a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="sideMenuDropdownLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">%s</a>',
+        '<a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="sideMenuDropdownLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">%s</a>',
         __('Navigation')
     ),
     sprintf(

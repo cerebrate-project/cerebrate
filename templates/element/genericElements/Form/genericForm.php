@@ -28,16 +28,16 @@
     $formRandomValue = Cake\Utility\Security::randomString(8);
     $formCreate = $this->Form->create($entity, ['id' => 'form-' . $formRandomValue]);
     $default_template = [
-        'inputContainer' => '<div class="form-group row">{{content}}</div>',
-        'inputContainerError' => '<div class="form-group row has-error">{{content}}</div>',
+        'inputContainer' => '<div class="row mb-3">{{content}}</div>',
+        'inputContainerError' => '<div class="row mb-3 has-error">{{content}}</div>',
         'label' => '{{text}}',
         'input' => '<input type="{{type}}" name="{{name}}"{{attrs}} />',
         'textarea' => '<textarea name="{{name}}" {{attrs}}>{{value}}</textarea>',
         'select' => '<select name="{{name}}" {{attrs}}>{{content}}</select>',
         'checkbox' => '<input type="checkbox" name="{{name}}" value="{{value}}"{{attrs}}>',
         'checkboxFormGroup' => '{{label}}',
-        'formGroup' => '<div class="col-sm-2 col-form-label" {{attrs}}>{{label}}</div><div class="col-sm-10">{{input}}{{error}}</div>',
-        'nestingLabel' => '{{hidden}}<div class="col-sm-2 col-form-label">{{text}}</div><div class="col-sm-10">{{input}}</div>',
+        'formGroup' => '<div class="col-sm-2 form-label" {{attrs}}>{{label}}</div><div class="col-sm-10">{{input}}{{error}}</div>',
+        'nestingLabel' => '{{hidden}}<div class="col-sm-2 form-label">{{text}}</div><div class="col-sm-10">{{input}}</div>',
         'option' => '<option value="{{value}}"{{attrs}}>{{text}}</option>',
         'optgroup' => '<optgroup label="{{label}}"{{attrs}}>{{content}}</optgroup>',
         'select' => '<select name="{{name}}"{{attrs}}>{{content}}</select>',
@@ -98,7 +98,7 @@
             'body' => sprintf(
                 '%s%s%s%s%s%s',
                 empty($data['description']) ? '' : sprintf(
-                    '<div class="pb-2 font-weight-light">%s</div>',
+                    '<div class="pb-2 fw-light">%s</div>',
                     $data['description']
                 ),
                 $ajaxFlashMessage,
@@ -106,8 +106,12 @@
                 $fieldsString,
                 empty($metaTemplateString) ? '' : $this->element(
                     'genericElements/accordion_scaffold', [
-                        'body' => $metaTemplateString,
-                        'title' => 'Meta fields'
+                        'children' => [
+                            [
+                                'body' => $metaTemplateString,
+                                'title' => 'Meta fields'
+                            ]
+                        ]
                     ]
                 ),
                 $formEnd
@@ -127,28 +131,36 @@
             $fieldsString,
             empty($metaTemplateString) ? '' : $this->element(
                 'genericElements/accordion_scaffold', [
-                    'body' => $metaTemplateString,
-                    'title' => 'Meta fields'
+                    'children' => [
+                        [
+                            'body' => $metaTemplateString,
+                            'title' => 'Meta fields'
+                        ]
+                    ]
                 ]
             ),
             $formEnd
         );
     } else {
         echo sprintf(
-            '%s<h2 class="font-weight-light">%s</h2>%s%s%s%s%s%s%s%s%s',
+            '%s<h2 class="fw-light">%s</h2>%s%s%s%s%s%s%s%s%s',
             empty($ajax) ? '<div class="col-8">' : '',
             empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
             $formCreate,
             $ajaxFlashMessage,
             empty($data['description']) ? '' : sprintf(
-                '<div class="pb-3 font-weight-light">%s</div>',
+                '<div class="pb-3 fw-light">%s</div>',
                 $data['description']
             ),
             sprintf('<div class="panel">%s</div>', $fieldsString),
             empty($metaTemplateString) ? '' : $this->element(
                 'genericElements/accordion_scaffold', [
-                    'body' => $metaTemplateString,
-                    'title' => 'Meta fields',
+                    'children' => [
+                        [
+                            'body' => $metaTemplateString,
+                            'title' => 'Meta fields',
+                        ]
+                    ],
                     'class' => 'mb-2'
                 ]
             ),

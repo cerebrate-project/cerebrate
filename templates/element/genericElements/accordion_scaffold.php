@@ -1,13 +1,20 @@
 <?php
-    $randomId = Cake\Utility\Security::randomString(8);
+    $accordionId = Cake\Utility\Security::randomString(8);
 ?>
-<div id="accordion" class="<?= !empty($class) ? $class : '' ?>">
-    <div class="card">
-        <div class="card-header" id="heading-<?= $randomId ?>">
-            <h5 class="mb0"><a href="#" class="btn btn-link" data-toggle="collapse" data-target="#view-child-<?= $randomId ?>" aria-expanded="true" aria-controls="collapseOne"><?= h($title) ?></a></h5>
+<div class="accordion <?= !empty($class) ? $class : '' ?>" id="accordion-<?= $accordionId ?>">
+    <?php foreach ($children as $child): ?>
+        <?php $childId = Cake\Utility\Security::randomString(8); ?>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading-<?= $childId ?>">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<?= $childId ?>" aria-expanded="false" aria-controls="collapse-<?= $childId ?>">
+                <?= h($child['title']) ?>
+                </button>
+            </h2>
+            <div id="collapse-<?= $childId ?>" class="accordion-collapse collapse" aria-labelledby="heading-<?= $accordionId ?>" data-bs-parent="#accordion-<?= $accordionId ?>">
+                <div class="accordion-body">
+                    <?= $child['body'] ?>
+                </div>
+            </div>
         </div>
-        <div class="collapse collapsed" id="view-child-<?= $randomId ?>" data-parent="#accordion" labelledby="heading-<?= $randomId ?>">
-            <div id="view-child-body-<?= $randomId ?>" class="card-body" data-load-on="ready"><?= $body ?></div>
-        </div>
-    </div>
+    <?php endforeach; ?>
 </div>

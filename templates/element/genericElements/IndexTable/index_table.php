@@ -19,11 +19,11 @@
     $tableRandomValue = Cake\Utility\Security::randomString(8);
     echo '<div id="table-container-' . h($tableRandomValue) . '">';
     if (!empty($data['title'])) {
-        echo sprintf('<h2 class="font-weight-light">%s</h2>', h($data['title']));
+        echo sprintf('<h2 class="fw-light">%s</h2>', h($data['title']));
     }
     if (!empty($data['description'])) {
         echo sprintf(
-            '<div class="font-weight-light">%s</div>',
+            '<div class="fw-light">%s</div>',
             empty($data['description']) ? '' : h($data['description'])
         );
     }

@@ -29,7 +29,7 @@
 ?>
 
 <li class="<?= !empty($children) ? 'parent collapsed' : '' ?>">
-    <a class="sidebar-link <?= !empty($children) ? 'collapsed' : '' ?> <?= $active ? 'active' : '' ?> <?= $hasActiveChild ? 'have-active-child' : '' ?>" href="<?= h($url) ?>" <?= !empty($children) ? 'data-toggle="collapse"' : '' ?> <?= $hasActiveChild ? 'aria-expanded="true"' : '' ?>>
+    <a class="sidebar-link <?= !empty($children) ? 'collapsed' : '' ?> <?= $active ? 'active' : '' ?> <?= $hasActiveChild ? 'have-active-child' : '' ?>" href="<?= h($url) ?>" <?= !empty($children) ? 'data-bs-toggle="collapse"' : '' ?> <?= $hasActiveChild ? 'aria-expanded="true"' : '' ?>>
         <i class="sidebar-icon <?= $this->FontAwesome->getClass($icon) ?>"></i>
         <span class="text"><?= h($label) ?></span>
     </a>
