@@ -135,7 +135,7 @@ function performGlobalSearch(evt) {
     const searchParams = new URLSearchParams({search: value});
     const url = endpoint + '?' + searchParams
     const options = {
-        statusNode: $resultContainer
+        statusNode: $resultContainer.find('.search-results-wrapper')
     }
 
     bootstrap.Dropdown.getOrCreateInstance('#dropdownMenuSearchAll').show()

@@ -7,6 +7,7 @@
         <div class="dropdown">
             <button type="button" class="dropdown-toggle d-none" id="dropdownMenuSearchAll" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-bs-reference="parent"></button>
             <div class="global-search-result-container dropdown-menu dropdown-menu-end p-0 pt-2" aria-labelledby="dropdownMenuSearchAll">
+                <div class="search-results-wrapper text-center"><?= __('- No result -') ?></div>
             </div>
         </div>
     </div>

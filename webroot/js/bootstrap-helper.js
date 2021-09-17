@@ -881,7 +881,7 @@ class OverlayFactory {
     }
 
     static overlayWrapper = '<div aria-busy="true" class="position-relative"/>'
-    static overlayContainer = '<div class="position-absolute text-nowrap" style="inset: 0px; z-index: 10;"/>'
+    static overlayContainer = '<div class="position-absolute text-nowrap" style="inset: 0px; z-index: 1100;"/>'
     static overlayBg = '<div class="position-absolute loading-overlay" style="inset: 0px;"/>'
     static overlaySpinner = '<div class="position-absolute" style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);"><span aria-hidden="true" class=""><!----></span></div></div>'
     static overlayText = '<span class="ml-1 align-text-top"></span>'
@@ -897,8 +897,8 @@ class OverlayFactory {
         }
         if (this.$node[0]) {
             const boundingRect = this.$node[0].getBoundingClientRect()
-            this.$overlayWrapper.css('min-height', boundingRect.height)
-            this.$overlayWrapper.css('min-width', boundingRect.width)
+            this.$overlayWrapper.css('min-height', Math.max(boundingRect.height, 20))
+            this.$overlayWrapper.css('min-width', Math.max(boundingRect.width, 20))
         }
         this.$overlayContainer = $(OverlayFactory.overlayContainer)
         this.$overlayBg = $(OverlayFactory.overlayBg)

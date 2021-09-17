@@ -1,5 +1,8 @@
 <?php
     $sections = [];
+    if (!empty($ajax)) {
+        $sections[] = '<div class="search-results-wrapper">';
+    }
     foreach ($data as $tableName => $tableResult) {
         if (empty($tableResult['amount'])) {
             continue;
@@ -57,6 +60,7 @@
             $this->FontAwesome->getClass('search-plus'),
             __('View all results')
         );
+        $sections[] = '</div>';
     } else {
         echo sprintf('<h2 class="fw-light mb-4">%s <span class="font-monospace">%s</span></h2>', __('Global search results for:'), h($this->request->getParam('?')['search'] ?? ''));
     }
