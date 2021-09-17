@@ -7,16 +7,16 @@ use Cake\Routing\Router;
     </a>
     <div class="dropdown-menu dropdown-menu-end">
         <h6 class="dropdown-header"><?= h($this->request->getAttribute('identity')['username']) ?></h6>
-        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'view']) ?>">
+        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'view', 'plugin' => null]) ?>">
             <i class="me-1 <?= $this->FontAwesome->getClass('user-circle') ?>"></i>
             <?= __('My Account') ?>
         </a>
-        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'userSettings']) ?>">
+        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'userSettings', 'plugin' => null]) ?>">
             <i class="me-1 <?= $this->FontAwesome->getClass('user-cog') ?>"></i>
             <?= __('Settings') ?>
         </a>
         <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'logout']) ?>">
+        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'logout', 'plugin' => null]) ?>">
             <i class="me-1 <?= $this->FontAwesome->getClass('sign-out-alt') ?>"></i>
             <?= __('Logout') ?>
         </a>

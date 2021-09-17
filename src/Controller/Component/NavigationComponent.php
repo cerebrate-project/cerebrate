@@ -26,6 +26,7 @@ class NavigationComponent extends Component
         'MetaTemplates' => 'object-group',
         'LocalTools' => 'tools',
         'Instance' => 'server',
+        'Tags' => 'tags',
     ];
 
     public function initialize(array $config): void
@@ -112,7 +113,12 @@ class NavigationComponent extends Component
                             'label' => __('Local Tools'),
                             'icon' => $this->iconToTableMapping['LocalTools'],
                             'url' => '/localTools/index',
-                        ]
+                        ],
+                        'Tags.index' => [
+                            'label' => __('Tags'),
+                            'icon' => $this->iconToTableMapping['Tags'],
+                            'url' => '/tags/index',
+                        ],
                     ]
                 ],
                 'LocalTools' => [
@@ -363,6 +369,9 @@ class NavigationComponent extends Component
                         'url_vars' => ['id' => 'id'],
                     ],
                 ]
+            ]),
+            'Tags' => $this->getDefaultCRUDConfig('Tags', [
+                'defaults' => ['depth-1' => ['textGetter' => 'label']]
             ]),
             'LocalTools' => [
                 'routes' => [
