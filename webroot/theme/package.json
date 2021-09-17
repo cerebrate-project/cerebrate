@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "autobuild": "node-sass --watch scss -o ../css",
-    "build": "node-sass scss -o ../css"
+    "autobuild": "node-sass --watch scss -o ../css/themes",
+    "build": "node-sass scss -o ../css/themes"
   },
   "author": "",
   "license": "ISC",

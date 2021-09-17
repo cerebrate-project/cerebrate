@@ -269,18 +269,21 @@ class NavigationComponent extends Component
                 ],
                 "{$controller}:view" => [
                     'label' => __('View'),
+                    'icon' => 'eye',
                     'inherit' => 'depth-1',
                     'url' => "/{$controller}/view/{{id}}",
                     'url_vars' => ['id' => 'id'],
                 ],
                 "{$controller}:edit" => [
                     'label' => __('Edit'),
+                    'icon' => 'edit',
                     'inherit' => 'depth-1',
                     'url' => "/{$controller}/edit/{{id}}",
                     'url_vars' => ['id' => 'id'],
                 ],
                 "{$controller}:delete" => [
                     'label' => __('Delete'),
+                    'icon' => 'trash',
                     'inherit' => 'depth-1',
                     'url' => "/{$controller}/delete/{{id}}",
                     'url_vars' => ['id' => 'id'],

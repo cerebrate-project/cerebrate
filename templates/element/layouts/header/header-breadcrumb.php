@@ -29,16 +29,13 @@
                 'title' => h($entry['label']),
                 'templateVars' => [
                     'linkClass' => $i == 0 ? 'fw-light' : '',
-                    'icon' => !empty($entry['icon']) ? $this->FontAwesome->getClass(h($entry['icon'])) : ''
+                    'icon' => ($i == 0 && !empty($entry['icon'])) ? $this->FontAwesome->getClass(h($entry['icon'])) : ''
                 ]
             ]);
         }
     
         $lastCrumb = $breadcrumb[count($breadcrumb)-1];
-        if (!empty($lastCrumb['links']) || !empty($lastCrumb['actions'])) {
-            $this->Breadcrumbs->add([[]]); // add last separetor
-        }
-    
+
         if (!empty($lastCrumb['links'])) {
             foreach ($lastCrumb['links'] as $i => $linkEntry) {
                 $active = $linkEntry['route_path'] == $lastCrumb['route_path'];
@@ -46,7 +43,7 @@
                     $linkEntry['url'] = $this->DataFromPath->buildStringFromDataPath($linkEntry['url'], $entity, $linkEntry['url_vars']);
                 }
                 $breadcrumbLinks .= sprintf('<a class="btn btn-%s btn-sm text-nowrap" role="button" href="%s">%s</a>',
-                    $active ? 'secondary' : 'dark',
+                    $active ? 'secondary' : 'outline-secondary',
                     Router::url($linkEntry['url']),
                     h($linkEntry['label'])
                 );
@@ -57,7 +54,11 @@
                 if (!empty($actionEntry['url_vars'])) {
                     $actionEntry['url'] = $this->DataFromPath->buildStringFromDataPath($actionEntry['url'], $entity, $actionEntry['url_vars']);
                 }
-                $breadcrumbAction .= sprintf('<a class="dropdown-item" href="%s">%s</a>', Router::url($actionEntry['url']), h($actionEntry['label']));
+                $breadcrumbAction .= sprintf('<a class="dropdown-item" href="%s"><i class="me-1 %s"></i>%s</a>',
+                    Router::url($actionEntry['url']),
+                    !empty($entry['icon']) ? $this->FontAwesome->getClass(h($actionEntry['icon'])) : '',
+                    h($actionEntry['label'])
+                );
             }
         }
     }
@@ -70,19 +71,34 @@
         ['separator' => '']
     );
 ?>
+
+<?php if (!empty($breadcrumbLinks) && !empty($breadcrumbAction)): ?>
+<div class="breadcrumb-link-container position-absolute end-0 d-flex">
+<?php endif; ?>
+
 <?php if (!empty($breadcrumbLinks)): ?>
-    <div class="header-breadcrumb-children d-none d-md-flex">
+    <div class="header-breadcrumb-children d-none d-md-flex btn-group">
         <?= $breadcrumbLinks ?>
+        <a class="btn btn-primary btn-sm dropdown-toggle" href="#" role="button" id="dropdownMenuBreadcrumbAction" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <?= __('Actions') ?>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuBreadcrumbAction">
+            <?= $breadcrumbAction ?>
+        </div>
     </div>
 <?php endif; ?>
 
-<?php if (!empty($breadcrumbAction)): ?>
+<?php if (!empty($breadcrumbAction) && false): ?>
 <div class="header-breadcrumb-actions dropdown d-flex align-items-center">
-    <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuBreadcrumbAction" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <a class="btn btn-primary btn-sm dropdown-toggle" href="#" role="button" id="dropdownMenuBreadcrumbAction" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         <?= __('Actions') ?>
     </a>
     <div class="dropdown-menu" aria-labelledby="dropdownMenuBreadcrumbAction">
         <?= $breadcrumbAction ?>
     </div>
+</div>
+<?php endif; ?>
+
+<?php if (!empty($breadcrumbLinks) && !empty($breadcrumbAction)): ?>
 </div>
 <?php endif; ?>

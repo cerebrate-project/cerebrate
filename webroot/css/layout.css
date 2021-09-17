@@ -434,18 +434,24 @@ ul.sidebar-elements > li.category > span.category-divider > hr {
 
 .header-breadcrumb-children {
     border-radius: 0.25rem;
-    padding: 0 0.5rem;
+    padding: 0 0.25rem;
     display: flex;
     align-items: center;
 }
 
 .header-breadcrumb-children > a:not(:last-child) {
-    margin-right: 0.5rem;
 }
 
 .header-breadcrumb-actions > a {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+}
+
+.breadcrumb-link-container {
+    top: var(--navbar-height);
+    padding: 2px;
+    border-radius: 0 0 0 5px;
+}
+.header-breadcrumb-children .dropdown-menu .dropdown-item > i {
+    min-width: 25px;
 }
 
 .composed-app-icon-container {
