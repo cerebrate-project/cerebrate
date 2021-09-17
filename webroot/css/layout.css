@@ -1,9 +1,10 @@
 /* layout */
 :root {
     --navbar-height: 60px;
-    /* --sidebar-width: 230px; */
+    /* --navbar-height: 40px; */
     --sidebar-width-expanded: 230px;
     --sidebar-width-collapsed: 65px;
+    /* --sidebar-width-collapsed: 40px; */
 }
 
 body {
@@ -52,6 +53,13 @@ body {
 
     .sidebar.expanded ~ main.content {
         margin-left: 0 !important;
+    }
+
+    .sidebar ul.sidebar-elements > li.category > span.category-label {
+        opacity: 1;
+        position: relative;
+        height: auto;
+        width: auto;
     }
 }
 
@@ -205,7 +213,7 @@ main.content {
 }
 
 .sidebar-content {
-    padding-top: 10px;
+    padding-top: 0.25em;
 }
 
 ul.sidebar-elements {
@@ -236,7 +244,7 @@ ul.sidebar-elements > li {
 ul.sidebar-elements li > a.sidebar-link {
     position: relative;
     display: block;
-    padding: 0 20px;
+    padding: 0 calc((var(--sidebar-width-collapsed) - 25px) / 2);
     line-height: 35px;
     overflow: hidden;
     white-space: nowrap;
@@ -352,7 +360,7 @@ ul.sidebar-elements > li ul li > ul > li > ul > li > ul > li > a.sidebar-link {
 ul.sidebar-elements > li.category {
     white-space: nowrap;
     display: flex;
-    padding: 15px 20px 0;
+    padding: 15px calc((var(--sidebar-width-collapsed) - 25px) / 2) 0;
     line-height: 30px;
     
 }
@@ -455,8 +463,8 @@ ul.sidebar-elements > li.category > span.category-divider > hr {
 }
 
 .composed-app-icon-container {
-    height: 50px;
-    width: 51px;
+    height: calc(var(--navbar-height) - 10px);
+    width: calc(var(--navbar-height) - 10px);
     position: relative;
     display: block;
 }
@@ -464,12 +472,12 @@ ul.sidebar-elements > li.category > span.category-divider > hr {
 .composed-app-icon-container > .app-icon {
     display: inline-block;
     mask-image: url(/img/icon-composition/sheet-all.svg), url(/img/icon-composition/z.svg);
-    mask-position: 0 0, 2.4px 26px;
+    mask-position: 0 0, 2.4px calc((var(--navbar-height) - 10px) / 2);
     mask-repeat: no-repeat;
     mask-size: contain, cover;
     mask-composite: source-out;
     -webkit-mask-image: url(/img/icon-composition/sheet-all.svg), url(/img/icon-composition/z.svg);
-    -webkit-mask-position: 0 0, 2.4px 26px;
+    -webkit-mask-position: 0 0, 2.4px calc((var(--navbar-height) - 10px) / 2);
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: contain, cover;
     -webkit-mask-composite: source-out;
@@ -479,6 +487,6 @@ ul.sidebar-elements > li.category > span.category-divider > hr {
 }
 
 .composed-app-icon-container > .app-icon:hover {
-    mask-position: 0 0, 2.4px 21px;
-    -webkit-mask-position: 0 0, 2.4px 21px;
+    mask-position: 0 0, 2.4px calc(0.75 * (var(--navbar-height) - 10px) / 2);
+    -webkit-mask-position: 0 0, 2.4px calc(0.75 * (var(--navbar-height) - 10px) / 2);
 }

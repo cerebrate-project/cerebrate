@@ -10,7 +10,7 @@
     $breadcrumbAction = '';
     $this->Breadcrumbs->setTemplates([
         'wrapper' => sprintf(
-            '<nav class="header-breadcrumb d-xl-block d-none"{{attrs}}><ol class="">{{content}}</ol></nav>'
+            '<nav class="header-breadcrumb d-lg-block d-none"{{attrs}}><ol class="">{{content}}</ol></nav>'
         ),
         'item' => '<li class="header-breadcrumb-item"{{attrs}}><i class="{{icon}} me-1"></i><a class="{{linkClass}}" href="{{url}}"{{innerAttrs}}>{{title}}</a></li>{{separator}}',
         'itemWithoutLink' => '<li class="header-breadcrumb-item"{{attrs}}><span{{innerAttrs}}>{{title}}</span></li>{{separator}}',

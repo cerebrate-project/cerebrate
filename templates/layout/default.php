@@ -48,7 +48,7 @@ $cakeDescription = 'Cerebrate';
 </head>
 <body>
     <div class="main-wrapper">
-        <header class="navbar top-navbar">
+        <header class="navbar top-navbar navbar-dark">
             <?= $this->element('layouts/header') ?>
         </header>
         <nav id="app-sidebar" class="collapse d-sm-block sidebar">
