@@ -111,31 +111,31 @@ div.progress-timeline .progress-line.progress-inactive {
 
 .callout {
     border: 1px solid #00000000;
-        border-left-color: var(--light);
+        border-left-color: var(--bs-light);
         border-left-width: 1px;
     border-left-width: .25rem;
     border-radius: .25rem;
 }
 .callout-primary {
-    border-left-color: var(--primary);
+    border-left-color: var(--bs-primary);
 }
 .callout-info {
-    border-left-color: var(--info);
+    border-left-color: var(--bs-info);
 }
 .callout-success {
-    border-left-color: var(--success);
+    border-left-color: var(--bs-success);
 }
 .callout-warning {
-    border-left-color: var(--warning);
+    border-left-color: var(--bs-warning);
 }
 .callout-danger {
-    border-left-color: var(--danger);
+    border-left-color: var(--bs-danger);
 }
 .callout-dark {
-    border-left-color: var(--dark);
+    border-left-color: var(--bs-dark);
 }
 .callout-light {
-    border-left-color: var(--light);
+    border-left-color: var(--bs-light);
 }
 
 .form-control.is-invalid.warning {

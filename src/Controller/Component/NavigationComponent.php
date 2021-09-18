@@ -121,15 +121,20 @@ class NavigationComponent extends Component
                         ],
                     ]
                 ],
-                'LocalTools' => [
+                'Instance' => [
                     'label' => __('Instance'),
-                    'icon' => $this->iconToTableMapping['LocalTools'],
+                    'icon' => $this->iconToTableMapping['Instance'],
                     'children' => [
+                        'Settings' => [
+                            'label' => __('Settings'),
+                            'url' => '/instance/settings',
+                            'icon' => 'cogs',
+                        ],
                         'Database' => [
                             'label' => __('Database'),
                             'url' => '/instance/migrationIndex',
                             'icon' => 'database',
-                        ]
+                        ],
                     ]
                 ],
             ],

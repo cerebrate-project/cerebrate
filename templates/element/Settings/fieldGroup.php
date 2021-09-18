@@ -41,7 +41,7 @@
     ]);
 
     $inputGroupSave = $this->Bootstrap->genNode('div', [
-        'class' => ['input-group-append', 'd-none', 'position-relative', 'input-group-actions'],
+        'class' => ['d-none', 'position-relative', 'input-group-actions'],
     ], implode('', [
             $this->Bootstrap->genNode('a', [
                 'class' => ['position-absolute', 'fas fa-times', 'p-abs-center-y', 'text-reset text-decoration-none', 'btn-reset-setting'],
