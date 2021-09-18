@@ -213,7 +213,7 @@ function getResolvableID($sectionName, $panelName=false)
 
     function removeWarnings($input) {
         const $inputGroup = $input.closest('.input-group')
-        const $inputGroupAppend = $inputGroup.find('.input-group-append')
+        const $inputGroupAppend = $inputGroup.find('.input-group-actions')
         const $saveButton = $inputGroup.find('button.btn-save-setting')
         $input.removeClass(['is-invalid', 'border-warning', 'border-danger', 'border-info', 'warning', 'info'])
         $inputGroupAppend.removeClass('d-none')
@@ -225,7 +225,7 @@ function getResolvableID($sectionName, $panelName=false)
 
     function restoreWarnings($input) {
         const $inputGroup = $input.closest('.input-group')
-        const $inputGroupAppend = $inputGroup.find('.input-group-append')
+        const $inputGroupAppend = $inputGroup.find('.input-group-actions')
         const $saveButton = $inputGroup.find('button.btn-save-setting')
         const setting = settingsFlattened[$input.data('setting-name')]
         if (setting.error) {

@@ -14,7 +14,7 @@
 
 <script>
     $(document).ready(function() {
-        $('[data-bs-spy="scroll"]').on('activate.bs.scrollspy', function(evt, {relatedTarget}) {
+        $('[data-bs-spy="scroll"]').on('activate.bs.scrollspy', function({relatedTarget}) {
             const $associatedLink = $(`#navbar-scrollspy-setting nav.nav-pills .nav-link[href="${relatedTarget}"]`)
             let $associatedNav
             if ($associatedLink.hasClass('main-group')) {
