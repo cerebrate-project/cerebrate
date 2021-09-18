@@ -38,7 +38,7 @@ foreach ($chartData as $i => $entry) {
             series: [{
                 data: <?= json_encode($data) ?>,
             }],
-            colors: ['var(--success)'],
+            colors: ['var(--bs-light)'],
             tooltip: {
                 x: {
                     show: false

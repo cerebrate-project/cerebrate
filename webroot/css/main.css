@@ -172,3 +172,16 @@ input[type="checkbox"]:disabled.change-cursor {
 .select2-container {
     z-index: 1060;
 }
+
+.grow-on-hover {
+    -webkit-transition: -webkit-transform 0.5s cubic-bezier(0, 0.90, 0.35, 1.00);
+    -moz-transition: -moz-transform 0.5s cubic-bezier(0, 0.90, 0.35, 1.00);
+    transition: all .2s cubic-bezier(0, 0.90, 0.35, 1.00);
+}
+
+.grow-on-hover:hover {
+    -webkit-transform: translateZ(0) scale(1.03, 1.03);
+    -moz-transform: translateZ(0) scale(1.03, 1.03);
+    transform: translateZ(0) scale(1.03, 1.03);
+    box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 15%) !important;
+}

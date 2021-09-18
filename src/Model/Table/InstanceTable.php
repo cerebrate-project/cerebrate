@@ -24,7 +24,7 @@ class InstanceTable extends AppTable
         return $validator;
     }
 
-    public function getStatistics($days=7): array
+    public function getStatistics($days=30): array
     {
         $models = ['Individuals', 'Organisations', 'Alignments', 'EncryptionKeys', 'SharingGroups', 'Users', 'Tags.Tags'];
         foreach ($models as $model) {
