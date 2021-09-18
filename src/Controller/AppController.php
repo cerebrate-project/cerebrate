@@ -131,8 +131,7 @@ class AppController extends Controller
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
         $this->set('baseurl', Configure::read('App.fullBaseUrl'));
-        Configure::write('app.bsTheme', 'default');
-        $this->set('bsTheme',Configure::read('app.bsTheme'));
+        $this->set('bsTheme', Configure::read('Cerebrate')['ui.bsTheme']);
 
         if ($this->modelClass == 'Tags.Tags') {
             $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');

@@ -170,7 +170,8 @@ input[type="checkbox"]:disabled.change-cursor {
 }
 
 .select2-container {
-    z-index: 1060;
+    /* z-index: 1060; */
+    z-index: 1038;
 }
 
 .grow-on-hover {

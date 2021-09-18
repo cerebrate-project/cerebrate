@@ -25,31 +25,18 @@
     } elseif ($setting['type'] == 'boolean') {
         $input = (function ($settingName, $setting, $appView) {
             $settingId = str_replace('.', '_', $settingName);
-            $switch = $appView->Bootstrap->genNode('input', [
+            return $this->Bootstrap->switch([
+                'label' => h($setting['description']),
+                'checked' => !empty($setting['value']),
+                'id' => $settingId,
                 'class' => [
-                    'custom-control-input',
                     (!empty($setting['error']) ? 'is-invalid' : ''),
                     (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
                 ],
-                'type' => 'checkbox',
-                'value' => !empty($setting['value']) ? 1 : 0,
-                (!empty($setting['value']) ? 'checked' : '') => !empty($setting['value']) ? 'checked' : '',
-                'id' => $settingId,
-                'data-setting-name' => $settingName,
+                'attrs' => [
+                    'data-setting-name' => $settingName
+                ]
             ]);
-            $label = $appView->Bootstrap->genNode('label', [
-                'class' => [
-                    'custom-control-label'
-                ],
-                'for' => $settingId,
-            ], h($setting['description']));
-            $container = $appView->Bootstrap->genNode('div', [
-                'class' => [
-                    'custom-control',
-                    'form-switch',
-                ],
-            ], implode('', [$switch, $label]));
-            return $container;
         })($settingName, $setting, $this);
         $description = '';
 

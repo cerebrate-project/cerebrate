@@ -3,6 +3,7 @@ namespace App\Model\Table;
 
 use App\Model\Table\AppTable;
 use Cake\Validation\Validator;
+use Cake\ORM\TableRegistry;
 
 class SettingsProviderTable extends AppTable
 {
@@ -140,14 +141,17 @@ class SettingsProviderTable extends AppTable
                 ],
                 'UI' => [
                     'General' => [
-                        'ui.dark' => [
-                            'name' => __('Dark theme'),
-                            'type' => 'boolean',
-                            'description' => __('Enable the dark theme of the application'),
-                            'default' => false,
-                            'test' => function() {
-                                return 'Fake error';
+                        'ui.bsTheme' => [
+                            'description' => 'The Bootstrap theme to use for the application',
+                            'default' => 'default',
+                            'name' => 'UI Theme',
+                            'options' => function($settingsProviders) {
+                                $instanceTable = TableRegistry::getTableLocator()->get('Instance');
+                                $themes = $instanceTable->getAvailableThemes();
+                                return array_combine($themes, $themes);
                             },
+                            'severity' => 'info',
+                            'type' => 'select'
                         ],
                     ],
                 ],
@@ -174,6 +178,17 @@ class SettingsProviderTable extends AppTable
                 ]
             ],
             'Features' => [
+                'Demo Settings' => [
+                    'demo.switch' => [
+                        'name' => __('Switch'),
+                        'type' => 'boolean',
+                        'description' => __('A switch acting as a checkbox'),
+                        'default' => false,
+                        'test' => function() {
+                            return 'Fake error';
+                        },
+                    ],
+                ]
             ],
         ];
     }

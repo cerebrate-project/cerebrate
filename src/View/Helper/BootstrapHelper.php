@@ -190,7 +190,9 @@ class BootstrapGeneric
     {
         $html = '';
         foreach ($params as $k => $v) {
-            $html .= BootstrapGeneric::genHTMLParam($k, $v) . ' ';
+            if (!empty($k) && !empty($v)) {
+                $html .= BootstrapGeneric::genHTMLParam($k, $v) . ' ';
+            }
         }
         return $html;
     }
@@ -1269,7 +1271,9 @@ class BoostrapSwitch extends BootstrapGeneric {
         'variant' => 'primary',
         'disabled' => false,
         'checked' => false,
-        'title' => ''
+        'title' => '',
+        'class' => [],
+        'attrs' => [],
     ];
 
     function __construct($options) {
@@ -1299,15 +1303,15 @@ class BoostrapSwitch extends BootstrapGeneric {
             ],
             'title' => $this->options['title']
         ], implode('', [
-            $this->genNode('input', [
+            $this->genNode('input', array_merge([
                 'type' => "checkbox",
-                'class' => 'orm-check-input',
+                'class' => 'form-check-input',
                 'id' => $tmpId,
                 ($this->options['disabled'] ? 'disabled' : '') => '',
-                ($this->options['checked'] ? 'checked' : '') => $this->options['checked'] ? 'checked' : ''
-            ]),
+                ($this->options['checked'] ? 'checked' : '') => $this->options['checked'] ? 'checked' : '',
+            ], $this->options['attrs'])),
             $this->genNode('label', [
-                'class' => 'orm-check-label',
+                'class' => 'form-check-label',
                 'for' => $tmpId,
             ], h($this->options['label']))
         ]));

@@ -7,6 +7,7 @@ use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Validation\Validator;
 use Migrations\Migrations;
+use Cake\Filesystem\Folder;
 use Cake\Http\Exception\MethodNotAllowedException;
 
 class InstanceTable extends AppTable
@@ -166,5 +167,23 @@ class InstanceTable extends AppTable
         return [
             'success' => true
         ];
+    }
+
+    public function getAvailableThemes()
+    {
+        $themesPath = ROOT . '/webroot/css/themes';
+        $dir = new Folder($themesPath);
+        $filesRegex = 'bootstrap-(?P<themename>\w+)\.css';
+        $themeRegex = '/' . 'bootstrap-(?P<themename>\w+)\.css' . '/';
+        $files = $dir->find($filesRegex);
+        $themes = [];
+        foreach ($files as $filename) {
+            $matches = [];
+            $themeName = preg_match($themeRegex, $filename, $matches);
+            if (!empty($matches['themename'])) {
+                $themes[] =  $matches['themename'];
+            }
+        }
+        return $themes;
     }
 }
