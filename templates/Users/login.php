@@ -7,5 +7,16 @@
     echo $this->Form->submit(__('Submit'), ['class' => 'btn btn-lg btn-primary btn-block']);
     echo $this->Form->end();
     echo '</div>';
+    echo $this->Form->postLink(
+        'Login with Keycloak',
+        [
+            'prefix' => false,
+            'plugin' => 'ADmad/SocialAuth',
+            'controller' => 'Auth',
+            'action' => 'login',
+            'provider' => 'keycloak',
+            '?' => ['redirect' => $this->request->getQuery('redirect')]
+        ]
+    );
 ?>
 </div>
