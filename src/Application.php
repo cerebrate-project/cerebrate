@@ -29,6 +29,8 @@ use Authentication\AuthenticationServiceInterface;
 use Authentication\AuthenticationServiceProviderInterface;
 use Authentication\Middleware\AuthenticationMiddleware;
 use Psr\Http\Message\ServerRequestInterface;
+use App\Event\SocialAuthListener;
+use Cake\Event\EventManager;
 /**
  * Application setup class.
  *
@@ -44,6 +46,8 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
      */
     public function bootstrap(): void
     {
+        $this->addPlugin('ADmad/SocialAuth');
+
         // Call parent to load bootstrap from files.
         parent::bootstrap();
 
@@ -59,6 +63,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             $this->addPlugin('DebugKit');
         }
         $this->addPlugin('Authentication');
+        EventManager::instance()->on(new SocialAuthListener());
         // Load more plugins here
     }
 
@@ -86,8 +91,32 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             // creating the middleware instance specify the cache config name by
             // using it's second constructor argument:
             // `new RoutingMiddleware($this, '_cake_routes_')`
-            ->add(new RoutingMiddleware($this))
-            ->add(new AuthenticationMiddleware($this))
+            ->add(new RoutingMiddleware($this));
+
+            if (!empty(Configure::read('keycloak'))) {
+                $middlewareQueue->add(new \ADmad\SocialAuth\Middleware\SocialAuthMiddleware([
+                    'requestMethod' => 'POST',
+                    'loginUrl' => '/users/login',
+                    'loginRedirect' => '/',
+                    'userEntity' => false,
+                    'userModel' => 'Users',
+                    'socialProfileModel' => 'ADmad/SocialAuth.SocialProfiles',
+                    'finder' => 'all',
+                    'fields' => [
+                        'password' => 'password',
+                    ],
+                    'sessionKey' => 'Auth',
+                    'getUserCallback' => 'getUser',
+                    'serviceConfig' => [
+                        'provider' => [
+                            'keycloak' => Configure::read('keycloak.provider')
+                        ],
+                    ],
+                    'collectionFactory' => null,
+                    'logErrors' => true,
+                ]));
+            }
+            $middlewareQueue->add(new AuthenticationMiddleware($this))
             ->add(new BodyParserMiddleware());
         return $middlewareQueue;
     }
