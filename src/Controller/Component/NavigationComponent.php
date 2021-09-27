@@ -406,6 +406,11 @@ class NavigationComponent extends Component
                         'url' => '/',
                         'icon' => 'home'
                     ],
+                    'Instance:settings' => [
+                        'label' => __('Settings'),
+                        'url' => '/instance/settings',
+                        'icon' => 'cogs'
+                    ],
                     'Instance:migrationIndex' => [
                         'label' => __('Database Migration'),
                         'url' => '/instance/migrationIndex',
