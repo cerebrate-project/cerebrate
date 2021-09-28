@@ -27,7 +27,7 @@ class InstanceTable extends AppTable
 
     public function getStatistics($days=30): array
     {
-        $models = ['Individuals', 'Organisations', 'Alignments', 'EncryptionKeys', 'SharingGroups', 'Users', 'Tags.Tags'];
+        $models = ['Individuals', 'Organisations', 'Alignments', 'EncryptionKeys', 'SharingGroups', 'Users', 'Broods', 'Tags.Tags'];
         foreach ($models as $model) {
             $table = TableRegistry::getTableLocator()->get($model);
             $statistics[$model]['amount'] = $table->find()->all()->count();

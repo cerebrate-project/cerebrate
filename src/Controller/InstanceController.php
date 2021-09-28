@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Utility\Inflector;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
@@ -58,6 +59,16 @@ class InstanceController extends AppController
         $this->loadModel('Phinxlog');
         $status = $this->Phinxlog->mergeMigrationLogIntoStatus($migrationStatus['status']);
 
+        foreach ($status as $i => $entry) {
+            if (!empty($entry['plugin'])) {
+                $pluginTablename = sprintf('%s_phinxlog', Inflector::underscore($entry['plugin']));
+                $status[$i] = $this->Phinxlog->mergeMigrationLogIntoStatus([$entry], $pluginTablename)[0];
+
+            }
+        }
+        usort($status, function($a, $b) {
+            return strcmp($b['id'], $a['id']);
+        });
         $this->set('status', $status);
         $this->set('updateAvailables', $migrationStatus['updateAvailables']);
     }

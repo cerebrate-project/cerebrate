@@ -30,6 +30,7 @@ class LocalToolsTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('Timestamp');
     }
 
     public function validationDefault(Validator $validator): Validator

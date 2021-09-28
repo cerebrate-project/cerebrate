@@ -13,6 +13,7 @@ class MetaTemplatesTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('Timestamp');
         $this->hasMany(
             'MetaTemplateFields',
             [

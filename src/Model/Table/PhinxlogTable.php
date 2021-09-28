@@ -12,8 +12,11 @@ class PhinxlogTable extends AppTable
         parent::initialize($config);
     }
 
-    public function mergeMigrationLogIntoStatus(array $status): array
+    public function mergeMigrationLogIntoStatus(array $status, $table=null): array
     {
+        if (!is_null($table)) {
+            $this->setTable($table);
+        }
         $logs = $this->find('list', [
             'keyField' => 'version',
             'valueField' => function ($entry) {
