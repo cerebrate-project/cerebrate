@@ -100,9 +100,7 @@ function genSection($sectionName, $subSectionSettings, $appView)
         ]);
         $sectionContent[] = $panelHTML;
     } else {
-        if (count($subSectionSettings) > 1) {
-            $sectionContent[] = sprintf('<h2 id="%s">%s</h2>', getResolvableID($sectionName), h($sectionName));
-        }
+        $sectionContent[] = sprintf('<h2 id="%s">%s</h2>', getResolvableID($sectionName), h($sectionName));
         foreach ($subSectionSettings as $panelName => $panelSettings) {
             if (!empty($panelSettings)) {
                 $panelHTML = $appView->element('Settings/panel', [
