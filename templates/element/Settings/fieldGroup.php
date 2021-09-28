@@ -40,18 +40,16 @@
         'settingName' => $settingName,
     ]);
 
-    $inputGroupSave = $this->Bootstrap->genNode('div', [
-        'class' => ['d-none', 'position-relative', 'input-group-actions'],
-    ], implode('', [
-            $this->Bootstrap->genNode('a', [
-                'class' => ['position-absolute', 'fas fa-times', 'p-abs-center-y', 'text-reset text-decoration-none', 'btn-reset-setting'],
-                'href' => '#',
-            ]),
-            $this->Bootstrap->genNode('button', [
-                'class' => ['btn', 'btn-success', 'btn-save-setting'],
-                'type' => 'button',
-            ], __('save')),
-    ]));
+    $inputGroupSave = $this->Bootstrap->button([
+        'icon' => 'times',
+        'variant' => 'secondary',
+        'class' => ['btn-setting-action', 'btn-reset-setting', 'd-none'],
+    ]);
+    $inputGroupSave .= $this->Bootstrap->button([
+        'text' => __('save'),
+        'variant' => 'success',
+        'class' => ['btn-setting-action', 'btn-save-setting', 'd-none'],
+    ]);
     $inputGroup = $this->Bootstrap->genNode('div', [
         'class' => ['input-group'],
     ], implode('', [$input, $inputGroupSave]));

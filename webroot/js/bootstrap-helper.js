@@ -353,9 +353,9 @@ class Toaster {
             if (options.title !== false || options.titleHtml !== false) {
                 var $toastHeaderText
                 if (options.titleHtml !== false) {
-                    $toastHeaderText = $('<div class="mr-auto"/>').html(options.titleHtml);
+                    $toastHeaderText = $('<div class="me-auto"/>').html(options.titleHtml);
                 } else {
-                    $toastHeaderText = $('<strong class="mr-auto"/>').text(options.title)
+                    $toastHeaderText = $('<strong class="me-auto"/>').text(options.title)
                 }
                 $toastHeader.append($toastHeaderText)
             }
@@ -369,7 +369,7 @@ class Toaster {
                 $toastHeader.append($toastHeaderMuted)
             }
             if (options.closeButton) {
-                var $closeButton = $('<button type="button" class="ml-2 mb-1 close" data-bs-dismiss="toast" aria-label="Close"></button>')
+                var $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>')
                     .click(function() {
                         $(this).closest('.toast').data('toastObject').removeToast()
                     })
@@ -531,7 +531,7 @@ class ModalFactory {
         'confirm-danger',
     ]
 
-    static closeButtonHtml = '<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"></button>'
+    static closeButtonHtml = '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>'
 
     /** Create the HTML of the modal and inject it into the DOM */
     makeModal() {

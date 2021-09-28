@@ -158,13 +158,13 @@ function getResolvableID($sectionName, $panelName=false)
             }
         })
 
-        $('.tab-content .input-group-actions .btn-save-setting').click(function() {
+        $('.tab-content .setting-group .btn-save-setting').click(function() {
             const $input = $(this).closest('.input-group').find('input, select')
             const settingName = $input.data('setting-name')
             const settingValue = $input.val()
             saveSetting(this, $input, settingName, settingValue)
         })
-        $('.tab-content .input-group-actions .btn-reset-setting').click(function() {
+        $('.tab-content .setting-group .btn-reset-setting').click(function() {
             const $btn = $(this)
             const $input = $btn.closest('.input-group').find('input, select')
             let oldValue = settingsFlattened[$input.data('setting-name')].value
@@ -213,34 +213,31 @@ function getResolvableID($sectionName, $panelName=false)
 
     function removeWarnings($input) {
         const $inputGroup = $input.closest('.input-group')
-        const $inputGroupAppend = $inputGroup.find('.input-group-actions')
-        const $saveButton = $inputGroup.find('button.btn-save-setting')
+        const $btnSettingAction = $inputGroup.find('.btn-setting-action')
+        const $saveButton = $('.setting-group button.btn-save-setting')
         $input.removeClass(['is-invalid', 'border-warning', 'border-danger', 'border-info', 'warning', 'info'])
-        $inputGroupAppend.removeClass('d-none')
+        $btnSettingAction.removeClass('d-none')
         if ($input.is('select') && $input.find('option:selected').data('is-empty-option') == 1) {
-            $inputGroupAppend.addClass('d-none') // hide save button if empty selection picked
+            $btnSettingAction.addClass('d-none') // hide save button if empty selection picked
         }
         $inputGroup.parent().find('.invalid-feedback').removeClass('d-block')
     }
 
     function restoreWarnings($input) {
         const $inputGroup = $input.closest('.input-group')
-        const $inputGroupAppend = $inputGroup.find('.input-group-actions')
-        const $saveButton = $inputGroup.find('button.btn-save-setting')
+        const $btnSettingAction = $inputGroup.find('.btn-setting-action')
+        const $saveButton = $('.setting-group button.btn-save-setting')
         const setting = settingsFlattened[$input.data('setting-name')]
         if (setting.error) {
             borderVariant = setting.severity !== undefined ? variantFromSeverity[setting.severity] : 'warning'
             $input.addClass(['is-invalid', `border-${borderVariant}`, borderVariant])
-            if (setting.severity == 'warning') {
-                $input.addClass('warning')
-            }
             $inputGroup.parent().find('.invalid-feedback').addClass('d-block').text(setting.errorMessage)
         } else {
             removeWarnings($input)
         }
         const $callout = $input.closest('.settings-group')
         updateCalloutColors($callout)
-        $inputGroupAppend.addClass('d-none')
+        $btnSettingAction.addClass('d-none')
     }
 
     function updateCalloutColors($callout) {
@@ -284,12 +281,6 @@ function getResolvableID($sectionName, $panelName=false)
 <style>
     .input-group-actions {
         z-index: 5;
-    }
-    a.btn-reset-setting {
-        left: -1.25em;
-    }
-    .custom-select ~ div > a.btn-reset-setting {
-        left: -2.5em;
     }
     .form-control[type="number"] ~ div > a.btn-reset-setting {
         left: -3em;

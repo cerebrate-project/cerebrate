@@ -1,0 +1,144 @@
+@import "../node_modules/bootstrap/scss/functions";
+@import "../node_modules/bootstrap/scss/variables";
+@import "../node_modules/bootstrap/scss/mixins";
+@import "../node_modules/bootstrap/scss/utilities";
+
+@import "mixins/callout";
+@import "mixins/toast";
+@import "mixins/forms-severity";
+
+/* Callout */
+.callout {
+    border: 1px solid $gray-200;
+        border-left-color: $gray-200;
+        border-left-width: 1px;
+    border-left-width: .25rem;
+    border-radius: .25rem;
+}
+
+@each $color, $value in $theme-colors {
+    .callout-#{$color} {
+        @include callout-variant($value);
+    }
+}
+
+
+/* Toasts */
+$toast-bg-level:                    -7 !default;
+$toast-border-level:                -6 !default;
+$toast-color-level:                 7 !default;
+
+.toast {
+    min-width: 250px;
+}
+
+@each $color, $value in $theme-colors {
+    .toast-#{$color} {
+        @include toast-variant(theme-color-level($color, $toast-bg-level), theme-color-level($color, $toast-border-level), theme-color-level($color, $toast-color-level));
+    }
+}
+
+/* Progress Timeline */
+.progress-timeline {
+    padding: 0.2em 0.2em 0.5em 0.2em;
+    ul {
+        position: relative;
+        padding: 0;
+    }
+    li {
+        list-style-type: none;
+        position: relative
+    }
+    li.progress-inactive {
+        opacity: 0.5;
+    }
+    .progress-line {
+        height: 2px;
+    }
+    .progress-line.progress-inactive {
+        opacity: 0.5;
+    }
+}
+
+/* Forms severity */
+.form-control.is-invalid {
+    &.info {
+        @include form-control-validation-severity-state(theme-color("info"));
+    }
+    &.warning {
+        @include form-control-validation-severity-state(theme-color("warning"));
+    }
+}
+
+.form-select.is-invalid:not([multiple]):not([size]),
+.form-select.is-invalid:not([multiple])[size="1"]
+.form-select.is-invalid {
+    &.info {
+        @include form-select-validation-severity-state(theme-color("info"));
+    }
+    &.warning {
+        @include form-select-validation-severity-state(theme-color("warning"));
+    }
+}
+
+.form-check-input.is-invalid {
+    &.info {
+        @include form-check-input-validation-severity-state(theme-color("info"));
+    }
+    &.warning {
+        @include form-check-input-validation-severity-state(theme-color("warning"));
+    }
+}
+
+/* Utilities */
+// Use bootstrap's utilities API with something like this
+// $utilities: map-merge(
+//     $utilities,
+//     (
+//         "max-width": map-merge(
+//             map-get($utilities, "max-width"),
+//             (
+//                 values: map-merge(
+//                     map-get(map-get($utilities, "max-width"), "values"),
+//                     (
+//                         25: 25%,
+//                         50: 50%,
+//                         75: 75%,
+//                     ),
+//                 ),
+//             ),
+//         )
+//     )
+// );
+.mw-75 {
+    max-width: 75% !important;
+  }
+.mw-50 {
+    max-width: 50% !important;
+}
+.mw-25 {
+    max-width: 25% !important;
+}
+.mh-75 {
+    max-height: 75% !important;
+}
+.mh-50 {
+    max-height: 50% !important;
+}
+.mh-25 {
+    max-height: 25% !important;
+}
+
+.p-abs-center-y {
+    top: 50%;
+    transform: translateY(-50%);
+}
+.p-abs-center-x {
+    left: 50%;
+    transform: translateX(-50%);
+}
+.p-abs-center-both {
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+}

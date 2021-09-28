@@ -61,7 +61,7 @@ $cakeDescription = 'Cerebrate';
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
-    <?= $this->Html->css('bootstrap-additional.css') ?>
+    <?= $this->Html->css('themes/bootstrap-additional.css') ?>
 
     <?= $this->Html->script('Tags.tagging') ?>
     <?= $this->Html->css('Tags.tagging') ?>
