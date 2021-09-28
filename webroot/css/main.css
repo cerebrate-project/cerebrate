@@ -102,6 +102,10 @@ input[type="checkbox"]:disabled.change-cursor {
     z-index: 1038;
 }
 
+.select2-container--bootstrap-5 {
+    color: black;
+}
+
 .grow-on-hover {
     -webkit-transition: -webkit-transform 0.5s cubic-bezier(0, 0.90, 0.35, 1.00);
     -moz-transition: -moz-transform 0.5s cubic-bezier(0, 0.90, 0.35, 1.00);

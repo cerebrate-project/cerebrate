@@ -49,8 +49,8 @@ if (isLeaf($panelSettings)) {
             'mb-4',
             'rounded',
             'settings-group',
-            (!empty($groupIssueSeverity) ? "callout callout-${groupIssueSeverity}" : ''),
-            ($this->get('darkMode') ? 'bg-dark' : 'bg-light')
+            'callout',
+            (!empty($groupIssueSeverity) ? "callout-${groupIssueSeverity}" : ''),
         ],
     ], $panelHTML);
 }

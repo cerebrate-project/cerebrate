@@ -230,7 +230,7 @@ class BootstrapTabs extends BootstrapGeneric
         'vertical' => false,
         'vertical-size' => 3,
         'card' => false,
-        'header-variant' => 'light',
+        'header-variant' => '',
         'body-variant' => '',
         'body-class' => [],
         'nav-class' => [],
@@ -247,7 +247,7 @@ class BootstrapTabs extends BootstrapGeneric
         $this->allowedOptionValues = [
             'justify' => [false, 'center', 'end'],
             'body-variant' => array_merge(BootstrapGeneric::$variants, ['']),
-            'header-variant' => BootstrapGeneric::$variants,
+            'header-variant' => array_merge(BootstrapGeneric::$variants, ['']),
         ];
         $this->processOptions($options);
     }

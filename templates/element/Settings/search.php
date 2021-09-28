@@ -1,4 +1,4 @@
-<select id="search-settings" class="d-block w-100" aria-describedby="<?= __('Search setting input') ?>"><option></option></select>
+<select id="search-settings" class="d-block w-100 form-select" aria-describedby="<?= __('Search setting input') ?>"><option></option></select>
 
 <script>
     let selectData = []

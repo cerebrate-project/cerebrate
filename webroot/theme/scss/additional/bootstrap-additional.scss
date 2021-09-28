@@ -1,24 +1,29 @@
-@import "../node_modules/bootstrap/scss/functions";
-@import "../node_modules/bootstrap/scss/variables";
-@import "../node_modules/bootstrap/scss/mixins";
-@import "../node_modules/bootstrap/scss/utilities";
+@import "../../node_modules/bootstrap/scss/functions";
+@import "../../node_modules/bootstrap/scss/variables";
+@import "../../node_modules/bootstrap/scss/mixins";
+@import "../../node_modules/bootstrap/scss/utilities";
 
-@import "mixins/callout";
-@import "mixins/toast";
-@import "mixins/forms-severity";
+@import "../mixins/callout";
+@import "../mixins/toast";
+@import "../mixins/forms-severity";
+
+$calloutBgColor: $white !default;
+$calloutShadow: 0 0 35px 0 rgba(154, 161, 171, 0.25) !default;;
+$calloutBorderColor: $gray-200 !default;
 
 /* Callout */
 .callout {
-    border: 1px solid $gray-200;
-        border-left-color: $gray-200;
-        border-left-width: 1px;
-    border-left-width: .25rem;
+    border: 1px solid  $calloutBorderColor;
     border-radius: .25rem;
+    background-color: $calloutBgColor;
+    box-shadow: $calloutShadow;
 }
-
+    
 @each $color, $value in $theme-colors {
     .callout-#{$color} {
         @include callout-variant($value);
+        border-left-width: .25rem;
+        border-left-style: solid;
     }
 }
 

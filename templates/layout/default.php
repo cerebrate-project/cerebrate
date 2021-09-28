@@ -54,14 +54,13 @@ $cakeDescription = 'Cerebrate';
     <?= $this->Html->css('CodeMirror/addon/hint/show-hint') ?>
     <?= $this->Html->css('CodeMirror/addon/lint/lint') ?>
     <?= $this->Html->css('select2.min') ?>
-    <?= $this->Html->css('select2-bootstrap4.min') ?>
+    <?= $this->Html->css('select2-bootstrap5') ?>
     <?= $this->Html->script('apexcharts.min') ?>
     <?= $this->Html->css('apexcharts') ?>
 
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
-    <?= $this->Html->css('themes/bootstrap-additional.css') ?>
 
     <?= $this->Html->script('Tags.tagging') ?>
     <?= $this->Html->css('Tags.tagging') ?>
@@ -90,5 +89,6 @@ $cakeDescription = 'Cerebrate';
 
 <script>
     const bsTheme = '<?= h($bsTheme); ?>'
+    $.fn.select2.defaults.set('theme', 'bootstrap-5');
 </script>
 </html>

@@ -15,7 +15,7 @@ $settingTable = genNavcard($settingsProvider, $this);
 </script>
 
 <div class="px-5">
-    <div class="mb-3">
+    <div class="mb-3 mt-2">
         <?=
             $this->element('Settings/search', [
             ]);
@@ -100,7 +100,9 @@ function genSection($sectionName, $subSectionSettings, $appView)
         ]);
         $sectionContent[] = $panelHTML;
     } else {
-        $sectionContent[] = sprintf('<h2 id="%s">%s</h2>', getResolvableID($sectionName), h($sectionName));
+        if (count($subSectionSettings) > 0) {
+            $sectionContent[] = sprintf('<h2 id="%s">%s</h2>', getResolvableID($sectionName), h($sectionName));
+        }
         foreach ($subSectionSettings as $panelName => $panelSettings) {
             if (!empty($panelSettings)) {
                 $panelHTML = $appView->element('Settings/panel', [

@@ -23,6 +23,12 @@ $sidebarShadows: 0 2px 2px 0 rgba(0, 0, 0, 0.16), 0 2px 6px 0 rgba(0, 0, 0, 0.12
 $sidebarLockButton: $light !default;
 $activeSidebarLinkColor: var(--cerebrate-color) !default;
 
+// $calloutBorderColor: $gray-200 !default;
+$calloutBgColor: $panelBgColor !default;
+$calloutShadow: $panelShadow !default;
+
+@import "additional/bootstrap-additional";
+
 /* Body */
 .panel {
     background-color: $panelBgColor;
