@@ -267,14 +267,19 @@ function getResolvableID($sectionName, $panelName=false)
         const $settingToFocus = $(referencedID)
         const pageNavID = $(referencedID).closest('.tab-pane').attr('aria-labelledby')
         const $navController = $(`#${pageNavID}`)
+        const $settingGroup = $settingToFocus.closest('.settings-group')
         $navController
             .on('shown.bs.tab.after-redirect', () => {
                 $settingToFocus[0].scrollIntoView()
                 const inputID = $settingToFocus.parent().attr('for')
                 $settingToFocus.closest('.setting-group').find(`#${inputID}`).focus()
                 $navController.off('shown.bs.tab.after-redirect')
+                $settingGroup.addClass(['to-be-slided', 'slide-in'])
             })
             .tab('show')
+        $settingGroup.on('webkitAnimationEnd oanimationend msAnimationEnd animationend', function() {
+            $(this).removeClass(['to-be-slided', 'slide-in'])
+        });
     }
 </script>
 

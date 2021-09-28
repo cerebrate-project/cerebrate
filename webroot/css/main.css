@@ -85,25 +85,12 @@ input[type="checkbox"]:disabled.change-cursor {
     border-bottom-right-radius: 0;
 }
 
-.select2-selection__choice { /* Our app do not have the same font size */
-    padding-left: 1.5em !important;
-}
-.picker-container .select2-selection {
-    border-top-right-radius: 0 !important;
-    border-bottom-right-radius: 0 !important;
-}
-.picker-container .picker-action .btn:first-child {
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-}
-
 .select2-container {
-    /* z-index: 1060; */
-    z-index: 1038;
+    z-index: 1056;
 }
 
 .select2-container--bootstrap-5 {
-    color: black;
+    color: var(--bs-body-color);
 }
 
 .grow-on-hover {
@@ -117,4 +104,22 @@ input[type="checkbox"]:disabled.change-cursor {
     -moz-transform: translateZ(0) scale(1.03, 1.03);
     transform: translateZ(0) scale(1.03, 1.03);
     box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 15%) !important;
+}
+
+.settings-group.to-be-slided {
+    opacity: 0;
+    transform: translateX(-15%);
+    -webkit-transform: translateX(-15%);
+}
+
+.settings-group.to-be-slided.slide-in {
+    animation: slide-in 0.2s forwards;
+    animation-delay: 0.1s;
+    -webkit-animation: slide-in 0.2s forwards;
+    -webkit-animation-delay: 0.1s;
+}
+
+@keyframes slide-in {
+    50% { opacity: 0.3; }
+    100% { transform: translateX(0%); opacity: 1; }
 }
