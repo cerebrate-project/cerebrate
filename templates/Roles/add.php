@@ -13,6 +13,11 @@
                     'label' => 'Full admin privilege'
                 ],
                 [
+                    'field' => 'perm_org_admin',
+                    'type' => 'checkbox',
+                    'label' => 'Organisation admin privilege'
+                ],
+                [
                     'field' => 'perm_sync',
                     'type' => 'checkbox',
                     'label' => 'Sync permission'

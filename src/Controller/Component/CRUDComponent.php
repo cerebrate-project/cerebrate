@@ -149,8 +149,14 @@ class CRUDComponent extends Component
                 $patchEntityParams['fields'] = $params['fields'];
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
+            if (isset($params['beforeSave'])) {
+                $data = $params['beforeSave']($data);
+            }
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
+                if (isset($params['afterSave'])) {
+                    $params['afterSave']($data);
+                }
                 $message = __('{0} added.', $this->ObjectAlias);
                 if (!empty($input['metaFields'])) {
                     $this->saveMetaFields($data->id, $input);
@@ -270,8 +276,14 @@ class CRUDComponent extends Component
                 $patchEntityParams['fields'] = $params['fields'];
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
+            if (isset($params['beforeSave'])) {
+                $data = $params['beforeSave']($data);
+            }
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
+                if (isset($params['afterSave'])) {
+                    $params['afterSave']($data);
+                }
                 $message = __('{0} `{1}` updated.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()});
                 if (!empty($input['metaFields'])) {
                     $this->MetaFields->deleteAll(['scope' => $this->Table->metaFields, 'parent_id' => $savedData->id]);

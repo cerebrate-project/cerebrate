@@ -7,6 +7,11 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\TableRegistry;
+use \Cake\Datasource\EntityInterface;
+use \Cake\Http\Session;
+use Cake\Http\Client;
+use Cake\Utility\Security;
+use Cake\Core\Configure;
 
 class UsersTable extends AppTable
 {
@@ -14,6 +19,7 @@ class UsersTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
+        $this->initAuthBehaviors();
         $this->belongsTo(
             'Individuals',
             [
@@ -29,6 +35,13 @@ class UsersTable extends AppTable
             ]
         );
         $this->setDisplayField('username');
+    }
+
+    private function initAuthBehaviors()
+    {
+        if (!empty(Configure::read('keycloak'))) {
+            $this->addBehavior('AuthKeycloak');
+        }
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -92,5 +105,52 @@ class UsersTable extends AppTable
             $this->save($user);
         }
         return true;
+    }
+
+    public function captureIndividual($user): int
+    {
+        $individual = $this->Individuals->find()->where(['email' => $user['individual']['email']])->first();
+        if (empty($individual)) {
+            $individual = $this->Individuals->newEntity($user['individual']);
+            if (!$this->Individuals->save($individual)) {
+                throw new BadRequestException(__('Could not save the associated individual'));
+            }
+        }
+        return $individual->id;
+    }
+
+    public function captureOrganisation($user): int
+    {
+        $organisation = $this->Organisations->find()->where(['uuid' => $user['organisation']['uuid']])->first();
+        if (empty($organisation)) {
+            $user['organisation']['name'] = $user['organisation']['uuid'];
+            $organisation = $this->Organisations->newEntity($user['organisation']);
+            if (!$this->Organisations->save($organisation)) {
+                throw new BadRequestException(__('Could not save the associated organisation'));
+            }
+        }
+        return $organisation->id;
+    }
+
+    public function captureRole($user): int
+    {
+        $role = $this->Roles->find()->where(['name' => $user['role']['name']])->first();
+        if (empty($role)) {
+            if (!empty(Configure::read('keycloak.default_role_name'))) {
+                $default_role_name = Configure::read('keycloak.default_role_name');
+                $role = $this->Roles->find()->where(['name' => $default_role_name])->first();
+            }
+            if (empty($role)) {
+                throw new NotFoundException(__('Invalid role'));
+            }
+        }
+        return $role->id;
+    }
+
+    public function enrollUserRouter($data): void
+    {
+        if (!empty(Configure::read('keycloak'))) {
+            $this->enrollUser($data);
+        }
     }
 }

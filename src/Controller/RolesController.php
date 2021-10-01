@@ -12,7 +12,7 @@ use Cake\Http\Exception\ForbiddenException;
 
 class RolesController extends AppController
 {
-    public $filterFields = ['name', 'uuid', 'perm_admin', 'Users.id'];
+    public $filterFields = ['name', 'uuid', 'perm_admin', 'Users.id', 'perm_org_admin'];
     public $quickFilterFields = ['name'];
     public $containFields = [];
 

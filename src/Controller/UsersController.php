@@ -29,7 +29,12 @@ class UsersController extends AppController
 
     public function add()
     {
-        $this->CRUD->add();
+        $this->CRUD->add([
+            'beforeSave' => function($data) {
+                $this->Users->enrollUserRouter($data);
+                return $data;
+            }
+        ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
