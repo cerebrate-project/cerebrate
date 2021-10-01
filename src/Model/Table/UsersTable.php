@@ -19,6 +19,7 @@ class UsersTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
+        $this->initAuthBehaviors();
         $this->belongsTo(
             'Individuals',
             [
@@ -34,6 +35,13 @@ class UsersTable extends AppTable
             ]
         );
         $this->setDisplayField('username');
+    }
+
+    private function initAuthBehaviors()
+    {
+        if (!empty(Configure::read('keycloak'))) {
+            $this->addBehavior('AuthKeycloak');
+        }
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -99,68 +107,7 @@ class UsersTable extends AppTable
         return true;
     }
 
-    private function extractKeycloakProfileData($profile_payload)
-    {
-        $mapping = Configure::read('keycloak.mapping');
-        $fields = [
-            'org_uuid' => 'org_uuid',
-            'role_name' => 'role_name',
-            'username' => 'preferred_username',
-            'email' => 'email',
-            'first_name' => 'given_name',
-            'last_name' => 'family_name'
-        ];
-        foreach ($fields as $field => $default) {
-            if (!empty($mapping[$field])) {
-                $fields[$field] = $mapping[$field];
-            }
-        }
-        $user = [
-            'individual' => [
-                'email' => $profile_payload[$fields['email']],
-                'first_name' => $profile_payload[$fields['first_name']],
-                'last_name' => $profile_payload[$fields['last_name']]
-            ],
-            'user' => [
-                'username' => $profile_payload[$fields['username']],
-            ],
-            'organisation' => [
-                'uuid' => $profile_payload[$fields['org_uuid']],
-            ],
-            'role' => [
-                'name' => $profile_payload[$fields['role_name']],
-            ]
-        ];
-        $user['user']['individual_id'] = $this->captureIndividual($user);
-        $user['user']['role_id'] = $this->captureRole($user);
-        $existingUser = $this->find()->where(['username' => $user['user']['username']])->first();
-        if (empty($existingUser)) {
-            $user['user']['password'] = Security::randomString(16);
-            $existingUser = $this->newEntity($user['user']);
-            if (!$this->save($existingUser)) {
-                return false;
-            }
-        } else {
-            $dirty = false;
-            if ($user['user']['individual_id'] != $existingUser['individual_id']) {
-                $existingUser['individual_id'] = $user['user']['individual_id'];
-                $dirty = true;
-            }
-            if ($user['user']['role_id'] != $existingUser['role_id']) {
-                $existingUser['role_id'] = $user['user']['role_id'];
-                $dirty = true;
-            }
-            $existingUser;
-            if ($dirty) {
-                if (!$this->save($existingUser)) {
-                    return false;
-                }
-            }
-        }
-        return $existingUser;
-    }
-
-    private function captureIndividual($user)
+    public function captureIndividual($user): int
     {
         $individual = $this->Individuals->find()->where(['email' => $user['individual']['email']])->first();
         if (empty($individual)) {
@@ -172,7 +119,7 @@ class UsersTable extends AppTable
         return $individual->id;
     }
 
-    private function captureOrganisation($user)
+    public function captureOrganisation($user): int
     {
         $organisation = $this->Organisations->find()->where(['uuid' => $user['organisation']['uuid']])->first();
         if (empty($organisation)) {
@@ -185,7 +132,7 @@ class UsersTable extends AppTable
         return $organisation->id;
     }
 
-    private function captureRole($user)
+    public function captureRole($user): int
     {
         $role = $this->Roles->find()->where(['name' => $user['role']['name']])->first();
         if (empty($role)) {
@@ -200,19 +147,10 @@ class UsersTable extends AppTable
         return $role->id;
     }
 
-    public function getUser(EntityInterface $profile, Session $session)
+    public function enrollUserRouter($data): void
     {
-        $userId = $session->read('Auth.User.id');
-        if ($userId) {
-            return $this->get($userId);
+        if (!empty(Configure::read('keycloak'))) {
+            $this->enrollUser($data);
         }
-
-        $raw_profile_payload = $profile->access_token->getJwt()->getPayload();
-        $user = $this->extractKeycloakProfileData($raw_profile_payload);
-        if (!$user) {
-            throw new \RuntimeException('Unable to save new user');
-        }
-
-        return $user;
     }
 }

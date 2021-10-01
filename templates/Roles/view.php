@@ -18,6 +18,11 @@ echo $this->element(
                 'type' => 'boolean'
             ],
             [
+                'key' => __('Organisation admin permission'),
+                'path' => 'perm_org_admin',
+                'type' => 'boolean'
+            ],
+            [
                 'key' => __('Sync permission'),
                 'path' => 'perm_sync',
                 'type' => 'boolean'

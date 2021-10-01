@@ -15,7 +15,7 @@ class RolesController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['name', 'uuid', 'perm_admin', 'Users.id'],
+            'filters' => ['name', 'uuid', 'perm_admin', 'perm_org_admin', 'Users.id'],
             'quickFilters' => ['name']
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();

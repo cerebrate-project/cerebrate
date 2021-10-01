@@ -48,6 +48,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'boolean'
             ],
             [
+                'name' => __('Org Admin'),
+                'sort' => 'perm_org_admin',
+                'data_path' => 'perm_org_admin',
+                'element' => 'boolean'
+            ],
+            [
                 'name' => __('Sync'),
                 'sort' => 'perm_sync',
                 'data_path' => 'perm_sync',
