@@ -101,7 +101,7 @@ function initSelect2Picker($select) {
 
     function templateTag(state, $select) {
         if (!state.id) {
-            return state.label;
+            return state.name;
         }
         if (state.colour === undefined) {
             state.colour = $(state.element).data('colour')

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Model\Entity;
+namespace Tags\Model\Entity;
 
-use Cake\ORM\Entity;
+use App\Model\Entity\AppModel;
 
 class Tagged extends AppModel {
 

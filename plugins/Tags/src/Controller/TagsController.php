@@ -18,8 +18,8 @@ class TagsController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['label', 'colour'],
-            'quickFilters' => [['label' => true], 'colour']
+            'filters' => ['name', 'colour'],
+            'quickFilters' => [['name' => true], 'colour']
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

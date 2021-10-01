@@ -376,7 +376,7 @@ class NavigationComponent extends Component
                 ]
             ]),
             'Tags' => $this->getDefaultCRUDConfig('Tags', [
-                'defaults' => ['depth-1' => ['textGetter' => 'label']]
+                'defaults' => ['depth-1' => ['textGetter' => 'name']]
             ]),
             'LocalTools' => [
                 'routes' => [

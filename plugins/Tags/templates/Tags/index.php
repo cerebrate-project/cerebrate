@@ -34,8 +34,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'id',
             ],
             [
-                'name' => __('Label'),
-                'sort' => 'label',
+                'name' => __('Name'),
+                'sort' => 'name',
                 'element' => 'tag'
             ],
             [

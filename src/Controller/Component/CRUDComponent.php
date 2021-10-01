@@ -512,7 +512,7 @@ class CRUDComponent extends Component
                 $tagsToRemove = json_decode($input['tag_list']);
                 // patching will mirror tag in the DB, however, we only want to remove tags
                 $input['tags'] = array_filter($entity->tags, function ($existingTag) use ($tagsToRemove) {
-                    return !in_array($existingTag->label, $tagsToRemove);
+                    return !in_array($existingTag->name, $tagsToRemove);
                 });
                 $patchEntityParams = [
                     'fields' => ['tags'],
@@ -742,7 +742,7 @@ class CRUDComponent extends Component
     {
         $modelAlias = $this->Table->getAlias();
         $subQuery = $this->Table->find('tagged', [
-            'label' => $tags,
+            'name' => $tags,
             'forceAnd' => true
         ])->select($modelAlias . '.id');
         return $query->where([$modelAlias . '.id IN' => $subQuery]);

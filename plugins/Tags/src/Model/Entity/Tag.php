@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Entity;
+namespace Tags\Model\Entity;
 
 use App\Model\Entity\AppModel;
 
@@ -13,7 +13,7 @@ class Tag extends AppModel {
     ];
 
     protected $_accessibleOnNew = [
-        'label' => true,
+        'name' => true,
         'colour' => true,
     ];
 

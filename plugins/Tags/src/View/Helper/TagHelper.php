@@ -27,8 +27,8 @@ class TagHelper extends Helper
         $field = 'tag_list';
         $values = !empty($options['allTags']) ? array_map(function($tag) {
             return [
-                'text' => h($tag['label']),
-                'value' => h($tag['label']),
+                'text' => h($tag['name']),
+                'value' => h($tag['name']),
                 'data-colour' => h($tag['colour']),
                 'data-text-colour' => h($tag['text_colour']),
             ];
@@ -70,8 +70,9 @@ class TagHelper extends Helper
         return $html;
     }
 
-    public function tags(array $tags = [], array $options = [])
+    public function tags($tags = [], array $options = [])
     {
+        $tags = is_null($tags) ? [] : $tags;
         $this->_config = array_merge($this->defaultConfig, $options);
         $html = '<div class="tag-container-wrapper">';
         $html .= '<div class="tag-container my-1 d-flex">';
@@ -81,7 +82,7 @@ class TagHelper extends Helper
                 $html .= $this->tag($tag);
             } else {
                 $html .= $this->tag([
-                    'label' => $tag
+                    'name' => $tag
                 ]);
             }
         }
@@ -117,7 +118,7 @@ class TagHelper extends Helper
                             'action' => 'untag',
                             $this->getView()->get('entity')['id']
                         ]),
-                        h($tag['label'])
+                        h($tag['name'])
                     ),
                 ],
             ]);
@@ -132,9 +133,9 @@ class TagHelper extends Helper
                 'mx-1',
                 'align-middle',
             ],
-            'title' => h($tag['label']),
+            'title' => h($tag['name']),
             'style' => sprintf('color:%s; background-color:%s', $textColour, h($tag['colour'])),
-        ], h($tag['label']) . $deleteButton);
+        ], h($tag['name']) . $deleteButton);
         return $html;
     }
 }

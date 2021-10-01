@@ -14,14 +14,14 @@ class TagsTable extends AppTable
     public function initialize(array $config): void
     {
         $this->setTable('tags_tags');
-        $this->setDisplayField('label'); // Change to name?
+        $this->setDisplayField('name'); // Change to name?
         $this->addBehavior('Timestamp');
     }
 
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->notBlank('label');
+            ->notBlank('name');
         return $validator;
     }
 }

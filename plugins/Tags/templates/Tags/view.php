@@ -9,7 +9,7 @@ echo $this->element(
                 'path' => 'id'
             ],
             [
-                'key' => __('Label'),
+                'key' => __('Name'),
                 'path' => '',
                 'type' => 'tag',
             ],

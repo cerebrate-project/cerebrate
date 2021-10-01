@@ -10,7 +10,7 @@ use Cake\ORM\Table;
 class TagBehavior extends Behavior
 {
     protected $_defaultConfig = [
-        'finderField' => 'label',
+        'finderField' => 'name',
         'tagsAssoc' => [
             'className' => 'Tags.Tags',
             'joinTable' => 'tags_tagged',
@@ -132,13 +132,13 @@ class TagBehavior extends Behavior
                 continue;
             }
 
-            $existingTag = $this->getExistingTag($tag->label);
-            if (!$existing) {
+            $existingTag = $this->getExistingTag($tag->name);
+            if (!$existingTag) {
                 continue;
             }
 
             $joinData = $tag->_joinData;
-            $tag = $existing;
+            $tag = $existingTag;
             $tag->_joinData = $joinData;
             $entity->tags[$k] = $tag;
         }
@@ -180,7 +180,7 @@ class TagBehavior extends Behavior
             $result[] = array_merge(
                 $common,
                 [
-                    'label' => $tagIdentifier,
+                    'name' => $tagIdentifier,
                 ]
             );
         }
@@ -191,7 +191,7 @@ class TagBehavior extends Behavior
     protected function getTagIdentifier($tag)
     {
         if (is_object($tag)) {
-            return $tag->label;
+            return $tag->name;
         } else {
             return trim($tag);
         }
@@ -201,7 +201,7 @@ class TagBehavior extends Behavior
     {
         $tagsTable = $this->_table->Tags->getTarget();
         $query = $tagsTable->find()->where([
-            'Tags.label' => $tagName
+            'Tags.name' => $tagName
         ])
         ->select('Tags.id');
         return $query->first();
@@ -210,7 +210,7 @@ class TagBehavior extends Behavior
     public function findByTag(Query $query, array $options) {
         $finderField = $optionsKey = $this->getConfig('finderField');
         if (!$finderField) {
-            $finderField = $optionsKey = 'label';
+            $finderField = $optionsKey = 'name';
         }
 
         if (!isset($options[$optionsKey])) {
