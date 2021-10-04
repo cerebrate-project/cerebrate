@@ -859,7 +859,7 @@ class OverlayFactory {
      * @namespace
      * @property {string}  text - A small text indicating the reason of the overlay
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} variant - The variant of the overlay
-     * @property {number}  opacity        - The opacity of the overlay
+     * @property {number|string}  opacity        - The opacity of the overlay
      * @property {boolean} rounded        - If the overlay should be rounded
      * @property {boolean}  auto           - Whether overlay and spinner options should be adapted automatically based on the node
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} spinnerVariant - The variant of the spinner
@@ -868,8 +868,8 @@ class OverlayFactory {
      */
     static defaultOptions = {
         text: '',
-        variant: 'light',
-        opacity: 0.85,
+        variant: '',
+        opacity: '',
         blur: '2px',
         rounded: false,
         auto: true,
@@ -881,7 +881,7 @@ class OverlayFactory {
     }
 
     static overlayWrapper = '<div aria-busy="true" class="position-relative"/>'
-    static overlayContainer = '<div class="position-absolute text-nowrap" style="inset: 0px; z-index: 1100;"/>'
+    static overlayContainer = '<div class="position-absolute text-nowrap loading-overlay-container" style="inset: 0px; z-index: 1100;"/>'
     static overlayBg = '<div class="position-absolute loading-overlay" style="inset: 0px;"/>'
     static overlaySpinner = '<div class="position-absolute" style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);"><span aria-hidden="true" class=""><!----></span></div></div>'
     static overlayText = '<span class="ml-1 align-text-top"></span>'
@@ -903,7 +903,9 @@ class OverlayFactory {
         this.$overlayContainer = $(OverlayFactory.overlayContainer)
         this.$overlayBg = $(OverlayFactory.overlayBg)
             .addClass([`bg-${this.options.variant}`, (this.options.rounded ? 'rounded' : '')])
-            .css('opacity', this.options.opacity)
+        if (this.options.opacity !== '') {
+            this.$overlayBg.css('opacity', this.options.opacity)
+        }
         this.$overlaySpinner = $(OverlayFactory.overlaySpinner)
         this.$overlaySpinner.children().addClass(`spinner-${this.options.spinnerType}`)
         if (this.options.spinnerSmall) {

@@ -11,6 +11,9 @@ $panelBgColor: #363636;
 $panelShadow: none;
 $panelBorder: 1px solid #454545;
 
+$loadingOverlayDefaultColor: $gray-900 !default;
+$loadingOverlayDefaultOpacity: 0.65 !default;
+
 $topNavbarColor: $primary;
 $navbarActiveColor: #d6d6d6;
 // $headerBreadcrumbLinksBoxshadow: 0 1px 0 rgba(255, 255, 255, 0.07),

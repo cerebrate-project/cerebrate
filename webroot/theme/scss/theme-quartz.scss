@@ -7,6 +7,9 @@ $theme: "app-slate";
 $panelBgColor: $card-bg;
 $panelBorder: none;
 
+$loadingOverlayDefaultColor: $light !default;
+$loadingOverlayDefaultOpacity: 0.35 !default;
+
 $topNavbarColor: $primary;
 $navbarActiveColor: #d6d6d6;
 $headerBreadcrumbLinksBGColor: $secondary;

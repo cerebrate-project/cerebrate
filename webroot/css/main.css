@@ -21,6 +21,10 @@
     color:black;
 }
 
+.loading-overlay-container {
+    backdrop-filter: blur(1px);
+}
+
 @media(min-width:768px) {
     #wrapper {
         padding-left: 0;
@@ -100,9 +104,9 @@ input[type="checkbox"]:disabled.change-cursor {
 }
 
 .grow-on-hover:hover {
-    -webkit-transform: translateZ(0) scale(1.03, 1.03);
-    -moz-transform: translateZ(0) scale(1.03, 1.03);
-    transform: translateZ(0) scale(1.03, 1.03);
+    -webkit-transform: translateZ(0) scale(1.02, 1.02);
+    -moz-transform: translateZ(0) scale(1.02, 1.02);
+    transform: translateZ(0) scale(1.02, 1.02);
     box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 15%) !important;
 }
 

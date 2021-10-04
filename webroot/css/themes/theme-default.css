@@ -289,6 +289,10 @@
   border: none;
   box-shadow: 0 0 35px 0 rgba(154, 161, 171, 0.25); }
 
+.loading-overlay {
+  background-color: #f8f9fa;
+  opacity: 0.75; }
+
 /* Top navbar */
 .top-navbar {
   background-color: #212529; }

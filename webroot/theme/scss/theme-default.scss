@@ -8,6 +8,9 @@ $panelBgColor: $white !default;
 $panelShadow: 0 0 35px 0 rgba(154, 161, 171, 0.25) !default;
 $panelBorder: none !default;
 
+$loadingOverlayDefaultColor: $light !default;
+$loadingOverlayDefaultOpacity: 0.75 !default;
+
 $topNavbarColor: $dark !default;
 $navbarActiveColor: #d6d6d6 !default;
 $headerBreadcrumbLinksBoxshadow: 0 2px 2px 0 rgba(0, 0, 0, 0.16), 0 2px 6px 0 rgba(0, 0, 0, 0.12) !default;
@@ -34,6 +37,11 @@ $calloutShadow: $panelShadow !default;
     background-color: $panelBgColor;
     border: $panelBorder;
     box-shadow: $panelShadow;
+}
+
+.loading-overlay {
+    background-color: $loadingOverlayDefaultColor;
+    opacity: $loadingOverlayDefaultOpacity;
 }
 
 /* Top navbar */
