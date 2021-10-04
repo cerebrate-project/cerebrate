@@ -836,6 +836,7 @@ class BoostrapButton extends BootstrapGeneric {
         'outline' => false,
         'size' => '',
         'icon' => null,
+        'image' => null,
         'class' => [],
         'type' => 'button',
         'nodeType' => 'button',
@@ -894,6 +895,7 @@ class BoostrapButton extends BootstrapGeneric {
         ]));
 
         $html .= $this->genIcon();
+        $html .= $this->genImage();
         $html .= $this->genContent();
         if (!empty($this->options['badge'])) {
             $bsBadge = new BoostrapBadge($this->options['badge']);
@@ -905,10 +907,27 @@ class BoostrapButton extends BootstrapGeneric {
 
     private function genIcon()
     {
-        $bsIcon = new BoostrapIcon($this->options['icon'], [
-            'class' => [(!empty($this->options['title']) ? 'me-1' : '')]
-        ]);
-        return $bsIcon->icon();
+        if (!empty($this->options['icon'])) {
+            $bsIcon = new BoostrapIcon($this->options['icon'], [
+                'class' => [(!empty($this->options['title']) ? 'me-1' : '')]
+            ]);
+            return $bsIcon->icon();
+        }
+        return '';
+    }
+
+    private function genImage()
+    {
+        if (!empty($this->options['image'])) {
+            return $this->genNode('img', [
+                'src' => $this->options['image']['path'] ?? '',
+                'class' => ['img-fluid', 'me-1'],
+                'width' => '26',
+                'height' => '26',
+                'alt' => $this->options['image']['alt'] ?? ''
+            ]);
+        }
+        return '';
     }
 
     private function genContent()
