@@ -2,7 +2,7 @@
     use Cake\Core\Configure;
 
     echo $this->Html->image('logo-purple.png', ['alt' => 'CakePHP', 'class="form-signin"']);
-    echo '<div class="form-signin">';
+    echo '<div class="form-signin panel shadow">';
     $template = [
         'inputContainer' => '<div class="form-floating input {{type}}{{required}}">{{content}}</div>',
         'formGroup' => '{{input}}{{label}}',
@@ -14,10 +14,9 @@
     echo $this->Form->control('password', ['type' => 'password', 'label' => 'Password', 'class' => 'form-control mb-3', 'placeholder' => __('Password')]);
     echo $this->Form->control(__('Submit'), ['type' => 'submit', 'class' => 'btn btn-primary']);
     echo $this->Form->end();
-    echo '</div>';
 
     if (!empty(Configure::read('keycloak'))) {
-        echo '<div class="form-signin pt-0">';
+        echo sprintf('<div class="d-flex align-items-center my-3"><hr class="d-inline-block flex-grow-1"/><span class="mx-3 fw-light">%s</span><hr class="d-inline-block flex-grow-1"/></div>', __('Or'));
         echo $this->Form->create(null, [
             'url' => Cake\Routing\Router::url([
                 'prefix' => false,
@@ -39,7 +38,8 @@
             ]
         ]);
         echo $this->Form->end();
-        echo '</div>';
     }
+    echo '</div>';
+
 ?>
 </div>
