@@ -52,9 +52,16 @@
                     continue;
                 }
             }
+            $formTemplate = $default_template;
+            if (!empty($fieldData['floating-label'])) {
+                $formTemplate['inputContainer'] = '<div class="form-floating input {{type}}{{required}}">{{content}}</div>';
+                $formTemplate['label'] = '<label{{attrs}}>{{text}}</label>';
+                $formTemplate['formGroup'] = '{{input}}{{label}}';
+                $fieldData['placeholder'] = !empty($fieldData['label']) ? $fieldData['label'] : h($fieldData['field']);
+            }
             // we reset the template each iteration as individual fields might override the defaults.
-            $this->Form->setConfig($default_template);
-            $this->Form->setTemplates($default_template);
+            $this->Form->setConfig($formTemplate);
+            $this->Form->setTemplates($formTemplate);
             if (isset($fieldData['requirements']) && !$fieldData['requirements']) {
                 continue;
             }
