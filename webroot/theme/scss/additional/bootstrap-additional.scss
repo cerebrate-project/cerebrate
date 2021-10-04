@@ -29,9 +29,9 @@ $calloutBorderColor: $gray-200 !default;
 
 
 /* Toasts */
-$toast-bg-level:                    -7 !default;
-$toast-border-level:                -6 !default;
-$toast-color-level:                 7 !default;
+$toast-bg-level:                    -70% !default;
+$toast-border-level:                -60% !default;
+$toast-color-level:                 70% !default;
 
 .toast {
     min-width: 250px;
@@ -39,7 +39,25 @@ $toast-color-level:                 7 !default;
 
 @each $color, $value in $theme-colors {
     .toast-#{$color} {
-        @include toast-variant(theme-color-level($color, $toast-bg-level), theme-color-level($color, $toast-border-level), theme-color-level($color, $toast-color-level));
+        @include toast-variant(shift-color($value, $toast-bg-level), shift-color($value, $toast-border-level), shift-color($value, $toast-color-level));
+    }
+}
+
+/* Dropdown-item */
+.dropdown-item {
+    @each $color, $value in $theme-colors {
+        &.dropdown-item-#{$color} {
+            color: color-contrast($value);
+            text-decoration: none;
+            background-color: $value;
+        }
+
+        &.dropdown-item-outline-#{$color} {
+            &:hover {
+                color: color-contrast($value);
+                background-color: $value;
+            }
+        }
     }
 }
 
@@ -68,10 +86,10 @@ $toast-color-level:                 7 !default;
 /* Forms severity */
 .form-control.is-invalid {
     &.info {
-        @include form-control-validation-severity-state(theme-color("info"));
+        @include form-control-validation-severity-state($info);
     }
     &.warning {
-        @include form-control-validation-severity-state(theme-color("warning"));
+        @include form-control-validation-severity-state($warning);
     }
 }
 
@@ -79,19 +97,19 @@ $toast-color-level:                 7 !default;
 .form-select.is-invalid:not([multiple])[size="1"]
 .form-select.is-invalid {
     &.info {
-        @include form-select-validation-severity-state(theme-color("info"));
+        @include form-select-validation-severity-state($info);
     }
     &.warning {
-        @include form-select-validation-severity-state(theme-color("warning"));
+        @include form-select-validation-severity-state($warning);
     }
 }
 
 .form-check-input.is-invalid {
     &.info {
-        @include form-check-input-validation-severity-state(theme-color("info"));
+        @include form-check-input-validation-severity-state($info);
     }
     &.warning {
-        @include form-check-input-validation-severity-state(theme-color("warning"));
+        @include form-check-input-validation-severity-state($warning);
     }
 }
 
