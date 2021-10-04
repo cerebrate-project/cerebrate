@@ -8,6 +8,7 @@ use Cake\ORM\Behavior;
 use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\Utility\Text;
+use Cake\Utility\Security;
 use \Cake\Http\Session;
 use Cake\Core\Configure;
 use Cake\Http\Client;
@@ -70,7 +71,7 @@ class AuthKeycloakBehavior extends Behavior
         if (empty($existingUser)) {
             $user['user']['password'] = Security::randomString(16);
             $existingUser = $this->_table->newEntity($user['user']);
-            if (!$this->save($existingUser)) {
+            if (!$this->_table->save($existingUser)) {
                 return false;
             }
         } else {
