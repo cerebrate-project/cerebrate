@@ -1,4 +1,6 @@
 <?php
+    use Cake\Core\Configure;
+
     echo $this->Html->image('logo-purple.png', ['alt' => 'CakePHP', 'class="form-signin"']);
     echo '<div class="form-signin">';
     $template = [
@@ -13,16 +15,31 @@
     echo $this->Form->control(__('Submit'), ['type' => 'submit', 'class' => 'btn btn-primary']);
     echo $this->Form->end();
     echo '</div>';
-    echo $this->Form->postLink(
-        'Login with Keycloak',
-        [
-            'prefix' => false,
-            'plugin' => 'ADmad/SocialAuth',
-            'controller' => 'Auth',
-            'action' => 'login',
-            'provider' => 'keycloak',
-            '?' => ['redirect' => $this->request->getQuery('redirect')]
-        ]
-    );
+
+    if (!empty(Configure::read('keycloak'))) {
+        echo '<div class="form-signin pt-0">';
+        echo $this->Form->create(null, [
+            'url' => Cake\Routing\Router::url([
+                'prefix' => false,
+                'plugin' => 'ADmad/SocialAuth',
+                'controller' => 'Auth',
+                'action' => 'login',
+                'provider' => 'keycloak',
+                '?' => ['redirect' => $this->request->getQuery('redirect')]
+            ]),
+        ]);
+        echo $this->Bootstrap->button([
+            'type' => 'submit',
+            'text' => __('Login with Keycloak'),
+            'variant' => 'secondary',
+            'class' => ['d-block', 'w-100'],
+            'image' => [
+                'path' => '/img/keycloak_logo.png',
+                'alt' => 'Keycloak'
+            ]
+        ]);
+        echo $this->Form->end();
+        echo '</div>';
+    }
 ?>
 </div>
