@@ -50,11 +50,15 @@ class SocialAuthListener implements EventListenerInterface
         // Set flash message
         switch ($status) {
             case SocialAuthMiddleware::AUTH_STATUS_SUCCESS:
+                $loggedInUser = $request->getAttribute('session')->read('Auth');
                 $messages[] = [
-                    'message' => __('You are now logged in'),
+                    'message' => __('You are now logged in as <strong>{0}</strong> via {1}', $loggedInUser['username'], $loggedInUser['social_profile']['provider']),
                     'key' => 'flash',
                     'element' => 'flash/success',
-                    'params' => [],
+                    'params' => [
+                        'escape' => false,
+                        'toast' => true
+                    ],
                 ];
                 break;
 
