@@ -62,6 +62,7 @@ class InstanceController extends AppController
         foreach ($status as $i => $entry) {
             if (!empty($entry['plugin'])) {
                 $pluginTablename = sprintf('%s_phinxlog', Inflector::underscore($entry['plugin']));
+                $pluginTablename = str_replace(['\\', '/', '.'], '_', $pluginTablename);
                 $status[$i] = $this->Phinxlog->mergeMigrationLogIntoStatus([$entry], $pluginTablename)[0];
 
             }

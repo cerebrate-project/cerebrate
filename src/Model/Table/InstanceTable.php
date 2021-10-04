@@ -12,7 +12,7 @@ use Cake\Http\Exception\MethodNotAllowedException;
 
 class InstanceTable extends AppTable
 {
-    protected $activePlugins = ['Tags'];
+    protected $activePlugins = ['Tags', 'ADmad/SocialAuth'];
     public $seachAllTables = ['Broods', 'Individuals', 'Organisations', 'SharingGroups', 'Users', 'EncryptionKeys', ];
 
     public function initialize(array $config): void
@@ -152,6 +152,8 @@ class InstanceTable extends AppTable
         } else {
             $migrationResult = $migrations->migrate(['target' => $version]);
         }
+        $command = ROOT . '/bin/cake schema_cache clear';
+        $output = shell_exec($command);
         return [
             'success' => true
         ];
