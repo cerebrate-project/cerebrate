@@ -10,8 +10,8 @@
     </title>
     <?= $this->Html->meta('icon') ?>
     <?php
-        echo $this->Html->css('themes/bootstrap-' . $bsTheme);
-        echo $this->Html->css('themes/theme-' . $bsTheme);
+    echo $this->Html->css('themes/bootstrap-' . $bsTheme);
+    echo $this->Html->css('themes/theme-' . $bsTheme);
     ?>
     <?= $this->Html->css('login.css') ?>
     <?= $this->Html->css('main.css') ?>
@@ -26,7 +26,8 @@
     <?= $this->Html->meta('favicon.ico', '/img/favicon.ico', ['type' => 'icon']); ?>
 </head>
 
-<body class="text-center">
+<body>
+    <div class="position-absolute cerebrate-background-logo"></div>
     <?= $this->Flash->render() ?>
     <?= $this->fetch('content') ?>
     <div id="mainModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel" aria-hidden="true"></div>
