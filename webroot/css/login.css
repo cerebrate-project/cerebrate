@@ -33,3 +33,20 @@ body {
     left: 42%;
     top: 30%;
 }
+
+.cerebrate-background-logo:hover {
+    -webkit-animation:spin 6s linear infinite;
+    animation:spin 6s linear infinite;   
+    -webkit-animation-delay: 2s;
+    animation-delay: 2s;
+}
+
+@-webkit-keyframes spin { 
+    100% { -webkit-transform: rotate(460deg); } 
+}
+@keyframes spin { 
+    100% { 
+        -webkit-transform: rotate(460deg); 
+        transform:rotate(460deg); 
+    } 
+}
