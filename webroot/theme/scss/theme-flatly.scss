@@ -3,6 +3,9 @@
 $theme: "app-flatly";
 
 @import "flatly/variables";
+@import "../node_modules/bootstrap/scss/functions";
+
+$bodyBackgroundImageStopColor: tint-color($primary, 62);
 
 $topNavbarColor: $primary;
 $navbarActiveColor: #d6d6d6;

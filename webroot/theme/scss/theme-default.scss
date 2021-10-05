@@ -4,6 +4,13 @@ $theme: "app-default";
 @import "../node_modules/bootstrap/scss/variables";
 @import "../node_modules/bootstrap/scss/mixins";
 
+@import "./mixins/background";
+
+$cerebrateColor: #924da6;
+$bodyBackgroundImageStopColor: tint-color($cerebrateColor, 62) !default;
+$enabledBackgroundSVG: true !default;
+$bodyBackgroundBlendmode: normal !default;
+
 $panelBgColor: $white !default;
 $panelShadow: 0 0 35px 0 rgba(154, 161, 171, 0.25) !default;
 $panelBorder: none !default;
@@ -33,6 +40,16 @@ $calloutShadow: $panelShadow !default;
 @import "additional/bootstrap-additional";
 
 /* Body */
+body {
+    @if $enabledBackgroundSVG {
+        background-color: var(--bs-body-bg);
+        @include background-svg($bodyBackgroundImageStopColor);
+        background-attachment: fixed;
+        background-size: cover;
+        background-blend-mode: $bodyBackgroundBlendmode;
+    }
+}
+
 .panel {
     background-color: $panelBgColor;
     border: $panelBorder;

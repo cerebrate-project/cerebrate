@@ -3,7 +3,6 @@
     @include gradient-bg($background);
     border-color: $border;
 
-    @debug "The colour is: #{$border}";
     strong {
         border-top-color: darken($border, 5%);
     }
