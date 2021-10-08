@@ -102,7 +102,7 @@ class AppController extends Controller
         $this->ACL->setPublicInterfaces();
         if (!empty($this->request->getAttribute('identity'))) {
             $user = $this->Users->get($this->request->getAttribute('identity')->getIdentifier(), [
-                'contain' => ['Roles', 'Individuals' => 'Organisations']
+                'contain' => ['Roles', 'Individuals' => 'Organisations', 'UserSettings']
             ]);
             if (!empty($user['disabled'])) {
                 $this->Authentication->logout();
@@ -112,6 +112,8 @@ class AppController extends Controller
             unset($user['password']);
             $this->ACL->setUser($user);
             $this->isAdmin = $user['role']['perm_admin'];
+            $this->set('menu', $this->ACL->getMenu());
+            $this->set('loggedUser', $this->ACL->getUser());
         } else if ($this->ParamHandler->isRest()) {
             throw new MethodNotAllowedException(__('Invalid user credentials.'));
         }
@@ -126,7 +128,6 @@ class AppController extends Controller
         }
 
         $this->ACL->checkAccess();
-        $this->set('menu', $this->ACL->getMenu());
         $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
