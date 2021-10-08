@@ -27,6 +27,7 @@ class NavigationComponent extends Component
         'Broods' => 'network-wired',
         'Roles' => 'id-badge',
         'Users' => 'users',
+        'UserSettings' => 'user-cog',
         'Inbox' => 'inbox',
         'Outbox' => 'inbox',
         'MetaTemplates' => 'object-group',
@@ -128,6 +129,7 @@ class NavigationComponent extends Component
             'Users',
             'Tags',
             'LocalTools',
+            'UserSettings',
         ];
         foreach ($CRUDControllers as $controller) {
             $bcf->setDefaultCRUDForModel($controller);

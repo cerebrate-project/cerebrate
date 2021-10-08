@@ -19,7 +19,7 @@ use Cake\Routing\Router;
             <i class="me-1 <?= $this->FontAwesome->getClass('user-circle') ?>"></i>
             <?= __('My Account') ?>
         </a>
-        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'userSettings', 'plugin' => null]) ?>">
+        <a class="dropdown-item" href="<?= Router::url(['controller' => 'user-settings', 'action' => 'index', 'plugin' => null, '?' => ['Users.id' => h($this->request->getAttribute('identity')['id'])]]) ?>">
             <i class="me-1 <?= $this->FontAwesome->getClass('user-cog') ?>"></i>
             <?= __('Settings') ?>
         </a>

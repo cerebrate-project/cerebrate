@@ -51,6 +51,11 @@ echo $this->element(
                 'url' => '/EncryptionKeys/index?Users.id={{0}}',
                 'url_params' => ['id'],
                 'title' => __('Encryption keys')
+            ],
+            [
+                'url' => '/UserSettings/index?Users.id={{0}}',
+                'url_params' => ['id'],
+                'title' => __('User settings')
             ]
         ]
     ]
