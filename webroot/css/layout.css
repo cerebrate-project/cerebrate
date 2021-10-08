@@ -243,9 +243,28 @@ ul.sidebar-elements > li {
     list-style: none;
 }
 
+ul.sidebar-elements li.bookmarks {
+    padding: 0 calc((var(--sidebar-width-collapsed) - 25px) / 2);
+}
+
 .sidebar.expanded ul.sidebar-elements li > a.sidebar-link,
 .sidebar:hover ul.sidebar-elements li > a.sidebar-link {
     text-overflow: ellipsis;
+}
+
+.sidebar ul.sidebar-elements li.bookmark-categ,
+.sidebar ul.sidebar-elements li.bookmarks {
+    display: none;
+}
+
+.sidebar.expanded ul.sidebar-elements li.bookmark-categ,
+.sidebar:hover ul.sidebar-elements li.bookmark-categ {
+    display: flex;
+}
+
+.sidebar.expanded ul.sidebar-elements li.bookmarks,
+.sidebar:hover ul.sidebar-elements li.bookmarks {
+    display: list-item;
 }
 
 ul.sidebar-elements li > a.sidebar-link {

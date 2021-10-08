@@ -50,9 +50,37 @@ class NavigationComponent extends Component
     public function getSideMenu(): array
     {
         $sidemenu = new Sidemenu($this->iconToTableMapping, $this->request);
-        return $sidemenu->get();
+        $sidemenu = $sidemenu->get();
+        $sidemenu = $this->addUserBookmarks($sidemenu);
+        return $sidemenu;
     }
 
+    
+    public function addUserBookmarks($sidemenu): array
+    {
+        $bookmarks = $this->getUserBookmarks();
+        $sidemenu = array_merge([
+            '__bookmarks' => $bookmarks
+        ], $sidemenu);
+        return $sidemenu;
+    }
+
+    public function getUserBookmarks(): array
+    {
+        $userSettingTable = TableRegistry::getTableLocator()->get('UserSettings');
+        $setting = $userSettingTable->getSettingByName($this->request->getAttribute('identity'), 'ui.sidebar.bookmarks');
+        $bookmarks = is_null($setting) ? [] : json_decode($setting->value, true);
+
+        $links = array_map(function($bookmark) {
+            return [
+                'name' => $bookmark['name'],
+                'label' => $bookmark['label'],
+                'url' => $bookmark['url'],
+            ];
+        }, $bookmarks);
+        return $links;
+    }
+    
     public function getBreadcrumb(): array
     {
         $controller = $this->request->getParam('controller');

@@ -136,4 +136,20 @@ class UserSettingsController extends AppController
         }
         $this->set('settingName', $settingsName);
     }
+
+    public function saveBookmark()
+    {
+        if (!$this->request->is('get')) {
+            $result = $this->UserSettings->saveBookmark($this->ACL->getUser(), $this->request->getData());
+            $success = !empty($result);
+            $message = $success ? __('Bookmark saved') : __('Could not save bookmark');
+            $this->CRUD->setResponseForController('saveBookmark', $success, $message, $result);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
+            }
+        }
+        $this->set('user_id', $this->ACL->getUser()->id);
+    }
+
 }

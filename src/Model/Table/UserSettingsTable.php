@@ -57,3 +57,25 @@ class UserSettingsTable extends AppTable
         $savedData = $this->save($setting);
         return $savedData;
     }
+
+    public function saveBookmark($user, $data)
+    {
+        $bookmarkSettingName = 'ui.sidebar.bookmarks';
+        $setting = $this->getSettingByName($user, $bookmarkSettingName);
+        $bookmarkData = [
+            'label' => $data['bookmark_label'],
+            'name' => $data['bookmark_name'],
+            'url' => $data['bookmark_url'],
+        ];
+        if (is_null($setting)) { // setting not found, create it
+            $bookmarksData = json_encode([$bookmarkData]);
+            $result = $this->createSetting($user, $bookmarkSettingName, $bookmarksData);
+        } else {
+            $bookmarksData = json_decode($setting->value);
+            $bookmarksData[] = $bookmarkData;
+            $bookmarksData = json_encode($bookmarksData);
+            $result = $this->editSetting($user, $bookmarkSettingName, $bookmarksData);
+        }
+        return $result;
+    }
+}

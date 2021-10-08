@@ -177,3 +177,12 @@ $(document).ready(() => {
             value: expanded ? 0 : 1
         }, { provideFeedback: false})
     })
+
+    $('.sidebar #btn-add-bookmark').click(() => {
+        const url = '/user-settings/saveBookmark';
+        UI.submissionModal(url).then(([modalFactory, ajaxApi]) => {
+            const $input = modalFactory.$modal.find('input[name="bookmark_url"]')
+            $input.val(window.location.pathname)
+        })
+    })
+})
