@@ -909,7 +909,7 @@ class BoostrapButton extends BootstrapGeneric {
     {
         if (!empty($this->options['icon'])) {
             $bsIcon = new BoostrapIcon($this->options['icon'], [
-                'class' => [(!empty($this->options['title']) ? 'me-1' : '')]
+                'class' => [(!empty($this->options['text']) ? 'me-1' : '')]
             ]);
             return $bsIcon->icon();
         }
