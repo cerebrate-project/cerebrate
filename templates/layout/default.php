@@ -16,6 +16,8 @@
 use Cake\Core\Configure;
 
 $cakeDescription = 'Cerebrate';
+
+$sidebarOpen = $loggedUser->user_settings_by_name['ui.sidebar.expanded']->value;
 ?>
 <!DOCTYPE html>
 <html>
@@ -72,7 +74,7 @@ $cakeDescription = 'Cerebrate';
         <header class="navbar top-navbar navbar-dark">
             <?= $this->element('layouts/header') ?>
         </header>
-        <nav id="app-sidebar" class="collapse d-sm-block sidebar">
+        <nav id="app-sidebar" class="collapse d-sm-block sidebar <?= !empty($sidebarOpen) ? 'expanded' : '' ?>">
             <?= $this->element('layouts/sidebar') ?>
         </nav>
         <main role="main" class="content">

@@ -162,4 +162,18 @@ $(document).ready(() => {
     $('#globalSearch')
         .keydown(debouncedGlobalSearch)
         .keydown(focusSearchResults);
-})
+
+    $('.lock-sidebar a.btn-lock-sidebar').click(() => {
+        const $sidebar = $('.sidebar')
+        let expanded = $sidebar.hasClass('expanded');
+        if (expanded) {
+            $sidebar.removeClass('expanded')
+        } else {
+            $sidebar.addClass('expanded')
+        }
+        const settingName = 'ui.sidebar.expanded';
+        const url = `/user-settings/setSetting/${settingName}`
+        AJAXApi.quickFetchAndPostForm(url, {
+            value: expanded ? 0 : 1
+        }, { provideFeedback: false})
+    })
