@@ -16,7 +16,7 @@ class Sidemenu {
     public function get(): array
     {
         return [
-            'ContactDB' => [
+            __('ContactDB') => [
                 'Individuals' => [
                     'label' => __('Individuals'),
                     'icon' => $this->iconTable['Individuals'],
@@ -33,21 +33,21 @@ class Sidemenu {
                     'url' => '/encryptionKeys/index',
                 ]
             ],
-            'Trust Circles' => [
+            __('Trust Circles') => [
                 'SharingGroups' => [
                     'label' => __('Sharing Groups'),
                     'icon' => $this->iconTable['SharingGroups'],
                     'url' => '/sharingGroups/index',
                 ]
             ],
-            'Sync' => [
+            __('Synchronisation') => [
                 'Broods' => [
                     'label' => __('Broods'),
                     'icon' => $this->iconTable['Broods'],
                     'url' => '/broods/index',
                 ]
             ],
-            'Administration' => [
+            __('Administration') => [
                 'Roles' => [
                     'label' => __('Roles'),
                     'icon' => $this->iconTable['Roles'],
