@@ -37,6 +37,17 @@ class UserSettingsController extends AppController
         }
     }
 
+    public function view($id)
+    {
+        $this->CRUD->view($id, [
+            'contain' => ['Users']
+        ]);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+    }
+
     public function add($user_id = false)
     {
         $this->CRUD->add([
@@ -90,4 +101,39 @@ class UserSettingsController extends AppController
         }
     }
 
+    public function getSettingByName($settingsName)
+    {
+        $setting = $this->UserSettings->getSettingByName($this->ACL->getUser(), $settingsName);
+        if (is_null($setting)) {
+            throw new NotFoundException(__('Invalid {0} for user {1}.', __('User setting'), $this->ACL->getUser()->username));
+        }
+        $this->CRUD->view($setting->id, [
+            'contain' => ['Users']
+        ]);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+        $this->render('view');
+    }
+
+    public function setSetting($settingsName)
+    {
+        if (!$this->request->is('get')) {
+            $setting = $this->UserSettings->getSettingByName($this->ACL->getUser(), $settingsName);
+            if (is_null($setting)) { // setting not found, create it
+                $result = $this->UserSettings->createSetting($this->ACL->getUser(), $settingsName, $this->request->getData()['value']);
+            } else {
+                $result = $this->UserSettings->editSetting($this->ACL->getUser(), $settingsName, $this->request->getData()['value']);
+            }
+            $success = !empty($result);
+            $message = $success ? __('Setting saved') : __('Could not save setting');
+            $this->CRUD->setResponseForController('setSetting', $success, $message, $result);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
+            }
+        }
+        $this->set('settingName', $settingsName);
+    }
 }
