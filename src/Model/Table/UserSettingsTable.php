@@ -26,4 +26,34 @@ class UserSettingsTable extends AppTable
             ->notEmptyString('user_id', __('Please supply the user id to which this setting belongs to'));
         return $validator;
     }
-}
+
+    public function getSettingByName($user, $name)
+    {
+        return $this->find()->where([
+            'user_id' => $user->id,
+            'name' => $name,
+        ])->first();
+    }
+
+    public function createSetting($user, $name, $value)
+    {
+        $setting = $this->newEmptyEntity();
+        $data = [
+            'name' => $name,
+            'value' => $value,
+            'user_id' => $user->id,
+        ];
+        $setting = $this->patchEntity($setting, $data);
+        $savedData = $this->save($setting);
+        return $savedData;
+    }
+
+    public function editSetting($user, $name, $value)
+    {
+        $setting = $this->getSettingByName($user, $name);
+        $setting = $this->patchEntity($setting, [
+            'value' => $value
+        ]);
+        $savedData = $this->save($setting);
+        return $savedData;
+    }
