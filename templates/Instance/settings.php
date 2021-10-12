@@ -5,8 +5,24 @@ $variantFromSeverity = [
     'warning' => 'warning',
     'info' => 'info',
 ];
-$this->set('variantFromSeverity', $variantFromSeverity);
-$settingTable = genNavcard($settingsProvider, $this);
+
+$navLinks = [];
+$tabContents = [];
+
+foreach ($settingsProvider as $settingTitle => $settingContent) {
+    $navLinks[] = h($settingTitle);
+    $tabContents[] = $this->element('Settings/category', [
+        'settings' => $settingContent,
+        'includeScrollspy' => true,
+    ]);
+}
+
+array_unshift($navLinks, __('Settings Diagnostic'));
+$notice = $this->element('Settings/notice', [
+    'variantFromSeverity' => $variantFromSeverity,
+    'notices' => $notices,
+]);
+array_unshift($tabContents, $notice);
 ?>
 
 <script>
@@ -18,120 +34,24 @@ $settingTable = genNavcard($settingsProvider, $this);
     <div class="mb-3 mt-2">
         <?=
             $this->element('Settings/search', [
+                'settingsFlattened' => $settingsFlattened,
             ]);
         ?>
     </div>
-    <?= $settingTable; ?>
+    <?php
+        $tabsOptions = [
+            'card' => false,
+            'pills' => false,
+            'justify' => 'center',
+            'nav-class' => ['settings-tabs'],
+            'data' => [
+                'navs' => $navLinks,
+                'content' => $tabContents
+            ]
+        ];
+        echo $this->Bootstrap->tabs($tabsOptions);
+    ?>
 </div>
-
-<?php
-function genNavcard($settingsProvider, $appView)
-{
-    $cardContent = [];
-    $cardNavs = array_keys($settingsProvider);
-    foreach ($settingsProvider as $navName => $sectionSettings) {
-        if (!empty($sectionSettings)) {
-            $cardContent[] = genContentForNav($sectionSettings, $appView);
-        } else {
-            $cardContent[] = __('No Settings available yet');
-        }
-    }
-    array_unshift($cardNavs, __('Settings Diagnostic'));
-    $notice = $appView->element('Settings/notice', [
-        'variantFromSeverity' => $appView->get('variantFromSeverity'),
-    ]);
-    array_unshift($cardContent, $notice);
-    $tabsOptions0 = [
-        'card' => false,
-        'pills' => false,
-        'justify' => 'center',
-        'nav-class' => ['settings-tabs'],
-        'data' => [
-            'navs' => $cardNavs,
-            'content' => $cardContent
-        ]
-    ];
-    $table0 = $appView->Bootstrap->tabs($tabsOptions0);
-    return $table0;
-}
-
-function genContentForNav($sectionSettings, $appView)
-{
-    $groupedContent = [];
-    $groupedSetting = [];
-    foreach ($sectionSettings as $sectionName => $subSectionSettings) {
-        if (!empty($subSectionSettings)) {
-            $groupedContent[] = genSection($sectionName, $subSectionSettings, $appView);
-        } else {
-            $groupedContent[] = '';
-        }
-        if (!isLeaf($subSectionSettings)) {
-            $groupedSetting[$sectionName] = array_filter( // only show grouped settings
-                array_keys($subSectionSettings),
-                function ($settingGroupName) use ($subSectionSettings) {
-                    return !isLeaf($subSectionSettings[$settingGroupName]) && !empty($subSectionSettings[$settingGroupName]);
-                }
-            );
-        }
-    }
-    $contentHtml = implode('', $groupedContent);
-    $scrollspyNav = $appView->element('Settings/scrollspyNav', [
-        'groupedSetting' => $groupedSetting
-    ]);
-    $mainPanelHeight = 'calc(100vh - 42px - 1rem - 56px - 38px - 1rem)';
-    $container =  '<div class="d-flex">';
-    $container .=   "<div class=\"\" style=\"flex: 0 0 10em;\">{$scrollspyNav}</div>";
-    $container .=   "<div data-bs-spy=\"scroll\" data-bs-target=\"#navbar-scrollspy-setting\" data-bs-offset=\"25\" style=\"height: {$mainPanelHeight}\" class=\"p-3 overflow-auto position-relative flex-grow-1\">{$contentHtml}</div>";
-    $container .= '</div>';
-    return $container;
-}
-
-function genSection($sectionName, $subSectionSettings, $appView)
-{
-    $sectionContent = [];
-    $sectionContent[] = '<div>';
-    if (isLeaf($subSectionSettings)) {
-        $panelHTML = $appView->element('Settings/panel', [
-            'sectionName' => $sectionName,
-            'panelName' => $sectionName,
-            'panelSettings' => $subSectionSettings,
-        ]);
-        $sectionContent[] = $panelHTML;
-    } else {
-        if (count($subSectionSettings) > 0) {
-            $sectionContent[] = sprintf('<h2 id="%s">%s</h2>', getResolvableID($sectionName), h($sectionName));
-        }
-        foreach ($subSectionSettings as $panelName => $panelSettings) {
-            if (!empty($panelSettings)) {
-                $panelHTML = $appView->element('Settings/panel', [
-                    'sectionName' => $sectionName,
-                    'panelName' => $panelName,
-                    'panelSettings' => $panelSettings,
-                ]);
-                $sectionContent[] = $panelHTML;
-            } else {
-                $sectionContent[] = '';
-            }
-        }
-    }
-    $sectionContent[] = '</div>';
-    return implode('', $sectionContent);
-}
-
-function isLeaf($setting)
-{
-    return !empty($setting['name']) && !empty($setting['type']);
-}
-
-function getResolvableID($sectionName, $panelName=false)
-{
-    $id = sprintf('sp-%s', preg_replace('/(\.|\W)/', '_', h($sectionName)));
-    if (!empty($panelName)) {
-        $id .= '-' . preg_replace('/(\.|\W)/', '_', h($panelName));
-    }
-    return $id;
-}
-?>
 
 <script>
     $(document).ready(function() {

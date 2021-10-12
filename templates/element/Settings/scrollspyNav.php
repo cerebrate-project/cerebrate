@@ -1,3 +1,16 @@
+<?php
+if (!function_exists('getResolvableID')) {
+    function getResolvableID($sectionName, $panelName = false)
+    {
+        $id = sprintf('sp-%s', preg_replace('/(\.|\W)/', '_', h($sectionName)));
+        if (!empty($panelName)) {
+            $id .= '-' . preg_replace('/(\.|\W)/', '_', h($panelName));
+        }
+        return $id;
+    }
+}
+?>
+
 <nav id="navbar-scrollspy-setting" class="navbar">
     <nav class="nav nav-pills flex-column">
         <?php foreach ($groupedSetting as $group => $sections): ?>
