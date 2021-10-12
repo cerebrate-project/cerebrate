@@ -148,6 +148,11 @@ class UsersController extends AppController
         }
     }
 
+    public function settings()
+    {
+        $this->set('user', $this->ACL->getUser());
+    }
+
     public function register()
     {
         $this->InboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');

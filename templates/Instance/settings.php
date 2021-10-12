@@ -42,8 +42,6 @@ function genNavcard($settingsProvider, $appView)
     ]);
     array_unshift($cardContent, $notice);
     $tabsOptions0 = [
-        // 'vertical' => true,
-        // 'vertical-size' => 2,
         'card' => false,
         'pills' => false,
         'justify' => 'center',
