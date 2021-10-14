@@ -3,10 +3,13 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Utility\Inflector;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
+use Cake\ORM\TableRegistry;
 use Cake\Event\EventInterface;
+use Cake\Core\Configure;
 
 class InstanceController extends AppController
 {
@@ -18,7 +21,9 @@ class InstanceController extends AppController
 
     public function home()
     {
-        $this->set('md', file_get_contents(ROOT . '/README.md'));
+        // $this->set('md', file_get_contents(ROOT . '/README.md'));
+        $statistics = $this->Instance->getStatistics();
+        $this->set('statistics', $statistics);
     }
 
     public function status()
@@ -29,6 +34,24 @@ class InstanceController extends AppController
         return $this->RestResponse->viewData($data, 'json');
     }
 
+    public function searchAll()
+    {
+        $searchValue = $this->request->getQuery('search');
+        $model = $this->request->getQuery('model', null);
+        $limit = $this->request->getQuery('limit', 5);
+        if (!empty($this->request->getQuery('show_all', false))) {
+            $limit = null;
+        }
+        $data = [];
+        if (!empty($searchValue)) {
+            $data = $this->Instance->searchAll($searchValue, $limit, $model);
+        }
+        if ($this->ParamHandler->isRest()) {
+            return $this->RestResponse->viewData($data, 'json');
+        }
+        $this->set('data', $data);
+    }
+
     public function migrationIndex()
     {
         $migrationStatus = $this->Instance->getMigrationStatus();
@@ -36,6 +59,17 @@ class InstanceController extends AppController
         $this->loadModel('Phinxlog');
         $status = $this->Phinxlog->mergeMigrationLogIntoStatus($migrationStatus['status']);
 
+        foreach ($status as $i => $entry) {
+            if (!empty($entry['plugin'])) {
+                $pluginTablename = sprintf('%s_phinxlog', Inflector::underscore($entry['plugin']));
+                $pluginTablename = str_replace(['\\', '/', '.'], '_', $pluginTablename);
+                $status[$i] = $this->Phinxlog->mergeMigrationLogIntoStatus([$entry], $pluginTablename)[0];
+
+            }
+        }
+        usort($status, function($a, $b) {
+            return strcmp($b['id'], $a['id']);
+        });
         $this->set('status', $status);
         $this->set('updateAvailables', $migrationStatus['updateAvailables']);
     }
@@ -100,5 +134,37 @@ class InstanceController extends AppController
         $this->set('actionName', __('Run rollback'));
         $this->set('path', ['controller' => 'instance', 'action' => 'rollback']);
         $this->render('/genericTemplates/confirm');
+    }
+
+    public function settings()
+    {
+        $this->Settings = $this->getTableLocator()->get('Settings');
+        $all = $this->Settings->getSettings(true);
+        $this->set('settingsProvider', $all['settingsProvider']);
+        $this->set('settings', $all['settings']);
+        $this->set('settingsFlattened', $all['settingsFlattened']);
+        $this->set('notices', $all['notices']);
+    }
+
+    public function saveSetting()
+    {
+        if ($this->request->is('post')) {
+            $data = $this->ParamHandler->harvestParams([
+                'name',
+                'value'
+            ]);
+            $this->Settings = $this->getTableLocator()->get('Settings');
+            $errors = $this->Settings->saveSetting($data['name'], $data['value']);
+            $message = __('Could not save setting `{0}`', $data['name']);
+            if (empty($errors)) {
+                $message = __('Setting `{0}` saved', $data['name']);
+                $data = $this->Settings->getSetting($data['name']);
+            }
+            $this->CRUD->setResponseForController('saveSetting', empty($errors), $message, $data, $errors);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
+            }
+        }
     }
 }

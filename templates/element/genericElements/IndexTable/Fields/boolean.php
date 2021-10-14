@@ -48,7 +48,7 @@
         (!empty($this->Hash->extract($row, $field['data_path'])[0])) ? 'check' : 'times',
         empty($rules_raw) ? '' :
         sprintf(
-            ' <span data-toggle="popover" title="%s" data-content="%s">(%s)</span>',
+            ' <span data-bs-toggle="popover" title="%s" data-bs-content="%s">(%s)</span>',
             __('Filter rules'),
             $rules_raw,
             __('Rules')

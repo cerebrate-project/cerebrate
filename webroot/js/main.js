@@ -52,7 +52,7 @@ function attachTestConnectionResultHtml(result, $container) {
     $container.find('div.tester-result').remove()
     $testResultDiv = $('<div class="tester-result"></div>');
     if (typeof result !== 'object') {
-        $testResultDiv.append(getKVHtml('Internal error', result, ['text-danger font-weight-bold']))
+        $testResultDiv.append(getKVHtml('Internal error', result, ['text-danger fw-bold']))
     } else {
         if (result['error']) {
             $testResultDiv.append(
@@ -99,9 +99,67 @@ function syntaxHighlightJson(json, indent) {
     });
 }
 
+function getTextColour(hex) {
+    if (hex === undefined || hex.length == 0) {
+        return 'black'
+    }
+    hex = hex.slice(1)
+    var r = parseInt(hex.substring(0,2), 16)
+    var g = parseInt(hex.substring(2,4), 16)
+    var b = parseInt(hex.substring(4,6), 16)
+    var avg = ((2 * r) + b + (3 * g))/6
+    if (avg < 128) {
+        return 'white'
+    } else {
+        return 'black'
+    }
+}
+
+function performGlobalSearch(evt) {
+    const $input = $('#globalSearch')
+    const $resultContainer = $('.global-search-result-container')
+    const value = $input.val()
+    const leftKey = 37,
+        upKey = 38,
+        rightKey = 39,
+        downKey = 40,
+        ingoredKeys = [leftKey, upKey, rightKey, downKey]
+    if (ingoredKeys.indexOf(evt.keyCode) != -1) {
+        return;
+    }
+    if (value.length < 3 && evt.keyCode != 13) {
+        bootstrap.Dropdown.getOrCreateInstance('#dropdownMenuSearchAll').hide()
+        return;
+    }
+    const endpoint = '/instance/searchAll'
+    const searchParams = new URLSearchParams({search: value});
+    const url = endpoint + '?' + searchParams
+    const options = {
+        statusNode: $resultContainer.find('.search-results-wrapper')
+    }
+
+    bootstrap.Dropdown.getOrCreateInstance('#dropdownMenuSearchAll').show()
+    AJAXApi.quickFetchURL(url, options).then((theHTML) => {
+        $resultContainer.html(theHTML)
+    })
+}
+
+function focusSearchResults(evt) {
+    const upKey = 38,
+        downKey = 40
+    if ([upKey, downKey].indexOf(evt.keyCode) != -1) {
+        $('.global-search-result-container').find('.dropdown-item').first().focus()
+    }
+}
+
 var UI
 $(document).ready(() => {
     if (typeof UIFactory !== "undefined") {
         UI = new UIFactory()
     }
+
+    const debouncedGlobalSearch = debounce(performGlobalSearch, 400)
+    $('#globalSearch')
+        .keydown(debouncedGlobalSearch)
+        .keydown(focusSearchResults);
 })

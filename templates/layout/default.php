@@ -13,6 +13,7 @@
  * @license       https://opensource.org/licenses/mit-license.php MIT License
  * @var \App\View\AppView $this
  */
+use Cake\Core\Configure;
 
 $cakeDescription = 'Cerebrate';
 ?>
@@ -27,49 +28,67 @@ $cakeDescription = 'Cerebrate';
     </title>
     <?= $this->Html->meta('icon') ?>
     <?php
-        if (empty($darkMode)) {
-            echo $this->Html->css('bootstrap.css');
-        } else {
-            echo $this->Html->css('darkly-bootstrap.css');
-        }
+        echo $this->Html->css('themes/bootstrap-' . $bsTheme);
+        echo $this->Html->css('themes/theme-' . $bsTheme);
     ?>
     <?= $this->Html->css('main.css') ?>
     <?= $this->Html->css('font-awesome') ?>
+    <?= $this->Html->css('layout.css') ?>
     <?= $this->Html->script('jquery-3.5.1.min.js') ?>
-    <?= $this->Html->script('popper.min.js') ?>
     <?= $this->Html->script('bootstrap.bundle.js') ?>
     <?= $this->Html->script('main.js') ?>
+    <?= $this->Html->script('utils.js') ?>
     <?= $this->Html->script('bootstrap-helper.js') ?>
     <?= $this->Html->script('api-helper.js') ?>
+    <?= $this->Html->script('select2.min.js') ?>
+    <?= $this->Html->script('CodeMirror/codemirror.js') ?>
+    <?= $this->Html->script('CodeMirror/mode/javascript/javascript') ?>
+    <?= $this->Html->script('CodeMirror/addon/hint/show-hint') ?>
+    <?= $this->Html->script('CodeMirror/addon/lint/lint') ?>
+    <?= $this->Html->script('CodeMirror/addon/lint/jsonlint') ?>
+    <?= $this->Html->script('CodeMirror/addon/lint/json-lint') ?>
+    <?= $this->Html->script('CodeMirror/addon/edit/matchbrackets') ?>
+    <?= $this->Html->script('CodeMirror/addon/edit/closebrackets') ?>
+    <?= $this->Html->css('CodeMirror/codemirror') ?>
+    <?= $this->Html->css('CodeMirror/codemirror-additional') ?>
+    <?= $this->Html->css('CodeMirror/addon/hint/show-hint') ?>
+    <?= $this->Html->css('CodeMirror/addon/lint/lint') ?>
+    <?= $this->Html->css('select2.min') ?>
+    <?= $this->Html->css('select2-bootstrap5') ?>
+    <?= $this->Html->script('apexcharts.min') ?>
+    <?= $this->Html->css('apexcharts') ?>
+
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
-    <?= $this->Html->css('bootstrap-additional.css') ?>
+
+    <?= $this->Html->script('Tags.tagging') ?>
+    <?= $this->Html->css('Tags.tagging') ?>
+
     <?= $this->Html->meta('favicon.ico', '/img/favicon.ico', ['type' => 'icon']); ?>
 </head>
 <body>
-    <header>
-        <?= $this->element('header') ?>
-    </header>
-    <main role="main">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-1 d-none d-xl-block sidebar p-0">
-                    <?= $this->element('side_menu') ?>
-                </div>
-                <div role="main" class="col-xl-11 col-lg-12 ml-sm-auto pt-3 px-4">
-                    <div class="col-12 d-xl-none px-0"><?= $this->element('side_menu', ['minimal' => 1]) ?></div>
-                    <?= $this->Flash->render() ?>
-                    <?= $this->fetch('content') ?>
-                </div>
+    <div class="main-wrapper">
+        <header class="navbar top-navbar navbar-dark">
+            <?= $this->element('layouts/header') ?>
+        </header>
+        <nav id="app-sidebar" class="collapse d-sm-block sidebar">
+            <?= $this->element('layouts/sidebar') ?>
+        </nav>
+        <main role="main" class="content">
+            <div class="container-fluid mt-1">
+                <?= $this->Flash->render() ?>
+                <?= $this->fetch('content') ?>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
     <div id="mainModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel" aria-hidden="true"></div>
     <div id="mainToastContainer" style="position: absolute; top: 15px; right: 15px; z-index: 1080"></div>
     <div id="mainModalContainer"></div>
 </body>
+
 <script>
-    const darkMode = (<?= empty($darkMode) ? 'false' : 'true' ?>)
+    const bsTheme = '<?= h($bsTheme); ?>'
+    $.fn.select2.defaults.set('theme', 'bootstrap-5');
 </script>
 </html>

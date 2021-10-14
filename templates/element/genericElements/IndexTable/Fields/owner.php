@@ -14,7 +14,7 @@
         ]
     ];
     echo sprintf(
-        '<span class="font-weight-bold">%s</span>: %s',
+        '<span class="fw-bold">%s</span>: %s',
         $types[$type]['name'],
         $this->Html->link(
             sprintf(

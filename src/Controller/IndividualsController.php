@@ -9,20 +9,25 @@ use Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\ForbiddenException;
+use Cake\ORM\TableRegistry;
 
 class IndividualsController extends AppController
 {
+    public $quickFilterFields = ['uuid', ['email' => true], ['first_name' => true], ['last_name' => true], 'position'];
+    public $filterFields = ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'];
+    public $containFields = ['Alignments' => 'Organisations'];
+
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'],
-            'quickFilters' => ['uuid', 'email', 'first_name', 'last_name', 'position'],
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields,
             'contextFilters' => [
                 'fields' => [
                     'Alignments.type'
                 ]
             ],
-            'contain' => ['Alignments' => 'Organisations']
+            'contain' => $this->containFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -30,6 +35,11 @@ class IndividualsController extends AppController
         }
         $this->set('alignmentScope', 'individuals');
         $this->set('metaGroup', 'ContactDB');
+    }
+
+    public function filtering()
+    {
+        $this->CRUD->filtering();
     }
 
     public function add()
@@ -71,5 +81,32 @@ class IndividualsController extends AppController
             return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
+    }
+
+    public function tag($id)
+    {
+        $this->CRUD->tag($id);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+    }
+
+    public function untag($id)
+    {
+        $this->CRUD->untag($id);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+    }
+
+    public function viewTags($id)
+    {
+        $this->CRUD->viewTags($id);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
     }
 }

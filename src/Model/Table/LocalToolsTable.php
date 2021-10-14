@@ -4,6 +4,7 @@ namespace App\Model\Table;
 
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
+use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
 use Migrations\Migrations;
 use Cake\Filesystem\Folder;
@@ -29,11 +30,19 @@ class LocalToolsTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('Timestamp');
     }
 
     public function validationDefault(Validator $validator): Validator
     {
-        return $validator;
+        return $validator->add('settings', 'validSettings', [
+                'rule' => 'isValidSettings',
+                'provider' => 'table',
+                'message' => __('Invalid settings'),
+                'on' => function ($context) {
+                    return !empty($context['data']['settings']);
+                }
+            ]);
     }
 
     public function loadConnector(string $connectorName): void
@@ -132,7 +141,8 @@ class LocalToolsTable extends AppTable
                 'name' => $connector_class->name,
                 'connector' => $connector_type,
                 'connector_version' => $connector_class->version,
-                'connector_description' => $connector_class->description
+                'connector_description' => $connector_class->description,
+                'connector_settings' => $connector_class->settings ?? []
             ];
             if ($includeConnections) {
                 $connector['connections'] = $this->healthCheck($connector_type, $connector_class);
@@ -296,5 +306,33 @@ class LocalToolsTable extends AppTable
             throw new NotFoundException(__('Local tool not found.'));
         }
         return $connection;
+    }
+
+    public function isValidSettings($settings, array $context)
+    {
+        $settings = json_decode($settings, true);
+        $validationErrors = $this->getLocalToolsSettingValidationErrors($context['data']['connector'], $settings);
+        return $this->getValidationMessage($validationErrors);
+    }
+
+    public function getValidationMessage($validationErrors)
+    {
+        $messages = [];
+        foreach ($validationErrors as $key => $errors) {
+            $messages[] = sprintf('%s: %s', $key, implode(', ', $errors));
+        }
+        return empty($messages) ? true : implode('; ', $messages);
+    }
+
+    public function getLocalToolsSettingValidationErrors($connectorName, array $settings): array
+    {
+        $connector = array_values($this->getConnectors($connectorName))[0];
+        $errors = [];
+        if (method_exists($connector, 'addSettingValidatorRules')) {
+            $validator = new Validator();
+            $validator = $connector->addSettingValidatorRules($validator);
+            $errors = $validator->validate($settings);
+        }
+        return $errors;
     }
 }

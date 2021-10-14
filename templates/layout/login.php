@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <?= $this->Html->charset() ?>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,7 +9,10 @@
         <?= $this->fetch('title') ?>
     </title>
     <?= $this->Html->meta('icon') ?>
-    <?= $this->Html->css('bootstrap.css') ?>
+    <?php
+    echo $this->Html->css('themes/bootstrap-' . $bsTheme);
+    echo $this->Html->css('themes/theme-' . $bsTheme);
+    ?>
     <?= $this->Html->css('login.css') ?>
     <?= $this->Html->css('main.css') ?>
     <?= $this->Html->css('font-awesome') ?>
@@ -21,9 +25,12 @@
     <?= $this->fetch('script') ?>
     <?= $this->Html->meta('favicon.ico', '/img/favicon.ico', ['type' => 'icon']); ?>
 </head>
-<body class="text-center">
-        <?= $this->Flash->render() ?>
-        <?= $this->fetch('content') ?>
+
+<body>
+    <div class="position-absolute cerebrate-background-logo"></div>
+    <?= $this->Flash->render() ?>
+    <?= $this->fetch('content') ?>
     <div id="mainModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel" aria-hidden="true"></div>
 </body>
+
 </html>

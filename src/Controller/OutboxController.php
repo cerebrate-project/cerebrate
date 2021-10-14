@@ -16,7 +16,9 @@ use Cake\Http\Exception\ForbiddenException;
 
 class OutboxController extends AppController
 {
-    public $filters = ['scope', 'action', 'title', 'comment'];
+    public $filterFields = ['scope', 'action', 'title', 'comment'];
+    public $quickFilterFields = ['scope', 'action', ['title' => true], ['comment' => true]];
+    public $containFields = ['Users'];
 
     public function beforeFilter(EventInterface $event)
     {
@@ -28,14 +30,14 @@ class OutboxController extends AppController
     public function index()
     {
         $this->CRUD->index([
-            'filters' => $this->filters,
-            'quickFilters' => ['scope', 'action', ['title' => true], ['comment' => true]],
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields,
             'contextFilters' => [
                 'fields' => [
                     'scope',
                 ]
             ],
-            'contain' => ['Users']
+            'contain' => $this->containFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

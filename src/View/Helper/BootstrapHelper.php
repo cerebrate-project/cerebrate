@@ -65,14 +65,26 @@ class BootstrapHelper extends Helper
 
     public function table($options, $data)
     {
-        $bsTable = new BoostrapTable($options, $data);
+        $bsTable = new BoostrapTable($options, $data, $this);
         return $bsTable->table();
+    }
+
+    public function listTable($options, $data)
+    {
+        $bsListTable = new BoostrapListTable($options, $data, $this);
+        return $bsListTable->table();
     }
 
     public function button($options)
     {
         $bsButton = new BoostrapButton($options);
         return $bsButton->button();
+    }
+
+    public function icon($icon, $options=[])
+    {
+        $bsIcon = new BoostrapIcon($icon, $options);
+        return $bsIcon->icon();
     }
 
     public function badge($options)
@@ -110,22 +122,39 @@ class BootstrapHelper extends Helper
         $bsProgressTimeline = new BoostrapProgressTimeline($options, $this);
         return $bsProgressTimeline->progressTimeline();
     }
+
+    public function listGroup($options, $data)
+    {
+        $bsListGroup = new BootstrapListGroup($options, $data, $this);
+        return $bsListGroup->listGroup();
+    }
+
+    public function genNode($node, $params=[], $content='')
+    {
+        return BootstrapGeneric::genNode($node, $params, $content);
+    }
+
+    public function switch($options)
+    {
+        $bsSwitch = new BoostrapSwitch($options, $this);
+        return $bsSwitch->switch();
+    }
 }
 
 class BootstrapGeneric
 {
     public static $variants = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light', 'dark', 'white', 'transparent'];
     public static $textClassByVariants = [
-        'primary' => 'text-white',
-        'secondary' => 'text-white',
-        'success' => 'text-white',
-        'danger' => 'text-white',
-        'warning' => 'text-black',
-        'info' => 'text-white',
-        'light' => 'text-black',
-        'dark' => 'text-white',
-        'white' => 'text-black',
-        'transparent' => 'text-black'
+        'primary' => 'text-light',
+        'secondary' => 'text-light',
+        'success' => 'text-light',
+        'danger' => 'text-light',
+        'warning' => 'text-dark',
+        'info' => 'text-light',
+        'light' => 'text-dark',
+        'dark' => 'text-light',
+        'white' => 'text-dark',
+        'transparent' => 'text-dark'
     ];
     protected $allowedOptionValues = [];
     protected $options = [];
@@ -142,7 +171,7 @@ class BootstrapGeneric
         }
     }
 
-    protected static function genNode($node, $params=[], $content="")
+    public static function genNode($node, $params=[], $content="")
     {
         return sprintf('<%s %s>%s</%s>', $node, BootstrapGeneric::genHTMLParams($params), $content, $node);
     }
@@ -161,7 +190,9 @@ class BootstrapGeneric
     {
         $html = '';
         foreach ($params as $k => $v) {
-            $html .= BootstrapGeneric::genHTMLParam($k, $v) . ' ';
+            if (!empty($k) && !empty($v)) {
+                $html .= BootstrapGeneric::genHTMLParam($k, $v) . ' ';
+            }
         }
         return $html;
     }
@@ -178,12 +209,10 @@ class BootstrapGeneric
     {
         return BootstrapGeneric::genNode('button', [
             'type' => 'button',
-            'class' => 'close',
-            'data-dismiss' => $dismissTarget,
+            'class' => 'btn-close',
+            'data-bs-dismiss' => $dismissTarget,
             'arial-label' => __('Close')
-        ], BootstrapGeneric::genNode('span', [
-            'arial-hidden' => 'true'
-        ], '&times;'));
+        ]);
     }
 
     protected static function getTextClassForVariant($variant)
@@ -201,8 +230,9 @@ class BootstrapTabs extends BootstrapGeneric
         'vertical' => false,
         'vertical-size' => 3,
         'card' => false,
-        'header-variant' => 'light',
+        'header-variant' => '',
         'body-variant' => '',
+        'body-class' => [],
         'nav-class' => [],
         'nav-item-class' => [],
         'content-class' => [],
@@ -217,7 +247,7 @@ class BootstrapTabs extends BootstrapGeneric
         $this->allowedOptionValues = [
             'justify' => [false, 'center', 'end'],
             'body-variant' => array_merge(BootstrapGeneric::$variants, ['']),
-            'header-variant' => BootstrapGeneric::$variants,
+            'header-variant' => array_merge(BootstrapGeneric::$variants, ['']),
         ];
         $this->processOptions($options);
     }
@@ -238,7 +268,6 @@ class BootstrapTabs extends BootstrapGeneric
         $this->bsClasses = [
             'nav' => [],
             'nav-item' => $this->options['nav-item-class'],
-    
         ];
 
         if (!empty($this->options['justify'])) {
@@ -286,7 +315,9 @@ class BootstrapTabs extends BootstrapGeneric
         }
         $this->data['navs'][$activeTab]['active'] = true;
 
-        $this->options['vertical-size'] = $this->options['vertical-size'] < 0 || $this->options['vertical-size'] > 11 ? 3 : $this->options['vertical-size'];
+        if (!empty($this->options['vertical-size']) && $this->options['vertical-size'] != 'auto') {
+            $this->options['vertical-size'] = $this->options['vertical-size'] < 0 || $this->options['vertical-size'] > 11 ? 3 : $this->options['vertical-size'];
+        }
 
         $this->options['header-text-variant'] = $this->options['header-variant'] == 'light' ? 'body' : 'white';
         $this->options['header-border-variant'] = $this->options['header-variant'] == 'light' ? '' : $this->options['header-variant'];
@@ -321,7 +352,13 @@ class BootstrapTabs extends BootstrapGeneric
         $html .= $this->genNav();
         if ($this->options['card']) {
             $html .= $this->closeNode('div');
-            $html .= $this->openNode('div', ['class' => array_merge(['card-body'], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
+            $html .= $this->openNode('div', [
+                'class' => array_merge(
+                    ['card-body'],
+                    $this->options['body-class'] ?? [],
+                    ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"]
+                )
+            ]);
         }
         $html .= $this->genContent();
         if ($this->options['card']) {
@@ -333,11 +370,37 @@ class BootstrapTabs extends BootstrapGeneric
 
     private function genVerticalTabs()
     {
-        $html = $this->openNode('div', ['class' => array_merge(['row', ($this->options['card'] ? 'card flex-row' : '')], ["border-{$this->options['header-border-variant']}"])]);
-            $html .= $this->openNode('div', ['class' => array_merge(['col-' . $this->options['vertical-size'], ($this->options['card'] ? 'card-header border-right' : '')], ["bg-{$this->options['header-variant']}", "text-{$this->options['header-text-variant']}", "border-{$this->options['header-border-variant']}"])]);
+        $html = $this->openNode('div', ['class' => array_merge(
+            [
+                'row',
+                ($this->options['card'] ? 'card flex-row' : ''),
+                ($this->options['vertical-size'] == 'auto' ? 'flex-nowrap' : '')
+            ],
+            [
+                "border-{$this->options['header-border-variant']}"
+            ]
+        )]);
+            $html .= $this->openNode('div', ['class' => array_merge(
+                [
+                    ($this->options['vertical-size'] != 'auto' ? 'col-' . $this->options['vertical-size'] : ''),
+                    ($this->options['card'] ? 'card-header border-end' : '')
+                ],
+                [
+                    "bg-{$this->options['header-variant']}",
+                    "text-{$this->options['header-text-variant']}",
+                    "border-{$this->options['header-border-variant']}"
+                ])]);
                 $html .= $this->genNav();
             $html .= $this->closeNode('div');
-            $html .= $this->openNode('div', ['class' => array_merge(['col-' . (12 - $this->options['vertical-size']), ($this->options['card'] ? 'card-body2' : '')], ["bg-{$this->options['body-variant']}", "text-{$this->options['body-text-variant']}"])]);
+            $html .= $this->openNode('div', ['class' => array_merge(
+                [
+                    ($this->options['vertical-size'] != 'auto' ? 'col-' . (12 - $this->options['vertical-size']) : ''),
+                    ($this->options['card'] ? 'card-body2' : '')
+                ],
+                [
+                    "bg-{$this->options['body-variant']}",
+                    "text-{$this->options['body-text-variant']}"
+                ])]);
                 $html .= $this->genContent();
             $html .= $this->closeNode('div');
         $html .= $this->closeNode('div');
@@ -369,7 +432,7 @@ class BootstrapTabs extends BootstrapGeneric
                 [!empty($navItem['active']) ? 'active' : ''],
                 [!empty($navItem['disabled']) ? 'disabled' : '']
             ),
-            'data-toggle' => $this->options['pills'] ? 'pill' : 'tab',
+            'data-bs-toggle' => $this->options['pills'] ? 'pill' : 'tab',
             'id' => $navItem['id'] . '-tab',
             'href' => '#' . $navItem['id'],
             'aria-controls' => $navItem['id'],
@@ -487,7 +550,7 @@ class BoostrapTable extends BootstrapGeneric {
 
     private $bsClasses = null;
 
-    function __construct($options, $data) {
+    function __construct($options, $data, $btHelper) {
         $this->allowedOptionValues = [
             'variant' => array_merge(BootstrapGeneric::$variants, [''])
         ];
@@ -495,6 +558,7 @@ class BoostrapTable extends BootstrapGeneric {
         $this->fields = $data['fields'];
         $this->items = $data['items'];
         $this->caption = !empty($data['caption']) ? $data['caption'] : '';
+        $this->btHelper = $btHelper;
     }
 
     private function processOptions($options)
@@ -603,6 +667,11 @@ class BoostrapTable extends BootstrapGeneric {
     {
         if (isset($field['formatter'])) {
             $cellContent = $field['formatter']($value, $row);
+        } else if (isset($field['element'])) {
+            $cellContent = $this->btHelper->getView()->element($field['element'], [
+                'data' => [$value],
+                'field' => ['path' => '0']
+            ]);
         } else {
             $cellContent = h($value);
         }
@@ -619,6 +688,145 @@ class BoostrapTable extends BootstrapGeneric {
     }
 }
 
+class BoostrapListTable extends BootstrapGeneric {
+    private $defaultOptions = [
+        'striped' => true,
+        'bordered' => false,
+        'borderless' => false,
+        'hover' => true,
+        'small' => false,
+        'variant' => '',
+        'tableClass' => [],
+        'bodyClass' => [],
+    ];
+
+    private $bsClasses = null;
+
+    function __construct($options, $data, $btHelper) {
+        $this->allowedOptionValues = [
+            'variant' => array_merge(BootstrapGeneric::$variants, [''])
+        ];
+        $this->processOptions($options);
+        $this->fields = $data['fields'];
+        $this->item = $data['item'];
+        $this->caption = !empty($data['caption']) ? $data['caption'] : '';
+        $this->btHelper = $btHelper;
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function table()
+    {
+        return $this->genTable();
+    }
+
+    private function genTable()
+    {
+        $html = $this->openNode('table', [
+            'class' => [
+                'table',
+                "table-{$this->options['variant']}",
+                $this->options['striped'] ? 'table-striped' : '',
+                $this->options['bordered'] ? 'table-bordered' : '',
+                $this->options['borderless'] ? 'table-borderless' : '',
+                $this->options['hover'] ? 'table-hover' : '',
+                $this->options['small'] ? 'table-sm' : '',
+                !empty($this->options['variant']) ? "table-{$this->options['variant']}" : '',
+                !empty($this->options['tableClass']) ? (is_array($this->options['tableClass']) ? implode(' ', $this->options['tableClass']) : $this->options['tableClass']) : ''
+            ],
+            'id' => $this->options['id'] ?? ''
+        ]);
+
+        $html .= $this->genCaption();
+        $html .= $this->genBody();
+        
+        $html .= $this->closeNode('table');
+        return $html;
+    }
+
+    private function genBody()
+    {
+        $body =  $this->openNode('tbody', [
+            'class' => [
+                !empty($this->options['bodyClass']) ? (is_array($this->options['bodyClass']) ? implode(' ', $this->options['bodyClass']) : $this->options['bodyClass']) : ''
+            ],
+        ]);
+        foreach ($this->fields as $i => $field) {
+            $body .= $this->genRow($field);
+        }
+        $body .= $this->closeNode('tbody');
+        return $body;
+    }
+
+    private function genRow($field)
+    {
+        $rowValue = $this->genCell($field);
+        $rowKey = $this->genNode('th', [
+            'class' => [
+                'col-sm-2'
+            ],
+            'scope' => 'row'
+        ], h($field['key']));
+        $row = $this->genNode('tr',[
+            'class' => [
+                'd-flex',
+                !empty($field['_rowVariant']) ? "table-{$field['_rowVariant']}" : ''
+            ]
+        ], implode('', [$rowKey, $rowValue]));
+        return $row;
+    }
+
+    private function genCell($field=[])
+    {
+        if (isset($field['raw'])) {
+            $cellContent = h($field['raw']);
+        } else if (isset($field['formatter'])) {
+            $cellContent = $field['formatter']($this->getValueFromObject($field), $this->item);
+        } else if (isset($field['type'])) {
+            $cellContent = $this->btHelper->getView()->element($this->getElementPath($field['type']), [
+                'data' => $this->item,
+                'field' => $field
+            ]);
+        } else {
+            $cellContent = h($this->getValueFromObject($field));
+        }
+        return $this->genNode('td', [
+            'class' => [
+                'col-sm-10',
+                !empty($row['_cellVariant']) ? "bg-{$row['_cellVariant']}" : ''
+            ]
+        ], $cellContent);
+    }
+
+    private function getValueFromObject($field)
+    {
+        if (is_array($field)) {
+            $key = $field['path'];
+        } else {
+            $key = $field;
+        }
+        $cellValue = Hash::get($this->item, $key);
+        return $cellValue;
+    }
+
+    private function getElementPath($type)
+    {
+        return sprintf('%s%sField',
+            $this->options['elementsRootPath'] ?? '',
+            $type
+        );
+    }
+
+    private function genCaption()
+    {
+        return !empty($this->caption) ? $this->genNode('caption', [], h($this->caption)) : '';
+    }
+}
+
 class BoostrapButton extends BootstrapGeneric {
     private $defaultOptions = [
         'id' => '',
@@ -627,11 +835,12 @@ class BoostrapButton extends BootstrapGeneric {
         'variant' => 'primary',
         'outline' => false,
         'size' => '',
-        'block' => false,
         'icon' => null,
+        'image' => null,
         'class' => [],
         'type' => 'button',
         'nodeType' => 'button',
+        'title' => '',
         'params' => [],
         'badge' => false
     ];
@@ -640,7 +849,7 @@ class BoostrapButton extends BootstrapGeneric {
 
     function __construct($options) {
         $this->allowedOptionValues = [
-            'variant' => BootstrapGeneric::$variants,
+            'variant' => array_merge(BootstrapGeneric::$variants, ['link', 'text']),
             'size' => ['', 'sm', 'lg'],
             'type' => ['button', 'submit', 'reset']
         ];
@@ -663,10 +872,11 @@ class BoostrapButton extends BootstrapGeneric {
             $this->bsClasses[] = "btn-{$this->options['variant']}";
         }
         if (!empty($this->options['size'])) {
-            $this->bsClasses[] = "btn-$this->options['size']";
+            $this->bsClasses[] = "btn-{$this->options['size']}";
         }
-        if ($this->options['block']) {
-            $this->bsClasses[] = 'btn-block';
+        if ($this->options['variant'] == 'text') {
+            $this->bsClasses[] = 'p-0';
+            $this->bsClasses[] = 'lh-1';
         }
     }
 
@@ -680,10 +890,12 @@ class BoostrapButton extends BootstrapGeneric {
         $html = $this->openNode($this->options['nodeType'], array_merge($this->options['params'], [
             'class' => array_merge($this->options['class'], $this->bsClasses),
             'role' => "alert",
-            'type' => $this->options['type']
+            'type' => $this->options['type'],
+            'title' => h($this->options['title']),
         ]));
 
         $html .= $this->genIcon();
+        $html .= $this->genImage();
         $html .= $this->genContent();
         if (!empty($this->options['badge'])) {
             $bsBadge = new BoostrapBadge($this->options['badge']);
@@ -695,9 +907,27 @@ class BoostrapButton extends BootstrapGeneric {
 
     private function genIcon()
     {
-        return $this->genNode('span', [
-            'class' => ['mr-1', "fa fa-{$this->options['icon']}"],
-        ]);
+        if (!empty($this->options['icon'])) {
+            $bsIcon = new BoostrapIcon($this->options['icon'], [
+                'class' => [(!empty($this->options['title']) ? 'me-1' : '')]
+            ]);
+            return $bsIcon->icon();
+        }
+        return '';
+    }
+
+    private function genImage()
+    {
+        if (!empty($this->options['image'])) {
+            return $this->genNode('img', [
+                'src' => $this->options['image']['path'] ?? '',
+                'class' => ['img-fluid', 'me-1'],
+                'width' => '26',
+                'height' => '26',
+                'alt' => $this->options['image']['alt'] ?? ''
+            ]);
+        }
+        return '';
     }
 
     private function genContent()
@@ -711,7 +941,8 @@ class BoostrapBadge extends BootstrapGeneric {
         'text' => '',
         'variant' => 'primary',
         'pill' => false,
-        'title' => ''
+        'title' => '',
+        'class' => [],
     ];
 
     function __construct($options) {
@@ -735,13 +966,49 @@ class BoostrapBadge extends BootstrapGeneric {
     private function genBadge()
     {
         $html = $this->genNode('span', [
-            'class' => [
+            'class' => array_merge($this->options['class'], [
+                'ms-1',
                 'badge',
-                "badge-{$this->options['variant']}",
-                $this->options['pill'] ? 'badge-pill' : '',
-            ],
+                "bg-{$this->options['variant']}",
+                $this->getTextClassForVariant($this->options['variant']),
+                $this->options['pill'] ? 'rounded-pill' : '',
+            ]),
             'title' => $this->options['title']
         ], h($this->options['text']));
+        return $html;
+    }
+}
+
+class BoostrapIcon extends BootstrapGeneric {
+    private $icon = '';
+    private $defaultOptions = [
+        'class' => [],
+    ];
+
+    function __construct($icon, $options=[]) {
+        $this->icon = $icon;
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function icon()
+    {
+        return $this->genIcon();
+    }
+
+    private function genIcon()
+    {
+        $html = $this->genNode('span', [
+            'class' => array_merge(
+                is_array($this->options['class']) ? $this->options['class'] : [$this->options['class']],
+                ["fa fa-{$this->icon}"]
+            ),
+        ]);
         return $html;
     }
 }
@@ -871,7 +1138,7 @@ class BoostrapModal extends BootstrapGeneric {
             'variant' => 'primary',
             'text' => __('Ok'),
             'params' => [
-                'data-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
+                'data-bs-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
                 'onclick' => $this->options['confirmFunction']
             ]
         ]))->button();
@@ -888,7 +1155,7 @@ class BoostrapModal extends BootstrapGeneric {
             'variant' => 'secondary',
             'text' => h($this->options['cancelText']),
             'params' => [
-                'data-dismiss' => 'modal',
+                'data-bs-dismiss' => 'modal',
                 'onclick' => $this->options['cancelFunction']
             ]
         ]))->button();
@@ -898,7 +1165,7 @@ class BoostrapModal extends BootstrapGeneric {
             'text' => h($this->options['confirmText']),
             'class' => 'modal-confirm-button',
             'params' => [
-                // 'data-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
+                // 'data-bs-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
                 'data-confirmFunction' => sprintf('%s', $this->options['confirmFunction'])
             ]
         ]))->button();
@@ -914,7 +1181,7 @@ class BoostrapModal extends BootstrapGeneric {
                 'text' => h($buttonConfig['text']),
                 'class' => 'modal-confirm-button',
                 'params' => [
-                    'data-dismiss' => !empty($buttonConfig['clickFunction']) ? '' : 'modal',
+                    'data-bs-dismiss' => !empty($buttonConfig['clickFunction']) ? '' : 'modal',
                     'data-clickFunction' => sprintf('%s', $buttonConfig['clickFunction'])
                 ]
             ]))->button();
@@ -933,6 +1200,7 @@ class BoostrapCard extends BootstrapGeneric
         'headerHTML' => '',
         'footerHTML' => '',
         'bodyHTML' => '',
+        'class' => '',
         'headerClass' => '',
         'bodyClass' => '',
         'footerClass' => '',
@@ -964,6 +1232,7 @@ class BoostrapCard extends BootstrapGeneric
                 'card',
                 !empty($this->options['variant']) ? "bg-{$this->options['variant']}" : '',
                 !empty($this->options['variant']) ? $this->getTextClassForVariant($this->options['variant']) : '',
+                h($this->options['class']),
             ],
         ], implode('', [$this->genHeader(), $this->genBody(), $this->genFooter()]));
         return $card;
@@ -1012,6 +1281,60 @@ class BoostrapCard extends BootstrapGeneric
             ],
         ], $content);
         return $footer;
+    }
+}
+
+class BoostrapSwitch extends BootstrapGeneric {
+    private $defaultOptions = [
+        'label' => '',
+        'variant' => 'primary',
+        'disabled' => false,
+        'checked' => false,
+        'title' => '',
+        'class' => [],
+        'attrs' => [],
+    ];
+
+    function __construct($options) {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+        ];
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+    }
+
+    public function switch()
+    {
+        return $this->genSwitch();
+    }
+
+    private function genSwitch()
+    {
+        $tmpId = 'tmp-' . mt_rand();
+        $html = $this->genNode('div', [
+            'class' => [
+                'form-check form-switch',
+            ],
+            'title' => $this->options['title']
+        ], implode('', [
+            $this->genNode('input', array_merge([
+                'type' => "checkbox",
+                'class' => 'form-check-input',
+                'id' => $tmpId,
+                ($this->options['disabled'] ? 'disabled' : '') => '',
+                ($this->options['checked'] ? 'checked' : '') => $this->options['checked'] ? 'checked' : '',
+            ], $this->options['attrs'])),
+            $this->genNode('label', [
+                'class' => 'form-check-label',
+                'for' => $tmpId,
+            ], h($this->options['label']))
+        ]));
+        return $html;
     }
 }
 
@@ -1103,7 +1426,7 @@ class BoostrapCollapse extends BootstrapGeneric {
     {
         $html = $this->genNode('a', [
             'class' => ['text-decoration-none'],
-            'data-toggle' => 'collapse',
+            'data-bs-toggle' => 'collapse',
             'href' => '#collapseExample',
             'role' => 'button',
             'aria-expanded' => 'false',
@@ -1213,7 +1536,7 @@ class BoostrapProgressTimeline extends BootstrapGeneric {
         return $this->genNode('li', [
             'class' => [
                 'text-center',
-                'font-weight-bold',
+                'fw-bold',
                 $isActive ? 'progress-active' : 'progress-inactive',
             ],
         ], h($step['text'] ?? ''));
@@ -1243,5 +1566,101 @@ class BoostrapProgressTimeline extends BootstrapGeneric {
             'class' => ['progress-timeline', 'mw-75', 'mx-auto']
         ], $ulIcons . $ulText);
         return $html;
+    }
+}
+
+class BootstrapListGroup extends BootstrapGeneric
+{
+    private $defaultOptions = [
+        'hover' => false,
+    ];
+
+    private $bsClasses = null;
+
+    function __construct($options, $data, $btHelper) {
+        $this->data = $data;
+        $this->processOptions($options);
+        $this->btHelper = $btHelper;
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+    }
+
+    public function listGroup()
+    {
+        return $this->genListGroup();
+    }
+
+    private function genListGroup()
+    {
+        $html = $this->openNode('div', [
+            'class' => ['list-group',],
+        ]);
+        foreach ($this->data as $item) {
+            $html .= $this->genItem($item);
+        }
+        $html .= $this->closeNode('div');
+        return $html;
+    }
+
+    private function genItem($item)
+    {
+        if (!empty($item['heading'])) { // complex layout with heading, badge and body
+            $html = $this->genNode('a', [
+                'class' => ['list-group-item', (!empty($this->options['hover']) ? 'list-group-item-action' : ''),],
+            ], implode('', [
+                $this->genHeadingGroup($item),
+                $this->genBody($item),
+            ]));
+        } else { // simple layout with just <li>-like elements
+            $html = $this->genNode('a', [
+                'class' => ['list-group-item', 'd-flex', 'align-items-center', 'justify-content-between'],
+            ], implode('', [
+                h($item['text']),
+                $this->genBadge($item)
+            ]));
+        }
+        return $html;
+    }
+
+    private function genHeadingGroup($item)
+    {
+        $html = $this->genNode('div', [
+            'class' => ['d-flex', 'w-100', 'justify-content-between',],
+        ], implode('', [
+            $this->genHeading($item),
+            $this->genBadge($item)
+        ]));
+        return $html;
+    }
+
+    private function genHeading($item)
+    {
+        if (empty($item['heading'])) {
+            return '';
+        }
+        return $this->genNode('h5', [
+            'class' => ['mb-1'],
+        ], h($item['heading']));
+    }
+
+    private function genBadge($item)
+    {
+        if (empty($item['badge'])) {
+            return '';
+        }
+        return $this->genNode('span', [
+            'class' => ['badge rounded-pill', (!empty($item['badge-variant']) ? "bg-{$item['badge-variant']}" : 'bg-primary')],
+        ], h($item['badge']));
+    }
+
+    private function genBody($item)
+    {
+        if (!empty($item['bodyHTML'])) {
+            return $item['bodyHTML'];
+        }
+        return !empty($item['body']) ? h($item['body']) : '';
     }
 }

@@ -130,7 +130,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
             )
             const $footer = $(modalObject.ajaxApi.statusNode).parent()
             modalObject.ajaxApi.statusNode.remove()
-            const $cancelButton = $footer.find('button[data-dismiss="modal"]')
+            const $cancelButton = $footer.find('button[data-bs-dismiss="modal"]')
             $cancelButton.text('<?= __('OK') ?>').removeClass('btn-secondary').addClass('btn-primary')
         }
         UI.submissionModal('/inbox/delete', successCallback, failCallback).then(([modalObject, ajaxApi]) => {

@@ -6,15 +6,16 @@
                 'variant' => $child['variant'] ?? 'primary',
                 'text' => $child['text'],
                 'outline' => !empty($child['outline']),
-                'params' => [
+                'icon' => $child['icon'] ?? null,
+                'params' => array_merge([
                     'data-onclick-function' => $child['onclick'] ?? '',
                     'data-table-random-value' => $tableRandomValue,
                     'onclick' => 'multiActionClickHandler(this)'
-                ]
+                ], $child['params'] ?? [])
             ]);
         }
         echo sprintf(
-            '<div class="multi_select_actions btn-group mr-2 flex-wrap collapse" role="group" aria-label="button-group" data-table-random-value="%s">%s</div>',
+            '<div class="multi_select_actions btn-group me-2 flex-wrap collapse" role="group" aria-label="button-group" data-table-random-value="%s">%s</div>',
             $tableRandomValue,
             $buttons
         );
@@ -68,7 +69,7 @@
         })
         const functionName = $clicked.data('onclick-function')
         if (functionName && typeof window[functionName] === 'function') {
-            window[functionName](selectedIDs, selectedData, $table)
+            window[functionName](selectedIDs, selectedData, $table, $clicked)
         }
     }
 </script>

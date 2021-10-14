@@ -9,11 +9,15 @@ use \Cake\Database\Expression\QueryExpression;
 
 class MetaTemplateFieldsController extends AppController
 {
+    public $quickFilterFields = ['field', 'type'];
+    public $filterFields = ['field', 'type', 'meta_template_id'];
+    public $containFields = [];
+
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['field', 'type', 'meta_template_id'],
-            'quickFilters' => ['field', 'type']
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

@@ -38,6 +38,10 @@ echo $this->element(
                 'path' => 'contacts'
             ],
             [
+                'key' => __('Tags'),
+                'type' => 'tags',
+            ],
+            [
                 'key' => __('Alignments'),
                 'type' => 'alignment',
                 'path' => '',
@@ -45,6 +49,7 @@ echo $this->element(
             ]
         ],
         'metaTemplates' => empty($metaFields) ? [] : $metaFields,
+        'combinedFieldsView' => true,
         'children' => []
     ]
 );

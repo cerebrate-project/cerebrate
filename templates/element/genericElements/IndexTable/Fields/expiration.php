@@ -14,12 +14,12 @@
     $data = h($data);
     if (is_numeric($data)) {
         if ($data == 0) {
-            $data = '<span class="text-primary font-weight-bold">' . __('Indefinite') . '</span>';
+            $data = '<span class="text-primary fw-bold">' . __('Indefinite') . '</span>';
         } else {
             if ($data <= time()) {
-                $data = '<span class="text-danger font-weight-bold">' . __('Expired') . '</span>';
+                $data = '<span class="text-danger fw-bold">' . __('Expired') . '</span>';
             } else {
-                $data = '<span class="text-success font-weight-bold">' . date('Y-m-d H:i:s', $data) . '</span>';
+                $data = '<span class="text-success fw-bold">' . date('Y-m-d H:i:s', $data) . '</span>';
             }
         }
     }

@@ -40,6 +40,7 @@ class AppController extends Controller
     public $isRest = null;
     public $restResponsePayload = null;
     public $user = null;
+    public $breadcrumb = [];
 
     /**
      * Initialization hook method.
@@ -63,9 +64,10 @@ class AppController extends Controller
         ]);
         $this->loadModel('MetaFields');
         $this->loadModel('MetaTemplates');
+        $table = $this->getTableLocator()->get($this->modelClass);
         $this->loadComponent('CRUD', [
             'request' => $this->request,
-            'table' => $this->{$this->modelClass},
+            'table' => $table,
             'MetaFields' => $this->MetaFields,
             'MetaTemplates' => $this->MetaTemplates
         ]);
@@ -73,6 +75,9 @@ class AppController extends Controller
         $this->loadComponent('ACL', [
             'request' => $this->request,
             'Authentication' => $this->Authentication
+        ]);
+        $this->loadComponent('Navigation', [
+            'request' => $this->request,
         ]);
         if (Configure::read('debug')) {
             Configure::write('DebugKit.panels', ['DebugKit.Packages' => true]);
@@ -122,10 +127,15 @@ class AppController extends Controller
 
         $this->ACL->checkAccess();
         $this->set('menu', $this->ACL->getMenu());
+        $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
-        $this->set('darkMode', !empty(Configure::read('Cerebrate.dark')));
         $this->set('baseurl', Configure::read('App.fullBaseUrl'));
+        $this->set('bsTheme', Configure::read('Cerebrate')['ui.bsTheme']);
+
+        if ($this->modelClass == 'Tags.Tags') {
+            $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
+        }
     }
 
     private function authApiUser(): void

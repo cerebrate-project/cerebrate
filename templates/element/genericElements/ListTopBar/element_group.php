@@ -18,7 +18,7 @@
             }
         }
         echo sprintf(
-            '<a class="btn btn-small btn-dropdown-toggle %s %s" %s %s data-toggle="dropdown" href="#" %s>%s%s%s <span class="caret"></span></a><ul class="dropdown-menu">%s</ul>',
+            '<a class="btn btn-small btn-dropdown-toggle %s %s" %s %s data-bs-toggle="dropdown" href="#" %s>%s%s%s <span class="caret"></span></a><ul class="dropdown-menu">%s</ul>',
             empty($data['class']) ? '' : h($data['class']),
             empty($data['active']) ? 'btn-inverse' : 'btn-primary',   // Change the default class for highlighted/active toggles here
             empty($data['id']) ? '' : 'id="' . h($data['id']) . '"',
