@@ -217,6 +217,11 @@ main.content {
 .sidebar-scroll {
     position: relative;
     width: 100%;
+    overflow-y: hidden;
+}
+
+.sidebar-scroll:hover {
+    overflow-y: auto;
 }
 
 .sidebar-content {
@@ -228,19 +233,37 @@ ul.sidebar-elements {
     padding: 0;
 }
 
+.sidebar .lock-sidebar {
+    -webkit-box-shadow: 0px -1px 5px 1px rgb(0 0 0 / 8%);
+    box-shadow: 0px -1px 5px 1px rgb(0 0 0 / 8%);
+}
+
 .sidebar .lock-sidebar > a::before {
     content: "\f101";
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
+    transition: margin-left 0.1s ease-out;
+    margin-left: 0;
 }
 
 .sidebar.expanded .lock-sidebar > a::before {
     content: "\f100";
 }
 
+.sidebar .lock-sidebar:hover > a::before {
+    margin-left: 0.5rem;
+}
+.sidebar.expanded .lock-sidebar:hover > a::before {
+    margin-left: -0.5rem;
+}
+
 /* sidebar entry */
 ul.sidebar-elements > li {
     list-style: none;
+}
+
+ul.sidebar-elements > li > a[data-href] {
+    cursor: pointer;
 }
 
 ul.sidebar-elements li.bookmarks {
