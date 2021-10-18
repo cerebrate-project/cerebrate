@@ -2,18 +2,19 @@
 $variationIcon = '';
 $variationClass = '';
 if ($variation == 0) {
-    $variationIcon = 'minus';
+    $variationIcon = $this->FontAwesome->getClass('minus');
 } elseif ($variation > 0) {
-    $variationIcon = 'arrow-up';
+    $variationIcon = 'trends-arrow-up-white fs-6';
     $variationClass = 'bg-success';
 } else {
-    $variationIcon = 'arrow-down';
+    $variationIcon = 'trends-arrow-up-white fs-6 fa-rotate-180 fa-flip-vertical';
     $variationClass = 'bg-danger';
 }
 
-$variationHtml = sprintf('<div class="badge %s fw-bold"><span class="%s me-2"></span>%s</div>',
+$variationHtml = sprintf(
+    '<div class="badge %s fw-bold"><span class="%s me-2 align-middle"></span>%s</div>',
     $variationClass,
-    $this->FontAwesome->getClass($variationIcon),
+    $variationIcon,
     !empty($variation) ? h($variation) : ''
 );
 
