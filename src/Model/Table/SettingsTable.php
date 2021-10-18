@@ -3,9 +3,10 @@ namespace App\Model\Table;
 
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
-use Cake\Validation\Validator;
 use Cake\Core\Configure;
-use Cake\ORM\TableRegistry;
+
+require_once(APP . 'Model' . DS . 'Table' . DS . 'SettingProviders' . DS . 'CerebrateSettingsProvider.php');
+use App\Settings\SettingsProvider\CerebrateSettingsProvider;
 
 class SettingsTable extends AppTable
 {
@@ -16,7 +17,7 @@ class SettingsTable extends AppTable
     {
         parent::initialize($config);
         $this->setTable(false);
-        $this->SettingsProvider = TableRegistry::getTableLocator()->get('SettingsProvider');
+        $this->SettingsProvider = new CerebrateSettingsProvider();
     }
 
     public function getSettings($full=false): array

@@ -1,54 +1,19 @@
 <?php
-use Cake\ORM\TableRegistry;
+$navLinks = [];
+$tabContents = [];
 
-function isLeaf($setting)
-{
-    return !empty($setting['name']) && !empty($setting['type']);
-}
-
-function getResolvableID($sectionName, $panelName = false)
-{
-    $id = sprintf('sp-%s', preg_replace('/(\.|\W)/', '_', h($sectionName)));
-    if (!empty($panelName)) {
-        $id .= '-' . preg_replace('/(\.|\W)/', '_', h($panelName));
-    }
-    return $id;
-}
-
-
-$settings = [
-    __('Appearance') => [
-        'ui.bsTheme' => [
-            'description' => 'The Bootstrap theme to use for the application',
-            'default' => 'default',
-            'name' => 'UI Theme',
-            'options' => (function () {
-                $instanceTable = TableRegistry::getTableLocator()->get('Instance');
-                $themes = $instanceTable->getAvailableThemes();
-                return array_combine($themes, $themes);
-            })(),
-            'severity' => 'info',
-            'type' => 'select'
-        ],
-    ],
-    __('Bookmarks') => 'Bookmarks',
-    __('Account Security') => 'Account Security',
-];
-
-$cardNavs = array_keys($settings);
-$cardContent = [];
-
-$sectionHtml = '';
-foreach ($settings[__('Appearance')] as $sectionName => $sectionContent) {
-    $sectionHtml .= $this->element('Settings/panel', [
-        'sectionName' => $sectionName,
-        'panelName' => $sectionName,
-        'panelSettings' => $sectionContent,
+foreach ($settingsProvider as $settingTitle => $settingContent) {
+    $navLinks[] = h($settingTitle);
+    $tabContents[] = $this->element('Settings/category', [
+        'settings' => $settingContent,
+        'includeScrollspy' => false,
     ]);
 }
-$cardContent[] = $sectionHtml;
-$cardContent[] = $settings[__('Bookmarks')];
-$cardContent[] = $settings[__('Account Security')];
+
+$navLinks[] = __('Bookmarks');
+$tabContents[] = $this->element('UserSettings/saved-bookmarks', [
+    'bookmarks' => !empty($user->user_settings_by_name['ui.bookmarks']['value']) ? json_decode($user->user_settings_by_name['ui.bookmarks']['value'], true) : []
+]);
 
 $tabsOptions = [
     'vertical' => true,
@@ -58,12 +23,18 @@ $tabsOptions = [
     'justify' => 'center',
     'nav-class' => ['settings-tabs'],
     'data' => [
-        'navs' => $cardNavs,
-        'content' => $cardContent
+        'navs' => $navLinks,
+        'content' => $tabContents
     ]
 ];
 $tabs = $this->Bootstrap->tabs($tabsOptions);
+echo $this->Html->script('settings');
 ?>
+
+<script>
+    window.settingsFlattened = <?= json_encode($settingsFlattened) ?>;
+    window.saveSettingURL = '/userSettings/saveSetting'
+</script>
 
 <h2 class="fw-light"><?= __('Account settings') ?></h2>
 <div class="p-2">
