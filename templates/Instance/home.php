@@ -13,7 +13,7 @@ $bookmarks = !empty($loggedUser->user_settings_by_name['ui.bookmarks']['value'])
         <ul class="col-sm-12 col-md-10 col-l-8 col-xl-8 mb-3">
             <?php foreach ($bookmarks as $bookmark) : ?>
                 <li class="list-group-item">
-                    <a href="<?= h($bookmark['url']) ?>" class="link-primary w-bold">
+                    <a href="<?= h($bookmark['url']) ?>" class="w-bold">
                         <?= h($bookmark['label']) ?>
                     </a>
                     <span class="ms-3 fw-light"><?= h($bookmark['name']) ?></span>
