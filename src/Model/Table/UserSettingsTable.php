@@ -6,8 +6,13 @@ use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 
+require_once(APP . 'Model' . DS . 'Table' . DS . 'SettingProviders' . DS . 'UserSettingsProvider.php');
+use App\Settings\SettingsProvider\UserSettingsProvider;
+
 class UserSettingsTable extends AppTable
 {
+    protected $BOOKMARK_SETTING_NAME = 'ui.bookmarks';
+
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -16,6 +21,8 @@ class UserSettingsTable extends AppTable
             'Users'
         );
         $this->setDisplayField('name');
+
+        $this->SettingsProvider = new UserSettingsProvider();
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -25,6 +32,35 @@ class UserSettingsTable extends AppTable
             ->notEmptyString('name', __('Please fill this field'))
             ->notEmptyString('user_id', __('Please supply the user id to which this setting belongs to'));
         return $validator;
+    }
+
+    public function getSettingsFromProviderForUser($user_id, $full = false): array
+    {
+        $settingsTmp = $this->getSettingsForUser($user_id)->toArray();
+        $settings = [];
+        foreach ($settingsTmp as $setting) {
+            $settings[$setting->name] = $setting->value;
+        }
+        if (empty($full)) {
+            return $settings;
+        } else {
+            $settingsProvider = $this->SettingsProvider->getSettingsConfiguration($settings);
+            $settingsFlattened = $this->SettingsProvider->flattenSettingsConfiguration($settingsProvider);
+            $notices = $this->SettingsProvider->getNoticesFromSettingsConfiguration($settingsProvider, $settings);
+            return [
+                'settings' => $settings,
+                'settingsProvider' => $settingsProvider,
+                'settingsFlattened' => $settingsFlattened,
+                'notices' => $notices,
+            ];
+        }
+    }
+
+    public function getSettingsForUser($user_id)
+    {
+        return $this->find()->where([
+            'user_id' => $user_id,
+        ])->all();
     }
 
     public function getSettingByName($user, $name)
@@ -60,8 +96,7 @@ class UserSettingsTable extends AppTable
 
     public function saveBookmark($user, $data)
     {
-        $bookmarkSettingName = 'ui.sidebar.bookmarks';
-        $setting = $this->getSettingByName($user, $bookmarkSettingName);
+        $setting = $this->getSettingByName($user, $this->BOOKMARK_SETTING_NAME);
         $bookmarkData = [
             'label' => $data['bookmark_label'],
             'name' => $data['bookmark_name'],
@@ -69,12 +104,34 @@ class UserSettingsTable extends AppTable
         ];
         if (is_null($setting)) { // setting not found, create it
             $bookmarksData = json_encode([$bookmarkData]);
-            $result = $this->createSetting($user, $bookmarkSettingName, $bookmarksData);
+            $result = $this->createSetting($user, $this->BOOKMARK_SETTING_NAME, $bookmarksData);
         } else {
             $bookmarksData = json_decode($setting->value);
             $bookmarksData[] = $bookmarkData;
             $bookmarksData = json_encode($bookmarksData);
-            $result = $this->editSetting($user, $bookmarkSettingName, $bookmarksData);
+            $result = $this->editSetting($user, $this->BOOKMARK_SETTING_NAME, $bookmarksData);
+        }
+        return $result;
+    }
+
+    public function deleteBookmark($user, $data)
+    {
+        $setting = $this->getSettingByName($user, $this->BOOKMARK_SETTING_NAME);
+        $bookmarkData = [
+            'name' => $data['bookmark_name'],
+            'url' => $data['bookmark_url'],
+        ];
+        if (is_null($setting)) { // Can't delete something that doesn't exist
+            return null;
+        } else {
+            $bookmarksData = json_decode($setting->value, true);
+            foreach ($bookmarksData as $i => $savedBookmark) {
+                if ($savedBookmark['name'] == $bookmarkData['name'] && $savedBookmark['url'] == $bookmarkData['url']) {
+                    unset($bookmarksData[$i]);
+                }
+            }
+            $bookmarksData = json_encode($bookmarksData);
+            $result = $this->editSetting($user, $this->BOOKMARK_SETTING_NAME, $bookmarksData);
         }
         return $result;
     }

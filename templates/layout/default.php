@@ -17,7 +17,7 @@ use Cake\Core\Configure;
 
 $cakeDescription = 'Cerebrate';
 
-$sidebarOpen = $loggedUser->user_settings_by_name['ui.sidebar.expanded']->value;
+$sidebarOpen = $loggedUser->user_settings_by_name_with_fallback['ui.sidebar.expanded']['value'];
 ?>
 <!DOCTYPE html>
 <html>

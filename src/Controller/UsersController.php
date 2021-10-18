@@ -151,6 +151,11 @@ class UsersController extends AppController
     public function settings()
     {
         $this->set('user', $this->ACL->getUser());
+        $all = $this->Users->UserSettings->getSettingsFromProviderForUser($this->ACL->getUser()['id'], true);
+        $this->set('settingsProvider', $all['settingsProvider']);
+        $this->set('settings', $all['settings']);
+        $this->set('settingsFlattened', $all['settingsFlattened']);
+        $this->set('notices', $all['notices']);
     }
 
     public function register()

@@ -132,7 +132,12 @@ class AppController extends Controller
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
         $this->set('baseurl', Configure::read('App.fullBaseUrl'));
-        $this->set('bsTheme', Configure::read('Cerebrate')['ui.bsTheme']);
+
+        if (!empty($user) && !empty($user->user_settings_by_name_with_fallback['ui.bsTheme']['value'])) {
+            $this->set('bsTheme', $user->user_settings_by_name_with_fallback['ui.bsTheme']['value']);
+        } else {
+            $this->set('bsTheme', Configure::read('Cerebrate')['ui.bsTheme']);
+        }
 
         if ($this->modelClass == 'Tags.Tags') {
             $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');

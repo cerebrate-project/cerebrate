@@ -13,7 +13,7 @@ class UserSettingsNavigation extends BaseNavigation
             if (!empty($request->getQuery('Users_id'))) {
                 $user_id = h($request->getQuery('Users_id'));
                 $linkData = [
-                    'label' => __('View user ({0})', h($user_id)),
+                    'label' => __('View user [{0}]', h($user_id)),
                     'url' => sprintf('/users/view/%s', h($user_id))
                 ];
                 return $linkData;
@@ -24,7 +24,7 @@ class UserSettingsNavigation extends BaseNavigation
             if (!empty($request->getQuery('Users_id'))) {
                 $user_id = h($request->getQuery('Users_id'));
                 $linkData = [
-                    'label' => __('Edit user ({0})', h($user_id)),
+                    'label' => __('Edit user [{0}]', h($user_id)),
                     'url' => sprintf('/users/edit/%s', h($user_id))
                 ];
                 return $linkData;

@@ -68,7 +68,7 @@ class NavigationComponent extends Component
     public function getUserBookmarks(): array
     {
         $userSettingTable = TableRegistry::getTableLocator()->get('UserSettings');
-        $setting = $userSettingTable->getSettingByName($this->request->getAttribute('identity'), 'ui.sidebar.bookmarks');
+        $setting = $userSettingTable->getSettingByName($this->request->getAttribute('identity'), 'ui.bookmarks');
         $bookmarks = is_null($setting) ? [] : json_decode($setting->value, true);
 
         $links = array_map(function($bookmark) {
@@ -316,11 +316,11 @@ class BreadcrumbFactory
         $this->endpoints[$sourceController][$sourceAction]['after'] = $parents;
     }
 
-    public function addSelfLink(string $controller, string $action)
+    public function addSelfLink(string $controller, string $action, array $options=[])
     {
-        $this->addLink($controller, $action, $controller, $action, [
-            'selfLink' => true
-        ]);
+        $this->addLink($controller, $action, $controller, $action, array_merge($options, [
+            'selfLink' => true,
+        ]));
     }
 
     public function addLink(string $sourceController, string $sourceAction, string $targetController, string $targetAction, $overrides = [])

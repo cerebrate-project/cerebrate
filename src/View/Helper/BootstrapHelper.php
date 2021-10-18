@@ -652,21 +652,21 @@ class BoostrapTable extends BootstrapGeneric {
                     $key = $field;
                 }
                 $cellValue = Hash::get($row, $key);
-                $html .= $this->genCell($cellValue, $field, $row);
+                $html .= $this->genCell($cellValue, $field, $row, $i);
             }
         } else { // indexed array
             foreach ($row as $cellValue) {
-                $html .= $this->genCell($cellValue, $field, $row);
+                $html .= $this->genCell($cellValue, $field, $row, $i);
             }
         }
         $html .= $this->closeNode('tr');
         return $html;
     }
 
-    private function genCell($value, $field=[], $row=[])
+    private function genCell($value, $field=[], $row=[], $i=0)
     {
         if (isset($field['formatter'])) {
-            $cellContent = $field['formatter']($value, $row);
+            $cellContent = $field['formatter']($value, $row, $i);
         } else if (isset($field['element'])) {
             $cellContent = $this->btHelper->getView()->element($field['element'], [
                 'data' => [$value],

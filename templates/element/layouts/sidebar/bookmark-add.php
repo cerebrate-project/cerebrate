@@ -5,6 +5,7 @@ echo $this->Bootstrap->button([
     'title' => __('Add new bookmark'),
     'variant' => 'primary',
     'size' => 'sm',
+    'class' => 'mb-1',
     'params' => [
         'id' => 'btn-add-bookmark',
     ]

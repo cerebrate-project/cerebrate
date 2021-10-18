@@ -15,7 +15,7 @@ use Cake\Routing\Router;
             </div>
         </h6>
         <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'view', 'plugin' => null]) ?>">
+        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'view', 'plugin' => null, h($this->request->getAttribute('identity')['id'])]) ?>">
             <i class="me-1 <?= $this->FontAwesome->getClass('user-circle') ?>"></i>
             <?= __('My Account') ?>
         </a>
@@ -24,7 +24,7 @@ use Cake\Routing\Router;
             href="<?= Router::url(['controller' => 'users', 'action' => 'settings', 'plugin' => null, h($this->request->getAttribute('identity')['id'])]) ?>"
         >
             <i class="me-1 <?= $this->FontAwesome->getClass('user-cog') ?>"></i>
-            <?= __('Settings') ?>
+            <?= __('Account Settings') ?>
         </a>
         <div class="dropdown-divider"></div>
         <a class="dropdown-item dropdown-item-outline-danger" href="<?= Router::url(['controller' => 'users', 'action' => 'logout', 'plugin' => null]) ?>">

@@ -1,29 +1,56 @@
 <?php
-// $Parsedown = new Parsedown();
-// echo $Parsedown->text($md);
+$bookmarks = !empty($loggedUser->user_settings_by_name['ui.bookmarks']['value']) ? json_decode($loggedUser->user_settings_by_name['ui.bookmarks']['value'], true) : []
 ?>
 
-<h2><?= __('Home') ?></h2>
+<h3>
+    <?= $this->Bootstrap->icon('bookmark', [
+        'class' => ['fa-fw']
+    ]); ?>
+    <?= __('Bookmarks') ?>
+</h3>
 <div class="row">
-    <?php foreach ($statistics as $modelName => $statistics): ?>
+    <? if (!empty($bookmarks)): ?>
+        <ul class="col-sm-12 col-md-10 col-l-8 col-xl-8 mb-3">
+            <?php foreach ($bookmarks as $bookmark) : ?>
+                <li class="list-group-item">
+                    <a href="<?= h($bookmark['url']) ?>" class="link-primary w-bold">
+                        <?= h($bookmark['label']) ?>
+                    </a>
+                    <span class="ms-3 fw-light"><?= h($bookmark['name']) ?></span>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php else: ?>
+        <p class="fw-light"><?= __('No bookmarks') ?></p>
+    <?php endif; ?>
+</div>
+
+<h3>
+    <?= $this->Bootstrap->icon('chart-bar', [
+        'class' => ['fa-fw']
+    ]); ?>
+    <?= __('Activity') ?>
+</h3>
+<div class="row">
+    <?php foreach ($statistics as $modelName => $statistics) : ?>
         <div class="col-sm-6 col-md-5 col-l-4 col-xl-3 mb-3">
             <?php
-                $exploded = explode('.', $modelName);
-                $modelForDisplay = $exploded[count($exploded)-1];
-                $panelTitle = $this->Html->link(
-                    h($modelForDisplay),
-                    $this->Url->build([
-                        'controller' => $modelForDisplay,
-                        'action' => 'index',
-                    ]),
-                    ['class' => 'text-white text-decoration-none fw-light stretched-link']
-                );
-                echo $this->element('widgets/highlight-panel', [
-                    'titleHtml' => $panelTitle,
-                    'number' => $statistics['amount'],
-                    'variation' => $statistics['variation'] ?? '',
-                    'chartData' => $statistics['timeline'] ?? []
-                ]);
+            $exploded = explode('.', $modelName);
+            $modelForDisplay = $exploded[count($exploded) - 1];
+            $panelTitle = $this->Html->link(
+                h($modelForDisplay),
+                $this->Url->build([
+                    'controller' => $modelForDisplay,
+                    'action' => 'index',
+                ]),
+                ['class' => 'text-white text-decoration-none fw-light stretched-link']
+            );
+            echo $this->element('widgets/highlight-panel', [
+                'titleHtml' => $panelTitle,
+                'number' => $statistics['amount'],
+                'variation' => $statistics['variation'] ?? '',
+                'chartData' => $statistics['timeline'] ?? []
+            ]);
             ?>
         </div>
     <?php endforeach ?>

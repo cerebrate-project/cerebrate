@@ -11,6 +11,7 @@ $variantFromSeverity = [
     'warning' => 'warning',
     'info' => 'info',
 ];
+$this->set('variantFromSeverity', $variantFromSeverity);
 $includeScrollspy = !empty($includeScrollspy);
 
 $groupedContent = [];

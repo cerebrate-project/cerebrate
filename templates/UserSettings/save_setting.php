@@ -1,7 +1,7 @@
 <?php
 echo $this->element('genericElements/Form/genericForm', [
     'data' => [
-        'description' => __('Application setting form'),
+        'description' => __('User settings form'),
         'fields' => [
             [
                 'field' => 'name',

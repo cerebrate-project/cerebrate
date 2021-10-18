@@ -117,7 +117,7 @@ class UserSettingsController extends AppController
         $this->render('view');
     }
 
-    public function setSetting($settingsName)
+    public function setSetting($settingsName = false)
     {
         if (!$this->request->is('get')) {
             $setting = $this->UserSettings->getSettingByName($this->ACL->getUser(), $settingsName);
@@ -137,6 +137,39 @@ class UserSettingsController extends AppController
         $this->set('settingName', $settingsName);
     }
 
+    public function saveSetting()
+    {
+        if ($this->request->is('post')) {
+            $data = $this->ParamHandler->harvestParams([
+                'name',
+                'value'
+            ]);
+            $setting = $this->UserSettings->getSettingByName($this->ACL->getUser(), $data['name']);
+            if (is_null($setting)) { // setting not found, create it
+                $result = $this->UserSettings->createSetting($this->ACL->getUser(), $data['name'], $data['value']);
+            } else {
+                $result = $this->UserSettings->editSetting($this->ACL->getUser(), $data['name'], $data['value']);
+            }
+            $success = !empty($result);
+            $message = $success ? __('Setting saved') : __('Could not save setting');
+            $this->CRUD->setResponseForController('setSetting', $success, $message, $result);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
+            }
+        }
+    }
+
+    public function getBookmarks($forSidebar=false)
+    {
+        $bookmarks = $this->UserSettings->getSettingByName($this->ACL->getUser(), $this->UserSettings->BOOKMARK_SETTING_NAME);
+        $bookmarks = json_decode($bookmarks['value'], true);
+        $this->set('user_id', $this->ACL->getUser()->id);
+        $this->set('bookmarks', $bookmarks);
+        $this->set('forSidebar', $forSidebar);
+        $this->render('/element/UserSettings/saved-bookmarks');
+    }
+
     public function saveBookmark()
     {
         if (!$this->request->is('get')) {
@@ -144,6 +177,21 @@ class UserSettingsController extends AppController
             $success = !empty($result);
             $message = $success ? __('Bookmark saved') : __('Could not save bookmark');
             $this->CRUD->setResponseForController('saveBookmark', $success, $message, $result);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
+            }
+        }
+        $this->set('user_id', $this->ACL->getUser()->id);
+    }
+
+    public function deleteBookmark()
+    {
+        if (!$this->request->is('get')) {
+            $result = $this->UserSettings->deleteBookmark($this->ACL->getUser(), $this->request->getData());
+            $success = !empty($result);
+            $message = $success ? __('Bookmark deleted') : __('Could not delete bookmark');
+            $this->CRUD->setResponseForController('deleteBookmark', $success, $message, $result);
             $responsePayload = $this->CRUD->getResponsePayload();
             if (!empty($responsePayload)) {
                 return $responsePayload;
