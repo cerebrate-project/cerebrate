@@ -98,15 +98,16 @@ input[type="checkbox"]:disabled.change-cursor {
 }
 
 .grow-on-hover {
-    -webkit-transition: -webkit-transform 0.5s cubic-bezier(0, 0.90, 0.35, 1.00);
-    -moz-transition: -moz-transform 0.5s cubic-bezier(0, 0.90, 0.35, 1.00);
-    transition: all .2s cubic-bezier(0, 0.90, 0.35, 1.00);
+    -webkit-transition: all 0.2s ease-out;
+    -moz-transition: all 0.2s ease-out;
+    transition: all .2s ease-out;
+    transform-style: preserve-3d;
 }
 
 .grow-on-hover:hover {
-    -webkit-transform: translateZ(0) scale(1.02, 1.02);
-    -moz-transform: translateZ(0) scale(1.02, 1.02);
-    transform: translateZ(0) scale(1.02, 1.02);
+    -webkit-transform: translateZ(0) scale(1.05);
+    -moz-transform: translateZ(0) scale(1.05);
+    transform: translateZ(0) scale(1.05);
     box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 15%) !important;
 }
 
