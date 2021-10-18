@@ -899,6 +899,9 @@ class OverlayFactory {
             const boundingRect = this.$node[0].getBoundingClientRect()
             this.$overlayWrapper.css('min-height', Math.max(boundingRect.height, 20))
             this.$overlayWrapper.css('min-width', Math.max(boundingRect.width, 20))
+            if (this.$node.hasClass('row')) {
+                this.$overlayWrapper.addClass('row')
+            }
         }
         this.$overlayContainer = $(OverlayFactory.overlayContainer)
         this.$overlayBg = $(OverlayFactory.overlayBg)
