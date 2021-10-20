@@ -457,6 +457,9 @@ class ACLComponent extends Component
     {
         $menu = $this->Navigation->getSideMenu();
         foreach ($menu as $group => $subMenu) {
+            if ($group == '__bookmarks') {
+                continue;
+            }
             foreach ($subMenu as $subMenuElementName => $subMenuElement) {
                 if (!empty($subMenuElement['url']) && !$this->checkAccessUrl($subMenuElement['url'], true) === true) {
                     unset($menu[$group][$subMenuElementName]);

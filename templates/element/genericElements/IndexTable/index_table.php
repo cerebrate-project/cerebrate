@@ -59,6 +59,7 @@
             '/genericElements/ListTopBar/scaffold',
             [
                 'data' => $data['top_bar'],
+                'table_data' => $data,
                 'tableRandomValue' => $tableRandomValue
             ]
         );

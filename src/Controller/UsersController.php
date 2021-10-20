@@ -11,7 +11,7 @@ class UsersController extends AppController
 {
     public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name'];
     public $quickFilterFields = ['Individuals.uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'];
-    public $containFields = ['Individuals', 'Roles'];
+    public $containFields = ['Individuals', 'Roles', 'UserSettings'];
 
     public function index()
     {
@@ -146,6 +146,16 @@ class UsersController extends AppController
             $this->Flash->success(__('Goodbye.'));
             return $this->redirect(\Cake\Routing\Router::url('/users/login'));
         }
+    }
+
+    public function settings()
+    {
+        $this->set('user', $this->ACL->getUser());
+        $all = $this->Users->UserSettings->getSettingsFromProviderForUser($this->ACL->getUser()['id'], true);
+        $this->set('settingsProvider', $all['settingsProvider']);
+        $this->set('settings', $all['settings']);
+        $this->set('settingsFlattened', $all['settingsFlattened']);
+        $this->set('notices', $all['notices']);
     }
 
     public function register()

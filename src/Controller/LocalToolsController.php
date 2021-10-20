@@ -280,6 +280,8 @@ class LocalToolsController extends AppController
             return $this->RestResponse->viewData($tools, 'json');
         }
         $this->set('id', $id);
+        $brood = $this->Broods->get($id);
+        $this->set('broodEntity', $brood);
         $this->set('data', $tools);
         $this->set('metaGroup', 'Administration');
     }

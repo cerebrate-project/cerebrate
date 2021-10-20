@@ -16,6 +16,8 @@
 use Cake\Core\Configure;
 
 $cakeDescription = 'Cerebrate';
+
+$sidebarOpen = $loggedUser->user_settings_by_name_with_fallback['ui.sidebar.expanded']['value'];
 ?>
 <!DOCTYPE html>
 <html>
@@ -41,6 +43,7 @@ $cakeDescription = 'Cerebrate';
     <?= $this->Html->script('bootstrap-helper.js') ?>
     <?= $this->Html->script('api-helper.js') ?>
     <?= $this->Html->script('select2.min.js') ?>
+    <?= $this->Html->script('table-settings.js') ?>
     <?= $this->Html->script('CodeMirror/codemirror.js') ?>
     <?= $this->Html->script('CodeMirror/mode/javascript/javascript') ?>
     <?= $this->Html->script('CodeMirror/addon/hint/show-hint') ?>
@@ -72,7 +75,7 @@ $cakeDescription = 'Cerebrate';
         <header class="navbar top-navbar navbar-dark">
             <?= $this->element('layouts/header') ?>
         </header>
-        <nav id="app-sidebar" class="collapse d-sm-block sidebar">
+        <nav id="app-sidebar" class="collapse d-sm-block sidebar <?= !empty($sidebarOpen) ? 'expanded' : '' ?>">
             <?= $this->element('layouts/sidebar') ?>
         </nav>
         <main role="main" class="content">

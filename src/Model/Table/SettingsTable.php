@@ -3,9 +3,10 @@ namespace App\Model\Table;
 
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
-use Cake\Validation\Validator;
 use Cake\Core\Configure;
-use Cake\ORM\TableRegistry;
+
+require_once(APP . 'Model' . DS . 'Table' . DS . 'SettingProviders' . DS . 'CerebrateSettingsProvider.php');
+use App\Settings\SettingsProvider\CerebrateSettingsProvider;
 
 class SettingsTable extends AppTable
 {
@@ -16,7 +17,7 @@ class SettingsTable extends AppTable
     {
         parent::initialize($config);
         $this->setTable(false);
-        $this->SettingsProvider = TableRegistry::getTableLocator()->get('SettingsProvider');
+        $this->SettingsProvider = new CerebrateSettingsProvider();
     }
 
     public function getSettings($full=false): array
@@ -55,6 +56,13 @@ class SettingsTable extends AppTable
                 $errors[] = __('Invalid option provided');
             }
         }
+        if ($setting['type'] == 'multi-select') {
+            foreach ($value as $v) {
+                if (!in_array($v, array_keys($setting['options']))) {
+                    $errors[] = __('Invalid option provided');
+                }
+            }
+        }
         if (empty($errors) && !empty($setting['beforeSave'])) {
             $setting['value'] = $value ?? '';
             $beforeSaveResult = $this->SettingsProvider->evaluateFunctionForSetting($setting['beforeSave'], $setting);
@@ -77,6 +85,11 @@ class SettingsTable extends AppTable
     {
         if ($setting['type'] == 'boolean') {
             return (bool) $value;
+        }
+        if ($setting['type'] == 'multi-select') {
+            if (!is_array($value)) {
+                $value = json_decode($value);
+            }
         }
         return $value;
     }

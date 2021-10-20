@@ -34,6 +34,13 @@ class UsersTable extends AppTable
                 'cascadeCallbacks' => false
             ]
         );
+        $this->hasMany(
+            'UserSettings',
+            [
+                'dependent' => true,
+                'cascadeCallbacks' => true
+            ]
+        );
         $this->setDisplayField('username');
     }
 
