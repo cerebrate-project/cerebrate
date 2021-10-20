@@ -240,6 +240,16 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                 ]
             ],
             'Security' => [
+                'Registration' => [
+                    'Registration' => [
+                        'security.registration.self-registration' => [
+                            'name' => __('Allow self-registration'),
+                            'type' => 'boolean',
+                            'description' => __('Enable the self-registration feature where user can request account creation. Admin can view the request and accept it in the application inbox.'),
+                            'default' => false,
+                        ],
+                    ]
+                ],
                 'Development' => [
                     'Debugging' => [
                         'security.debug' => [

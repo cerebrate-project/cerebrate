@@ -254,7 +254,7 @@ class ACLComponent extends Component
      */
     public function setPublicInterfaces(): void
     {
-        $this->Authentication->allowUnauthenticated(['login']);
+        $this->Authentication->allowUnauthenticated(['login', 'register']);
     }
 
     private function checkAccessInternal($controller, $action, $soft): bool
