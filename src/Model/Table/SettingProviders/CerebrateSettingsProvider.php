@@ -43,6 +43,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'test' => 'testUuid',
                         ],
                     ],
+                    /*
                     'Miscellaneous' => [
                         'sc2.hero' => [
                             'description' => 'The true hero',
@@ -80,6 +81,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                         // 'severity' => 'info',
                         'type' => 'integer'
                     ],
+                    */
                 ],
                 'Network' => [
                     'Proxy' => [
@@ -128,6 +130,115 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                     ],
                 ],
             ],
+            'Authentication' => [
+                'Providers' => [
+                    'KeyCloak' => [
+                        'keycloak.enabled' => [
+                            'name' => 'Enabled',
+                            'type' => 'boolean',
+                            'severity' => 'warning',
+                            'description' => __('Enable keycloak authentication'),
+                            'default' => false,
+                        ],
+                        'keycloak.provider.applicationId' => [
+                            'name' => 'Client ID',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => '',
+                            'description' => __('The Client ID configured for Cerebrate.'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.provider.applicationSecret' => [
+                            'name' => 'Client Secret',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => '',
+                            'description' => __('The client secret in Cerebrate used to request tokens.'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.provider.realm' => [
+                            'name' => 'Realm',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => '',
+                            'description' => __('The realm under which the Cerebrate client is enrolled in KeyCloak.'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.provider.baseUrl' => [
+                            'name' => 'Baseurl',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => '',
+                            'description' => __('The baseurl of the keycloak authentication endpoint, such as https://foo.bar/baz/auth.'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.authoritative' => [
+                            'name' => 'Authoritative',
+                            'type' => 'boolean',
+                            'severity' => 'info',
+                            'description' => __('Override local role and organisation settings based on the settings in KeyCloak'),
+                            'default' => false,
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.default_role_name' => [
+                            'name' => 'Authoritative',
+                            'type' => 'boolean',
+                            'severity' => 'info',
+                            'description' => __('Override local role and organisation settings based on the settings in KeyCloak'),
+                            'default' => false,
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.mapping.org_uuid' => [
+                            'name' => 'org_uuid mapping',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => 'org_uuid',
+                            'description' => __('org_uuid mapped name in keycloak'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.mapping.role_name' => [
+                            'name' => 'role_name mapping',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => 'role_name',
+                            'description' => __('role_name mapped name in keycloak'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.mapping.username' => [
+                            'name' => 'username mapping',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => 'preferred_username',
+                            'description' => __('username mapped name in keycloak'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.mapping.email' => [
+                            'name' => 'email mapping',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => 'email',
+                            'description' => __('email mapped name in keycloak'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.mapping.first_name' => [
+                            'name' => 'first_name mapping',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => 'given_name',
+                            'description' => __('first_name mapped name in keycloak'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                        'keycloak.mapping.family_name' => [
+                            'name' => 'family_name mapping',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => 'family_name',
+                            'description' => __('family_name mapped name in keycloak'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ],
+                    ]
+                ]
+            ],
             'Security' => [
                 'Development' => [
                     'Debugging' => [
@@ -149,6 +260,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                     ],
                 ]
             ],
+            /*
             'Features' => [
                 'Demo Settings' => [
                     'demo.switch' => [
@@ -162,6 +274,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                     ],
                 ]
             ],
+            */
         ];
     }
 }
@@ -192,5 +305,5 @@ class CerebrateSettingValidator extends SettingValidator
             return __('Invalid URL, please make sure that the protocol is set.');
         }
         return true;
-    }  
+    }
 }

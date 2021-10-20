@@ -9,7 +9,7 @@ $bookmarks = !empty($loggedUser->user_settings_by_name['ui.bookmarks']['value'])
     <?= __('Bookmarks') ?>
 </h3>
 <div class="row">
-    <? if (!empty($bookmarks)) : ?>
+    <?php if (!empty($bookmarks)): ?>
         <ul class="col-sm-12 col-md-10 col-l-8 col-xl-8 mb-3">
             <?php foreach ($bookmarks as $bookmark) : ?>
                 <li class="list-group-item">
@@ -20,7 +20,7 @@ $bookmarks = !empty($loggedUser->user_settings_by_name['ui.bookmarks']['value'])
                 </li>
             <?php endforeach; ?>
         </ul>
-    <?php else : ?>
+    <?php else: ?>
         <p class="fw-light"><?= __('No bookmarks') ?></p>
     <?php endif; ?>
 </div>

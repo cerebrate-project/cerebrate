@@ -64,7 +64,7 @@ class BaseSettingsProvider
         }
         return $settingConf;
     }
-    
+
     /**
      * mergeSettingsIntoSettingConfiguration Inject the provided settings into the configuration while performing depencency and validation checks
      *
@@ -107,7 +107,7 @@ class BaseSettingsProvider
         }
         return $flattenedSettings;
     }
-    
+
     /**
      * getNoticesFromSettingsConfiguration Summarize the validation errors
      *
@@ -180,7 +180,7 @@ class BaseSettingsProvider
         }
         return $setting;
     }
-    
+
     /**
      * evaluateFunctionForSetting - evaluate the provided function. If function could not be evaluated, its result is defaulted to true
      *
@@ -235,5 +235,5 @@ class SettingValidator
     public function testForEmpty($value, &$setting)
     {
         return !empty($value) ? true : __('Cannot be empty');
-    } 
+    }
 }
