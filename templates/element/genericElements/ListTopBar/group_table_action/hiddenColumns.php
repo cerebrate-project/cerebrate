@@ -65,6 +65,7 @@ echo $availableColumnsHtml;
         }
 
         $(document).ready(function() {
+            addSupportOfNestedDropdown();
             const $form = $('form.visible-column-form')
             const $checkboxes = $form.find('input').not(':checked')
             const $dropdownMenu = $form.closest('.dropdown')
