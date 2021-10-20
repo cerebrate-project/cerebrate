@@ -139,6 +139,12 @@ class BootstrapHelper extends Helper
         $bsSwitch = new BoostrapSwitch($options, $this);
         return $bsSwitch->switch();
     }
+
+    public function dropdownMenu($options)
+    {
+        $bsDropdownMenu = new BoostrapDropdownMenu($options, $this);
+        return $bsDropdownMenu->dropdownMenu();
+    }
 }
 
 class BootstrapGeneric
@@ -652,21 +658,21 @@ class BoostrapTable extends BootstrapGeneric {
                     $key = $field;
                 }
                 $cellValue = Hash::get($row, $key);
-                $html .= $this->genCell($cellValue, $field, $row);
+                $html .= $this->genCell($cellValue, $field, $row, $i);
             }
         } else { // indexed array
             foreach ($row as $cellValue) {
-                $html .= $this->genCell($cellValue, $field, $row);
+                $html .= $this->genCell($cellValue, $field, $row, $i);
             }
         }
         $html .= $this->closeNode('tr');
         return $html;
     }
 
-    private function genCell($value, $field=[], $row=[])
+    private function genCell($value, $field=[], $row=[], $i=0)
     {
         if (isset($field['formatter'])) {
-            $cellContent = $field['formatter']($value, $row);
+            $cellContent = $field['formatter']($value, $row, $i);
         } else if (isset($field['element'])) {
             $cellContent = $this->btHelper->getView()->element($field['element'], [
                 'data' => [$value],
@@ -909,7 +915,7 @@ class BoostrapButton extends BootstrapGeneric {
     {
         if (!empty($this->options['icon'])) {
             $bsIcon = new BoostrapIcon($this->options['icon'], [
-                'class' => [(!empty($this->options['title']) ? 'me-1' : '')]
+                'class' => [(!empty($this->options['text']) ? 'me-1' : '')]
             ]);
             return $bsIcon->icon();
         }
@@ -1662,5 +1668,139 @@ class BootstrapListGroup extends BootstrapGeneric
             return $item['bodyHTML'];
         }
         return !empty($item['body']) ? h($item['body']) : '';
+    }
+}
+
+
+class BoostrapDropdownMenu extends BootstrapGeneric
+{
+    private $defaultOptions = [
+        'dropdown-class' => [],
+        'toggle-button' => [],
+        'menu' => [],
+        'direction' => 'end',
+        'alignment' => 'start',
+        'submenu_alignment' => 'start',
+        'submenu_direction' => 'end',
+        'submenu_classes' => [],
+    ];
+
+    function __construct($options, $btHelper) {
+        $this->allowedOptionValues = [
+            'direction' => ['start', 'end', 'up', 'down'],
+            'alignment' => ['start', 'end'],
+        ];
+        $this->processOptions($options);
+        $this->menu = $this->options['menu'];
+        $this->btHelper = $btHelper;
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        if (!empty($this->options['dropdown-class']) && !is_array($this->options['dropdown-class'])) {
+            $this->options['dropdown-class'] = [$this->options['dropdown-class']];
+        }
+        $this->checkOptionValidity();
+    }
+
+    public function dropdownMenu()
+    {
+        return $this->fullDropdown();
+    }
+
+    public function fullDropdown()
+    {
+        return $this->genDropdownWrapper($this->genDropdownToggleButton(), $this->genDropdownMenu($this->menu));
+    }
+
+    public function genDropdownWrapper($toggle='', $menu='', $direction=null, $classes=null)
+    {
+        $classes = !is_null($classes) ? $classes :  $this->options['dropdown-class'];
+        $direction = !is_null($direction) ? $direction : $this->options['direction'];
+        $content = $toggle . $menu;
+        $html = $this->genNode('div', array_merge(
+            $this->options['params'],
+            [
+                'class' => array_merge(
+                    $classes,
+                    [
+                        'dropdown',
+                        "drop{$direction}"
+                    ]
+                )
+            ]
+        ), $content);
+        return $html;
+    }
+
+    public function genDropdownToggleButton()
+    {
+        $defaultOptions = [
+            'class' => ['dropdown-toggle'],
+            'params' => [
+                'data-bs-toggle' => 'dropdown',
+                'aria-expanded' => 'false',
+            ]
+        ];
+        $options = array_merge($this->options['toggle-button'], $defaultOptions);
+        return $this->btHelper->button($options);
+    }
+
+    private function genDropdownMenu($entries, $alignment=null)
+    {
+        $alignment = !is_null($alignment) ? $alignment : $this->options['alignment'];
+        $html = $this->genNode('div', [
+            'class' => ['dropdown-menu', "dropdown-menu-{$alignment}"],
+        ], $this->genEntries($entries));
+        return $html;
+    }
+
+    private function genEntries($entries)
+    {
+        $html = '';
+        foreach ($entries as $entry) {
+            $link = $this->genEntry($entry);
+            if (!empty($entry['menu'])) {
+                $html .= $this->genDropdownWrapper($link, $this->genDropdownMenu($entry['menu']), $this->options['submenu_direction'], $this->options['submenu_classes']);
+            } else {
+                $html .= $link;
+            }
+        }
+        return $html;
+    }
+
+    private function genEntry($entry)
+    {
+        if (!empty($entry['html'])) {
+            return $entry['html'];
+        }
+
+        $classes = ['dropdown-item'];
+        $params = ['href' => '#'];
+        $icon = '';
+        if (!empty($entry['icon'])) {
+            $icon = $this->btHelper->icon($entry['icon']);
+        }
+
+        if (!empty($entry['menu'])) {
+            $classes[] = 'dropdown-toggle';
+            $params['data-bs-toggle'] = 'dropdown';
+            $params['aria-haspopup'] = 'true';
+            $params['aria-expanded'] = 'false';
+            if (!empty($entry['keepOpen'])) {
+                $classes[] = 'open-form';
+            }
+            $params['data-open-form-id'] = mt_rand();
+        }
+
+        $label = $this->genNode('span', [
+            'class' => ['ms-2',],
+        ], h($entry['text']));
+        $content = $icon . $label;
+
+        return $this->genNode('a', array_merge([
+            'class' => $classes,
+        ], $params), $content);
     }
 }

@@ -196,6 +196,7 @@ class CRUDComponent extends Component
                 }
             }
         }
+        $this->Controller->entity = $data;
         $this->Controller->set('entity', $data);
     }
 
@@ -317,6 +318,7 @@ class CRUDComponent extends Component
                 }
             }
         }
+        $this->Controller->entity = $data;
         $this->Controller->set('entity', $data);
     }
 

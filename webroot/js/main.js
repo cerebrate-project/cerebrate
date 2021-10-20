@@ -152,14 +152,147 @@ function focusSearchResults(evt) {
     }
 }
 
+function saveUserSetting(statusNode, settingName, settingValue) {
+    const url = window.saveSettingURL
+    const data = {
+        name: settingName,
+        value: settingValue,
+    }
+    const APIOptions = {
+        statusNode: statusNode,
+    }
+    return AJAXApi.quickFetchAndPostForm(url, data, APIOptions)
+}
+
+function openSaveBookmarkModal(bookmark_url = '') {
+    const url = '/user-settings/saveBookmark';
+    UI.submissionModal(url).then(([modalFactory, ajaxApi]) => {
+        const $input = modalFactory.$modal.find('input[name="bookmark_url"]')
+        $input.val(bookmark_url)
+    })
+}
+
+function deleteBookmark(bookmark, forSidebar=false) {
+    const url = '/user-settings/deleteBookmark'
+    AJAXApi.quickFetchAndPostForm(url, {
+        bookmark_name: bookmark.name,
+        bookmark_url: bookmark.url,
+    }, {
+        provideFeedback: true,
+        statusNode: $('.bookmark-table-container'),
+    }).then((apiResult) => {
+        const url = `/userSettings/getBookmarks/${forSidebar ? '1' : '0'}`
+        UI.reload(url, $('.bookmark-table-container').parent())
+        const theToast = UI.toast({
+            variant: 'success',
+            title: apiResult.message,
+            bodyHtml: $('<div/>').append(
+                $('<span/>').text('Cancel deletion operation.'),
+                $('<button/>').addClass(['btn', 'btn-primary', 'btn-sm', 'ms-3']).text('Restore bookmark').click(function () {
+                    const urlRestore = '/user-settings/saveBookmark'
+                    AJAXApi.quickFetchAndPostForm(urlRestore, {
+                        bookmark_label: bookmark.label,
+                        bookmark_name: bookmark.name,
+                        bookmark_url: bookmark.url,
+                    }, {
+                        provideFeedback: true,
+                        statusNode: $('.bookmark-table-container')
+                    }).then(() => {
+                        const url = `/userSettings/getBookmarks/${forSidebar ? '1' : '0'}`
+                        UI.reload(url, $('.bookmark-table-container').parent())
+                    })
+                }),
+            ),
+        })
+    }).catch((e) => { })
+}
+
+function overloadBSDropdown() {
+    // Inspired from https://jsfiddle.net/dallaslu/mvk4uhzL/
+    (function ($bs) {
+        const CLASS_NAME_HAS_CHILD = 'has-child-dropdown-show';
+        const CLASS_NAME_KEEP_OPEN = 'keep-dropdown-show';
+
+        $bs.Dropdown.prototype.toggle = function (_orginal) {
+            return function () {
+                document.querySelectorAll('.' + CLASS_NAME_HAS_CHILD).forEach(function (e) {
+                    e.classList.remove(CLASS_NAME_HAS_CHILD);
+                });
+                let dd = this._element.closest('.dropdown')
+                if (dd !== null) {
+                    dd = dd.parentNode.closest('.dropdown');
+                    for (; dd && dd !== document; dd = dd.parentNode.closest('.dropdown')) {
+                        dd.classList.add(CLASS_NAME_HAS_CHILD);
+                    }
+
+                    if (this._element.classList.contains('open-form')) {
+                        const openFormId = this._element.getAttribute('data-open-form-id')
+                        document.querySelectorAll('.' + CLASS_NAME_KEEP_OPEN).forEach(function (e) {
+                            e.classList.remove(CLASS_NAME_KEEP_OPEN);
+                        });
+                        let dd = this._element.closest('.dropdown')
+                        dd.classList.add(CLASS_NAME_KEEP_OPEN);
+                        dd.setAttribute('data-open-form-id', openFormId)
+                        dd = dd.parentNode.closest('.dropdown');
+                        for (; dd && dd !== document; dd = dd.parentNode.closest('.dropdown')) {
+                            dd.setAttribute('data-open-form-id', openFormId)
+                            dd.classList.add(CLASS_NAME_KEEP_OPEN);
+                        }
+                    }
+                }
+                return _orginal.call(this);
+            }
+        }($bs.Dropdown.prototype.toggle);
+
+        document.querySelectorAll('.dropdown').forEach(function (dd) {
+            dd.addEventListener('hide.bs.dropdown', function (e) {
+                if (this.classList.contains(CLASS_NAME_HAS_CHILD)) {
+                    this.classList.remove(CLASS_NAME_HAS_CHILD);
+                    e.preventDefault();
+                }
+
+                if (e.clickEvent !== undefined) {
+                    let dd = e.clickEvent.target.closest('.dropdown')
+                    if (dd !== null) {
+                        if (dd.classList.contains('keep-dropdown-show')) {
+                            e.preventDefault();
+                        }
+                    }
+                }
+                e.stopPropagation(); // do not need pop in multi level mode
+            });
+        });
+    })(bootstrap);
+}
+
 var UI
 $(document).ready(() => {
     if (typeof UIFactory !== "undefined") {
         UI = new UIFactory()
     }
+    overloadBSDropdown();
 
     const debouncedGlobalSearch = debounce(performGlobalSearch, 400)
     $('#globalSearch')
         .keydown(debouncedGlobalSearch)
         .keydown(focusSearchResults);
+
+    $('.lock-sidebar a.btn-lock-sidebar').click(() => {
+        const $sidebar = $('.sidebar')
+        let expanded = $sidebar.hasClass('expanded');
+        if (expanded) {
+            $sidebar.removeClass('expanded')
+        } else {
+            $sidebar.addClass('expanded')
+        }
+        const settingName = 'ui.sidebar.expanded';
+        const url = `/user-settings/setSetting/${settingName}`
+        AJAXApi.quickFetchAndPostForm(url, {
+            value: expanded ? 0 : 1
+        }, { provideFeedback: false})
+    })
+
+    $('.sidebar #btn-add-bookmark').click(() => {
+        openSaveBookmarkModal(window.location.pathname)
+    })
 })
