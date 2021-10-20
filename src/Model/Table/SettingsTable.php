@@ -56,6 +56,13 @@ class SettingsTable extends AppTable
                 $errors[] = __('Invalid option provided');
             }
         }
+        if ($setting['type'] == 'multi-select') {
+            foreach ($value as $v) {
+                if (!in_array($v, array_keys($setting['options']))) {
+                    $errors[] = __('Invalid option provided');
+                }
+            }
+        }
         if (empty($errors) && !empty($setting['beforeSave'])) {
             $setting['value'] = $value ?? '';
             $beforeSaveResult = $this->SettingsProvider->evaluateFunctionForSetting($setting['beforeSave'], $setting);
@@ -78,6 +85,11 @@ class SettingsTable extends AppTable
     {
         if ($setting['type'] == 'boolean') {
             return (bool) $value;
+        }
+        if ($setting['type'] == 'multi-select') {
+            if (!is_array($value)) {
+                $value = json_decode($value);
+            }
         }
         return $value;
     }

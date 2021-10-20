@@ -64,7 +64,13 @@
             $settingId = str_replace('.', '_', $settingName);
             $setting['value'] = $setting['value'] ?? '';
             if ($setting['type'] == 'multi-select') {
-                $setting['value'] = json_decode(($setting['value']));
+                if (!is_array($setting['value'])) {
+                    $firstChar = substr($setting['value'], 0, 1);
+                    if ($firstChar != '{' && $firstChar != '[') { // make sure to cast a simple string into an array
+                        $setting['value'] = sprintf('["%s"]', $setting['value']);
+                    }
+                    $setting['value'] = json_decode($setting['value']);
+                }
             }
             $options = [];
             $options[] = $appView->Bootstrap->genNode('option', ['value' => '-1', 'data-is-empty-option' => '1'], __('Select an option'));
