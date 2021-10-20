@@ -52,6 +52,9 @@ $(document).ready(function () {
             oldValue = oldValue !== undefined ? oldValue : ''
         }
         $input.val(oldValue)
+        if ($input.is('select') && $input.prop('multiple')) {
+            $input.trigger('change')
+        }
         handleSettingValueChange($input)
     })
 
@@ -85,7 +88,11 @@ function handleSettingValueChange($input) {
     if ($input.attr('type') == 'checkbox') {
         oldValue = oldValue == true
     }
-    if (newValue == oldValue || (newValue == '' && oldValue == undefined)) {
+    let hasChanged = newValue != oldValue
+    if ($input.is('select') && $input.prop('multiple')) {
+        hasChanged = !arrayEqual(oldValue, newValue)
+    }
+    if (!hasChanged || (newValue == '' && oldValue == undefined)) {
         restoreWarnings($input)
     } else {
         removeWarnings($input)
