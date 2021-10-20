@@ -1,5 +1,5 @@
 <?php
-$bookmarks = !empty($loggedUser->user_settings_by_name['ui.bookmarks']['value']) ? json_decode($loggedUser->user_settings_by_name['ui.bookmarks']['value'], true) : []
+$bookmarks = !empty($loggedUser->user_settings_by_name['ui.bookmarks']['value']) ? json_decode($loggedUser->user_settings_by_name['ui.bookmarks']['value'], true) : [];
 ?>
 
 <h3>

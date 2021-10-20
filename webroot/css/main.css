@@ -58,6 +58,10 @@
     line-height: 1.5;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
 .link-unstyled, .link-unstyled:link, .link-unstyled:hover {
   color: inherit;
   text-decoration: inherit;

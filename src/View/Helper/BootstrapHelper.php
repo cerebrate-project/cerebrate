@@ -1793,7 +1793,7 @@ class BoostrapDropdownMenu extends BootstrapGeneric
             }
             $params['data-open-form-id'] = mt_rand();
         }
-        
+
         $label = $this->genNode('span', [
             'class' => ['ms-2',],
         ], h($entry['text']));

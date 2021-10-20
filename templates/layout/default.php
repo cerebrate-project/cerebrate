@@ -43,6 +43,7 @@ $sidebarOpen = $loggedUser->user_settings_by_name_with_fallback['ui.sidebar.expa
     <?= $this->Html->script('bootstrap-helper.js') ?>
     <?= $this->Html->script('api-helper.js') ?>
     <?= $this->Html->script('select2.min.js') ?>
+    <?= $this->Html->script('table-settings.js') ?>
     <?= $this->Html->script('CodeMirror/codemirror.js') ?>
     <?= $this->Html->script('CodeMirror/mode/javascript/javascript') ?>
     <?= $this->Html->script('CodeMirror/addon/hint/show-hint') ?>

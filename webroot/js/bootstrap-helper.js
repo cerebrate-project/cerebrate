@@ -308,7 +308,6 @@ class Toaster {
                         return $(this).is($toast)
                     });
                     if (hoveredElements.length > 0) {
-                        console.log('Toast hovered. Not hidding')
                         evt.preventDefault()
                         setTimeout(() => {
                             $toast.toast('hide')
