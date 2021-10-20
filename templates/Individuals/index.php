@@ -25,6 +25,10 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'data' => '',
                     'searchKey' => 'value',
                     'allowFilering' => true
+                ],
+                [
+                    'type' => 'table_action',
+                    'table_setting_id' => 'individual_index',
                 ]
             ]
         ],

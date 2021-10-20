@@ -60,15 +60,7 @@ $(document).ready(function () {
 })
 
 function saveSetting(statusNode, $input, settingName, settingValue) {
-    const url = window.saveSettingURL
-    const data = {
-        name: settingName,
-        value: settingValue,
-    }
-    const APIOptions = {
-        statusNode: statusNode,
-    }
-    AJAXApi.quickFetchAndPostForm(url, data, APIOptions).then((result) => {
+    saveUserSetting(statusNode, settingName, settingValue).then((result) => {
         window.settingsFlattened[settingName] = result.data
         if ($input.attr('type') == 'checkbox') {
             $input.prop('checked', result.data.value == true)
