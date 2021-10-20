@@ -152,7 +152,7 @@ function focusSearchResults(evt) {
     }
 }
 
-function saveUserSetting(statusNode, settingName, settingValue) {
+function saveSetting(statusNode, settingName, settingValue) {
     const url = window.saveSettingURL
     const data = {
         name: settingName,

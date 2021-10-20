@@ -63,16 +63,26 @@
         $input = (function ($settingName, $setting, $appView) {
             $settingId = str_replace('.', '_', $settingName);
             $setting['value'] = $setting['value'] ?? '';
-            $options = [];
-            if ($setting['type'] == 'select') {
-                $options[] = $appView->Bootstrap->genNode('option', ['value' => '-1', 'data-is-empty-option' => '1'], __('Select an option'));
+            if ($setting['type'] == 'multi-select') {
+                $setting['value'] = json_decode(($setting['value']));
             }
+            $options = [];
+            $options[] = $appView->Bootstrap->genNode('option', ['value' => '-1', 'data-is-empty-option' => '1'], __('Select an option'));
             foreach ($setting['options'] as $key => $value) {
-                $options[] = $appView->Bootstrap->genNode('option', [
+                $optionParam = [
                     'class' => [],
                     'value' => $key,
-                    ($setting['value'] == $key ? 'selected' : '') => $setting['value'] == $value ? 'selected' : '',
-                ], h($value));
+                ];
+                if ($setting['type'] == 'multi-select') {
+                    if (in_array($key, $setting['value'])) {
+                        $optionParam['selected'] = 'selected';
+                    }
+                } else {
+                    if ($setting['value'] == $key) {
+                        $optionParam['selected'] = 'selected';
+                    }
+                }
+                $options[] = $appView->Bootstrap->genNode('option', $optionParam, h($value));
             }
             $options = implode('', $options);
             return $appView->Bootstrap->genNode('select', [
@@ -83,7 +93,7 @@
                     (!empty($setting['error']) ? "border-{$appView->get('variantFromSeverity')[$setting['severity']]}" : ''),
                     (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
                 ],
-                ($setting['type'] == 'multi-select' ? 'multiple' : '') => '',
+                ($setting['type'] == 'multi-select' ? 'multiple' : '') => ($setting['type'] == 'multi-select' ? 'multiple' : ''),
                 'id' => $settingId,
                 'data-setting-name' => $settingName,
                 'placeholder' => $setting['default'] ?? '',

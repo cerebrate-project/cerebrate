@@ -18,7 +18,7 @@ $(document).ready(function () {
             placement: 'right',
         })
     }
-    $('select.custom-select[multiple]').select2()
+    $('select.form-select[multiple]').select2()
 
     $('.settings-tabs a[data-bs-toggle="tab"]').on('shown.bs.tab', function (event) {
         $('[data-bs-spy="scroll"]').trigger('scroll.bs.scrollspy')
@@ -30,7 +30,7 @@ $(document).ready(function () {
             const $inputGroup = $(this).closest('.setting-group')
             const settingName = $(this).data('setting-name')
             const settingValue = $(this).is(':checked') ? 1 : 0
-            saveSetting($inputGroup[0], $input, settingName, settingValue)
+            saveAndUpdateSetting($inputGroup[0], $input, settingName, settingValue)
         } else {
             handleSettingValueChange($(this))
         }
@@ -40,7 +40,7 @@ $(document).ready(function () {
         const $input = $(this).closest('.input-group').find('input, select')
         const settingName = $input.data('setting-name')
         const settingValue = $input.val()
-        saveSetting(this, $input, settingName, settingValue)
+        saveAndUpdateSetting(this, $input, settingName, settingValue)
     })
     $('.tab-content .setting-group .btn-reset-setting').click(function () {
         const $btn = $(this)
@@ -59,8 +59,11 @@ $(document).ready(function () {
     redirectToSetting(referencedID)
 })
 
-function saveSetting(statusNode, $input, settingName, settingValue) {
-    saveUserSetting(statusNode, settingName, settingValue).then((result) => {
+function saveAndUpdateSetting(statusNode, $input, settingName, settingValue) {
+    if ($input.is('select') && $input.prop('multiple')) {
+        settingValue = JSON.stringify(settingValue)
+    }
+    saveSetting(statusNode, settingName, settingValue).then((result) => {
         window.settingsFlattened[settingName] = result.data
         if ($input.attr('type') == 'checkbox') {
             $input.prop('checked', result.data.value == true)
@@ -73,7 +76,12 @@ function saveSetting(statusNode, $input, settingName, settingValue) {
 
 function handleSettingValueChange($input) {
     let oldValue = window.settingsFlattened[$input.data('setting-name')].value
-    const newValue = ($input.attr('type') == 'checkbox' ? $input.is(':checked') : $input.val())
+    let newValue
+    if ($input.attr('type') == 'checkbox') {
+        newValue = $input.is(':checked')
+    } else {
+        newValue = $input.val()
+    }
     if ($input.attr('type') == 'checkbox') {
         oldValue = oldValue == true
     }
