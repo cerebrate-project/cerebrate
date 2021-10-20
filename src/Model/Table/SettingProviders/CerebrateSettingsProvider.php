@@ -43,6 +43,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'test' => 'testUuid',
                         ],
                     ],
+                    /*
                     'Miscellaneous' => [
                         'sc2.hero' => [
                             'description' => 'The true hero',
@@ -80,6 +81,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                         // 'severity' => 'info',
                         'type' => 'integer'
                     ],
+                    */
                 ],
                 'Network' => [
                     'Proxy' => [
@@ -192,5 +194,5 @@ class CerebrateSettingValidator extends SettingValidator
             return __('Invalid URL, please make sure that the protocol is set.');
         }
         return true;
-    }  
+    }
 }
