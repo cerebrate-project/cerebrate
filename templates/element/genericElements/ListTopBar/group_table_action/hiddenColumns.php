@@ -4,6 +4,9 @@ $tableSettings['hidden_column'] = $tableSettings['hidden_column'] ?? [];
 $availableColumnsHtml = '';
 $availableColumns = [];
 foreach ($table_data['fields'] as $field) {
+    if (!empty($field['element']) && $field['element'] === 'selector') {
+        continue;
+    }
     $fieldName = !empty($field['name']) ? $field['name'] : \Cake\Utility\Inflector::humanize($field['data_path']);
     $isVisible = !in_array(h(\Cake\Utility\Inflector::variable($fieldName)), $tableSettings['hidden_column']);
     $availableColumns[] = $fieldName;
