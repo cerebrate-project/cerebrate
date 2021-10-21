@@ -715,11 +715,11 @@ class ModalFactory {
                 })
                 this.ajaxApi.push(tmpApi)
             } else {
-                this.ajaxApi.statusNode = $buttonConfirm[0]
+                this.ajaxApi.options.statusNode = $buttonConfirm[0]
                 this.ajaxApi = [this.ajaxApi];
             }
         } else {
-            this.ajaxApi.statusNode = $buttonConfirm[0]
+            this.ajaxApi.options.statusNode = $buttonConfirm[0]
         }
         return (evt) => {
             let confirmFunction = this.options.confirm
@@ -763,7 +763,7 @@ class ModalFactory {
                             return clickResult
                                 .then((data) => {
                                     if (data.success) {
-                                        selfModal.options.POSTSuccessCallback(data)
+                                        selfModal.options.POSTSuccessCallback([data, this])
                                     } else { // Validation error
                                         selfModal.injectFormValidationFeedback(form, data.errors)
                                         return Promise.reject('Validation error');
@@ -799,7 +799,7 @@ class ModalFactory {
                             return clickResult
                                 .then((data) => {
                                     if (data.success) {
-                                        this.options.POSTSuccessCallback(data)
+                                        this.options.POSTSuccessCallback([data, this])
                                     } else { // Validation error
                                         this.injectFormValidationFeedback(form, data.errors)
                                         return Promise.reject('Validation error');
