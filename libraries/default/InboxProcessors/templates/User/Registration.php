@@ -77,11 +77,11 @@ echo $this->Bootstrap->modal([
 <script>
     function submitRegistration(modalObject, tmpApi) {
         const $form = modalObject.$modal.find('form')
-        tmpApi.postForm($form[0]).then(() => {
+        return tmpApi.postForm($form[0]).then((result) => {
             const url = '/inbox/index'
             const $container = $('div[id^="table-container-"]')
             const randomValue = $container.attr('id').split('-')[2]
-            UI.reload(url, $(`#table-container-${randomValue}`), $(`#table-container-${randomValue} table.table`))
+            return result
         })
     }
 
