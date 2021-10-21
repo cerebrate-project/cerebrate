@@ -63,6 +63,11 @@ class Sidemenu {
                     'icon' => $this->iconTable['UserSettings'],
                     'url' => '/user-settings/index',
                 ],
+                'LocalTools.index' => [
+                    'label' => __('Local Tools'),
+                    'icon' => $this->iconTable['LocalTools'],
+                    'url' => '/localTools/index',
+                ],
                 'Messages' => [
                     'label' => __('Messages'),
                     'icon' => $this->iconTable['Inbox'],
@@ -86,11 +91,6 @@ class Sidemenu {
                             'label' => __('Meta Field Templates'),
                             'icon' => $this->iconTable['MetaTemplates'],
                             'url' => '/metaTemplates/index',
-                        ],
-                        'LocalTools.index' => [
-                            'label' => __('Local Tools'),
-                            'icon' => $this->iconTable['LocalTools'],
-                            'url' => '/localTools/index',
                         ],
                         'Tags.index' => [
                             'label' => __('Tags'),

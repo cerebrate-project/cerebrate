@@ -90,7 +90,7 @@ class CRUDComponent extends Component
             $this->Controller->set('taggingEnabled', true);
             $this->setAllTags();
         }
-        $filters = !empty($this->Controller->filters) ? $this->Controller->filters : [];
+        $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
         $this->Controller->set('filters', $filters);
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/filters');

@@ -119,8 +119,10 @@ function initSelect2Picker($select) {
         }
         return buildTag(state)
     }
+    const $modal = $select.closest('.modal')
 
     $select.select2({
+        dropdownParent: $modal.length != 0 ? $modal.find('.modal-body') : $(document.body),
         placeholder: 'Pick a tag',
         tags: true,
         width: '100%',

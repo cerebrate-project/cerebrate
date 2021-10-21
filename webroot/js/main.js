@@ -243,8 +243,13 @@ function overloadBSDropdown() {
                 return _orginal.call(this);
             }
         }($bs.Dropdown.prototype.toggle);
+    })(bootstrap);
+}
 
-        document.querySelectorAll('.dropdown').forEach(function (dd) {
+function addSupportOfNestedDropdown() {
+    const CLASS_NAME_HAS_CHILD = 'has-child-dropdown-show';
+    document.querySelectorAll('.dropdown').forEach(function (dd) {
+        if (dd.getAttribute('data-listener-registered') === null) { // Only add listener once
             dd.addEventListener('hide.bs.dropdown', function (e) {
                 if (this.classList.contains(CLASS_NAME_HAS_CHILD)) {
                     this.classList.remove(CLASS_NAME_HAS_CHILD);
@@ -261,8 +266,9 @@ function overloadBSDropdown() {
                 }
                 e.stopPropagation(); // do not need pop in multi level mode
             });
-        });
-    })(bootstrap);
+            dd.setAttribute('data-listener-registered', 1)
+        }
+    });
 }
 
 var UI
@@ -271,6 +277,7 @@ $(document).ready(() => {
         UI = new UIFactory()
     }
     overloadBSDropdown();
+    addSupportOfNestedDropdown();
 
     const debouncedGlobalSearch = debounce(performGlobalSearch, 400)
     $('#globalSearch')
