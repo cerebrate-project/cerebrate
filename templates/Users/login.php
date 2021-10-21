@@ -12,7 +12,7 @@ use Cake\Core\Configure;
             'style' => ['filter: drop-shadow(4px 4px 4px #924da666);']
         ])
     );
-    echo sprintf('<h4 class="text-uppercase fw-light mb-3">%s</h4>', __('Sign up'));
+    echo sprintf('<h4 class="text-uppercase fw-light mb-3">%s</h4>', __('Sign In'));
     $template = [
         'inputContainer' => '<div class="form-floating input {{type}}{{required}}">{{content}}</div>',
         'formGroup' => '{{input}}{{label}}',
