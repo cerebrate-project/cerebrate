@@ -132,9 +132,8 @@ class AppController extends Controller
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
         $this->set('baseurl', Configure::read('App.fullBaseUrl'));
-
-        if (!empty($user) && !empty($user->user_settings_by_name_with_fallback['ui.bsTheme']['value'])) {
-            $this->set('bsTheme', $user->user_settings_by_name_with_fallback['ui.bsTheme']['value']);
+        if (!empty($user) && !empty($user->user_settings_by_name['ui.bsTheme']['value'])) {
+            $this->set('bsTheme', $user->user_settings_by_name['ui.bsTheme']['value']);
         } else {
             $this->set('bsTheme', Configure::read('ui.bsTheme'));
         }
