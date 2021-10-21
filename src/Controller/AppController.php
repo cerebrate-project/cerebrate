@@ -136,7 +136,7 @@ class AppController extends Controller
         if (!empty($user) && !empty($user->user_settings_by_name_with_fallback['ui.bsTheme']['value'])) {
             $this->set('bsTheme', $user->user_settings_by_name_with_fallback['ui.bsTheme']['value']);
         } else {
-            $this->set('bsTheme', Configure::read('Cerebrate')['ui.bsTheme']);
+            $this->set('bsTheme', Configure::read('ui.bsTheme'));
         }
 
         if ($this->modelClass == 'Tags.Tags') {

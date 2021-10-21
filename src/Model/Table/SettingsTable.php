@@ -4,6 +4,7 @@ namespace App\Model\Table;
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Core\Configure;
+use Cake\Error\Debugger;
 
 require_once(APP . 'Model' . DS . 'Table' . DS . 'SettingProviders' . DS . 'CerebrateSettingsProvider.php');
 use App\Settings\SettingsProvider\CerebrateSettingsProvider;
@@ -12,7 +13,14 @@ class SettingsTable extends AppTable
 {
     private static $FILENAME = 'cerebrate';
     private static $CONFIG_KEY = 'Cerebrate';
-    
+    private static $DUMPABLE = [
+        'Cerebrate',
+        'proxy',
+        'ui',
+        'keycloak',
+        'app'
+    ];
+
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -96,15 +104,32 @@ class SettingsTable extends AppTable
 
     private function readSettings()
     {
-        return Configure::read()[$this::$CONFIG_KEY];
+        $settingPaths = $this->SettingsProvider->retrieveSettingPathsBasedOnBlueprint();
+        $settings = [];
+        foreach ($settingPaths as $path) {
+            if (Configure::check($path)) {
+                $settings[$path] = Configure::read($path);
+            }
+        }
+        return $settings;
+    }
+
+    private function loadSettings(): void
+    {
+        $settings = file_get_contents(CONFIG . 'config.json');
+        $settings = json_decode($settings, true);
+        foreach ($settings as $path => $setting) {
+            Configure::write($path, $setting);
+        }
     }
 
     private function saveSettingOnDisk($name, $value)
     {
         $settings = $this->readSettings();
         $settings[$name] = $value;
-        Configure::write($this::$CONFIG_KEY, $settings);
-        Configure::dump($this::$FILENAME, 'default', [$this::$CONFIG_KEY]);
+        $settings = json_encode($settings, JSON_PRETTY_PRINT);
+        file_put_contents(CONFIG . 'config.json', $settings);
+        $this->loadSettings();
         return true;
     }
 }
