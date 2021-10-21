@@ -9,6 +9,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'top_bar' => [
             'children' => [
                 [
+                    'type' => 'multi_select_actions',
                     'children' => [
                         [
                             'text' => __('Delete messages'),
@@ -16,7 +17,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'onclick' => 'deleteMessages',
                         ]
                     ],
-                    'type' => 'multi_select_actions',
+                    'data' => [
+                        'id' => [
+                            'value_path' => 'id'
+                        ]
+                    ]
                 ],
                 [
                     'type' => 'context_filters',
@@ -33,15 +38,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ]
         ],
         'fields' => [
-            [
-                'element' => 'selector',
-                'class' => 'short',
-                'data' => [
-                    'id' => [
-                        'value_path' => 'id'
-                    ]
-                ]
-            ],
             [
                 'name' => '#',
                 'sort' => 'id',

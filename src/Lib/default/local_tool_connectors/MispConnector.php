@@ -94,9 +94,45 @@ class MispConnector extends CommonConnectorTools
                 'sort',
                 'direction'
             ]
+        ],
+        'batchAPIAction' => [
+            'type' => 'batchAction',
+            'scope' => 'childAction',
+            'params' => [
+                'method',
+                'url',
+                'body',
+            ],
+            'ui' => [
+                'text' => 'Batch API',
+                'icon' => 'terminal',
+                'variant' => 'primary',
+            ]
         ]
     ];
     public $version = '0.1';
+    public $settings = [
+        'url' => [
+            'type' => 'text'
+        ],
+        'authkey' => [
+            'type' => 'text'
+        ],
+        'skip_ssl' => [
+            'type' => 'boolean'
+        ],
+    ];
+
+    public function addSettingValidatorRules($validator)
+    {
+        return $validator
+            ->requirePresence('url')
+            ->notEmpty('url', __('An URL must be provided'))
+            ->requirePresence('authkey')
+            ->notEmpty('authkey', __('An Authkey must be provided'))
+            ->lengthBetween('authkey', [40, 40], __('The authkey must be 40 character long'))
+            ->boolean('skip_ssl');
+    }
 
     public function addExposedFunction(string $functionName): void
     {
@@ -208,7 +244,10 @@ class MispConnector extends CommonConnectorTools
             throw new NotFoundException(__('No connection object received.'));
         }
         $url = $this->urlAppendParams($url, $params);
-        $response = $this->HTTPClientPOST($url, $params['connection'], json_encode($params['body']));
+        if (!is_string($params['body'])) {
+            $params['body'] = json_encode($params['body']);
+        }
+        $response = $this->HTTPClientPOST($url, $params['connection'], $params['body']);
         if ($response->isOk()) {
             return $response;
         } else {
@@ -764,6 +803,57 @@ class MispConnector extends CommonConnectorTools
                 return ['success' => 1, 'message' => __('Setting saved.')];
             } else {
                 return ['success' => 0, 'message' => __('Could not update.')];
+            }
+        }
+        throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
+    }
+
+    public function batchAPIAction(array $params): array
+    {
+        if ($params['request']->is(['get'])) {
+            return [
+                'data' => [
+                    'title' => __('Execute API Request'),
+                    'description' => __('Perform an API Request on the list of selected connections'),
+                    'fields' => [
+                        [
+                            'field' => 'connection_ids',
+                            'type' => 'hidden',
+                            'value' => $params['connection_ids']
+                        ],
+                        [
+                            'field' => 'method',
+                            'label' => __('Method'),
+                            'type' => 'dropdown',
+                            'options' => ['GET' => 'GET', 'POST' => 'POST']
+                        ],
+                        [
+                            'field' => 'url',
+                            'label' => __('Relative URL'),
+                            'type' => 'text',
+                        ],
+                        [
+                            'field' => 'body',
+                            'label' => __('POST Body'),
+                            'type' => 'codemirror',
+                        ],
+                    ],
+                    'submit' => [
+                        'action' => $params['request']->getParam('action')
+                    ],
+                    'url' => ['controller' => 'localTools', 'action' => 'batchAction', 'batchAPIAction']
+                ]
+            ];
+        } else if ($params['request']->is(['post'])) {
+            if ($params['method'] == 'GET') {
+                $response = $this->getData($params['url'], $params);
+            } else {
+                $response = $this->postData($params['url'], $params);
+            }
+            if ($response->getStatusCode() == 200) {
+                return ['success' => 1, 'message' => __('API query successful'), 'data' => $response->getJson()];
+            } else {
+                return ['success' => 0, 'message' => __('API query failed'), 'data' => $response->getJson()];
             }
         }
         throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));

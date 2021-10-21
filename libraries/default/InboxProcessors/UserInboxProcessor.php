@@ -1,5 +1,6 @@
 <?php
 use Cake\ORM\TableRegistry;
+use Authentication\PasswordHasher\DefaultPasswordHasher;
 
 require_once(ROOT . DS . 'libraries' . DS . 'default' . DS . 'InboxProcessors' . DS . 'GenericInboxProcessor.php'); 
 
@@ -42,13 +43,25 @@ class RegistrationProcessor extends UserInboxProcessor implements GenericInboxPr
                 'message' => 'E-mail must be valid'
             ])
             ->notEmpty('first_name', 'A first name must be provided')
-            ->notEmpty('last_name', 'A last name must be provided');
+            ->notEmpty('last_name', 'A last name must be provided')
+            ->add('password', 'password_complexity', [
+                'rule' => function($value, $context) {
+                    if (!preg_match('/^((?=.*\d)|(?=.*\W+))(?![\n])(?=.*[A-Z])(?=.*[a-z]).*$|.{16,}/s', $value) || strlen($value) < 12) {
+                        return false;
+                    }
+                    return true;
+                },
+                'message' => __('Invalid password. Passwords have to be either 16 character long or 12 character long with 3/4 special groups.')
+            ]);
     }
     
     public function create($requestData) {
         $this->validateRequestData($requestData);
+        $requestData['data']['password'] = (new DefaultPasswordHasher())->hash($requestData['data']['password']);
         $requestData['title'] = __('User account creation requested for {0}', $requestData['data']['email']);
-        return parent::create($requestData);
+        $creationResponse = parent::create($requestData);
+        $creationResponse['message'] = __('User account creation requested. Please wait for an admin to approve your account.');
+        return $creationResponse;
     }
 
     public function getViewVariables($request)
@@ -72,6 +85,11 @@ class RegistrationProcessor extends UserInboxProcessor implements GenericInboxPr
             'username' => !empty($request['data']['username']) ? $request['data']['username'] : '',
             'role_id' => !empty($request['data']['role_id']) ? $request['data']['role_id'] : '',
             'disabled' => !empty($request['data']['disabled']) ? $request['data']['disabled'] : '',
+
+            'email' => !empty($request['data']['email']) ? $request['data']['email'] : '',
+            'first_name' => !empty($request['data']['first_name']) ? $request['data']['first_name'] : '',
+            'last_name' => !empty($request['data']['last_name']) ? $request['data']['last_name'] : '',
+            'position' => !empty($request['data']['position']) ? $request['data']['position'] : '',
         ]);
         return [
             'dropdownData' => $dropdownData,
@@ -82,6 +100,7 @@ class RegistrationProcessor extends UserInboxProcessor implements GenericInboxPr
 
     public function process($id, $requestData, $inboxRequest)
     {
+        $hashedPassword = $inboxRequest['data']['password'];
         if ($requestData['individual_id'] == -1) {
             $individual = $this->Users->Individuals->newEntity([
                 'uuid' => $requestData['uuid'],
@@ -101,6 +120,7 @@ class RegistrationProcessor extends UserInboxProcessor implements GenericInboxPr
             'role_id' => $requestData['role_id'],
             'disabled' => $requestData['disabled'],
         ]);
+        $user->set('password', $hashedPassword, ['setter' => false]); // ignore default password hashing as it has already been hashed
         $user = $this->Users->save($user);
 
         if ($user !== false) {

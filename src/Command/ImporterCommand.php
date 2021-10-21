@@ -128,7 +128,9 @@ class ImporterCommand extends Command
         $this->loadModel('MetaFields');
         $entities = [];
         if (is_null($primary_key)) {
-            $entities = $table->newEntities($data);
+            $entities = $table->newEntities($data, [
+                'accessibleFields' => ($table->newEmptyEntity())->getAccessibleFieldForNew()
+            ]);
         } else {
             foreach ($data as $i => $item) {
                 $entity = null;
@@ -145,7 +147,9 @@ class ImporterCommand extends Command
                     $this->lockAccess($entity);
                 }
                 if (!is_null($entity)) {
-                    $entity = $table->patchEntity($entity, $item);
+                    $entity = $table->patchEntity($entity, $item, [
+                        'accessibleFields' => $entity->getAccessibleFieldForNew()
+                    ]);
                     $entities[] = $entity;
                 }
             }

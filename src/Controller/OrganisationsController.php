@@ -13,13 +13,15 @@ use Cake\Http\Exception\ForbiddenException;
 class OrganisationsController extends AppController
 {
 
-    public $filters = ['name', 'uuid', 'nationality', 'sector', 'type', 'url', 'Alignments.id', 'MetaFields.field', 'MetaFields.value', 'MetaFields.MetaTemplates.name'];
+    public $quickFilterFields = [['name' => true], 'uuid', 'nationality', 'sector', 'type', 'url'];
+    public $filterFields = ['name', 'uuid', 'nationality', 'sector', 'type', 'url', 'Alignments.id', 'MetaFields.field', 'MetaFields.value', 'MetaFields.MetaTemplates.name'];
+    public $containFields = ['Alignments' => 'Individuals'];
 
     public function index()
     {
         $this->CRUD->index([
-            'filters' => $this->filters,
-            'quickFilters' => [['name' => true], 'uuid', 'nationality', 'sector', 'type', 'url'],
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields,
             'contextFilters' => [
                 'custom' => [
                     [
@@ -57,7 +59,7 @@ class OrganisationsController extends AppController
                     ]
                 ],
             ],
-            'contain' => ['Alignments' => 'Individuals']
+            'contain' => $this->containFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -111,5 +113,32 @@ class OrganisationsController extends AppController
             return $responsePayload;
         }
         $this->set('metaGroup', 'ContactDB');
+    }
+
+    public function tag($id)
+    {
+        $this->CRUD->tag($id);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+    }
+
+    public function untag($id)
+    {
+        $this->CRUD->untag($id);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+    }
+
+    public function viewTags($id)
+    {
+        $this->CRUD->viewTags($id);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
     }
 }

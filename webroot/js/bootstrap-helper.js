@@ -29,15 +29,18 @@ class UIFactory {
      * @param  {string} url - The URL from which the modal's content should be fetched
      * @param  {ModalFactory~POSTSuccessCallback} POSTSuccessCallback - The callback that handles successful form submission
      * @param  {ModalFactory~POSTFailCallback} POSTFailCallback - The callback that handles form submissions errors and validation errors.
+     * @param  {Object=[]} modalOptions - Additional options to be passed to the modal constructor
      * @return {Promise<Object>} Promise object resolving to the ModalFactory object
      */
-    async submissionModal(url, POSTSuccessCallback, POSTFailCallback) {
+    async submissionModal(url, POSTSuccessCallback, POSTFailCallback, modalOptions={}) {
         return AJAXApi.quickFetchURL(url).then((modalHTML) => {
-            const theModal = new ModalFactory({
+            const defaultOptions = {
                 rawHtml: modalHTML,
                 POSTSuccessCallback: POSTSuccessCallback !== undefined ? POSTSuccessCallback : () => {},
                 POSTFailCallback: POSTFailCallback !== undefined ? POSTFailCallback : (errorMessage) => {},
-            });
+            }
+            const options = Object.assign({}, defaultOptions, modalOptions)
+            const theModal = new ModalFactory(options);
             theModal.makeModal()
             theModal.show()
             theModal.$modal.data('modalObject', theModal)
@@ -214,8 +217,9 @@ class UIFactory {
         return AJAXApi.quickFetchURL(url, {
             statusNode: $statusNode[0],
         }).then((theHTML) => {
-            $container.replaceWith(theHTML)
-            return $container
+            var $tmp = $(theHTML);
+            $container.replaceWith($tmp)
+            return $tmp;
         }).finally(() => {
             otherStatusNodes.forEach(overlay => {
                 overlay.hide()
@@ -264,9 +268,9 @@ class Toaster {
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} variant - The variant of the toast
      * @property {boolean} autohide    - If the toast show be hidden after some time defined by the delay
      * @property {number}  delay        - The number of milliseconds the toast should stay visible before being hidden
-     * @property {string}  titleHtml    - The raw HTML title's content of the toast
-     * @property {string}  mutedHtml    - The raw HTML muted's content of the toast
-     * @property {string}  bodyHtml     - The raw HTML body's content of the toast
+     * @property {(jQuery|string)}  titleHtml    - The raw HTML title's content of the toast
+     * @property {(jQuery|string)}  mutedHtml    - The raw HTML muted's content of the toast
+     * @property {(jQuery|string)}  bodyHtml     - The raw HTML body's content of the toast
      * @property {boolean} closeButton - If the toast's title should include a close button
      */
     static defaultOptions = {
@@ -287,6 +291,7 @@ class Toaster {
     makeToast() {
         if (this.isValid()) {
             this.$toast = Toaster.buildToast(this.options)
+            this.$toast.data('toastObject', this)
             $('#mainToastContainer').append(this.$toast)
         }
     }
@@ -297,6 +302,18 @@ class Toaster {
             var that = this
             this.$toast.toast(this.bsToastOptions)
                 .toast('show')
+                .on('hide.bs.toast', function (evt) {
+                    const $toast = $(this)
+                    const hoveredElements = $(':hover').filter(function() {
+                        return $(this).is($toast)
+                    });
+                    if (hoveredElements.length > 0) {
+                        evt.preventDefault()
+                        setTimeout(() => {
+                            $toast.toast('hide')
+                        }, that.options.delay);
+                    }
+                })
                 .on('hidden.bs.toast', function () {
                     that.removeToast()
                 })
@@ -335,9 +352,9 @@ class Toaster {
             if (options.title !== false || options.titleHtml !== false) {
                 var $toastHeaderText
                 if (options.titleHtml !== false) {
-                    $toastHeaderText = $('<div class="mr-auto"/>').html(options.titleHtml);
+                    $toastHeaderText = $('<div class="me-auto"/>').html(options.titleHtml);
                 } else {
-                    $toastHeaderText = $('<strong class="mr-auto"/>').text(options.title)
+                    $toastHeaderText = $('<strong class="me-auto"/>').text(options.title)
                 }
                 $toastHeader.append($toastHeaderText)
             }
@@ -351,7 +368,10 @@ class Toaster {
                 $toastHeader.append($toastHeaderMuted)
             }
             if (options.closeButton) {
-                var $closeButton = $('<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+                var $closeButton = $('<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>')
+                    .click(function() {
+                        $(this).closest('.toast').data('toastObject').removeToast()
+                    })
                 $toastHeader.append($closeButton)
             }
             $toast.append($toastHeader)
@@ -510,13 +530,14 @@ class ModalFactory {
         'confirm-danger',
     ]
 
-    static closeButtonHtml = '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>'
+    static closeButtonHtml = '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>'
 
     /** Create the HTML of the modal and inject it into the DOM */
     makeModal() {
         if (this.isValid()) {
             this.$modal = this.buildModal()
             $('#mainModalContainer').append(this.$modal)
+            this.modalInstance = new bootstrap.Modal(this.$modal[0], this.bsModalOptions)
         } else {
             console.log('Modal not valid')
         }
@@ -526,7 +547,8 @@ class ModalFactory {
     show() {
         if (this.isValid()) {
             var that = this
-            this.$modal.modal(this.bsModalOptions)
+            this.modalInstance.show()
+            this.$modal
                 .on('hidden.bs.modal', function () {
                     that.removeModal()
                     that.options.hiddenCallback(that)
@@ -537,6 +559,17 @@ class ModalFactory {
                         that.findSubmitButtonAndAddListener()
                     }
                 })
+            // this.$modal.modal(this.bsModalOptions)
+            //     .on('hidden.bs.modal', function () {
+            //         that.removeModal()
+            //         that.options.hiddenCallback(that)
+            //     })
+            //     .on('shown.bs.modal', function () {
+            //         that.options.shownCallback(that)
+            //         if (that.attachSubmitButtonListener) {
+            //             that.findSubmitButtonAndAddListener()
+            //         }
+            //     })
         } else {
             console.log('Modal not valid')
         }
@@ -544,7 +577,8 @@ class ModalFactory {
 
     /** Hide the modal using the bootstrap modal's hide command */
     hide() {
-        this.$modal.modal('hide')
+        // this.$modal.modal('hide')
+        this.modalInstance.hide()
     }
     
     /** Remove the modal from the DOM */
@@ -567,7 +601,7 @@ class ModalFactory {
      * @return {jQuery} The modal jQuery object
      */
     buildModal() {
-        const $modal = $('<div class="modal fade" tabindex="-1" aria-hidden="true"/>')
+        const $modal = $('<div class="modal fade" tabindex="-1"/>')
         if (this.options.id !== false) {
             $modal.attr('id', this.options.id)
             $modal.attr('aria-labelledby', this.options.id)
@@ -642,7 +676,7 @@ class ModalFactory {
     getFooterOkOnly() {
         return [
             $('<button type="button" class="btn btn-primary">OK</button>')
-                .attr('data-dismiss', 'modal'),
+                .attr('data-bs-dismiss', 'modal'),
         ]
     }
 
@@ -650,19 +684,19 @@ class ModalFactory {
     getFooterConfirm() {
         let variant = this.options.type.split('-')[1]
         variant = variant !== undefined ? variant : 'primary'
-        const $buttonCancel = $('<button type="button" class="btn btn-secondary" data-dismiss="modal"></button>')
+        const $buttonCancel = $('<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"></button>')
                 .text(this.options.cancelText)
                 .click(
                     (evt) => {
                         this.options.cancel(() => { this.hide() }, this, evt)
                     }
                 )
-                .attr('data-dismiss', (this.options.closeManually || !this.options.closeOnSuccess) ? '' : 'modal')
+                .attr('data-bs-dismiss', (this.options.closeManually || !this.options.closeOnSuccess) ? '' : 'modal')
 
         const $buttonConfirm = $('<button type="button" class="btn"></button>')
                 .addClass('btn-' + variant)
                 .text(this.options.confirmText)
-                .attr('data-dismiss', (this.options.closeManually || this.options.closeOnSuccess) ? '' : 'modal')
+                .attr('data-bs-dismiss', (this.options.closeManually || this.options.closeOnSuccess) ? '' : 'modal')
         $buttonConfirm.click(this.getConfirmationHandlerFunction($buttonConfirm))
         return [$buttonCancel, $buttonConfirm]
     }
@@ -681,11 +715,11 @@ class ModalFactory {
                 })
                 this.ajaxApi.push(tmpApi)
             } else {
-                this.ajaxApi.statusNode = $buttonConfirm[0]
+                this.ajaxApi.options.statusNode = $buttonConfirm[0]
                 this.ajaxApi = [this.ajaxApi];
             }
         } else {
-            this.ajaxApi.statusNode = $buttonConfirm[0]
+            this.ajaxApi.options.statusNode = $buttonConfirm[0]
         }
         return (evt) => {
             let confirmFunction = this.options.confirm
@@ -729,7 +763,7 @@ class ModalFactory {
                             return clickResult
                                 .then((data) => {
                                     if (data.success) {
-                                        selfModal.options.POSTSuccessCallback(data)
+                                        selfModal.options.POSTSuccessCallback([data, this])
                                     } else { // Validation error
                                         selfModal.injectFormValidationFeedback(form, data.errors)
                                         return Promise.reject('Validation error');
@@ -765,7 +799,7 @@ class ModalFactory {
                             return clickResult
                                 .then((data) => {
                                     if (data.success) {
-                                        this.options.POSTSuccessCallback(data)
+                                        this.options.POSTSuccessCallback([data, this])
                                     } else { // Validation error
                                         this.injectFormValidationFeedback(form, data.errors)
                                         return Promise.reject('Validation error');
@@ -813,11 +847,7 @@ class OverlayFactory {
     constructor(node, options={}) {
         this.node = node
         this.$node = $(this.node)
-        if (darkMode) {
-            this.options = Object.assign({}, OverlayFactory.defaultOptionsDarkTheme, options)
-        } else {
-            this.options = Object.assign({}, OverlayFactory.defaultOptions, options)
-        }
+        this.options = Object.assign({}, OverlayFactory.defaultOptions, options)
         this.options.auto = options.auto ? this.options.auto : !(options.variant || options.spinnerVariant)
         if (this.options.auto) {
             this.adjustOptionsBasedOnNode()
@@ -828,41 +858,30 @@ class OverlayFactory {
      * @namespace
      * @property {string}  text - A small text indicating the reason of the overlay
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} variant - The variant of the overlay
-     * @property {number}  opacity        - The opacity of the overlay
+     * @property {number|string}  opacity        - The opacity of the overlay
      * @property {boolean} rounded        - If the overlay should be rounded
-     * @property {number}  auto           - Whether overlay and spinner options should be adapted automatically based on the node
+     * @property {boolean}  auto           - Whether overlay and spinner options should be adapted automatically based on the node
      * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} spinnerVariant - The variant of the spinner
      * @property {boolean} spinnerSmall   - If the spinner inside the overlay should be small
      * @property {string=('border'|'grow')} spinnerSmall   - If the spinner inside the overlay should be small
      */
-    static defaultOptionsDarkTheme = {
-        text: '',
-        variant: 'light',
-        opacity: 0.25,
-        blur: '2px',
-        rounded: false,
-        auto: true,
-        spinnerVariant: '',
-        spinnerSmall: false,
-        spinnerType: 'border',
-        fallbackBoostrapVariant: 'light'
-    }
     static defaultOptions = {
         text: '',
-        variant: 'light',
-        opacity: 0.85,
+        variant: '',
+        opacity: '',
         blur: '2px',
         rounded: false,
         auto: true,
         spinnerVariant: '',
         spinnerSmall: false,
         spinnerType: 'border',
-        fallbackBoostrapVariant: ''
+        fallbackBoostrapVariant: '',
+        wrapperCSSDisplay: '',
     }
 
     static overlayWrapper = '<div aria-busy="true" class="position-relative"/>'
-    static overlayContainer = '<div class="position-absolute text-nowrap" style="inset: 0px; z-index: 10;"/>'
-    static overlayBg = '<div class="position-absolute" style="inset: 0px;"/>'
+    static overlayContainer = '<div class="position-absolute text-nowrap loading-overlay-container" style="inset: 0px; z-index: 1100;"/>'
+    static overlayBg = '<div class="position-absolute loading-overlay" style="inset: 0px;"/>'
     static overlaySpinner = '<div class="position-absolute" style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);"><span aria-hidden="true" class=""><!----></span></div></div>'
     static overlayText = '<span class="ml-1 align-text-top"></span>'
 
@@ -872,10 +891,23 @@ class OverlayFactory {
      /** Create the HTML of the overlay */
     buildOverlay() {
         this.$overlayWrapper = $(OverlayFactory.overlayWrapper)
+        if (this.options.wrapperCSSDisplay) {
+            this.$overlayWrapper.css('display', this.options.wrapperCSSDisplay)
+        }
+        if (this.$node[0]) {
+            const boundingRect = this.$node[0].getBoundingClientRect()
+            this.$overlayWrapper.css('min-height', Math.max(boundingRect.height, 20))
+            this.$overlayWrapper.css('min-width', Math.max(boundingRect.width, 20))
+            if (this.$node.hasClass('row')) {
+                this.$overlayWrapper.addClass('row')
+            }
+        }
         this.$overlayContainer = $(OverlayFactory.overlayContainer)
         this.$overlayBg = $(OverlayFactory.overlayBg)
             .addClass([`bg-${this.options.variant}`, (this.options.rounded ? 'rounded' : '')])
-            .css('opacity', this.options.opacity)
+        if (this.options.opacity !== '') {
+            this.$overlayBg.css('opacity', this.options.opacity)
+        }
         this.$overlaySpinner = $(OverlayFactory.overlaySpinner)
         this.$overlaySpinner.children().addClass(`spinner-${this.options.spinnerType}`)
         if (this.options.spinnerSmall) {
@@ -937,7 +969,8 @@ class OverlayFactory {
         }
         if (this.$node.is('input[type="checkbox"]') || this.$node.css('border-radius') !== '0px') {
             this.options.rounded = true
-        } 
+        }
+        this.options.wrapperCSSDisplay = this.$node.css('display')
         let classes = this.$node.attr('class')
         if (classes !== undefined) {
             classes = classes.split(' ')
@@ -1105,4 +1138,5 @@ class HtmlHelper {
         }
         return $table
     }
+
 }

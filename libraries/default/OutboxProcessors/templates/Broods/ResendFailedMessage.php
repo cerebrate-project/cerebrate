@@ -18,18 +18,18 @@ $footerButtons = [
 
 $tools = sprintf(
 '<div class="mx-auto mb-3 mw-75 d-flex align-items-center">
-    <span class="flex-grow-1 text-right" style="font-size: large;">%s</span>
+    <span class="flex-grow-1 text-end" style="font-size: large;">%s</span>
     <span class="mx-3">%s</span>
-    <span class="flex-grow-1 text-left" style="font-size: large;">%s</span>
+    <span class="flex-grow-1 text-start" style="font-size: large;">%s</span>
 </div>', 
-    sprintf('<span class="mr-2 d-inline-flex flex-column"><a href="%s" target="_blank" title="%s">%s</a><i style="font-size: medium;" class="text-center">%s</i></span>',
+    sprintf('<span class="me-2 d-inline-flex flex-column"><a href="%s" target="_blank" title="%s">%s</a><i style="font-size: medium;" class="text-center">%s</i></span>',
         sprintf('/localTools/view/%s', h($request['localTool']->id)),
         h($request['localTool']->description),
         h($request['localTool']->name),
         __('(local tool)')
     ),
     sprintf('<i class="%s fa-lg"></i>', $this->FontAwesome->getClass('long-arrow-alt-right')),
-    sprintf('<span class="ml-2 d-inline-flex flex-column"><a href="%s" target="_blank" title="%s">%s</a><i style="font-size: medium;" class="text-center">%s</i></span>',
+    sprintf('<span class="ms-2 d-inline-flex flex-column"><a href="%s" target="_blank" title="%s">%s</a><i style="font-size: medium;" class="text-center">%s</i></span>',
         sprintf('/localTools/broodTools/%s', h($request['data']['remote_tool']['id'])),
         h($request['data']['remote_tool']['description'] ?? ''),
         h($request['data']['remote_tool']['name']),
@@ -77,9 +77,9 @@ $requestData = $this->Bootstrap->collapse([
     sprintf('<pre class="p-2 rounded mb-0" style="background: #eeeeee55;"><code>%s</code></pre>', json_encode($request['data']['sent'], JSON_PRETTY_PRINT))
 );
 
-$rows = sprintf('<tr><td class="font-weight-bold">%s</td><td>%s</td></tr>', __('URL'), h($request['data']['url']));
-$rows .= sprintf('<tr><td class="font-weight-bold">%s</td><td>%s</td></tr>', __('Reason'), h($request['data']['reason']['message']) ?? '');
-$rows .= sprintf('<tr><td class="font-weight-bold">%s</td><td>%s</td></tr>', __('Errors'), h(json_encode($request['data']['reason']['errors'])) ?? '');
+$rows = sprintf('<tr><td class="fw-bold">%s</td><td>%s</td></tr>', __('URL'), h($request['data']['url']));
+$rows .= sprintf('<tr><td class="fw-bold">%s</td><td>%s</td></tr>', __('Reason'), h($request['data']['reason']['message']) ?? '');
+$rows .= sprintf('<tr><td class="fw-bold">%s</td><td>%s</td></tr>', __('Errors'), h(json_encode($request['data']['reason']['errors'])) ?? '');
 $table2 = sprintf('<table class="table table-sm table-borderless"><tbody>%s</tbody></table>', $rows);
 
 $form = $this->element('genericElements/Form/genericForm', [

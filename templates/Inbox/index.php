@@ -9,6 +9,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'top_bar' => [
             'children' => [
                 [
+                    'type' => 'multi_select_actions',
                     'children' => [
                         [
                             'text' => __('Discard requests'),
@@ -16,7 +17,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'onclick' => 'discardRequests',
                         ]
                     ],
-                    'type' => 'multi_select_actions',
+                    'data' => [
+                        'id' => [
+                            'value_path' => 'id'
+                        ]
+                    ]
                 ],
                 [
                     'type' => 'context_filters',
@@ -33,15 +38,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ]
         ],
         'fields' => [
-            [
-                'element' => 'selector',
-                'class' => 'short',
-                'data' => [
-                    'id' => [
-                        'value_path' => 'id'
-                    ]
-                ]
-            ],
             [
                 'name' => '#',
                 'sort' => 'id',
@@ -134,7 +130,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
             )
             const $footer = $(modalObject.ajaxApi.statusNode).parent()
             modalObject.ajaxApi.statusNode.remove()
-            const $cancelButton = $footer.find('button[data-dismiss="modal"]')
+            const $cancelButton = $footer.find('button[data-bs-dismiss="modal"]')
             $cancelButton.text('<?= __('OK') ?>').removeClass('btn-secondary').addClass('btn-primary')
         }
         UI.submissionModal('/inbox/delete', successCallback, failCallback).then(([modalObject, ajaxApi]) => {

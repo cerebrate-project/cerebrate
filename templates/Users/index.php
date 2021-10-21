@@ -75,6 +75,13 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url' => '/roles/view/{{0}}',
                 'url_vars' => ['role.id']
             ],
+            [
+                'name' => __('# User Settings'),
+                'element' => 'count_summary',
+                'data_path' => 'user_settings',
+                'url' => '/user-settings/index?Users.id={{url_data}}',
+                'url_data_path' => 'id'
+            ],
         ],
         'title' => __('User index'),
         'description' => __('The list of enrolled users in this Cerebrate instance. All of the users have or at one point had access to the system.'),

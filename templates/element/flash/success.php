@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @var \App\View\AppView $this
  * @var array $params
@@ -8,9 +9,19 @@ if (!isset($params['escape']) || $params['escape'] !== false) {
     $message = h($message);
 }
 ?>
-<div class="alert alert-success alert-dismissible fade show" role="alert">
-    <?= $message ?>
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-</div>
+<?php if (!empty($params['toast'])) : ?>
+    <script>
+        $(document).ready(function() {
+            UI.toast({
+                variant: 'success',
+                titleHtml: '<?= $message ?>'
+            })
+        })
+    </script>
+<?php else : ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?= $message ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+        </button>
+    </div>
+<?php endif; ?>

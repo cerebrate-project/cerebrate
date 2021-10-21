@@ -23,7 +23,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'button' => __('Filter'),
                     'placeholder' => __('Enter value to search'),
                     'data' => '',
-                    'searchKey' => 'value'
+                    'searchKey' => 'value',
+                    'allowFilering' => true
+                ],
+                [
+                    'type' => 'table_action',
+                    'table_setting_id' => 'individual_index',
                 ]
             ]
         ],
@@ -53,6 +58,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'alignments',
                 'element' => 'alignments',
                 'scope' => $alignmentScope
+            ],
+            [
+                'name' => __('Tags'),
+                'data_path' => 'tags',
+                'element' => 'tags',
             ],
             [
                 'name' => __('UUID'),

@@ -26,6 +26,10 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'data' => '',
                     'searchKey' => 'value',
                     'allowFilering' => true
+                ],
+                [
+                    'type' => 'table_action',
+                    'table_setting_id' => 'organisation_index',
                 ]
             ]
         ],
@@ -71,7 +75,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'name' => __('Type'),
                 'data_path' => 'type',
-            ]
+            ],
+            [
+                'name' => __('Tags'),
+                'data_path' => 'tags',
+                'element' => 'tags',
+            ],
         ],
         'title' => __('ContactDB Organisation Index'),
         'description' => __('A list of organisations known by your Cerebrate instance. This list can get populated either directly, by adding new organisations or by fetching them from trusted remote sources.'),

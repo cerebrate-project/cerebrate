@@ -23,12 +23,16 @@ class LocalToolsController extends AppController
         $this->set('metaGroup', 'Administration');
     }
 
-    public function connectorIndex()
+    public function connectorIndex($connectorName)
     {
         $this->set('metaGroup', 'Admin');
         $this->CRUD->index([
             'filters' => ['name', 'connector'],
             'quickFilters' => ['name', 'connector'],
+            'filterFunction' => function($query) use ($connectorName) {
+                $query->where(['connector' => $connectorName]);
+                return $query;
+            },
             'afterFind' => function($data) {
                 foreach ($data as $connector) {
                     $connector['health'] = [$this->LocalTools->healthCheckIndividual($connector)];
@@ -40,7 +44,56 @@ class LocalToolsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        $connector = $this->LocalTools->getConnectors($connectorName)[$connectorName];
         $this->set('metaGroup', 'Administration');
+        $this->set('connectorName', $connectorName);
+        $this->set('connector', $connector);
+    }
+
+    public function batchAction($actionName)
+    {
+        $params = $this->ParamHandler->harvestParams(['connection_ids']);
+        $params['connection_ids'] = explode(',', $params['connection_ids']);
+        $connections = $this->LocalTools->query()->where(['id IN' => $params['connection_ids']])->all();
+        if (empty($connections)) {
+            throw new NotFoundException(__('Invalid connector.'));
+        }
+        $connection = $connections->first();
+        if ($this->request->is(['post', 'put'])) {
+            $actionParams = $this->LocalTools->getActionFilterOptions($connection->connector, $actionName);
+            $params = array_merge($params, $this->ParamHandler->harvestParams($actionParams));
+            $results = [];
+            $successes = 0;
+            $this->LocalTools->loadConnector($connection->connector);
+            foreach ($connections as $connection) {
+                $actionDetails = $this->LocalTools->getActionDetails($actionName);
+                $params['connection'] = $connection;
+                $tmpResult = $this->LocalTools->action($this->ACL->getUser()['id'], $connection->connector, $actionName, $params, $this->request);
+                $tmpResult['connection'] = $connection;
+                $results[$connection->id] = $tmpResult;
+                $successes += $tmpResult['success'] ? 1 : 0;
+            }
+            $success = $successes > 0;
+            $message = __('{0} / {1} operations were successful', $successes, count($results));
+            $this->CRUD->setResponseForController('batchAction', $success, $message, $results, $results);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
+            }
+            if (!empty($success)) {
+                $this->Flash->success($message);
+                $this->redirect(['controller' => 'localTools', 'action' => 'connectorIndex', $actionName]);
+            } else {
+                $this->Flash->error($message);
+                $this->redirect(['controller' => 'localTools', 'action' => 'connectorIndex', $actionName]);
+            }
+        } else {
+            $params['connection'] = $connection;
+            $results = $this->LocalTools->action($this->ACL->getUser()['id'], $connection->connector, $actionName, $params, $this->request);
+            $this->set('data', $results);
+            $this->set('metaGroup', 'Administration');
+            $this->render('/Common/getForm');
+        }
     }
 
     public function action($connectionId, $actionName)
@@ -100,18 +153,25 @@ class LocalToolsController extends AppController
         }
     }
 
-    public function add($connector = false)
+    public function add($connectorName = false)
     {
         $this->CRUD->add();
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $connectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
+        $localConnectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
         $dropdownData = ['connectors' => []];
-        foreach ($connectors as $connector) {
-            $dropdownData['connectors'][$connector['connector']] = $connector['name'];
+        $connector = false;
+        $connectors = [];
+        foreach ($localConnectors as $c) {
+            if (empty($connectorName) || $c['connector'] == $connectorName) {
+                $dropdownData['connectors'][$c['connector']] = $c['name'];
+                $connectors[] = $c;
+            }
         }
+        $this->set('connectorName', $connectorName);
+        $this->set('connectors', $connectors);
         $this->set(compact('dropdownData'));
         $this->set('metaGroup', 'Administration');
     }
@@ -121,7 +181,7 @@ class LocalToolsController extends AppController
         $connectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
         $connector = false;
         foreach ($connectors as $c) {
-            if ($connector === false || version_compare($c['version'], $connectors['version']) > 0) {
+            if ($connector_name == $c['connector'] && ($connector === false || version_compare($c['version'], $connectors['version']) > 0)) {
                 $connector = $c;
             }
         }
@@ -134,20 +194,25 @@ class LocalToolsController extends AppController
 
     public function edit($id)
     {
+        $localTool = $this->LocalTools->get($id);
         $this->CRUD->edit($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        if ($this->ParamHandler->isAjax() && !empty($this->ajaxResponsePayload)) {
-            return $this->ajaxResponsePayload;
-        }
-        $connectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
+        $localConnectors = $this->LocalTools->extractMeta($this->LocalTools->getConnectors());
         $dropdownData = ['connectors' => []];
-        foreach ($connectors as $connector) {
-            $dropdownData['connectors'][$connector['connector']] = $connector['name'];
+        $connector = false;
+        $connectors = [];
+        foreach ($localConnectors as $c) {
+            if (empty($localTool->connector) || $c['connector'] == $localTool->connector) {
+                $dropdownData['connectors'][$c['connector']] = $c['name'];
+                $connectors[] = $c;
+            }
         }
         $this->set(compact('dropdownData'));
+        $this->set('connectorName', $localTool->connector);
+        $this->set('connectors', $connectors);
         $this->set('metaGroup', 'Administration');
         $this->render('add');
     }
@@ -215,6 +280,8 @@ class LocalToolsController extends AppController
             return $this->RestResponse->viewData($tools, 'json');
         }
         $this->set('id', $id);
+        $brood = $this->Broods->get($id);
+        $this->set('broodEntity', $brood);
         $this->set('data', $tools);
         $this->set('metaGroup', 'Administration');
     }

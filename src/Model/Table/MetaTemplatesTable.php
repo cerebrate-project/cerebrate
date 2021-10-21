@@ -13,13 +13,14 @@ class MetaTemplatesTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('Timestamp');
         $this->hasMany(
             'MetaTemplateFields',
             [
                 'foreignKey' => 'meta_template_id'
             ]
         );
-        $this->setDisplayField('field');
+        $this->setDisplayField('name');
     }
 
     public function validationDefault(Validator $validator): Validator

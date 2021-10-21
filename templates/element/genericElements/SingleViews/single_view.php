@@ -25,74 +25,42 @@
  *          ],
  *      ],
  *      'skip_meta_templates' => false // should the meta templates not be displayed
+ *      'combinedFieldsView' => false // should the default fields and meta fields displayed in a merged interface
  *  ]);
  *
  */
     $tableRandomValue = Cake\Utility\Security::randomString(8);
-    $listElements = '';
-    if (!empty($fields)) {
-        foreach ($fields as $field) {
-            if (empty($field['type'])) {
-                $field['type'] = 'generic';
-            }
-            $listElements .= sprintf(
-                "<tr class=\"row\">
-                    <td class=\"col-sm-2 font-weight-bold\">%s</td>
-                    <td class=\"col-sm-10\">%s</td>
-                </tr>",
-                h($field['key']),
-                $this->element(
-                    '/genericElements/SingleViews/Fields/' . $field['type'] . 'Field',
-                    ['data' => $data, 'field' => $field]
-                )
-            );
-        }
+    $listTableOptions = [
+        'id' => "single-view-table-{$tableRandomValue}",
+        'hover' => false,
+        'tableClass' => 'col-sm-8',
+        'elementsRootPath' => '/genericElements/SingleViews/Fields/'
+    ];
+    if (!empty($data['metaTemplates']) && (empty($skip_meta_templates)) && !empty($combinedFieldsView)) {
+        $listTableOptions['tableClass'] = '';
     }
-    $metaTemplateTabs = '';
+    $listTable = $this->Bootstrap->listTable($listTableOptions,[
+        'item' => $entity,
+        'fields' => $fields
+    ]);
+
+    $metafieldsPanel = '';
     if (!empty($data['metaTemplates']) && (empty($skip_meta_templates))) {
-        $tabData = [
-            'navs' => [],
-            'content' => []
+        $metaFieldsData = [
+            'data' => $data,
         ];
-        foreach($data['metaTemplates'] as $metaTemplate) {
-            if (!empty($metaTemplate->meta_template_fields)) {
-                if ($metaTemplate->is_default) {
-                    $tabData['navs'][] = [
-                        'html' => $this->element('/genericElements/MetaTemplates/metaTemplateNav', ['metaTemplate' => $metaTemplate])
-                    ];
-                } else {
-                    $tabData['navs'][] = [
-                        'text' => $metaTemplate->name
-                    ];
-                }
-                $fieldsHtml = '<table class="table table-striped">';
-                foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
-                    $metaField = $metaTemplateField->meta_fields[0];
-                    $fieldsHtml .= sprintf(
-                        '<tr class="row"><td class="col-sm-2 font-weight-bold">%s</td><td class="col-sm-10">%s</td></tr>',
-                        h($metaField->field),
-                        $this->element(
-                            '/genericElements/SingleViews/Fields/genericField',
-                            [
-                                'data' => $metaField->value,
-                                'field' => [
-                                    'raw' => $metaField->value
-                                ]
-                            ]
-                        )
-                    );
-                }
-                $fieldsHtml .= '</table>';
-                $tabData['content'][] = $fieldsHtml;
-            }
+        if (!empty($combinedFieldsView)) {
+            $metaFieldsData['additionalTabs'] = [
+                'navs' => [
+                    ['text' => __('Default')]
+                ],
+                'content' => [
+                    $listTable
+                ]
+            ];
+            $listTable = '';
         }
-        if (!empty($tabData['navs'])) {
-            $metaTemplateTabs = $this->Bootstrap->Tabs([
-               'pills' => true,
-               'card' => true,
-               'data' => $tabData
-           ]);
-        }
+        $metafieldsPanel = $this->element('/genericElements/SingleViews/metafields_panel', $metaFieldsData);
     }
     $ajaxLists = '';
     if (!empty($children)) {
@@ -111,21 +79,18 @@
         $title;
     echo sprintf(
         "<div id=\"single-view-table-container-%s\">
-            <h2>%s</h2>
+            <h2 class=\"fw-light\">%s</h2>
             %s%s
-            <div class=\"px-3\">
-                <table id=\"single-view-table-%s\" class=\"table table-striped col-sm-8\">%s</table>
-            </div>
-            <div id=\"metaTemplates\" class=\"col-lg-8 px-0\">%s</div>
+            <div>%s</div>
+            <div id=\"metafieldsPanel\" class=\"col-lg-8 px-0\">%s</div>
             <div id=\"accordion\">%s</div>
         </div>",
         $tableRandomValue,
         h($title),
         empty($description) ? '' : sprintf('<p>%s</p>', h($description)),
         empty($description_html) ? '' : sprintf('<p>%s</p>', $description_html),
-        $tableRandomValue,
-        $listElements,
-        $metaTemplateTabs,
+        $listTable,
+        $metafieldsPanel,
         $ajaxLists
     );
 ?>

@@ -31,7 +31,7 @@
                 );
             }
             $rowHtml .= sprintf(
-                '<td%s%s%s%s%s%s%s>%s</td>',
+                '<td%s%s%s%s%s%s%s%s>%s</td>',
                 (empty($field['id'])) ? '' : sprintf('id="%s"', $field['id']),
                 (empty($field['class'])) ? '' : sprintf(' class="%s"', $field['class']),
                 (empty($field['style'])) ? '' : sprintf(' style="%s"', $field['style']),
@@ -41,6 +41,10 @@
                     is_array($field['data_path']) ?
                         h(implode(', ', $field['data_path'])) :
                         (h($field['data_path']))
+                ),
+                sprintf(
+                    ' data-columnname="%s"',
+                    h(\Cake\Utility\Inflector::variable(!empty($field['name']) ? $field['name'] : \Cake\Utility\Inflector::humanize($field['data_path'])))
                 ),
                 (empty($field['encode_raw_value']) || empty($field['data_path'])) ? '' : sprintf(' data-value="%s"', (h($this->Hash->extract($row, $field['data_path'])[0]))),
                 (empty($field['ondblclick'])) ? '' : sprintf(' ondblclick="%s"', $field['ondblclick']),

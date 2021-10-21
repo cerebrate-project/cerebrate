@@ -6,15 +6,21 @@ use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use Cake\ORM\TableRegistry;
 use \Cake\Database\Expression\QueryExpression;
+use Cake\Http\Exception\UnauthorizedException;
+use Cake\Core\Configure;
 
 class UsersController extends AppController
 {
+    public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name'];
+    public $quickFilterFields = ['Individuals.uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'];
+    public $containFields = ['Individuals', 'Roles', 'UserSettings'];
+
     public function index()
     {
         $this->CRUD->index([
-            'contain' => ['Individuals', 'Roles'],
-            'filters' => ['Users.email', 'uuid'],
-            'quickFilters' => ['uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'],
+            'contain' => $this->containFields,
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields,
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -25,7 +31,12 @@ class UsersController extends AppController
 
     public function add()
     {
-        $this->CRUD->add();
+        $this->CRUD->add([
+            'beforeSave' => function($data) {
+                $this->Users->enrollUserRouter($data);
+                return $data;
+            }
+        ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -139,21 +150,39 @@ class UsersController extends AppController
         }
     }
 
+    public function settings()
+    {
+        $this->set('user', $this->ACL->getUser());
+        $all = $this->Users->UserSettings->getSettingsFromProviderForUser($this->ACL->getUser()['id'], true);
+        $this->set('settingsProvider', $all['settingsProvider']);
+        $this->set('settings', $all['settings']);
+        $this->set('settingsFlattened', $all['settingsFlattened']);
+        $this->set('notices', $all['notices']);
+    }
+
     public function register()
     {
-        $this->InboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
-        $processor = $this->InboxProcessors->getProcessor('User', 'Registration');
-        $data = [
-            'origin' => '127.0.0.1',
-            'comment' => 'Hi there!, please create an account',
-            'data' => [
-                'username' => 'foobar',
-                'email' => 'foobar@admin.test',
-                'first_name' => 'foo',
-                'last_name' => 'bar',
-            ],
-        ];
-        $processorResult = $processor->create($data);
-        return $processor->genHTTPReply($this, $processorResult, ['controller' => 'Inbox', 'action' => 'index']);
+        if (empty(Configure::read('security.registration.self-registration'))) {
+            throw new UnauthorizedException(__('User self-registration is not open.'));
+        }
+        if ($this->request->is('post')) {
+            $data = $this->request->getData();
+            $this->InboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
+            $processor = $this->InboxProcessors->getProcessor('User', 'Registration');
+            $data = [
+                'origin' => $this->request->clientIp(),
+                'comment' => '-no comment-',
+                'data' => [
+                    'username' => $data['username'],
+                    'email' => $data['email'],
+                    'first_name' => $data['first_name'],
+                    'last_name' => $data['last_name'],
+                    'password' => $data['password'],
+                ],
+            ];
+            $processorResult = $processor->create($data);
+            return $processor->genHTTPReply($this, $processorResult, ['controller' => 'Inbox', 'action' => 'index']);
+        }
+        $this->viewBuilder()->setLayout('login');
     }
 }

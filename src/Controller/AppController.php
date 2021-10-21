@@ -40,6 +40,7 @@ class AppController extends Controller
     public $isRest = null;
     public $restResponsePayload = null;
     public $user = null;
+    public $breadcrumb = [];
 
     /**
      * Initialization hook method.
@@ -63,9 +64,10 @@ class AppController extends Controller
         ]);
         $this->loadModel('MetaFields');
         $this->loadModel('MetaTemplates');
+        $table = $this->getTableLocator()->get($this->modelClass);
         $this->loadComponent('CRUD', [
             'request' => $this->request,
-            'table' => $this->{$this->modelClass},
+            'table' => $table,
             'MetaFields' => $this->MetaFields,
             'MetaTemplates' => $this->MetaTemplates
         ]);
@@ -73,6 +75,9 @@ class AppController extends Controller
         $this->loadComponent('ACL', [
             'request' => $this->request,
             'Authentication' => $this->Authentication
+        ]);
+        $this->loadComponent('Navigation', [
+            'request' => $this->request,
         ]);
         if (Configure::read('debug')) {
             Configure::write('DebugKit.panels', ['DebugKit.Packages' => true]);
@@ -97,7 +102,7 @@ class AppController extends Controller
         $this->ACL->setPublicInterfaces();
         if (!empty($this->request->getAttribute('identity'))) {
             $user = $this->Users->get($this->request->getAttribute('identity')->getIdentifier(), [
-                'contain' => ['Roles', 'Individuals' => 'Organisations']
+                'contain' => ['Roles', 'Individuals' => 'Organisations', 'UserSettings']
             ]);
             if (!empty($user['disabled'])) {
                 $this->Authentication->logout();
@@ -107,6 +112,8 @@ class AppController extends Controller
             unset($user['password']);
             $this->ACL->setUser($user);
             $this->isAdmin = $user['role']['perm_admin'];
+            $this->set('menu', $this->ACL->getMenu());
+            $this->set('loggedUser', $this->ACL->getUser());
         } else if ($this->ParamHandler->isRest()) {
             throw new MethodNotAllowedException(__('Invalid user credentials.'));
         }
@@ -121,11 +128,19 @@ class AppController extends Controller
         }
 
         $this->ACL->checkAccess();
-        $this->set('menu', $this->ACL->getMenu());
+        $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
-        $this->set('darkMode', !empty(Configure::read('Cerebrate.dark')));
         $this->set('baseurl', Configure::read('App.fullBaseUrl'));
+        if (!empty($user) && !empty($user->user_settings_by_name['ui.bsTheme']['value'])) {
+            $this->set('bsTheme', $user->user_settings_by_name['ui.bsTheme']['value']);
+        } else {
+            $this->set('bsTheme', Configure::check('ui.bsTheme') ? Configure::read('ui.bsTheme') : 'default');
+        }
+
+        if ($this->modelClass == 'Tags.Tags') {
+            $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
+        }
     }
 
     private function authApiUser(): void

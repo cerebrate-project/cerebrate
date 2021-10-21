@@ -17,13 +17,13 @@
         }
     }
     echo sprintf(
-        '<span id = "%sInfoPopover" class="icon-info-sign" data-toggle="popover" data-trigger="hover"></span>',
+        '<span id = "%sInfoPopover" class="icon-info-sign" data-bs-toggle="popover" data-bs-trigger="hover"></span>',
         h($field['field'])
     );
 ?>
 <script type="text/javascript">
     $(document).ready(function() {
-        $('#<?php echo h($field['field']); ?>InfoPopover').popover({
+        new bootstrap.Popover('#<?php echo h($field['field']); ?>InfoPopover', {
             html: true,
             content: function() {
                 var tempSelector = '#<?php echo h($modelForForm . \Cake\Utility\Inflector::camelize($field['field'])); ?>';

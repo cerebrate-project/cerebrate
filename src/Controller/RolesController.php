@@ -12,11 +12,15 @@ use Cake\Http\Exception\ForbiddenException;
 
 class RolesController extends AppController
 {
+    public $filterFields = ['name', 'uuid', 'perm_admin', 'Users.id', 'perm_org_admin'];
+    public $quickFilterFields = ['name'];
+    public $containFields = [];
+
     public function index()
     {
         $this->CRUD->index([
-            'filters' => ['name', 'uuid', 'perm_admin', 'Users.id'],
-            'quickFilters' => ['name']
+            'filters' => $this->filterFields,
+            'quickFilters' => $this->quickFilterFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

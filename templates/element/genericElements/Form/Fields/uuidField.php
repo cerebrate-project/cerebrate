@@ -9,11 +9,11 @@
     $label = $fieldData['label'];
     $formElement = $this->FormFieldMassage->prepareFormElement($this->Form, $params, $fieldData);
     $temp = sprintf(
-        '<div class="form-group row ">
-            <div class="col-sm-2 col-form-label">%s</div>
+        '<div class="row mb-3">
+            <div class="col-sm-2 form-label">%s</div>
             <div class="col-sm-10">
                 <div class="input-group">
-                    %s<span class="input-group-append">%s</span>
+                    %s<span>%s</span>
                 </div>
             </div>
         </div>',

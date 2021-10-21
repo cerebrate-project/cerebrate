@@ -5,6 +5,14 @@ An Ubuntu server (18.04/20.04 should both work fine) - though other linux instal
 - php extensions for intl, mysql, sqlite3, mbstring, xml need to be installed and running
 - composer
 
+## Network requirements
+
+Cerebrate communicates via HTTPS so in order to be able to connect to other cerebrate nodes, requiring the following ports to be open:
+- port 443 needs to be open for outbound connections to be able to pull contactdb / sharing group information in
+- Cerebrate also needs to be accessible (via port 443) from the outside if:
+    - you wish to pull interconnect local tools with remote cerebrate instances
+    - you wish to act as a hub node for a community where members are expected to pull data from your node
+
 
 ## Cerebrate installation instructions
 
@@ -59,6 +67,7 @@ create your local configuration and set the db credentials
 
 ```bash
 sudo -u www-data cp -a /var/www/cerebrate/config/app_local.example.php /var/www/cerebrate/config/app_local.php
+sudo -u www-data cp -a /var/www/cerebrate/config/config.example.json /var/www/cerebrate/config/config.json
 sudo -u www-data vim /var/www/cerebrate/config/app_local.php
 ```
 
@@ -79,6 +88,20 @@ This would be, when following the steps above:
             'password' => 'YOUR_PASSWORD',
             'database' => 'cerebrate',
 ```
+
+Run the database schema migrations
+```bash
+/var/www/cerebrate/bin/cake migrations migrate
+/var/www/cerebrate/bin/cake migrations migrate -p tags
+/var/www/cerebrate/bin/cake migrations migrate -p ADmad/SocialAuth
+```
+
+Clean cakephp caches
+```bash
+sudo rm /var/www/cerebrate/tmp/cache/models/*
+sudo rm /var/www/cerebrate/tmp/cache/persistent/*
+```
+
 Create an apache config file for cerebrate / ssh key and point the document root to /var/www/cerebrate/webroot and you're good to go
 
 For development installs the following can be done:
