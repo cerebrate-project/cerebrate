@@ -18,6 +18,24 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
         parent::__construct();
     }
 
+    public function retrieveSettingPathsBasedOnBlueprint(): array
+    {
+        $blueprint = $this->generateSettingsConfiguration();
+        $paths = [];
+        foreach ($blueprint as $l1) {
+            foreach ($l1 as $l2) {
+                foreach ($l2 as $l3) {
+                    foreach ($l3 as $k => $v) {
+                        if ($k[0] !== '_') {
+                            $paths[] = $k;
+                        }
+                    }
+                }
+            }
+        }
+        return $paths;
+    }
+
     protected function generateSettingsConfiguration()
     {
         return [
@@ -26,7 +44,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                     'Essentials' => [
                         '_description' => __('Ensentials settings required for the application to run normally.'),
                         '_icon' => 'user-cog',
-                        'app.baseurl' => [
+                        'App.baseurl' => [
                             'name' => __('Base URL'),
                             'type' => 'string',
                             'description' => __('The base url of the application (in the format https://www.mymispinstance.com or https://myserver.com/misp). Several features depend on this setting being correctly set to function.'),
@@ -34,7 +52,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'severity' => 'critical',
                             'test' => 'testBaseURL',
                         ],
-                        'app.uuid' => [
+                        'App.uuid' => [
                             'name' => 'UUID',
                             'type' => 'string',
                             'description' => __('The Cerebrate instance UUID. This UUID is used to identify this instance.'),
@@ -85,26 +103,26 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                 ],
                 'Network' => [
                     'Proxy' => [
-                        'proxy.host' => [
+                        'Proxy.host' => [
                             'name' => __('Host'),
                             'type' => 'string',
                             'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
                             'test' => 'testHostname',
                         ],
-                        'proxy.port' => [
+                        'Proxy.port' => [
                             'name' => __('Port'),
                             'type' => 'integer',
                             'description' => __('The TCP port for the HTTP proxy.'),
                             'test' => 'testForRangeXY',
                         ],
-                        'proxy.user' => [
+                        'Proxy.user' => [
                             'name' => __('User'),
                             'type' => 'string',
                             'description' => __('The authentication username for the HTTP proxy.'),
                             'default' => 'admin',
                             'dependsOn' => 'proxy.host',
                         ],
-                        'proxy.password' => [
+                        'Proxy.password' => [
                             'name' => __('Password'),
                             'type' => 'string',
                             'description' => __('The authentication password for the HTTP proxy.'),
@@ -181,11 +199,16 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'dependsOn' => 'keycloak.enabled'
                         ],
                         'keycloak.default_role_name' => [
-                            'name' => 'Authoritative',
-                            'type' => 'boolean',
+                            'name' => 'Default role',
+                            'type' => 'select',
                             'severity' => 'info',
-                            'description' => __('Override local role and organisation settings based on the settings in KeyCloak'),
-                            'default' => false,
+                            'description' => __('Select the default role name to be used when creating users'),
+                            'options' => function ($settingsProviders) {
+                                $roleTable = TableRegistry::getTableLocator()->get('Roles');
+                                $allRoleNames = $roleTable->find()->toArray();
+                                $allRoleNames = array_column($allRoleNames, 'name');
+                                return array_combine($allRoleNames, $allRoleNames);
+                            },
                             'dependsOn' => 'keycloak.enabled'
                         ],
                         'keycloak.mapping.org_uuid' => [
@@ -252,7 +275,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                 ],
                 'Development' => [
                     'Debugging' => [
-                        'security.debug' => [
+                        'debug' => [
                             'name' => __('Debug Level'),
                             'type' => 'select',
                             'description' => __('The debug level of the instance'),
