@@ -18,6 +18,7 @@ class UsersTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('Timestamp');
         $this->addBehavior('UUID');
         $this->initAuthBehaviors();
         $this->belongsTo(
