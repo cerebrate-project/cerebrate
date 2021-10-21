@@ -135,7 +135,7 @@ class AppController extends Controller
         if (!empty($user) && !empty($user->user_settings_by_name['ui.bsTheme']['value'])) {
             $this->set('bsTheme', $user->user_settings_by_name['ui.bsTheme']['value']);
         } else {
-            $this->set('bsTheme', Configure::read('ui.bsTheme'));
+            $this->set('bsTheme', Configure::check('ui.bsTheme') ? Configure::read('ui.bsTheme') : 'default');
         }
 
         if ($this->modelClass == 'Tags.Tags') {
