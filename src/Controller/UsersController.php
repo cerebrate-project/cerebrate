@@ -162,7 +162,7 @@ class UsersController extends AppController
 
     public function register()
     {
-        if (empty(Configure::read('Cerebrate')['security.registration.self-registration'])) {
+        if (empty(Configure::read('security.registration.self-registration'))) {
             throw new UnauthorizedException(__('User self-registration is not open.'));
         }
         if ($this->request->is('post')) {
