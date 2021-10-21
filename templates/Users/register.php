@@ -37,6 +37,9 @@ use Cake\Core\Configure;
     echo $this->Form->control('password', ['type' => 'password', 'label' => __('Password'), 'class' => 'form-control mb-4']);
 
     echo $this->Form->control(__('Sign up'), ['type' => 'submit', 'class' => 'btn btn-primary']);
+    echo '<div class="text-end">';
+    echo sprintf('<span class="text-secondary ms-auto" style="font-size: 0.8rem">%s <a href="/users/register" class="text-decoration-none link-primary fw-bold">%s</a></span>', __('Have an account?'), __('Sign in'));
+    echo '</div>';
     echo $this->Form->end();
     ?>
 </div>
