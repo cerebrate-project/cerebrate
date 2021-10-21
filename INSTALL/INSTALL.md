@@ -67,6 +67,7 @@ create your local configuration and set the db credentials
 
 ```bash
 sudo -u www-data cp -a /var/www/cerebrate/config/app_local.example.php /var/www/cerebrate/config/app_local.php
+sudo -u www-data cp -a /var/www/cerebrate/config/config.example.json /var/www/cerebrate/config/config.json
 sudo -u www-data vim /var/www/cerebrate/config/app_local.php
 ```
 
@@ -87,6 +88,20 @@ This would be, when following the steps above:
             'password' => 'YOUR_PASSWORD',
             'database' => 'cerebrate',
 ```
+
+Run the database schema migrations
+```bash
+/var/www/cerebrate/bin/cake migrations migrate
+/var/www/cerebrate/bin/cake migrations migrate -p tags
+/var/www/cerebrate/bin/cake migrations migrate -p ADmad/SocialAuth
+```
+
+Clean cakephp caches
+```bash
+sudo rm /var/www/cerebrate/tmp/cache/models/*
+sudo rm /var/www/cerebrate/tmp/cache/persistent/*
+```
+
 Create an apache config file for cerebrate / ssh key and point the document root to /var/www/cerebrate/webroot and you're good to go
 
 For development installs the following can be done:
