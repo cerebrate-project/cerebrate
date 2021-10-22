@@ -9,9 +9,9 @@ Cerebrate is an [open-source platform](https://github.com/cerebrate-project) mea
 - Distributed synchronisation model where multiple Cerebrate instances can be interconnected amongst organisations and/or departments;
 - Management of individuals and their affiliations to each organisations;
 - Advanced API and CLI to integrate with existing tools (e.g. importing existing directory information);
-- Dynamic model for creating new organisational structure;
+- Dynamic model for creating new organisational structures;
 - Support existing organisational structures such as [FIRST.org](https://www.first.org/) directory, EU [CSIRTs network](https://csirtsnetwork.eu/);
-- Local tooling interconnection to easily interconnect existing tools with their native protocols;
+- Local tooling interconnection to easily connect existing tools with their native protocols;
 
 Cerebrate is developed in the scope of the MeliCERTes v2 project.
 
