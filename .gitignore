@@ -1,6 +1,8 @@
 composer.lock
 config/app_local.php
+config/Migrations/schema-dump-default.lock
 logs
 tmp
 vendor
-
+webroot/theme/node_modules
+.vscode
