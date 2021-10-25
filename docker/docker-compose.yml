@@ -12,7 +12,7 @@ services:
       MYSQL_USER: "cerebrate"
       MYSQL_PASSWORD: "etarberec"
   www:
-    image: $IMAGE_NAME
+    image: ghcr.io/cerebrate-project/cerebrate:main
     ports:
       - "8080:80"
     volumes:
