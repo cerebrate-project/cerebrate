@@ -38,6 +38,11 @@ class Sidemenu {
                     'label' => __('Sharing Groups'),
                     'icon' => $this->iconTable['SharingGroups'],
                     'url' => '/sharingGroups/index',
+                ],
+                'MailingLists' => [
+                    'label' => __('Mailing Lists'),
+                    'icon' => $this->iconTable['MailingLists'],
+                    'url' => '/mailingLists/index',
                 ]
             ],
             __('Synchronisation') => [

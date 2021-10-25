@@ -1,5 +1,5 @@
 <?php
-    /*
+/*
      * Generic form builder
      *
      * Simply pass a JSON with the following keys set:
@@ -26,6 +26,7 @@
         $data['url'] = ["controller" => $this->request->getParam('controller'), "action" => $this->request->getParam('url')];
     }
     $formRandomValue = Cake\Utility\Security::randomString(8);
+    $initSelect2 = false;
     $formCreate = $this->Form->create($entity, ['id' => 'form-' . $formRandomValue]);
     $default_template = [
         'inputContainer' => '<div class="row mb-3">{{content}}</div>',
@@ -52,6 +53,7 @@
                     continue;
                 }
             }
+            $initSelect2 = $initSelect2 || (!empty($fieldData['type']) && $fieldData['type'] == 'dropdown' && !empty($fieldData['select2']));
             $formTemplate = $default_template;
             if (!empty($fieldData['floating-label'])) {
                 $formTemplate['inputContainer'] = '<div class="form-floating input {{type}}{{required}}">{{content}}</div>';
@@ -66,7 +68,8 @@
                 continue;
             }
             $fieldsString .= $this->element(
-                'genericElements/Form/fieldScaffold', [
+                'genericElements/Form/fieldScaffold',
+                [
                     'fieldData' => $fieldData,
                     'form' => $this->Form,
                     'simpleFieldWhitelist' => $simpleFieldWhitelist
@@ -76,7 +79,8 @@
     }
     if (!empty($data['metaTemplates']) && $data['metaTemplates']->count() > 0) {
         $metaTemplateString = $this->element(
-            'genericElements/Form/metaTemplateScaffold', [
+            'genericElements/Form/metaTemplateScaffold',
+            [
                 'metaTemplatesData' => $data['metaTemplates'],
                 'form' => $this->Form,
             ]
@@ -100,6 +104,7 @@
     $actionName = h(\Cake\Utility\Inflector::humanize($this->request->getParam('action')));
     $modelName = h(\Cake\Utility\Inflector::humanize(\Cake\Utility\Inflector::singularize($this->request->getParam('controller'))));
     if (!empty($ajax)) {
+        $seedModal = 'mseed-' . mt_rand();
         echo $this->element('genericElements/genericModal', [
             'title' => empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
             'body' => sprintf(
@@ -112,7 +117,8 @@
                 $formCreate,
                 $fieldsString,
                 empty($metaTemplateString) ? '' : $this->element(
-                    'genericElements/accordion_scaffold', [
+                    'genericElements/accordion_scaffold',
+                    [
                         'children' => [
                             [
                                 'body' => $metaTemplateString,
@@ -124,7 +130,7 @@
                 $formEnd
             ),
             'actionButton' => $this->element('genericElements/Form/submitButton', $submitButtonData),
-            'class' => 'modal-lg'
+            'class' => "modal-lg {$seedModal}"
         ]);
     } else if (!empty($raw)) {
         echo sprintf(
@@ -137,7 +143,8 @@
             $formCreate,
             $fieldsString,
             empty($metaTemplateString) ? '' : $this->element(
-                'genericElements/accordion_scaffold', [
+                'genericElements/accordion_scaffold',
+                [
                     'children' => [
                         [
                             'body' => $metaTemplateString,
@@ -161,7 +168,8 @@
             ),
             sprintf('<div class="panel">%s</div>', $fieldsString),
             empty($metaTemplateString) ? '' : $this->element(
-                'genericElements/accordion_scaffold', [
+                'genericElements/accordion_scaffold',
+                [
                     'children' => [
                         [
                             'body' => $metaTemplateString,
@@ -184,5 +192,14 @@
         $('.formDropdown').on('change', function() {
             executeStateDependencyChecks('#' + this.id);
         })
+        <?php if (!empty($initSelect2)): ?>
+            <?php
+                $dropdownParent = !empty($seedModal) ? sprintf("$('.modal-dialog.%s .modal-body')", $seedModal) : "$(document.body)";
+            ?>
+            $('select.select2-input').select2({
+                dropdownParent: <?= $dropdownParent ?>,
+                width: '100%',
+            })
+        <?php endif; ?>
     });
 </script>

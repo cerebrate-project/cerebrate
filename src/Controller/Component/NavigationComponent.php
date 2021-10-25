@@ -24,6 +24,7 @@ class NavigationComponent extends Component
         'Organisations' => 'building',
         'EncryptionKeys' => 'key',
         'SharingGroups' => 'user-friends',
+        'MailingLists' => 'mail-bulk',
         'Broods' => 'network-wired',
         'Roles' => 'id-badge',
         'Users' => 'users',
@@ -158,6 +159,7 @@ class NavigationComponent extends Component
             'Tags',
             'LocalTools',
             'UserSettings',
+            'MailingLists',
         ];
         foreach ($CRUDControllers as $controller) {
             $bcf->setDefaultCRUDForModel($controller);

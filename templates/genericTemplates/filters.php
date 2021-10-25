@@ -96,7 +96,7 @@ echo $this->Bootstrap->modal([
                 activeFilters[fullFilter] = rowData['value']
             }
         })
-        $select = modalObject.$modal.find('select.tag-input')
+        $select = modalObject.$modal.find('select.select2-input')
         activeFilters['filteringTags'] = $select.select2('data').map(tag => tag.text)
         const searchParam = jQuery.param(activeFilters);
         const url = `/${controller}/${action}?${searchParam}`
@@ -125,7 +125,7 @@ echo $this->Bootstrap->modal([
             }
             setFilteringValues($filteringTable, field, value, operator)
         }
-        $select = $filteringTable.closest('.modal-body').find('select.tag-input')
+        $select = $filteringTable.closest('.modal-body').find('select.select2-input')
         let passedTags = []
         tags.forEach(tagname => {
             const existingOption = $select.find('option').filter(function() {
