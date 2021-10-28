@@ -6,13 +6,15 @@ use Cake\Utility\Inflector;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
-use Cake\Error\Debugger;
+use Cake\ORM\Query;
+use Cake\ORM\Entity;
+use Exception;
 
 class MailingListsController extends AppController
 {
     public $filterFields = ['MailingLists.uuid', 'MailingLists.name', 'description', 'releasability'];
     public $quickFilterFields = ['MailingLists.uuid', ['MailingLists.name' => true], ['description' => true], ['releasability' => true]];
-    public $containFields = ['Users', 'Individuals'];
+    public $containFields = ['Users', 'Individuals', 'MetaFields'];
 
     public function index()
     {
@@ -72,45 +74,151 @@ class MailingListsController extends AppController
 
     public function listIndividuals($mailinglist_id)
     {
-        $individuals = $this->MailingLists->get($mailinglist_id, [
-            'contain' => 'Individuals'
-        ])->individuals;
-        $params = $this->ParamHandler->harvestParams(['quickFilter']);
-        if (!empty($params['quickFilter'])) {
-            // foreach ($sharingGroup['sharing_group_orgs'] as $k => $org) {
-            //     if (strpos($org['name'], $params['quickFilter']) === false) {
-            //         unset($sharingGroup['sharing_group_orgs'][$k]);
-            //     }
-            // }
-            // $sharingGroup['sharing_group_orgs'] = array_values($sharingGroup['sharing_group_orgs']);
+        $quickFilter = [
+            'uuid',
+            ['first_name' => true],
+            ['last_name' => true],
+        ];
+        $quickFilterUI = array_merge($quickFilter, [
+            ['Registered emails' => true],
+        ]);
+        $filters = ['uuid', 'first_name', 'last_name', 'quickFilter'];
+        $queryParams = $this->ParamHandler->harvestParams($filters);
+        $activeFilters = $queryParams['quickFilter'] ?? [];
+
+         $mailingList = $this->MailingLists->find()
+            ->where(['MailingLists.id' => $mailinglist_id])
+            ->contain('MetaFields')
+            ->first();
+
+        $matchingMetaFieldParentIDs = [];
+        // Collect individuals having a matching meta_field
+        foreach ($mailingList->meta_fields as $metaField) {
+            if (
+                empty($queryParams['quickFilter']) ||
+                (
+                    str_contains($metaField->field, 'email') &&
+                    str_contains($metaField->value, $queryParams['quickFilter'])
+                )
+            ) {
+                $matchingMetaFieldParentIDs[$metaField->parent_id] = true;
+            }
         }
+        $matchingMetaFieldParentIDs = array_keys($matchingMetaFieldParentIDs);
+        $mailingList = $this->MailingLists->loadInto($mailingList, [
+            'Individuals' => function (Query $q) use ($queryParams, $quickFilter, $matchingMetaFieldParentIDs) {
+                $conditions = [];
+                if (!empty($queryParams)) {
+                    $conditions = $this->CRUD->genQuickFilterConditions($queryParams, $q, $quickFilter);
+                }
+                if (!empty($matchingMetaFieldParentIDs)) {
+                    $conditions[] = function (QueryExpression $exp) use ($matchingMetaFieldParentIDs) {
+                        return $exp->in('Individuals.id', $matchingMetaFieldParentIDs);
+                    };
+                }
+                if (!empty($queryParams['quickFilter'])) {
+                    $conditions[] = [
+                        'MailingListsIndividuals.include_primary_email' => true,
+                        'Individuals.email LIKE' => "%{$queryParams['quickFilter']}%"
+                    ];
+                }
+                $q->where([
+                    'OR' => $conditions
+                ]);
+                return $q;
+            }
+        ]);
+        $mailingList->injectRegisteredEmailsIntoIndividuals();
         if ($this->ParamHandler->isRest()) {
-            return $this->RestResponse->viewData($individuals, 'json');
+            return $this->RestResponse->viewData($mailingList->individuals, 'json');
         }
+        $individuals = $this->CustomPagination->paginate($mailingList->individuals);
         $this->set('mailing_list_id', $mailinglist_id);
+        $this->set('quickFilter', $quickFilterUI);
+        $this->set('activeFilters', $activeFilters);
+        $this->set('quickFilterValue', $queryParams['quickFilter'] ?? '');
         $this->set('individuals', $individuals);
     }
 
     public function addIndividual($mailinglist_id)
     {
         $mailingList = $this->MailingLists->get($mailinglist_id, [
-            'contain' => 'Individuals'
+            'contain' => ['Individuals', 'MetaFields']
         ]);
-        $conditions = [];
+        $linkedIndividualsIDs = Hash::extract($mailingList, 'individuals.{n}.id');
+        $conditions = [
+            'id NOT IN' => $linkedIndividualsIDs
+        ];
         $dropdownData = [
-            'individuals' => $this->MailingLists->Individuals->getTarget()->find('list', [
-                'sort' => ['name' => 'asc'],
-                'conditions' => $conditions
-            ])
+            'individuals' => $this->MailingLists->Individuals->getTarget()->find()
+                ->order(['first_name' => 'asc'])
+                ->where($conditions)
+                ->all()
+                ->combine('id', 'full_name')
+                ->toArray()
         ];
         if ($this->request->is('post') || $this->request->is('put')) {
             $memberIDs = $this->request->getData()['individuals'];
+            $chosen_emails = $this->request->getData()['chosen_emails'];
+            if (!empty($chosen_emails)) {
+                $chosen_emails = json_decode($chosen_emails, true);
+                $chosen_emails = !is_null($chosen_emails) ? $chosen_emails : [];
+            } else {
+                $chosen_emails = [];
+            }
             $members = $this->MailingLists->Individuals->getTarget()->find()->where([
                 'id IN' => $memberIDs
             ])->all()->toArray();
-            $success = (bool)$this->MailingLists->Individuals->link($mailingList, $members);
+            $memberToLink = [];
+            $memberToUpdate = [];
+            foreach ($members as $i => $member) {
+                $includePrimary = in_array('primary', $chosen_emails[$member->id]);
+                $chosen_emails[$member->id] = array_filter($chosen_emails[$member->id], function($entry) {
+                    return $entry != 'primary';
+                });
+                $members[$i]->_joinData = new Entity(['include_primary_email' => $includePrimary]);
+                if (in_array($member->id, $linkedIndividualsIDs)) { // individual already in the list
+                    // $memberToUpdate[] = $members[$i];
+                } else { // new individual to add to the list
+                    $memberToLink[] = $members[$i];
+                }
+            }
+
+            // save new individuals
+            if (!empty($memberToLink)) {
+                $success = (bool)$this->MailingLists->Individuals->link($mailingList, $memberToLink);
+                if ($success && !empty($chosen_emails[$member->id])) { // Include any remaining emails from the metaFields
+                    $emailsFromMetaFields = $this->MailingLists->MetaFields->find()->where([
+                        'id IN' => $chosen_emails[$member->id]
+                    ])->all()->toArray();
+                    $success = (bool)$this->MailingLists->MetaFields->link($mailingList, $emailsFromMetaFields);
+                }
+            }
+
+            // update existing individuals
+            if (!empty($memberToUpdate)) {
+                $memberToUpdateIDs = Hash::extract($memberToUpdate, '{n}.id');
+                $metaFieldsToRemove = array_filter($mailingList->meta_fields, function($metaField) use ($memberToUpdateIDs) {
+                    return in_array($metaField->parent_id, $memberToUpdateIDs);
+                });
+
+                // Trying to  update `include_primary`...
+                // $success = (bool)$this->MailingLists->Individuals->unlink($mailingList, $memberToUpdate, ['atomic' => false]);
+                // $success = $success && (bool)$this->MailingLists->Individuals->link($mailingList, $memberToUpdate);
+
+                // Remove and add relevant meta fields
+                // $success = (bool)$this->MailingLists->MetaFields->unlink($mailingList, $metaFieldsToRemove, ['atomic' => false]);
+                // if ($success && !empty($chosen_emails[$member->id])) { // Include any remaining emails from the metaFields
+                //     $emailsFromMetaFields = $this->MailingLists->MetaFields->find()->where([
+                //         'id IN' => $chosen_emails[$member->id]
+                //     ])->all()->toArray();
+                //     $success = (bool)$this->MailingLists->MetaFields->link($mailingList, $emailsFromMetaFields);
+                // }
+            }
+
+
             if ($success) {
-                $message = __n('%s individual added to the mailing list.', '%s Individuals added to the mailing list.', count($members), count($members));
+                $message = __n('{0} individual added to the mailing list.', '{0} Individuals added to the mailing list.', count($members), count($members));
                 $mailingList = $this->MailingLists->get($mailingList->id);
             } else {
                 $message = __n('The individual could not be added to the mailing list.', 'The Individuals could not be added to the mailing list.', count($members));
@@ -129,7 +237,7 @@ class MailingListsController extends AppController
     public function removeIndividual($mailinglist_id, $individual_id=null)
     {
         $mailingList = $this->MailingLists->get($mailinglist_id, [
-            'contain' => 'Individuals'
+            'contain' => ['Individuals', 'MetaFields']
         ]);
         $individual = [];
         if (!is_null($individual_id)) {
@@ -138,13 +246,20 @@ class MailingListsController extends AppController
         if ($this->request->is('post') || $this->request->is('delete')) {
             $success = false;
             if (!is_null($individual_id)) {
-                $individual = $this->MailingLists->Individuals->get($individual_id);
-                $success = (bool)$this->MailingLists->Individuals->unlink($mailingList, [$individual]);
+                $individualToRemove = $this->MailingLists->Individuals->get($individual_id);
+                $metaFieldsToRemove = $this->MailingLists->MetaFields->find()->where([
+                    'id IN' => Hash::extract($mailingList, 'meta_fields.{n}.id'),
+                    'parent_id' => $individual_id,
+                ])->all()->toArray();
+                $success = (bool)$this->MailingLists->Individuals->unlink($mailingList, [$individualToRemove]);
+                if ($success && !empty($metaFieldsToRemove)) {
+                    $success = (bool)$this->MailingLists->MetaFields->unlink($mailingList, $metaFieldsToRemove);
+                }
                 if ($success) {
-                    $message = __('Individual removed from the mailing list.');
+                    $message = __('{0} removed from the mailing list.', $individualToRemove->full_name);
                     $mailingList = $this->MailingLists->get($mailingList->id);
                 } else {
-                    $message = __n('Individual could not be removed from the mailing list.');
+                    $message = __n('{0} could not be removed from the mailing list.', $individual->full_name);
                 }
                 $this->CRUD->setResponseForController('remove_individuals', $success, $message, $mailingList, $mailingList->getErrors());
             } else {
@@ -155,22 +270,27 @@ class MailingListsController extends AppController
                 if (empty($params['ids'])) {
                     throw new NotFoundException(__('Invalid {0}.', Inflector::singularize($this->MailingLists->Individuals->getAlias())));
                 } 
-                $individuals = $this->MailingLists->Individuals->find()->where([
+                $individualsToRemove = $this->MailingLists->Individuals->find()->where([
                     'id IN' => array_map('intval', $params['ids'])
                 ])->all()->toArray();
+                $metaFieldsToRemove = $this->MailingLists->MetaFields->find()->where([
+                    'id IN' => Hash::extract($mailingList, 'meta_fields.{n}.id'),
+                    'parent_id IN' => Hash::extract($mailingList, 'meta_fields.{n}.id')
+                ])->all()->toArray();
+                dd($metaFieldsToRemove);
                 $unlinkSuccesses = 0;
-                foreach ($individuals as $individual) {
-                    $success = (bool)$this->MailingLists->Individuals->unlink($mailingList, [$individual]);
+                foreach ($individualsToRemove as $individualToRemove) {
+                    $success = (bool)$this->MailingLists->Individuals->unlink($mailingList, [$individualToRemove]);
                     $results[] = $success;
                     if ($success) {
                         $unlinkSuccesses++;
                     }
                 }
                 $mailingList = $this->MailingLists->get($mailingList->id);
-                $success = $unlinkSuccesses == count($individuals);
+                $success = $unlinkSuccesses == count($individualsToRemove);
                 $message = __(
                     '{0} {1} have been removed.',
-                    $unlinkSuccesses == count($individuals) ? __('All') : sprintf('%s / %s', $unlinkSuccesses, count($individuals)),
+                    $unlinkSuccesses == count($individualsToRemove) ? __('All') : sprintf('%s / %s', $unlinkSuccesses, count($individualsToRemove)),
                     Inflector::singularize($this->MailingLists->Individuals->getAlias())
                 );
                 $this->CRUD->setResponseForController('remove_individuals', $success, $message, $mailingList, []);

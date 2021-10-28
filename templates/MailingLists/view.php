@@ -45,7 +45,8 @@ echo $this->element(
             [
                 'url' => '/mailingLists/listIndividuals/{{0}}',
                 'url_params' => ['id'],
-                'title' => __('Individuals')
+                'title' => __('Individuals'),
+                'collapsed' => 'show',
             ]
         ]
     ]

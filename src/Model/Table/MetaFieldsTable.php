@@ -15,6 +15,12 @@ class MetaFieldsTable extends AppTable
         $this->setDisplayField('field');
         $this->belongsTo('MetaTemplates');
         $this->belongsTo('MetaTemplateFields');
+        $this->belongsTo('Individuals')
+            ->setForeignKey('parent_id')
+            ->setBindingKey('id')
+            ->setConditions([
+                'scope' => 'individual'
+            ]);
     }
 
     public function validationDefault(Validator $validator): Validator

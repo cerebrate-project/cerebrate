@@ -112,11 +112,43 @@ class MailingLists extends AbstractMigration
                 'null' => true,
                 'signed' => false,
                 'length' => 10,
-            ]);
+            ])
+            ->addColumn('include_primary_email', 'boolean', [
+                'default' => 1,
+                'null' => false,
+                'comment' => 'Should the primary email address by included in the mailing list'
+            ])
+            ->addForeignKey('mailing_list_id', 'mailing_lists', 'id', ['delete' => 'CASCADE', 'update' => 'CASCADE'])
+            ->addForeignKey('individual_id', 'individuals', 'id', ['delete' => 'CASCADE', 'update' => 'CASCADE']);
 
         $mailinglists_individuals->addIndex(['mailing_list_id', 'individual_id'], ['unique' => true]);
 
         $mailinglists_individuals->create();
+
+
+        $mailinglists_metafields = $this->table('mailing_lists_meta_fields', [
+            'signed' => false,
+            'collation' => 'utf8mb4_unicode_ci',
+        ]);
+
+        $mailinglists_metafields
+            ->addColumn('mailing_list_id', 'integer', [
+                'default' => null,
+                'null' => true,
+                'signed' => false,
+                'length' => 10,
+            ])
+            ->addColumn('meta_field_id', 'integer', [
+                'default' => null,
+                'null' => true,
+                'signed' => false,
+                'length' => 10,
+            ])
+            ->addPrimaryKey(['mailing_list_id', 'meta_field_id'])
+            ->addForeignKey('mailing_list_id', 'mailing_lists', 'id', ['delete'=> 'CASCADE', 'update'=> 'CASCADE'])
+            ->addForeignKey('meta_field_id', 'meta_fields', 'id', ['delete'=> 'CASCADE', 'update'=> 'CASCADE']);
+
+        $mailinglists_metafields->create();
     }
 }
 

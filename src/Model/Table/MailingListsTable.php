@@ -18,19 +18,12 @@ class MailingListsTable extends AppTable
         $this->belongsTo(
             'Users'
         );
-        // $this->belongsToMany(
-        //     'Individuals',
-        //     [
-        //         'className' => 'Individuals',
-        //         'foreignKey' => 'individual_id',
-        //         'joinTable' => 'sgo',
-        //         'targetForeignKey' => 'organisation_id'
-        //     ]
-        // );
 
         $this->belongsToMany('Individuals', [
             'joinTable' => 'mailing_lists_individuals',
         ]);
+        // Change to HasMany?
+        $this->belongsToMany('MetaFields');
 
         $this->setDisplayField('name');
     }

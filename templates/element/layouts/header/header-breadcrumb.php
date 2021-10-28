@@ -92,9 +92,6 @@ echo $this->Breadcrumbs->render(
 
 <?php if (!empty($breadcrumbLinks) || !empty($breadcrumbAction)) : ?>
     <div class="breadcrumb-link-container position-absolute end-0 d-flex">
-    <?php endif; ?>
-
-    <?php if (!empty($breadcrumbLinks)) : ?>
         <div class="header-breadcrumb-children d-none d-md-flex btn-group">
             <?= $breadcrumbLinks ?>
             <?php if (!empty($breadcrumbAction)) : ?>
@@ -106,8 +103,5 @@ echo $this->Breadcrumbs->render(
                 </div>
             <?php endif; ?>
         </div>
-    <?php endif; ?>
-
-    <?php if (!empty($breadcrumbLinks) || !empty($breadcrumbAction)) : ?>
     </div>
 <?php endif; ?>

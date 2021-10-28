@@ -676,21 +676,34 @@ class CRUDComponent extends Component
         $this->Controller->set('quickFilter', empty($quickFilterFields) ? [] : $quickFilterFields);
         if (!empty($params['quickFilter']) && !empty($quickFilterFields)) {
             $this->Controller->set('quickFilterValue', $params['quickFilter']);
-            foreach ($quickFilterFields as $filterField) {
-                $likeCondition = false;
-                if (is_array($filterField)) {
-                    $likeCondition = reset($filterField);
-                    $filterFieldName = array_key_first($filterField);
-                    $queryConditions[$filterFieldName . ' LIKE'] = '%' . $params['quickFilter'] .'%';
-                } else {
-                    $queryConditions[$filterField] = $params['quickFilter'];
-                }
-            }
+            $queryConditions = $this->genQuickFilterConditions($params, $query, $quickFilterFields);
             $query->where(['OR' => $queryConditions]);
         } else {
             $this->Controller->set('quickFilterValue', '');
         }
         return $query;
+    }
+
+    public function genQuickFilterConditions(array $params, \Cake\ORM\Query $query, array $quickFilterFields): array
+    {
+        $queryConditions = [];
+        foreach ($quickFilterFields as $filterField) {
+                $likeCondition = false;
+            if (is_array($filterField)) {
+                reset($filterField);
+                $filterFieldName = array_key_first($filterField);
+                if (!empty($filterField[$filterFieldName])) {
+                    $queryConditions[$filterFieldName . ' LIKE'] = '%' . $params['quickFilter'] . '%';
+                } else {
+                    $queryConditions[$filterField] = $params['quickFilter'];
+                }
+            }
+            $query->where(['OR' => $queryConditions]);
+            } else {
+                $queryConditions[$filterField] = $params['quickFilter'];
+            }
+        }
+        return $queryConditions;
     }
 
     protected function setFilters($params, \Cake\ORM\Query $query, array $options): \Cake\ORM\Query

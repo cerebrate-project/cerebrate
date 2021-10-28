@@ -36,6 +36,15 @@ class IndividualsTable extends AppTable
         $this->belongsToMany('Organisations', [
             'through' => 'Alignments',
         ]);
+
+        $this->hasMany('MetaFields')
+            ->setForeignKey('parent_id')
+            ->setBindingKey('id')
+            ->setConditions([
+                'MetaFields.scope' => 'individual'
+            ])
+            ->setDependent(true);
+
         $this->belongsToMany('MailingLists');
         $this->setDisplayField('email');
     }

@@ -2,7 +2,7 @@
 echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $individuals,
-        'skip_pagination' => 1,
+        // 'skip_pagination' => 1,
         'top_bar' => [
             'children' => [
                 [
@@ -33,11 +33,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 ],
                 [
                     'type' => 'search',
-                    'button' => __('Filter'),
+                    'button' => __('Search'),
                     'placeholder' => __('Enter value to search'),
                     'data' => '',
-                    'searchKey' => 'value'
-                ]
+                    'searchKey' => 'value',
+                    'additionalUrlParams' => h($mailing_list_id)
+                ],
             ]
         ],
         'fields' => [
@@ -45,18 +46,25 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => '#',
                 'sort' => 'id',
                 'data_path' => 'id',
+                'url' => '/individuals/view/{{0}}',
+                'url_vars' => ['id'],
             ],
             [
                 'name' => __('First name'),
                 'data_path' => 'first_name',
+                'url' => '/individuals/view/{{0}}',
+                'url_vars' => ['id'],
             ],
             [
                 'name' => __('Last name'),
                 'data_path' => 'last_name',
+                'url' => '/individuals/view/{{0}}',
+                'url_vars' => ['id'],
             ],
             [
-                'name' => __('Email'),
-                'data_path' => 'email',
+                'name' => __('Registered Email'),
+                'data_path' => 'mailinglist_emails',
+                'element' => 'list',
             ],
             [
                 'name' => __('UUID'),
@@ -65,11 +73,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ]
         ],
         'actions' => [
-            [
-                'url' => '/individuals/view',
-                'url_params_data_paths' => ['id'],
-                'icon' => 'eye'
-            ],
             [
                 'open_modal' => '/mailingLists/removeIndividual/' . h($mailing_list_id) . '/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
