@@ -32,8 +32,10 @@ sudo -u www-data git clone https://github.com/cerebrate-project/cerebrate.git /v
 Run composer
 
 ```bash
+mkdir -p /var/www/.composer
+sudo chown www-data:www-data /var/www/.composer
 cd /var/www/cerebrate
-sudo -u www-data composer install
+sudo -H -u www-data composer install
 ```
 
 Create a database for cerebrate
