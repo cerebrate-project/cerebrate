@@ -58,7 +58,8 @@
             $filterEffective ? '' : 'disabled="disabled"'
         );
         echo sprintf(
-            '<div class="input-group" data-table-random-value="%s" style="margin-left: auto;">%s%s</div>',
+            '<div class="input-group %s" data-table-random-value="%s" style="margin-left: auto;">%s%s</div>',
+            $filterEffective ? '' : 'd-none',
             h($tableRandomValue),
             $input,
             $button

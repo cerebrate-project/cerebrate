@@ -22,6 +22,11 @@ class MetaTemplatesNavigation extends BaseNavigation
             'url' => '/metaTemplates/toggle/{{id}}/default',
             'url_vars' => ['id' => 'id'],
         ]);
+        $this->bcf->addRoute('MetaTemplates', 'update', [
+            'label' => __('Update'),
+            'icon' => 'download',
+            'url' => '/metaTemplates/update',
+        ]);
     }
 
     public function addParents()
@@ -36,6 +41,7 @@ class MetaTemplatesNavigation extends BaseNavigation
 
     public function addActions()
     {
+        $this->bcf->addAction('MetaTemplates', 'index', 'MetaTemplates', 'update');
         $this->bcf->addAction('MetaTemplates', 'view', 'MetaTemplates', 'enable');
         $this->bcf->addAction('MetaTemplates', 'view', 'MetaTemplates', 'set_default');
     }

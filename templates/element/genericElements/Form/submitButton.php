@@ -11,7 +11,8 @@
     } else {
         echo $this->Form->button(empty($text) ? __('Submit') : h($text), [
             'class' => 'btn btn-' . (empty($type) ? 'primary' : h($type)),
-            'type' => 'submit'
+            'type' => 'submit',
+            'data-form-id' => '#form-' . h($formRandomValue)
         ]);
     }
 ?>

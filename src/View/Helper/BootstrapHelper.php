@@ -117,6 +117,12 @@ class BootstrapHelper extends Helper
         return $bsCollapse->collapse();
     }
 
+    public function accordion($options, $content)
+    {
+        $bsAccordion = new BoostrapAccordion($options, $content, $this);
+        return $bsAccordion->accordion();
+    }
+
     public function progressTimeline($options)
     {
         $bsProgressTimeline = new BoostrapProgressTimeline($options, $this);
@@ -1457,6 +1463,96 @@ class BoostrapCollapse extends BootstrapGeneric {
     {
         $html = $this->genControl();
         $html .= $this->genContent();
+        return $html;
+    }
+}
+
+class BoostrapAccordion extends BootstrapGeneric
+{
+    private $defaultOptions = [
+        'stayOpen' => true,
+        'class' => [],
+    ];
+
+    function __construct($options, $content, $btHelper)
+    {
+        $this->allowedOptionValues = [];
+        $this->content = $content;
+        $this->btHelper = $btHelper;
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+        if (!is_array($this->options['class']) && !empty($this->options['class'])) {
+            $this->options['class'] = [$this->options['class']];
+        }
+        $this->seed = 'acc-' . mt_rand();
+        $this->contentSeeds = [];
+        foreach ($this->content as $accordionItem) {
+            $this->contentSeeds[] = mt_rand();
+        }
+    }
+
+    public function accordion()
+    {
+        return $this->genAccordion();
+    }
+
+    private function genHeader($accordionItem, $i)
+    {
+        $html = $this->openNode('h2', [
+            'class' => ['accordion-header'],
+            'id' => 'head-' . $this->contentSeeds[$i]
+        ]);
+        $content = !empty($accordionItem['header']['html']) ? $accordionItem['header']['html'] : h($accordionItem['header']['title'] ?? '- no title -');
+        $buttonOptions = [
+            'class' => array_merge(['accordion-button', empty($accordionItem['_open']) ? 'collapsed' : ''], $accordionItem['header']['__class'] ?? []),
+            'type' => 'button',
+            'data-bs-toggle' => 'collapse',
+            'data-bs-target' => '#body-' . $this->contentSeeds[$i],
+            'aria-expanded' => 'false',
+            'aria-controls' => 'body-' . $this->contentSeeds[$i],
+        ];
+        $html .= $this->genNode('button', $buttonOptions, $content);
+        $html .= $this->closeNode(('h2'));
+        return $html;
+    }
+
+    private function genBody($accordionItem, $i)
+    {
+        $content = $this->genNode('div', [
+            'class' => ['accordion-body']
+        ], $accordionItem['body']);
+        $divOptions = [
+            'class' => array_merge(['accordion-collapse collapse', empty($accordionItem['_open']) ? '' : 'show'], $accordionItem['body']['__class'] ?? []),
+            'id' => 'body-' . $this->contentSeeds[$i],
+            'aria-labelledby' => 'head-' . $this->contentSeeds[$i],
+        ];
+        if (!empty($this->options['stayOpen'])) {
+            $divOptions['data-bs-parent'] = '#' . $this->seed;
+        }
+        $html = $this->genNode('div', $divOptions, $content);
+        return $html;
+    }
+
+    private function genAccordion()
+    {
+        $html = $this->openNode('div', [
+            'class' => array_merge(['accordion'], $this->options['class']),
+            'id' => $this->seed
+        ]);
+        foreach ($this->content as $i => $accordionItem) {
+            $html .= $this->openNode('div', [
+                'class' => array_merge(['accordion-item'], $accordionItem['__class'] ?? [])
+            ]);
+            $html .= $this->genHeader($accordionItem, $i);
+            $html .= $this->genBody($accordionItem, $i);
+            $html .= $this->closeNode('div');
+        }
+        $html .= $this->closeNode('div');
         return $html;
     }
 }

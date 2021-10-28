@@ -684,11 +684,10 @@ class CRUDComponent extends Component
         return $query;
     }
 
-    public function genQuickFilterConditions(array $params, \Cake\ORM\Query $query, array $quickFilterFields): array
+    public function genQuickFilterConditions(array $params, array $quickFilterFields): array
     {
         $queryConditions = [];
         foreach ($quickFilterFields as $filterField) {
-                $likeCondition = false;
             if (is_array($filterField)) {
                 reset($filterField);
                 $filterFieldName = array_key_first($filterField);
@@ -697,8 +696,6 @@ class CRUDComponent extends Component
                 } else {
                     $queryConditions[$filterField] = $params['quickFilter'];
                 }
-            }
-            $query->where(['OR' => $queryConditions]);
             } else {
                 $queryConditions[$filterField] = $params['quickFilter'];
             }

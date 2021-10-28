@@ -19,7 +19,7 @@
     $entity = isset($entity) ? $entity : null;
     $fieldsString = '';
     $simpleFieldWhitelist = [
-        'default', 'type', 'placeholder', 'label', 'empty', 'rows', 'div', 'required'
+        'default', 'type', 'placeholder', 'label', 'empty', 'rows', 'div', 'required', 'templates'
     ];
     //$fieldsArrayForPersistence = array();
     if (empty($data['url'])) {
@@ -116,17 +116,20 @@
                 $ajaxFlashMessage,
                 $formCreate,
                 $fieldsString,
-                empty($metaTemplateString) ? '' : $this->element(
-                    'genericElements/accordion_scaffold',
+                empty($metaTemplateString) ? '' : $this->Bootstrap->accordion(
+                [
+                    'class' => 'mb-2'
+                ],
+                [
                     [
-                        'children' => [
-                            [
-                                'body' => $metaTemplateString,
-                                'title' => 'Meta fields'
-                            ]
-                        ]
-                    ]
-                ),
+                        '_open' => true,
+                        'header' => [
+                            'title' => __('Meta fields')
+                        ],
+                        'body' => $metaTemplateString,
+                    ],
+                ]
+            ),
                 $formEnd
             ),
             'actionButton' => $this->element('genericElements/Form/submitButton', $submitButtonData),
@@ -142,15 +145,18 @@
             $ajaxFlashMessage,
             $formCreate,
             $fieldsString,
-            empty($metaTemplateString) ? '' : $this->element(
-                'genericElements/accordion_scaffold',
+            empty($metaTemplateString) ? '' : $this->Bootstrap->accordion(
                 [
-                    'children' => [
-                        [
-                            'body' => $metaTemplateString,
-                            'title' => 'Meta fields'
-                        ]
-                    ]
+                    'class' => 'mb-2'
+                ],
+                [
+                    [
+                        '_open' => true,
+                        'header' => [
+                            'title' => __('Meta fields')
+                        ],
+                        'body' => $metaTemplateString,
+                    ],
                 ]
             ),
             $formEnd
@@ -167,16 +173,18 @@
                 $data['description']
             ),
             sprintf('<div class="panel">%s</div>', $fieldsString),
-            empty($metaTemplateString) ? '' : $this->element(
-                'genericElements/accordion_scaffold',
+            empty($metaTemplateString) ? '' : $this->Bootstrap->accordion(
                 [
-                    'children' => [
-                        [
-                            'body' => $metaTemplateString,
-                            'title' => 'Meta fields',
-                        ]
-                    ],
                     'class' => 'mb-2'
+                ],
+                [
+                    [
+                        '_open' => true,
+                        'header' => [
+                            'title' => __('Meta fields')
+                        ],
+                        'body' => $metaTemplateString,
+                    ],
                 ]
             ),
             $this->element('genericElements/Form/submitButton', $submitButtonData),
