@@ -107,91 +107,35 @@
         $seedModal = 'mseed-' . mt_rand();
         echo $this->element('genericElements/genericModal', [
             'title' => empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
-            'body' => sprintf(
-                '%s%s%s%s%s%s',
-                empty($data['description']) ? '' : sprintf(
-                    '<div class="pb-2 fw-light">%s</div>',
-                    $data['description']
-                ),
-                $ajaxFlashMessage,
-                $formCreate,
-                $fieldsString,
-                empty($metaTemplateString) ? '' : $this->Bootstrap->accordion(
-                [
-                    'class' => 'mb-2'
-                ],
-                [
-                    [
-                        '_open' => true,
-                        'header' => [
-                            'title' => __('Meta fields')
-                        ],
-                        'body' => $metaTemplateString,
-                    ],
-                ]
-            ),
-                $formEnd
-            ),
+            'body' => $this->element('genericElements/Form/formLayouts/formRaw', [
+                'formCreate' => $formCreate,
+                'ajaxFlashMessage' => $ajaxFlashMessage,
+                'fieldsString' => $fieldsString,
+                'formEnd' => $formEnd,
+                'metaTemplateString' => $metaTemplateString,
+            ]),
             'actionButton' => $this->element('genericElements/Form/submitButton', $submitButtonData),
             'class' => "modal-lg {$seedModal}"
         ]);
     } else if (!empty($raw)) {
-        echo sprintf(
-            '%s%s%s%s%s%s',
-            empty($data['description']) ? '' : sprintf(
-                '<div class="pb-2">%s</div>',
-                $data['description']
-            ),
-            $ajaxFlashMessage,
-            $formCreate,
-            $fieldsString,
-            empty($metaTemplateString) ? '' : $this->Bootstrap->accordion(
-                [
-                    'class' => 'mb-2'
-                ],
-                [
-                    [
-                        '_open' => true,
-                        'header' => [
-                            'title' => __('Meta fields')
-                        ],
-                        'body' => $metaTemplateString,
-                    ],
-                ]
-            ),
-            $formEnd
-        );
+        echo $this->element('genericElements/Form/formLayouts/formDefault', [
+            'formCreate' => $formCreate,
+            'ajaxFlashMessage' => $ajaxFlashMessage,
+            'fieldsString' => $fieldsString,
+            'formEnd' => $formEnd,
+            'metaTemplateString' => $metaTemplateString,
+        ]);
     } else {
-        echo sprintf(
-            '%s<h2 class="fw-light">%s</h2>%s%s%s%s%s%s%s%s%s',
-            empty($ajax) ? '<div class="col-8">' : '',
-            empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
-            $formCreate,
-            $ajaxFlashMessage,
-            empty($data['description']) ? '' : sprintf(
-                '<div class="pb-3 fw-light">%s</div>',
-                $data['description']
-            ),
-            sprintf('<div class="panel">%s</div>', $fieldsString),
-            empty($metaTemplateString) ? '' : $this->Bootstrap->accordion(
-                [
-                    'class' => 'mb-2'
-                ],
-                [
-                    [
-                        '_open' => true,
-                        'header' => [
-                            'title' => __('Meta fields')
-                        ],
-                        'body' => $metaTemplateString,
-                    ],
-                ]
-            ),
-            $this->element('genericElements/Form/submitButton', $submitButtonData),
-            $formEnd,
-            '<br /><br />',
-            empty($ajax) ? '</div>' : ''
-        );
+        echo $this->element('genericElements/Form/formLayouts/formDefault', [
+            'actionName' => $actionName,
+            'modelName' => $modelName,
+            'submitButtonData' => $submitButtonData,
+            'formCreate' => $formCreate,
+            'ajaxFlashMessage' => $ajaxFlashMessage,
+            'fieldsString' => $fieldsString,
+            'formEnd' => $formEnd,
+            'metaTemplateString' => $metaTemplateString,
+        ]);
     }
 ?>
 <script type="text/javascript">

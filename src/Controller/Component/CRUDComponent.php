@@ -121,12 +121,20 @@ class CRUDComponent extends Component
                 ->where([
                     'scope' => $this->Table->metaFields,
                     'enabled' => 1
-                ]);
-            $metaQuery->contain(['MetaTemplateFields']);
+                ])
+                ->contain('MetaTemplateFields')
+                ->formatResults(function (\Cake\Collection\CollectionInterface $metaTemplates) { // Set meta-template && meta-template-fields indexed by their ID
+                    return $metaTemplates
+                        ->map(function($metaTemplate) {
+                            $metaTemplate->meta_template_fields = Hash::combine($metaTemplate->meta_template_fields, '{n}.id', '{n}');
+                            return $metaTemplate;
+                        })
+                        ->indexBy('id');
+                });
             $metaTemplates = $metaQuery->all();
         }
         $this->Controller->set('metaTemplates', $metaTemplates);
-        return true;
+        return $metaTemplates;
     }
 
     public function add(array $params = []): void
@@ -258,13 +266,14 @@ class CRUDComponent extends Component
         if (empty($id)) {
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
-        $this->getMetaTemplates();
+        $metaTemplates = $this->getMetaTemplates();
         if ($this->taggingSupported()) {
             $params['contain'][] = 'Tags';
             $this->setAllTags();
         }
         $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : $params);
-        $data = $this->getMetaFields($id, $data);
+        $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
+        // $data = $this->getMetaFields($id, $data);
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
         }
@@ -273,6 +282,7 @@ class CRUDComponent extends Component
                 'associated' => []
             ];
             $input = $this->__massageInput($params);
+            dd($input);
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
             }
@@ -356,7 +366,22 @@ class CRUDComponent extends Component
         return $metaTemplates;
     }
 
-    public function getMetaFields($id, $data)
+    // public function getMetaFields($id, $data)
+    // {
+    //     if (empty($this->Table->metaFields)) {
+    //         return $data;
+    //     }
+    //     $query = $this->MetaFields->find();
+    //     $query->where(['MetaFields.scope' => $this->Table->metaFields, 'MetaFields.parent_id' => $id]);
+    //     $metaFields = $query->all();
+    //     $data['metaFields'] = [];
+    //     foreach($metaFields as $metaField) {
+    //         // $data['metaFields'][$metaField->meta_template_id][$metaField->field] = $metaField->value;
+    //         $data['metaFields'][$metaField->meta_template_id][$metaField->meta_template_field_id] = $metaField->value;
+    //     }
+    //     return $data;
+    // }
+    public function getMetaFields($id)
     {
         if (empty($this->Table->metaFields)) {
             return $data;
@@ -364,10 +389,31 @@ class CRUDComponent extends Component
         $query = $this->MetaFields->find();
         $query->where(['MetaFields.scope' => $this->Table->metaFields, 'MetaFields.parent_id' => $id]);
         $metaFields = $query->all();
-        $data['metaFields'] = [];
+        $data = [];
         foreach($metaFields as $metaField) {
-            $data['metaFields'][$metaField->meta_template_id][$metaField->field] = $metaField->value;
+            if (empty($data[$metaField->meta_template_id][$metaField->meta_template_field_id])) {
+                $data[$metaField->meta_template_id][$metaField->meta_template_field_id] = [];
+            }
+            $data[$metaField->meta_template_id][$metaField->meta_template_field_id][$metaField->id] = $metaField;
         }
+        return $data;
+    }
+
+    public function attachMetaTemplates($data, $metaTemplates)
+    {
+        $metaFields = $this->getMetaFields($data->id, $data);
+        foreach ($metaTemplates as $i => $metaTemplate) {
+            if (isset($metaFields[$metaTemplate->id])) {
+                foreach ($metaTemplate->meta_template_fields as $j => $meta_template_field) {
+                    if (isset($metaFields[$metaTemplate->id][$meta_template_field->id])) {
+                        $metaTemplates[$metaTemplate->id]->meta_template_fields[$j]['metaFields'] = $metaFields[$metaTemplate->id][$meta_template_field->id];
+                    } else {
+                        $metaTemplates[$metaTemplate->id]->meta_template_fields[$j]['metaFields'] = [];
+                    }
+                }
+            }
+        }
+        $data['MetaTemplates'] = $metaTemplates;
         return $data;
     }
 
@@ -767,7 +813,7 @@ class CRUDComponent extends Component
         $modelAlias = $this->Table->getAlias();
         $subQuery = $this->Table->find('tagged', [
             'name' => $tags,
-            'forceAnd' => true
+            'OperatorAND' => true
         ])->select($modelAlias . '.id');
         return $query->where([$modelAlias . '.id IN' => $subQuery]);
     }

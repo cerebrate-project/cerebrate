@@ -165,3 +165,23 @@ $toast-color-level:                 70% !default;
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
 }
+
+.fs-7 {
+    font-size: .875rem !important;
+}
+.fs-8 {
+    font-size: .7rem !important;
+}
+
+.btn-xs, .btn-group-xs > .btn {
+    padding: 0.1rem;
+    font-size: 0.7rem;
+    border-radius: 0.15rem;
+    line-height: 1.15;
+}
+
+.btn-check:focus + .btn.btn-xs, .btn.btn-xs:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+@import '../../../scss/custom.scss';

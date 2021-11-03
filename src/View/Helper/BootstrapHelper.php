@@ -313,7 +313,7 @@ class BootstrapTabs extends BootstrapGeneric
             $this->bsClasses['nav'][] = 'nav-justify';
         }
 
-        $activeTab = 0;
+        $activeTab = array_key_first($this->data['navs']);
         foreach ($this->data['navs'] as $i => $nav) {
             if (!is_array($nav)) {
                 $this->data['navs'][$i] = ['text' => $nav];
@@ -862,7 +862,7 @@ class BoostrapButton extends BootstrapGeneric {
     function __construct($options) {
         $this->allowedOptionValues = [
             'variant' => array_merge(BootstrapGeneric::$variants, ['link', 'text']),
-            'size' => ['', 'sm', 'lg'],
+            'size' => ['', 'xs', 'sm', 'lg'],
             'type' => ['button', 'submit', 'reset']
         ];
         if (empty($options['class'])) {
@@ -876,6 +876,10 @@ class BoostrapButton extends BootstrapGeneric {
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->checkOptionValidity();
+
+        if (!empty($this->options['id'])) {
+            $this->options['params']['id'] = $this->options['id'];
+        }
 
         $this->bsClasses[] = 'btn';
         if ($this->options['outline']) {

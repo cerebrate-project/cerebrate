@@ -8,7 +8,9 @@
             $fieldTemplate = $fieldData['type'] . 'Field';
         }
         if (empty($fieldData['label'])) {
-            $fieldData['label'] = \Cake\Utility\Inflector::humanize($fieldData['field']);
+            if (!isset($fieldData['label']) || $fieldData['label'] !== false) {
+                $fieldData['label'] = \Cake\Utility\Inflector::humanize($fieldData['field']);
+            }
         }
         if (!empty($fieldDesc[$fieldData['field']])) {
             $fieldData['label'] .= $this->element(

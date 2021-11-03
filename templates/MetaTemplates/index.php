@@ -130,6 +130,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'namespace',
             ],
             [
+                'name' => __('Version'),
+                'sort' => 'version',
+                'data_path' => 'version',
+            ],
+            [
                 'name' => __('UUID'),
                 'sort' => 'uuid',
                 'data_path' => 'uuid'
