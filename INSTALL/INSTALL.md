@@ -32,13 +32,18 @@ sudo -u www-data git clone https://github.com/cerebrate-project/cerebrate.git /v
 Run composer
 
 ```bash
-mkdir -p /var/www/.composer
+sudo mkdir -p /var/www/.composer
 sudo chown www-data:www-data /var/www/.composer
 cd /var/www/cerebrate
 sudo -H -u www-data composer install
 ```
 
 Create a database for cerebrate
+
+With a fresh install of Ubuntu sudo to the (system) root user before logging in as the mysql root
+```Bash
+sudo -i mysql -u root
+```
 
 From SQL shell:
 ```mysql
@@ -48,6 +53,7 @@ CREATE USER 'cerebrate'@'localhost' IDENTIFIED BY 'YOUR_PASSWORD';
 GRANT USAGE ON *.* to cerebrate@localhost;
 GRANT ALL PRIVILEGES ON cerebrate.* to cerebrate@localhost;
 FLUSH PRIVILEGES;
+QUIT;
 ```
 
 Or from Bash:
@@ -93,9 +99,9 @@ This would be, when following the steps above:
 
 Run the database schema migrations
 ```bash
-/var/www/cerebrate/bin/cake migrations migrate
-/var/www/cerebrate/bin/cake migrations migrate -p tags
-/var/www/cerebrate/bin/cake migrations migrate -p ADmad/SocialAuth
+sudo -u www-data /var/www/cerebrate/bin/cake migrations migrate
+sudo -u www-data /var/www/cerebrate/bin/cake migrations migrate -p tags
+sudo -u www-data /var/www/cerebrate/bin/cake migrations migrate -p ADmad/SocialAuth
 ```
 
 Clean cakephp caches
