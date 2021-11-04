@@ -779,7 +779,7 @@ class BoostrapListTable extends BootstrapGeneric {
         $rowValue = $this->genCell($field);
         $rowKey = $this->genNode('th', [
             'class' => [
-                'col-sm-2'
+                'col-4 col-sm-2'
             ],
             'scope' => 'row'
         ], h($field['key']));
@@ -808,7 +808,7 @@ class BoostrapListTable extends BootstrapGeneric {
         }
         return $this->genNode('td', [
             'class' => [
-                'col-sm-10',
+                'col-8 col-sm-10',
                 !empty($row['_cellVariant']) ? "bg-{$row['_cellVariant']}" : ''
             ]
         ], $cellContent);

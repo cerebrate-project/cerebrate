@@ -9,12 +9,12 @@
             <?= $data['description'] ?>
         </div>
     <?php endif; ?>
-    <div class="panel col-8">
+    <div class="panel col-lg-8">
         <?= $fieldsString ?>
     </div>
 
     <?php if (!empty($metaTemplateString)) : ?>
-        <div class="col-10">
+        <div class="col-lg-10">
             <?=
             $this->Bootstrap->accordion(
                 [
