@@ -38,7 +38,9 @@ class IndividualsTable extends AppTable
         $this->belongsToMany('Organisations', [
             'through' => 'Alignments',
         ]);
-        $this->belongsToMany('MailingLists');
+        $this->belongsToMany('MailingLists', [
+            'through' => 'mailing_lists_individuals',
+        ]);
 
         $this->setDisplayField('email');
     }
