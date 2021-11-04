@@ -363,12 +363,6 @@ class CRUDComponent extends Component
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
             }
-            /*
-                - Update meta_field table:
-                    - Add created  and modified
-                - Update meta_template_field_table:
-                    - Add counter column
-            */
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
                 if (isset($params['afterSave'])) {
@@ -505,6 +499,13 @@ class CRUDComponent extends Component
         if ($this->taggingSupported()) {
             $params['contain'][] = 'Tags';
             $this->setAllTags();
+        }
+        if ($this->Table->hasBehavior('MetaFields')) { // TODO: check if has meta field behavior
+            if (!empty($this->request->getQuery('full'))) {
+                $params['contain']['MetaFields'] = ['MetaTemplateFields' => 'MetaTemplates'];
+            } else {
+                $params['contain'][] = 'MetaFields';
+            }
         }
 
         $data = $this->Table->get($id, $params);
@@ -804,7 +805,7 @@ class CRUDComponent extends Component
         $this->Controller->set('quickFilter', empty($quickFilterFields) ? [] : $quickFilterFields);
         if (!empty($params['quickFilter']) && !empty($quickFilterFields)) {
             $this->Controller->set('quickFilterValue', $params['quickFilter']);
-            $queryConditions = $this->genQuickFilterConditions($params, $query, $quickFilterFields);
+            $queryConditions = $this->genQuickFilterConditions($params, $quickFilterFields);
             $query->where(['OR' => $queryConditions]);
         } else {
             $this->Controller->set('quickFilterValue', '');

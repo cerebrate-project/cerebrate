@@ -109,7 +109,7 @@ class MailingListsController extends AppController
             'Individuals' => function (Query $q) use ($queryParams, $quickFilter, $matchingMetaFieldParentIDs) {
                 $conditions = [];
                 if (!empty($queryParams)) {
-                    $conditions = $this->CRUD->genQuickFilterConditions($queryParams, $q, $quickFilter);
+                    $conditions = $this->CRUD->genQuickFilterConditions($queryParams, $quickFilter);
                 }
                 if (!empty($matchingMetaFieldParentIDs)) {
                     $conditions[] = function (QueryExpression $exp) use ($matchingMetaFieldParentIDs) {
