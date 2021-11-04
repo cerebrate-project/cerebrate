@@ -1,41 +1,72 @@
 $secondary: #6c757d !default;
+$translateX: calc(1.5rem * -.5 + 5px);
+$rectHeight: calc(100% + 4px);
+$borderRadius: 3px;
 
-:not(.meta-template-container) > .multi-metafield-container {
-    position: relative;
+.multi-metafields-container {
+    position: relative; 
 
-    & > .multi-metafield-input-container::before {
-        transform: translateX(calc(1.5rem * -.5 - 0.25rem - 2px));
+    @include media-breakpoint-up(sm) {
+        &::before {
+            content: none !important;
+        }
+    }
+    &::before {
         border-style: solid;
         border-color: $secondary;
+        border-width: 2px 0px 2px 2px;
+        border-radius: 3px 0px 0px 3px;
+        opacity: 0.5;
         position: absolute;
         content: ' ';
         width: 0.5rem;
-        height: 100%;
-        border-width: 0px 2px 0px 0px;
+        height: calc(100% - 33px);
+        transform: translate(0px, 18px);
     }
 
-    &:first-child > .multi-metafield-input-container::before {
-        border-width: 2px 0px 0px 2px;
-        border-top-left-radius: 3px;
-        transform: translate(calc(1.5rem * -.5), -20px);
-    }
-    @include media-breakpoint-up(sm) {
+    // @include media-breakpoint-up(sm) {
+    //     &::before {
+    //         content: none !important;
+    //     }
+    // }
+    // &::before {
+    //     content: ' ';
+    //     background-color: $secondary;
+    //     opacity: 0.5;
+    //     position: absolute;
+    //     width: 0.25rem;
+    //     transform: translate(5px, 10px);
+    //     height: calc(100% - 17px);
+    //     border-radius: $borderRadius;
+    // }
+
+    & > .multi-metafield-container {
+        position: relative;
+
+        & > .multi-metafield-input-container::before {
+            content: ' ';
+        }
+
+        @include media-breakpoint-up(sm) {
+           & > .multi-metafield-input-container::before {
+                background-color: $secondary;
+                opacity: 0.5;
+                position: absolute;
+                width: 0.25rem;
+                transform: translateX($translateX);
+                height: $rectHeight;
+           }
+        }
+
         &:first-child > .multi-metafield-input-container::before {
-            height: calc(100% - 10px);
-            transform: translate(calc(1.5rem  * -.5 - 0.25rem - 2px), 20px);
-            border-top-left-radius: 0px;
-            border-top-right-radius: 3px;
-            border-width: 2px 2px 0px 0px;
+            border-top-left-radius: $borderRadius;
+            border-top-right-radius: $borderRadius;
+        }
+
+        &:last-child > .multi-metafield-input-container::before {
+            border-bottom-left-radius: $borderRadius;
+            border-bottom-right-radius: $borderRadius;
+            height: 100%;
         }
     }
-
-    &:last-child > .multi-metafield-input-container::before {
-        transform: translateX(calc(1.5rem * -.5));
-        border-bottom-left-radius: 3px;
-        height: 50%;
-        border-width: 0px 0px 2px 2px;
-    }
 }
-
-
-

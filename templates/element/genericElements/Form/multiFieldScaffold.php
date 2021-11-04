@@ -3,8 +3,8 @@
 use Cake\Utility\Inflector;
 
 $default_template = [
-    'inputContainer' => '<div class="row pb-1 multi-metafield-container">{{content}}</div>',
-    'inputContainerError' => '<div class="row pb-1 metafield-container has-error">{{content}}</div>',
+    'inputContainer' => '<div class="row mb-1 multi-metafield-container">{{content}}</div>',
+    'inputContainerError' => '<div class="row mb-1 metafield-container has-error">{{content}}</div>',
     'formGroup' => '<label class="col-sm-2 col-form-label form-label" {{attrs}}>{{label}}</label><div class="col-sm-10 multi-metafield-input-container">{{input}}{{error}}</div>',
 ];
 $form->setTemplates($default_template);
@@ -58,7 +58,7 @@ if (!empty($metaTemplateField) && !empty($multiple)) { // Add multiple field but
         ]
     );
     $multiFieldButtonHtml = sprintf(
-        '<div class="row pb-1 multi-metafield-container"><div class="col-sm-2 form-label"></div><div class="col-sm-10 multi-metafield-input-container">%s</div></div>',
+        '<div class="row mb-1 multi-metafield-container add-input-container"><div class="col-sm-2 form-label"></div><div class="col-sm-10 multi-metafield-input-container">%s</div></div>',
         $this->element(
             'genericElements/Form/multiFieldButton',
             [

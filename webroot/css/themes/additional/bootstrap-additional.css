@@ -298,30 +298,38 @@
 .btn-check:focus + .btn.btn-xs, .btn.btn-xs:focus {
   box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25); }
 
-:not(.meta-template-container) > .multi-metafield-container {
+.multi-metafields-container {
   position: relative; }
-  :not(.meta-template-container) > .multi-metafield-container > .multi-metafield-input-container::before {
-    transform: translateX(calc(1.5rem * -.5 - 0.25rem - 2px));
+  @media (min-width: 576px) {
+    .multi-metafields-container::before {
+      content: none !important; } }
+  .multi-metafields-container::before {
     border-style: solid;
     border-color: #6c757d;
+    border-width: 2px 0px 2px 2px;
+    border-radius: 3px 0px 0px 3px;
+    opacity: 0.5;
     position: absolute;
     content: ' ';
     width: 0.5rem;
-    height: 100%;
-    border-width: 0px 2px 0px 0px; }
-  :not(.meta-template-container) > .multi-metafield-container:first-child > .multi-metafield-input-container::before {
-    border-width: 2px 0px 0px 2px;
-    border-top-left-radius: 3px;
-    transform: translate(calc(1.5rem * -.5), -20px); }
-  @media (min-width: 576px) {
-    :not(.meta-template-container) > .multi-metafield-container:first-child > .multi-metafield-input-container::before {
-      height: calc(100% - 10px);
-      transform: translate(calc(1.5rem  * -.5 - 0.25rem - 2px), 20px);
-      border-top-left-radius: 0px;
-      border-top-right-radius: 3px;
-      border-width: 2px 2px 0px 0px; } }
-  :not(.meta-template-container) > .multi-metafield-container:last-child > .multi-metafield-input-container::before {
-    transform: translateX(calc(1.5rem * -.5));
-    border-bottom-left-radius: 3px;
-    height: 50%;
-    border-width: 0px 0px 2px 2px; }
+    height: calc(100% - 33px);
+    transform: translate(0px, 18px); }
+  .multi-metafields-container > .multi-metafield-container {
+    position: relative; }
+    .multi-metafields-container > .multi-metafield-container > .multi-metafield-input-container::before {
+      content: ' '; }
+    @media (min-width: 576px) {
+      .multi-metafields-container > .multi-metafield-container > .multi-metafield-input-container::before {
+        background-color: #6c757d;
+        opacity: 0.5;
+        position: absolute;
+        width: 0.25rem;
+        transform: translateX(calc(1.5rem * -.5 + 5px));
+        height: calc(100% + 4px); } }
+    .multi-metafields-container > .multi-metafield-container:first-child > .multi-metafield-input-container::before {
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px; }
+    .multi-metafields-container > .multi-metafield-container:last-child > .multi-metafield-input-container::before {
+      border-bottom-left-radius: 3px;
+      border-bottom-right-radius: 3px;
+      height: 100%; }

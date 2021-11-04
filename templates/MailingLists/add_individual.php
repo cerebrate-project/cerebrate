@@ -48,7 +48,7 @@ echo $this->element('genericElements/Form/genericForm', [
                 if (individual.alternate_emails !== undefined) {
                     individual.alternate_emails.forEach(alternateEmail => {
                         formContainers.push(
-                            genForContainer(alternateEmail.id, alternateEmail.value, `${alternateEmail.metaTemplate.namespace} :: ${alternateEmail.metaTemplate.name}`, false)
+                            genForContainer(alternateEmail.id, alternateEmail.value, `${alternateEmail.meta_template_field.meta_template.namespace} :: ${alternateEmail.field}`, false)
                         )
                     })
                 }
@@ -99,7 +99,7 @@ echo $this->element('genericElements/Form/genericForm', [
         }
 
         function fetchIndividual(id) {
-            const urlGet = `/individuals/view/${id}`
+            const urlGet = `/individuals/view/${id}?full=1`
             const options = {
                 statusNode: $('.alternate-emails-container')
             }

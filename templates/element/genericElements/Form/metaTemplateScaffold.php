@@ -83,5 +83,6 @@ $this->Form->setTemplates($backupTemplates);
 echo $this->Bootstrap->Tabs([
     'pills' => true,
     'data' => $tabData,
-    'nav-class' => ['mb-3']
+    'nav-class' => ['shadow mb-3 p-2 rounded'],
+    'content-class' => ['pt-2 px-3']
 ]);
