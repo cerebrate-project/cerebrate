@@ -77,6 +77,7 @@
             );
         }
     }
+    $metaTemplateString = '';
     if (!empty($data['metaTemplates']) && $data['metaTemplates']->count() > 0) {
         $metaTemplateString = $this->element(
             'genericElements/Form/metaTemplateScaffold',
@@ -119,6 +120,9 @@
         ]);
     } else if (!empty($raw)) {
         echo $this->element('genericElements/Form/formLayouts/formDefault', [
+            'actionName' => $actionName,
+            'modelName' => $modelName,
+            'submitButtonData' => $submitButtonData,
             'formCreate' => $formCreate,
             'ajaxFlashMessage' => $ajaxFlashMessage,
             'fieldsString' => $fieldsString,

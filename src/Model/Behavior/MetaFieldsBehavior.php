@@ -45,7 +45,6 @@ class MetaFieldsBehavior extends Behavior
     public function initialize(array $config): void
     {
         $this->bindAssociations();
-        $this->attachCounters();
         $this->_metaTemplateFieldTable = $this->_table;
         $this->_metaTemplateTable = $this->_table;
     }
@@ -78,19 +77,6 @@ class MetaFieldsBehavior extends Behavior
                     'className' => get_class($table),
                 ]
             ));
-        }
-    }
-
-    public function attachCounters()
-    {
-        $config = $this->getConfig();
-        $metaFieldsTable = $this->_table->MetaFields;
-        $tableAlias = $this->_table->getAlias();
-
-        if (!$metaFieldsTable->hasBehavior('CounterCache')) {
-            $metaFieldsTable->addBehavior('CounterCache', [
-                $tableAlias => $config['metaTemplateFieldCounter']
-            ]);
         }
     }
 

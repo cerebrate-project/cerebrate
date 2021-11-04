@@ -6,6 +6,7 @@ use Cake\Controller\Component;
 use Cake\Error\Debugger;
 use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
+use Cake\Utility\Text;
 use Cake\View\ViewBuilder;
 use Cake\ORM\TableRegistry;
 use Cake\Http\Exception\MethodNotAllowedException;
@@ -125,7 +126,7 @@ class CRUDComponent extends Component
                 ->contain('MetaTemplateFields')
                 ->formatResults(function (\Cake\Collection\CollectionInterface $metaTemplates) { // Set meta-template && meta-template-fields indexed by their ID
                     return $metaTemplates
-                        ->map(function($metaTemplate) {
+                        ->map(function ($metaTemplate) {
                             $metaTemplate->meta_template_fields = Hash::combine($metaTemplate->meta_template_fields, '{n}.id', '{n}');
                             return $metaTemplate;
                         })
@@ -139,8 +140,9 @@ class CRUDComponent extends Component
 
     public function add(array $params = []): void
     {
-        $this->getMetaTemplates();
+        $metaTemplates = $this->getMetaTemplates();
         $data = $this->Table->newEmptyEntity();
+        // $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
         }
@@ -243,6 +245,66 @@ class CRUDComponent extends Component
         $this->Table->saveMetaFields($id, $input, $this->Table);
     }
 
+    // prune empty values and marshall fields
+    private function massageMetaFields($entity, $input, $allMetaTemplates=[])
+    {
+        if (empty($input['MetaTemplates'])) {
+            return $entity;
+        }
+
+        $metaFieldsTable = TableRegistry::getTableLocator()->get('MetaFields');
+        $metaFieldsIndex = [];
+        if (empty($metaTemplates)) {
+            $allMetaTemplates = $this->getMetaTemplates()->toArray();
+        }
+        foreach ($entity->meta_fields as $i => $metaField) {
+            $metaFieldsIndex[$metaField->id] = $i;
+        }
+
+        foreach ($input['MetaTemplates'] as $template_id => $template) {
+            foreach ($template['meta_template_fields'] as $meta_template_field_id => $meta_template_field) {
+                $rawMetaTemplateField = $allMetaTemplates[$template_id]['meta_template_fields'][$meta_template_field_id];
+                foreach ($meta_template_field['metaFields'] as $meta_field_id => $meta_field) {
+                    if ($meta_field_id == 'new') { // create new meta_field
+                        $new_meta_fields = $meta_field;
+                        foreach ($new_meta_fields as $new_value) {
+                            if (!empty($new_value)) {
+                                $metaField = $metaFieldsTable->newEmptyEntity();
+                                $metaFieldsTable->patchEntity($metaField, [
+                                    'value' => $new_value,
+                                    'scope' => $this->Table->metaFields, // get scope from behavior
+                                    'field' => $rawMetaTemplateField->field,
+                                    'meta_template_id' => $rawMetaTemplateField->meta_template_id,
+                                    'meta_template_field_id' => $rawMetaTemplateField->id,
+                                    'parent_id' => $entity->id,
+                                    'uuid' => Text::uuid(),
+                                ]);
+                                $entity->meta_fields[] = $metaField;
+                            }
+                        }
+                    } else {
+                        $new_value = $meta_field['value'];
+                        $index = $metaFieldsIndex[$meta_field_id];
+                        if (!empty($new_value)) {
+                            // update meta_field
+                            $metaFieldsTable->patchEntity($entity->meta_fields[$index], [
+                                'value' => $new_value,
+                            ]);
+                        } else {
+                            // remove meta field - Just checking if not having it will have it deleted or if it should actually be deleted
+                            // Maybe Table->unlink ?
+                            unset($entity->meta_fields[$index]);
+                        }
+                    }
+                }
+            }
+        }
+
+        // $input['metaFields'] = $metaFields;
+        $entity->setDirty('meta_fields', true);
+        return $entity;
+    }
+
     private function __massageInput($params)
     {
         $input = $this->request->getData();
@@ -271,7 +333,18 @@ class CRUDComponent extends Component
             $params['contain'][] = 'Tags';
             $this->setAllTags();
         }
-        $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : $params);
+        $getParam = isset($params['get']) ? $params['get'] : $params;
+        if (true) { // TODO: check if has meta field behavior
+            if (empty($getParam['contain'])) {
+                $getParam['contain'] = [];
+            }
+            if (is_array($getParam['contain'])) {
+                $getParam['contain'][] = 'MetaFields';
+            } else {
+                $getParam['contain'] = [$getParam['contain'], 'MetaFields'];
+            }
+        }
+        $data = $this->Table->get($id, $getParam);
         $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
         // $data = $this->getMetaFields($id, $data);
         if (!empty($params['fields'])) {
@@ -282,24 +355,30 @@ class CRUDComponent extends Component
                 'associated' => []
             ];
             $input = $this->__massageInput($params);
-            dd($input);
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
+            $data = $this->massageMetaFields($data, $input, $metaTemplates);
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
             }
+            /*
+                - Update meta_field table:
+                    - Add created  and modified
+                - Update meta_template_field_table:
+                    - Add counter column
+            */
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
                 if (isset($params['afterSave'])) {
                     $params['afterSave']($data);
                 }
                 $message = __('{0} `{1}` updated.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()});
-                if (!empty($input['metaFields'])) {
-                    $this->MetaFields->deleteAll(['scope' => $this->Table->metaFields, 'parent_id' => $savedData->id]);
-                    $this->saveMetaFields($savedData->id, $input);
-                }
+                // if (!empty($input['metaFields'])) {
+                //     $this->MetaFields->deleteAll(['scope' => $this->Table->metaFields, 'parent_id' => $savedData->id]);
+                //     $this->saveMetaFields($savedData->id, $input);
+                // }
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($savedData, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
@@ -390,7 +469,7 @@ class CRUDComponent extends Component
         $query->where(['MetaFields.scope' => $this->Table->metaFields, 'MetaFields.parent_id' => $id]);
         $metaFields = $query->all();
         $data = [];
-        foreach($metaFields as $metaField) {
+        foreach ($metaFields as $metaField) {
             if (empty($data[$metaField->meta_template_id][$metaField->meta_template_field_id])) {
                 $data[$metaField->meta_template_id][$metaField->meta_template_field_id] = [];
             }
@@ -439,10 +518,10 @@ class CRUDComponent extends Component
         $this->Controller->set('entity', $data);
     }
 
-    public function delete($id=false): void
+    public function delete($id = false): void
     {
         if ($this->request->is('get')) {
-            if(!empty($id)) {
+            if (!empty($id)) {
                 $data = $this->Table->get($id);
                 $this->Controller->set('id', $data['id']);
                 $this->Controller->set('data', $data);
@@ -468,7 +547,8 @@ class CRUDComponent extends Component
                 __('{0} deleted.', $this->ObjectAlias),
                 __('All {0} have been deleted.', Inflector::pluralize($this->ObjectAlias)),
                 __('Could not delete {0}.', $this->ObjectAlias),
-                __('{0} / {1} {2} have been deleted.',
+                __(
+                    '{0} / {1} {2} have been deleted.',
                     $bulkSuccesses,
                     count($ids),
                     Inflector::pluralize($this->ObjectAlias)
@@ -482,14 +562,14 @@ class CRUDComponent extends Component
         $this->Controller->render('/genericTemplates/delete');
     }
 
-    public function tag($id=false): void
+    public function tag($id = false): void
     {
         if (!$this->taggingSupported()) {
             throw new Exception("Table {$this->TableAlias} does not support tagging");
         }
         if ($this->request->is('get')) {
             $this->setAllTags();
-            if(!empty($id)) {
+            if (!empty($id)) {
                 $params = [
                     'contain' => 'Tags',
                 ];
@@ -529,7 +609,8 @@ class CRUDComponent extends Component
                 __('{0} tagged with `{1}`.', $this->ObjectAlias, $input['tag_list']),
                 __('All {0} have been tagged.', Inflector::pluralize($this->ObjectAlias)),
                 __('Could not tag {0} with `{1}`.', $this->ObjectAlias, $input['tag_list']),
-                __('{0} / {1} {2} have been tagged.',
+                __(
+                    '{0} / {1} {2} have been tagged.',
                     $bulkSuccesses,
                     count($ids),
                     Inflector::pluralize($this->ObjectAlias)
@@ -541,14 +622,14 @@ class CRUDComponent extends Component
         $this->Controller->render('/genericTemplates/tagForm');
     }
 
-    public function untag($id=false): void
+    public function untag($id = false): void
     {
         if (!$this->taggingSupported()) {
             throw new Exception("Table {$this->TableAlias} does not support tagging");
         }
         if ($this->request->is('get')) {
             $this->setAllTags();
-            if(!empty($id)) {
+            if (!empty($id)) {
                 $params = [
                     'contain' => 'Tags',
                 ];
@@ -590,7 +671,8 @@ class CRUDComponent extends Component
                 __('{0} untagged with `{1}`.', $this->ObjectAlias, implode(', ', $tagsToRemove)),
                 __('All {0} have been untagged.', Inflector::pluralize($this->ObjectAlias)),
                 __('Could not untag {0} with `{1}`.', $this->ObjectAlias, $input['tag_list']),
-                __('{0} / {1} {2} have been untagged.',
+                __(
+                    '{0} / {1} {2} have been untagged.',
                     $bulkSuccesses,
                     count($ids),
                     Inflector::pluralize($this->ObjectAlias)
@@ -625,7 +707,7 @@ class CRUDComponent extends Component
         $this->Controller->render('/genericTemplates/tag');
     }
 
-    public function setResponseForController($action, $success, $message, $data=[], $errors=null)
+    public function setResponseForController($action, $success, $message, $data = [], $errors = null)
     {
         if ($success) {
             if ($this->Controller->ParamHandler->isRest()) {
@@ -665,7 +747,7 @@ class CRUDComponent extends Component
      * @return Array The ID converted to a list or the list of provided IDs from the request
      * @throws NotFoundException when no ID could be found
      */
-    public function getIdsOrFail($id=false): Array
+    public function getIdsOrFail($id = false): array
     {
         $params = $this->Controller->ParamHandler->harvestParams(['ids']);
         if (!empty($params['ids'])) {
@@ -826,7 +908,7 @@ class CRUDComponent extends Component
             $query = $this->setRelatedCondition($query, $modelName, $fieldName, $filterValue);
         } else {
             $filterParts = array_slice($filterParts, 1);
-            $query = $query->matching($modelName, function(\Cake\ORM\Query $q) use ($filterParts, $filterValue) {
+            $query = $query->matching($modelName, function (\Cake\ORM\Query $q) use ($filterParts, $filterValue) {
                 return $this->setNestedRelatedCondition($q, $filterParts, $filterValue);
             });
         }
@@ -835,7 +917,7 @@ class CRUDComponent extends Component
 
     protected function setRelatedCondition($query, $modelName, $fieldName, $filterValue)
     {
-        return $query->matching($modelName, function(\Cake\ORM\Query $q) use ($fieldName, $filterValue) {
+        return $query->matching($modelName, function (\Cake\ORM\Query $q) use ($fieldName, $filterValue) {
             return $this->setValueCondition($q, $fieldName, $filterValue);
         });
     }
@@ -959,7 +1041,8 @@ class CRUDComponent extends Component
             }
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
-                $message = __('{0} field {1}. (ID: {2} {3})',
+                $message = __(
+                    '{0} field {1}. (ID: {2} {3})',
                     $fieldName,
                     $data->{$fieldName} ? __('enabled') : __('disabled'),
                     Inflector::humanize($this->ObjectAlias),
@@ -1041,9 +1124,9 @@ class CRUDComponent extends Component
                     [$this->Table->getAlias() => $this->Table->getTable()],
                     [sprintf('%s.id = %s.%s', $this->Table->getAlias(), $associatedTable->getAlias(), $association->getForeignKey())]
                 )
-                ->where([
-                    ["${field} IS NOT" => NULL]
-                ]);
+                    ->where([
+                        ["${field} IS NOT" => NULL]
+                    ]);
             } else if ($associationType == 'manyToOne') {
                 $fieldToExtract = sprintf('%s.%s', Inflector::singularize(strtolower($model)), $subField);
                 $query = $this->Table->find()->contain($model);

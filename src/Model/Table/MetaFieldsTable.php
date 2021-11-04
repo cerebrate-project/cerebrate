@@ -12,15 +12,15 @@ class MetaFieldsTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
-        $this->setDisplayField('field');
+        $this->addBehavior('Timestamp');
+        $this->addBehavior('CounterCache', [
+            'MetaTemplateFields' => ['counter']
+        ]);
+
         $this->belongsTo('MetaTemplates');
         $this->belongsTo('MetaTemplateFields');
-        // $this->belongsTo('Individuals')
-        //     ->setForeignKey('parent_id')
-        //     ->setBindingKey('id')
-        //     ->setConditions([
-        //         'scope' => 'individual'
-        //     ]);
+
+        $this->setDisplayField('field');
     }
 
     public function validationDefault(Validator $validator): Validator

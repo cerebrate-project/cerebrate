@@ -34,7 +34,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => __('Validation regex'),
                 'sort' => 'regex',
                 'data_path' => 'regex'
-            ]
+            ],
+            [
+                'name' => __('Field Usage'),
+                'sort' => 'counter',
+                'data_path' => 'counter',
+            ],
         ],
         'title' => __('Meta Template Fields'),
         'description' => __('The various fields that the given template contans. When a meta template is enabled, the fields are automatically appended to the appropriate object.'),

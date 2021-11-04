@@ -11,10 +11,12 @@ class MetaTemplateFieldsTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+
         $this->BelongsTo(
             'MetaTemplates'
         );
         $this->hasMany('MetaFields');
+
         $this->setDisplayField('field');
     }
 

@@ -50,18 +50,31 @@ foreach ($metaTemplatesData as $i => $metaTemplate) {
                 );
             }
         } else {
-            $this->Form->setTemplates($backupTemplates);
-            $fieldData = [
-                'field' => sprintf('MetaTemplates.%s.meta_template_fields.%s.metaFields.new.0', $metaTemplateField->meta_template_id, $metaTemplateField->id),
-                'label' => $metaTemplateField->field,
-            ];
-            $fieldsHtml .= $this->element(
-                'genericElements/Form/fieldScaffold',
-                [
-                    'fieldData' => $fieldData,
-                    'form' => $this->Form
-                ]
-            );
+            if (!empty($metaTemplateField->multiple)) {
+                $fieldsHtml .= $this->element(
+                    'genericElements/Form/multiFieldScaffold',
+                    [
+                        'metaFieldsEntities' => [],
+                        'metaTemplateField' => $metaTemplateField,
+                        'multiple' => !empty($metaTemplateField->multiple),
+                        'form' => $this->Form,
+                    ]
+                );
+                $this->Form->setTemplates($backupTemplates);
+            } else {
+                $this->Form->setTemplates($backupTemplates);
+                $fieldData = [
+                    'field' => sprintf('MetaTemplates.%s.meta_template_fields.%s.metaFields.new.0', $metaTemplateField->meta_template_id, $metaTemplateField->id),
+                    'label' => $metaTemplateField->field,
+                ];
+                $fieldsHtml .= $this->element(
+                    'genericElements/Form/fieldScaffold',
+                    [
+                        'fieldData' => $fieldData,
+                        'form' => $this->Form
+                    ]
+                );
+            }
         }
     }
     $tabData['content'][$i] = $fieldsHtml;
