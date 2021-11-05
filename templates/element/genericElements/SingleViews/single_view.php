@@ -36,7 +36,7 @@
         'tableClass' => 'col-sm-8',
         'elementsRootPath' => '/genericElements/SingleViews/Fields/'
     ];
-    if (!empty($data['metaTemplates']) && (empty($skip_meta_templates)) && !empty($combinedFieldsView)) {
+    if (!empty($data['MetaTemplates']) && (empty($skip_meta_templates)) && !empty($combinedFieldsView)) {
         $listTableOptions['tableClass'] = '';
     }
     $listTable = $this->Bootstrap->listTable($listTableOptions,[
@@ -45,7 +45,7 @@
     ]);
 
     $metafieldsPanel = '';
-    if (!empty($data['metaTemplates']) && (empty($skip_meta_templates))) {
+    if (!empty($data['MetaTemplates']) && (empty($skip_meta_templates))) {
         $metaFieldsData = [
             'data' => $data,
         ];

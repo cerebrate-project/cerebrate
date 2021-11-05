@@ -334,7 +334,7 @@ class CRUDComponent extends Component
             $this->setAllTags();
         }
         $getParam = isset($params['get']) ? $params['get'] : $params;
-        if (true) { // TODO: check if has meta field behavior
+        if ($this->Table->hasBehavior('MetaFields')) {
             if (empty($getParam['contain'])) {
                 $getParam['contain'] = [];
             }
@@ -500,7 +500,7 @@ class CRUDComponent extends Component
             $params['contain'][] = 'Tags';
             $this->setAllTags();
         }
-        if ($this->Table->hasBehavior('MetaFields')) { // TODO: check if has meta field behavior
+        if ($this->Table->hasBehavior('MetaFields')) {
             if (!empty($this->request->getQuery('full'))) {
                 $params['contain']['MetaFields'] = ['MetaTemplateFields' => 'MetaTemplates'];
             } else {
@@ -509,7 +509,9 @@ class CRUDComponent extends Component
         }
 
         $data = $this->Table->get($id, $params);
-        $data = $this->attachMetaData($id, $data);
+        $metaTemplates = $this->getMetaTemplates();
+        $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
+        // $data = $this->attachMetaData($id, $data);
         if (isset($params['afterFind'])) {
             $data = $params['afterFind']($data);
         }

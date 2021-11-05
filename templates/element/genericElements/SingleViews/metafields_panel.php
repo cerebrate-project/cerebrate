@@ -1,9 +1,9 @@
-<?php
+    <?php
 $tabData = [
     'navs' => [],
     'content' => []
 ];
-foreach($data['metaTemplates'] as $metaTemplate) {
+foreach($data['MetaTemplates'] as $metaTemplate) {
     if (!empty($metaTemplate->meta_template_fields)) {
         if ($metaTemplate->is_default) {
             $tabData['navs'][] = [
@@ -16,11 +16,14 @@ foreach($data['metaTemplates'] as $metaTemplate) {
         }
         $fields = [];
         foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
-            $metaField = $metaTemplateField->meta_fields[0];
-            $fields[] = [
-                'key' => $metaField->field,
-                'raw' => $metaField->value
-            ];
+            $labelPrintedOnce = false;
+            foreach ($metaTemplateField->metaFields as $metaField) {
+                $fields[] = [
+                    'key' => !$labelPrintedOnce ? $metaField->field : '',
+                    'raw' => $metaField->value
+                ];
+                $labelPrintedOnce = true;
+            }
         }
         $listTable = $this->Bootstrap->listTable([
             'hover' => false,
