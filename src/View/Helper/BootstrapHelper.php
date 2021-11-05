@@ -1076,6 +1076,7 @@ class BoostrapModal extends BootstrapGeneric {
 
     private function genModal()
     {
+        $this->options['modalClass'] = !empty($this->options['modalClass']) && !is_array($this->options['modalClass'])? [$this->options['modalClass']] : $this->options['modalClass'];
         $dialog = $this->openNode('div', [
             'class' => array_merge(
                 ['modal-dialog', (!empty($this->options['size'])) ? "modal-{$this->options['size']}" : ''],

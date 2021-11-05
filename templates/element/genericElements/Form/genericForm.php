@@ -106,17 +106,18 @@
     $modelName = h(\Cake\Utility\Inflector::humanize(\Cake\Utility\Inflector::singularize($this->request->getParam('controller'))));
     if (!empty($ajax)) {
         $seedModal = 'mseed-' . mt_rand();
-        echo $this->element('genericElements/genericModal', [
+        echo $this->Bootstrap->modal([
             'title' => empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
-            'body' => $this->element('genericElements/Form/formLayouts/formRaw', [
+            'bodyHtml' =>  $this->element('genericElements/Form/formLayouts/formRaw', [
                 'formCreate' => $formCreate,
                 'ajaxFlashMessage' => $ajaxFlashMessage,
                 'fieldsString' => $fieldsString,
                 'formEnd' => $formEnd,
                 'metaTemplateString' => $metaTemplateString,
             ]),
-            'actionButton' => $this->element('genericElements/Form/submitButton', $submitButtonData),
-            'class' => "modal-lg {$seedModal}"
+            'size' => !empty($fieldsString) ? 'xl' : 'lg',
+            'type' => 'confirm',
+            'modalClass' => $seedModal,
         ]);
     } else if (!empty($raw)) {
         echo $this->element('genericElements/Form/formLayouts/formDefault', [
