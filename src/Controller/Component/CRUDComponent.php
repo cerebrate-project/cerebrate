@@ -249,7 +249,7 @@ class CRUDComponent extends Component
     private function massageMetaFields($entity, $input, $allMetaTemplates=[])
     {
         if (empty($input['MetaTemplates'])) {
-            return $entity;
+            return ['entity' => $entity, 'metafields_to_delete' => []];
         }
 
         $metaFieldsTable = TableRegistry::getTableLocator()->get('MetaFields');
@@ -261,6 +261,7 @@ class CRUDComponent extends Component
             $metaFieldsIndex[$metaField->id] = $i;
         }
 
+        $metaFieldsToDelete = [];
         foreach ($input['MetaTemplates'] as $template_id => $template) {
             foreach ($template['meta_template_fields'] as $meta_template_field_id => $meta_template_field) {
                 $rawMetaTemplateField = $allMetaTemplates[$template_id]['meta_template_fields'][$meta_template_field_id];
@@ -293,6 +294,7 @@ class CRUDComponent extends Component
                         } else {
                             // remove meta field - Just checking if not having it will have it deleted or if it should actually be deleted
                             // Maybe Table->unlink ?
+                            $metaFieldsToDelete[] = $entity->meta_fields[$index];
                             unset($entity->meta_fields[$index]);
                         }
                     }
@@ -302,7 +304,7 @@ class CRUDComponent extends Component
 
         // $input['metaFields'] = $metaFields;
         $entity->setDirty('meta_fields', true);
-        return $entity;
+        return ['entity' => $entity, 'metafields_to_delete' => $metaFieldsToDelete];
     }
 
     private function __massageInput($params)
@@ -359,20 +361,21 @@ class CRUDComponent extends Component
                 $patchEntityParams['fields'] = $params['fields'];
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
-            $data = $this->massageMetaFields($data, $input, $metaTemplates);
+            $massaged = $this->massageMetaFields($data, $input, $metaTemplates);
+            $data = $massaged['entity'];
+            $metaFieldsToDelete = $massaged['metafields_to_delete'];
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
             }
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
+                if ($this->Table->hasBehavior('MetaFields') && !empty($metaFieldsToDelete)) {
+                    $this->Table->MetaFields->unlink($savedData, $metaFieldsToDelete);
+                }
                 if (isset($params['afterSave'])) {
                     $params['afterSave']($data);
                 }
                 $message = __('{0} `{1}` updated.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()});
-                // if (!empty($input['metaFields'])) {
-                //     $this->MetaFields->deleteAll(['scope' => $this->Table->metaFields, 'parent_id' => $savedData->id]);
-                //     $this->saveMetaFields($savedData->id, $input);
-                // }
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($savedData, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
