@@ -26,7 +26,7 @@
                     'type' => 'tags'
                 ),
             ),
-            'metaTemplates' => empty($metaTemplates) ? [] : $metaTemplates,
+            // 'metaTemplates' => empty($metaTemplates) ? [] : $metaTemplates,
             'submit' => array(
                 'action' => $this->request->getParam('action')
             )

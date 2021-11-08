@@ -12,6 +12,7 @@
            - use these to define dynamic form fields, or anything that will feed into the regular fields via JS population
      * - submit: The submit button itself. By default it will simply submit to the form as defined via the 'model' field
      */
+    // debug(\Cake\Utility\Hash::extract($entity, 'MetaTemplates.{n}.meta_template_fields.{n}.metaFields.{n}.value'));
     $this->Form->setConfig('errorClass', 'is-invalid');
     $modelForForm = empty($data['model']) ?
         h(\Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::classify($this->request->getParam('controller')))) :
@@ -21,7 +22,6 @@
     $simpleFieldWhitelist = [
         'default', 'type', 'placeholder', 'label', 'empty', 'rows', 'div', 'required', 'templates'
     ];
-    //$fieldsArrayForPersistence = array();
     if (empty($data['url'])) {
         $data['url'] = ["controller" => $this->request->getParam('controller'), "action" => $this->request->getParam('url')];
     }
@@ -78,11 +78,10 @@
         }
     }
     $metaTemplateString = '';
-    if (!empty($data['metaTemplates']) && $data['metaTemplates']->count() > 0) {
+    if (!empty($entity['MetaTemplates']) && count($entity['MetaTemplates']) > 0) {
         $metaTemplateString = $this->element(
             'genericElements/Form/metaTemplateScaffold',
             [
-                'metaTemplatesData' => $data['metaTemplates'],
                 'form' => $this->Form,
             ]
         );

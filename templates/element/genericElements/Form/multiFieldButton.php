@@ -39,10 +39,14 @@ $seed = 'mfb-' . mt_rand();
 
         function addNewField() {
             const $clicked = $(this);
-            const $lastInputContainer = $clicked.closest('.multi-metafields-container').children().not('.template-container').find('input').last().closest('.multi-metafield-container')
-            const $templateContainer = $clicked.closest('.multi-metafields-container').find('.template-container').children()
-            const $clonedContainer = $templateContainer.clone()
-            $clonedContainer.removeClass('d-none', 'template-container')
+            let $lastInputContainer = $clicked.closest('.multi-metafields-container').children().not('.template-container').find('input').last().closest('.multi-metafield-container')
+            if ($lastInputContainer.length == 0) {
+                $lastInputContainer = $clicked.closest('.multi-metafields-container').find('input').last().closest('.multi-metafield-container')
+            }
+            const $clonedContainer = $lastInputContainer.clone()
+            $clonedContainer
+                .removeClass('has-error')
+                .find('.error-message ').remove()
             const $clonedInput = $clonedContainer.find('input, select')
             if ($clonedInput.length > 0) {
                 const injectedTemplateId = $clicked.closest('.multi-metafields-container').find('.new-metafield').length
@@ -63,6 +67,34 @@ $seed = 'mfb-' . mt_rand();
                 .attr('field', dottedPathStr)
                 .attr('name', brackettedPathStr)
                 .val('')
+                .removeClass('is-invalid')
         }
+        // function addNewField() {
+        //     const $clicked = $(this);
+        //     const $lastInputContainer = $clicked.closest('.multi-metafields-container').children().not('.template-container').find('input').last().closest('.multi-metafield-container')
+        //     const $templateContainer = $clicked.closest('.multi-metafields-container').find('.template-container').children()
+        //     const $clonedContainer = $templateContainer.clone()
+        //     $clonedContainer.removeClass('d-none', 'template-container')
+        //     const $clonedInput = $clonedContainer.find('input, select')
+        //     if ($clonedInput.length > 0) {
+        //         const injectedTemplateId = $clicked.closest('.multi-metafields-container').find('.new-metafield').length
+        //         $clonedInput.addClass('new-metafield')
+        //         adjustClonedInputAttr($clonedInput, injectedTemplateId)
+        //         $clonedContainer.insertAfter($lastInputContainer)
+        //     }
+        // }
+
+        // function adjustClonedInputAttr($input, injectedTemplateId) {
+        //     let explodedPath = $input.attr('field').split('.').splice(0, 5)
+        //     explodedPath.push('new', injectedTemplateId)
+        //     dottedPathStr = explodedPath.join('.')
+        //     brackettedPathStr = explodedPath.map((elem, i) => {
+        //         return i == 0 ? elem : `[${elem}]`
+        //     }).join('')
+        //     $input.attr('id', dottedPathStr)
+        //         .attr('field', dottedPathStr)
+        //         .attr('name', brackettedPathStr)
+        //         .val('')
+        // }
     })()
 </script>

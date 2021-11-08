@@ -10,7 +10,7 @@ $default_template = [
 $this->Form->setTemplates($default_template);
 $backupTemplates = $this->Form->getTemplates();
 $tabData = [];
-foreach ($metaTemplatesData as $i => $metaTemplate) {
+foreach ($entity->MetaTemplates as $i => $metaTemplate) {
     if ($metaTemplate->is_default) {
         $tabData['navs'][$i] = [
             'html' => $this->element('/genericElements/MetaTemplates/metaTemplateNav', ['metaTemplate' => $metaTemplate])
@@ -21,6 +21,7 @@ foreach ($metaTemplatesData as $i => $metaTemplate) {
         ];
     }
     $fieldsHtml = '';
+    // debug($metaTemplate['meta_template_fields']);
     foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
         $metaTemplateField->label = Inflector::humanize($metaTemplateField->field);
         if (!empty($metaTemplateField->metaFields)) {

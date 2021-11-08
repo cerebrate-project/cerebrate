@@ -134,7 +134,7 @@ class CRUDComponent extends Component
                 });
             $metaTemplates = $metaQuery->all();
         }
-        $this->Controller->set('metaTemplates', $metaTemplates);
+        // $this->Controller->set('metaTemplates', $metaTemplates->toArray());
         return $metaTemplates;
     }
 
@@ -232,7 +232,11 @@ class CRUDComponent extends Component
             foreach ($data->getErrors() as $field => $errorData) {
                 $errorMessages = [];
                 foreach ($errorData as $key => $value) {
-                    $errorMessages[] = $value;
+                    if (is_array($value)) {
+                        $errorMessages[] = implode('& ', Hash::extract($value, "{s}.{s}"));
+                    } else {
+                        $errorMessages[] = $value;
+                    }
                 }
                 $validationMessage .= __('{0}: {1}', $field, implode(',', $errorMessages));
             }
@@ -281,28 +285,50 @@ class CRUDComponent extends Component
                                     'uuid' => Text::uuid(),
                                 ]);
                                 $entity->meta_fields[] = $metaField;
+                                $entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields[] = $metaField;
+                                // $entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields['new'][] = $metaField;
                             }
                         }
                     } else {
                         $new_value = $meta_field['value'];
-                        $index = $metaFieldsIndex[$meta_field_id];
                         if (!empty($new_value)) {
-                            // update meta_field
-                            $metaFieldsTable->patchEntity($entity->meta_fields[$index], [
-                                'value' => $new_value,
-                            ]);
+                            // update meta_field and attach validation errors
+                            if (!empty($metaFieldsIndex[$meta_field_id])) {
+                                $index = $metaFieldsIndex[$meta_field_id];
+                                $metaFieldsTable->patchEntity($entity->meta_fields[$index], [
+                                    'value' => $new_value, 'meta_template_field_id' => $rawMetaTemplateField->id
+                                ], ['value']);
+                                $metaFieldsTable->patchEntity(
+                                    $entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields[$meta_field_id],
+                                    ['value' => $new_value, 'meta_template_field_id' => $rawMetaTemplateField->id],
+                                    ['value']
+                                );
+                            } else { // metafield comes from a second post where the temporary entity has already been created
+                                $metaField = $metaFieldsTable->newEmptyEntity();
+                                $metaFieldsTable->patchEntity($metaField, [
+                                    'value' => $new_value,
+                                    'scope' => $this->Table->metaFields, // get scope from behavior
+                                    'field' => $rawMetaTemplateField->field,
+                                    'meta_template_id' => $rawMetaTemplateField->meta_template_id,
+                                    'meta_template_field_id' => $rawMetaTemplateField->id,
+                                    'parent_id' => $entity->id,
+                                    'uuid' => Text::uuid(),
+                                ]);
+                                $entity->meta_fields[] = $metaField;
+                                $entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields[] = $metaField;
+                            }
                         } else {
-                            // remove meta field - Just checking if not having it will have it deleted or if it should actually be deleted
-                            // Maybe Table->unlink ?
+                            // Metafield value is empty, indicating the field should be removed
+                            $index = $metaFieldsIndex[$meta_field_id];
                             $metaFieldsToDelete[] = $entity->meta_fields[$index];
                             unset($entity->meta_fields[$index]);
+                            unset($entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields[$meta_field_id]);
                         }
                     }
                 }
             }
         }
 
-        // $input['metaFields'] = $metaFields;
         $entity->setDirty('meta_fields', true);
         return ['entity' => $entity, 'metafields_to_delete' => $metaFieldsToDelete];
     }
@@ -348,7 +374,6 @@ class CRUDComponent extends Component
         }
         $data = $this->Table->get($id, $getParam);
         $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
-        // $data = $this->getMetaFields($id, $data);
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
         }
@@ -360,10 +385,11 @@ class CRUDComponent extends Component
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
             }
+            $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
+            unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
+            $data = $massagedData['entity'];
+            $metaFieldsToDelete = $massagedData['metafields_to_delete'];
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
-            $massaged = $this->massageMetaFields($data, $input, $metaTemplates);
-            $data = $massaged['entity'];
-            $metaFieldsToDelete = $massaged['metafields_to_delete'];
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
             }
@@ -389,8 +415,10 @@ class CRUDComponent extends Component
                     }
                 }
             } else {
+                // debug($data['MetaTemplates']);
                 $validationErrors = $data->getErrors();
-                $validationMessage = $this->prepareValidationMessage($validationErrors);
+                // $validationMessage = $this->prepareValidationMessage($validationErrors);
+                $validationMessage = $this->prepareValidationError($data);
                 $message = __(
                     '{0} could not be modified.{1}',
                     $this->ObjectAlias,

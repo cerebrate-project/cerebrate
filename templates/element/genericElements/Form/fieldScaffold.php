@@ -41,6 +41,8 @@
                 $params[$k] = $fd;
             }
         }
+        // debug($fieldData);
+        // debug($params);
         $temp = $this->element('genericElements/Form/Fields/' . $fieldTemplate, array(
             'fieldData' => $fieldData,
             'params' => $params
