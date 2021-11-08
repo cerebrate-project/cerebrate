@@ -320,8 +320,11 @@
         opacity: 0.5;
         position: absolute;
         width: 0.25rem;
-        transform: translateX(calc(1.5rem * -.5 + 5px));
+        transform: translateX(calc(1.5rem * -.5 + 3px));
         height: calc(100% + 4px); } }
+    @media (max-width: 575.98px) {
+      .multi-metafields-container > .multi-metafield-container:not(:first-child) label.form-label {
+        display: none; } }
     .multi-metafields-container > .multi-metafield-container:first-child > .multi-metafield-input-container::before {
       border-top-left-radius: 3px;
       border-top-right-radius: 3px; }
