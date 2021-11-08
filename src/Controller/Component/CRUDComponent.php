@@ -567,7 +567,6 @@ class CRUDComponent extends Component
             foreach ($ids as $id) {
                 $data = $this->Table->get($id);
                 $success = $this->Table->delete($data);
-                $success = true;
                 if ($success) {
                     $bulkSuccesses++;
                 }
@@ -585,7 +584,11 @@ class CRUDComponent extends Component
                     Inflector::pluralize($this->ObjectAlias)
                 )
             );
-            $this->setResponseForController('delete', $bulkSuccesses, $message, $data);
+            $additionalData = [];
+            if ($bulkSuccesses > 0) {
+                $additionalData['redirect'] = Router::url(['controller' => $this->Controller->getName(), 'action' => 'index']);
+            }
+            $this->setResponseForController('delete', $bulkSuccesses, $message, $data, null, $additionalData);
         }
         $this->Controller->set('metaGroup', 'ContactDB');
         $this->Controller->set('scope', 'users');
@@ -738,13 +741,16 @@ class CRUDComponent extends Component
         $this->Controller->render('/genericTemplates/tag');
     }
 
-    public function setResponseForController($action, $success, $message, $data = [], $errors = null)
+    public function setResponseForController($action, $success, $message, $data = [], $errors = null, $additionalData = [])
     {
         if ($success) {
             if ($this->Controller->ParamHandler->isRest()) {
                 $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
             } elseif ($this->Controller->ParamHandler->isAjax()) {
-                $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, $action, $data, $message);
+                if ($additionalData['redirect']) { // If a redirection occors, we need to make sure the flash message gets displayed
+                    $this->Controller->Flash->success($message);
+                }
+                $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, $action, $data, $message, $additionalData);
             } else {
                 $this->Controller->Flash->success($message);
                 $this->Controller->redirect($this->Controller->referer());
@@ -753,6 +759,9 @@ class CRUDComponent extends Component
             if ($this->Controller->ParamHandler->isRest()) {
                 $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
             } elseif ($this->Controller->ParamHandler->isAjax()) {
+                if ($additionalData['redirect']) { // If a redirection occors, we need to make sure the flash message gets displayed
+                    $this->Controller->Flash->error($message);
+                }
                 $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, $action, $data, $message, !is_null($errors) ? $errors : $data->getErrors());
             } else {
                 $this->Controller->Flash->error($message);

@@ -185,10 +185,14 @@ class UIFactory {
     submissionReloaderModal(url, reloadUrl, $reloadedElement, $statusNode=null) {
         const successCallback = function ([data, modalObject]) {
             UI.reload(reloadUrl, $reloadedElement, $statusNode)
-            if (data.additionalData !== undefined && data.additionalData.displayOnSuccess !== undefined) {
-                UI.modal({
-                    rawHtml: data.additionalData.displayOnSuccess
-                })
+            if (data.additionalData !== undefined) {
+                if (data.additionalData.displayOnSuccess !== undefined) {
+                    UI.modal({
+                        rawHtml: data.additionalData.displayOnSuccess
+                    })
+                } else if (data.additionalData.redirect !== undefined) {
+                    window.location = data.additionalData.redirect
+                }
             }
         }
         return UI.submissionModal(url, successCallback)
