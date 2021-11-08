@@ -21,7 +21,6 @@ foreach ($entity->MetaTemplates as $i => $metaTemplate) {
         ];
     }
     $fieldsHtml = '';
-    // debug($metaTemplate['meta_template_fields']);
     foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
         $metaTemplateField->label = Inflector::humanize($metaTemplateField->field);
         if (!empty($metaTemplateField->metaFields)) {

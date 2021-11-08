@@ -44,16 +44,6 @@ class MetaFieldsTable extends AppTable
         return $validator;
     }
 
-    // public function buildRules(RulesChecker $rules): RulesChecker
-    // {
-    //     $rules->add([$this, 'isValidMetaField'], 'validMetaField', [
-    //         // 'errorField' => 'meta_field.value',
-    //         'errorField' => 'value',
-    //         'message' => __('The provided value doesn\'t satisfy the validation defined by the meta-fields\'s meta-template'),
-    //     ]);
-    //     return $rules;
-    // }
-
     public function isValidMetaField($value, array $context)
     {
         $metaFieldsTable = $context['providers']['table'];

@@ -17,7 +17,6 @@ class Individual extends AppModel
         'uuid' => true,
     ];
 
-    // protected $_virtual = ['full_name', 'meta_fields', 'alternate_emails'];
     protected $_virtual = ['full_name', 'alternate_emails'];
 
     protected function _getFullName()
@@ -27,27 +26,6 @@ class Individual extends AppModel
         }
         return sprintf("%s %s", $this->first_name, $this->last_name);
     }
-
-    // protected function _getMetaFields()
-    // {
-    //     if (!empty($this->metaTemplates)) {
-    //         $metaFields = [];
-    //         foreach ($this->metaTemplates as $metaTemplate) {
-    //             if (!empty($metaTemplate['meta_template_fields'])) {
-    //                 foreach ($metaTemplate['meta_template_fields'] as $templateMetaFields) {
-    //                     foreach ($templateMetaFields['meta_fields'] as $metaField) {
-    //                         $tmpMetaTemplate = $metaTemplate->toArray();
-    //                         unset($tmpMetaTemplate['meta_template_fields']);
-    //                         $metaField['metaTemplate'] = $tmpMetaTemplate;
-    //                         $metaFields[] = $metaField;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //         return $metaFields;
-    //     }
-    //     return null;
-    // }
 
     protected function _getAlternateEmails()
     {

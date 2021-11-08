@@ -17,12 +17,14 @@ foreach($data['MetaTemplates'] as $metaTemplate) {
         $fields = [];
         foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
             $labelPrintedOnce = false;
-            foreach ($metaTemplateField->metaFields as $metaField) {
-                $fields[] = [
-                    'key' => !$labelPrintedOnce ? $metaField->field : '',
-                    'raw' => $metaField->value
-                ];
-                $labelPrintedOnce = true;
+            if (!empty($metaTemplateField->metaFields)) {
+                foreach ($metaTemplateField->metaFields as $metaField) {
+                    $fields[] = [
+                        'key' => !$labelPrintedOnce ? $metaField->field : '',
+                        'raw' => $metaField->value
+                    ];
+                    $labelPrintedOnce = true;
+                }
             }
         }
         $listTable = $this->Bootstrap->listTable([
@@ -30,7 +32,13 @@ foreach($data['MetaTemplates'] as $metaTemplate) {
             'elementsRootPath' => '/genericElements/SingleViews/Fields/'
         ],[
             'item' => false,
-            'fields' => $fields
+            'fields' => $fields,
+            'caption' => __n(
+                'This meta-template contains {0} meta-field',
+                'This meta-template contains {0} meta-fields',
+                count($fields),
+                count($fields)
+            )
         ]);
         $tabData['content'][] = $listTable;
     }

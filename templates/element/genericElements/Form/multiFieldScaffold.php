@@ -11,11 +11,6 @@ $form->setTemplates($default_template);
 
 $fieldsHtml = '';
 $labelPrintedOnce = false;
-$newMetaFields = [];
-$newFieldIndex = 0;
-// $newMetaFieldPrinted = false;
-// debug($entity);
-// debug($entity->getErrors());
 if (!empty($metaFieldsEntities)) {
     foreach ($metaFieldsEntities as $i => $metaFieldsEntity) {
         $metaFieldsEntity->label = Inflector::humanize($metaFieldsEntity->field);
@@ -36,15 +31,6 @@ if (!empty($metaFieldsEntities)) {
                 $i
             );
             $fieldData['class'] = 'new-metafield';
-            // $fieldData['field'] = sprintf(
-            //     'MetaTemplates.%s.meta_template_fields.%s.metaFields.new.%s',
-            //     $metaFieldsEntity->meta_template_id,
-            //     $metaFieldsEntity->meta_template_field_id,
-            //     $newFieldIndex
-            // );
-            // $fieldData['class'] = 'new-metafield';
-            // $newMetaFieldPrinted = true;
-            // $newFieldIndex += 1;
         }
         if ($labelPrintedOnce) { // Only the first input can have a label
             $fieldData['label'] = false;
@@ -62,18 +48,18 @@ if (!empty($metaFieldsEntities)) {
 if (!empty($metaTemplateField) && !empty($multiple)) { // Add multiple field button
     $metaTemplateField->label = Inflector::humanize($metaTemplateField->field);
     $emptyMetaFieldInput = '';
-    if (empty($metaFieldsEntities)) {
-        // $emptyMetaFieldInput = $this->element(
-        //     'genericElements/Form/fieldScaffold',
-        //     [
-        //         'fieldData' => [
-        //             'label' => $metaTemplateField->label,
-        //             'field' => sprintf('MetaTemplates.%s.meta_template_fields.%s.metaFields.new.0', $metaTemplateField->meta_template_id, $metaTemplateField->id),
-        //             'class' => 'new-metafield',
-        //         ],
-        //         'form' => $form,
-        //     ]
-        // );
+    if (empty($metaFieldsEntities)) { // Include editable field for meta-template not containing a meta-field
+        $emptyMetaFieldInput = $this->element(
+            'genericElements/Form/fieldScaffold',
+            [
+                'fieldData' => [
+                    'label' => $metaTemplateField->label,
+                    'field' => sprintf('MetaTemplates.%s.meta_template_fields.%s.metaFields.new.0', $metaTemplateField->meta_template_id, $metaTemplateField->id),
+                    'class' => 'new-metafield',
+                ],
+                'form' => $form,
+            ]
+        );
     }
     $emptyInputForSecurityComponent = $this->element(
         'genericElements/Form/fieldScaffold',
@@ -86,19 +72,6 @@ if (!empty($metaTemplateField) && !empty($multiple)) { // Add multiple field but
             'form' => $form,
         ]
     );
-    // $emptyInputForSecurityComponent = '';
-    // if (!$newMetaFieldPrinted) {
-    //     $emptyInputForSecurityComponent = $this->element(
-    //         'genericElements/Form/fieldScaffold',
-    //         [
-    //             'fieldData' => [
-    //                 'label' => false,
-    //                 'field' => sprintf('MetaTemplates.%s.meta_template_fields.%s.metaFields.new[]', $metaTemplateField->meta_template_id, $metaTemplateField->id),
-    //             ],
-    //             'form' => $form,
-    //         ]
-    //     );
-    // }
     $multiFieldButtonHtml = sprintf(
         '<div class="row mb-1 multi-metafield-container add-input-container"><div class="col-sm-2 form-label"></div><div class="col-sm-10 multi-metafield-input-container">%s</div></div>',
         $this->element(
@@ -108,7 +81,7 @@ if (!empty($metaTemplateField) && !empty($multiple)) { // Add multiple field but
             ]
         )
     );
-    // $fieldsHtml .= $emptyMetaFieldInput;
+    $fieldsHtml .= $emptyMetaFieldInput;
     $fieldsHtml .= sprintf('<div class="d-none template-container">%s</div>', $emptyInputForSecurityComponent);
     $fieldsHtml .= $multiFieldButtonHtml;
 }

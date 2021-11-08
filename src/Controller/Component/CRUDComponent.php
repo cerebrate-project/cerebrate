@@ -134,7 +134,6 @@ class CRUDComponent extends Component
                 });
             $metaTemplates = $metaQuery->all();
         }
-        // $this->Controller->set('metaTemplates', $metaTemplates->toArray());
         return $metaTemplates;
     }
 
@@ -415,9 +414,7 @@ class CRUDComponent extends Component
                     }
                 }
             } else {
-                // debug($data['MetaTemplates']);
                 $validationErrors = $data->getErrors();
-                // $validationMessage = $this->prepareValidationMessage($validationErrors);
                 $validationMessage = $this->prepareValidationError($data);
                 $message = __(
                     '{0} could not be modified.{1}',
