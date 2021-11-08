@@ -72,8 +72,8 @@ if (!empty($breadcrumb)) {
                 $actionEntry['url'] = $this->DataFromPath->buildStringFromDataPath($actionEntry['url'], $entity, $actionEntry['url_vars']);
             }
             $breadcrumbAction .= sprintf(
-                '<a class="dropdown-item" href="%s"><i class="me-1 %s"></i>%s</a>',
-                Router::url($actionEntry['url']),
+                '<a class="dropdown-item" href="#" onclick="%s"><i class="me-1 %s"></i>%s</a>',
+                sprintf('UI.overlayUntilResolve(this, UI.submissionModalAutoGuess(\'%s\'))', h(Router::url($actionEntry['url']))),
                 !empty($actionEntry['icon']) ? $this->FontAwesome->getClass(h($actionEntry['icon'])) : '',
                 h($actionEntry['label'])
             );
