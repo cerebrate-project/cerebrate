@@ -468,7 +468,7 @@ ul.sidebar-elements > li.category > span.category-divider > hr {
 }
 
 .center-navbar nav.header-breadcrumb li.header-breadcrumb-item {
-    max-width: 200px;
+    max-width: 25vw;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

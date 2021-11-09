@@ -9,7 +9,7 @@ use \Cake\Database\Expression\QueryExpression;
 
 class MetaTemplatesController extends AppController
 {
-    public $quickFilterFields = ['name', 'uuid', 'scope'];
+    public $quickFilterFields = [['name' => true], 'uuid', ['scope' => true]];
     public $filterFields = ['name', 'uuid', 'scope', 'namespace'];
     public $containFields = ['MetaTemplateFields'];
 
@@ -43,12 +43,8 @@ class MetaTemplatesController extends AppController
                 'fields' => ['scope'],
                 'custom' => [
                     [
-                        'label' => __('Contact DB'),
-                        'filterCondition' => ['scope' => ['individual', 'organisation']]
-                    ],
-                    [
-                        'label' => __('Namespace CNW'),
-                        'filterCondition' => ['namespace' => 'cnw']
+                        'label' => __('Default Templates'),
+                        'filterCondition' => ['is_default' => true]
                     ],
                 ]
             ],
