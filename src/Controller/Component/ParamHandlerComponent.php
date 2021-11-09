@@ -26,11 +26,11 @@ class ParamHandlerComponent extends Component
             $queryString = str_replace('.', '_', $filter);
             $queryString = str_replace(' ', '_', $queryString);
             if ($this->request->getQuery($queryString) !== null) {
-                $parsedParams[$filter] = trim($this->request->getQuery($queryString));
-                continue;
-            }
-            if (($this->request->getQuery($filter)) !== null) {
-                $parsedParams[$filter] = trim($this->request->getQuery($filter));
+                if (is_array($this->request->getQuery($queryString))) {
+                    $parsedParams[$filter] = array_map('trim', $this->request->getQuery($queryString));
+                } else {
+                    $parsedParams[$filter] = trim($this->request->getQuery($queryString));
+                }
                 continue;
             }
             if (($this->request->is('post') || $this->request->is('put')) && $this->request->getData($filter) !== null) {
