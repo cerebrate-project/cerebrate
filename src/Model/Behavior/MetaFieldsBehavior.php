@@ -42,11 +42,22 @@ class MetaFieldsBehavior extends Behavior
         ],
     ];
 
+    private $aliasScope = null;
+
     public function initialize(array $config): void
     {
         $this->bindAssociations();
         $this->_metaTemplateFieldTable = $this->_table;
         $this->_metaTemplateTable = $this->_table;
+    }
+
+    public function getScope()
+    {
+        if (is_null($this->aliasScope)) {
+            $this->aliasScope = Inflector::underscore(Inflector::singularize($this->_table->getAlias()));
+        }
+        return $this->aliasScope;
+        
     }
 
     public function bindAssociations()
@@ -59,7 +70,7 @@ class MetaFieldsBehavior extends Behavior
         $tableAlias = $this->_table->getAlias();
 
         $assocConditions = [
-            'MetaFields.scope' => Inflector::underscore(Inflector::singularize($tableAlias))
+            'MetaFields.scope' => $this->getScope()
         ];
         if (!$table->hasAssociation('MetaFields')) {
             $table->hasMany('MetaFields', array_merge(

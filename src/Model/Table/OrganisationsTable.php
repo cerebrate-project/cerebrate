@@ -9,8 +9,6 @@ use Cake\Error\Debugger;
 
 class OrganisationsTable extends AppTable
 {
-    public $metaFields = 'organisation';
-
     protected $_accessible = [
         'id' => false
     ];

@@ -12,6 +12,7 @@ use Cake\ORM\TableRegistry;
 use Cake\Routing\Router;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Collection\Collection;
 
 class CRUDComponent extends Component
 {
@@ -116,25 +117,27 @@ class CRUDComponent extends Component
     private function getMetaTemplates()
     {
         $metaTemplates = [];
-        if (!empty($this->Table->metaFields)) {
-            $metaQuery = $this->MetaTemplates->find();
-            $metaQuery
-                ->order(['is_default' => 'DESC'])
-                ->where([
-                    'scope' => $this->Table->metaFields,
-                    'enabled' => 1
-                ])
-                ->contain('MetaTemplateFields')
-                ->formatResults(function (\Cake\Collection\CollectionInterface $metaTemplates) { // Set meta-template && meta-template-fields indexed by their ID
-                    return $metaTemplates
-                        ->map(function ($metaTemplate) {
-                            $metaTemplate->meta_template_fields = Hash::combine($metaTemplate->meta_template_fields, '{n}.id', '{n}');
-                            return $metaTemplate;
-                        })
-                        ->indexBy('id');
-                });
-            $metaTemplates = $metaQuery->all();
+        if (!$this->Table->hasBehavior('MetaFields')) {
+            throw new \Exception(__("Table {$this->TableAlias} does not support meta_fields"));
         }
+        $metaFieldsBehavior = $this->Table->getBehavior('MetaFields');
+        $metaQuery = $this->MetaTemplates->find();
+        $metaQuery
+            ->order(['is_default' => 'DESC'])
+            ->where([
+                'scope' => $metaFieldsBehavior->getScope(),
+                'enabled' => 1
+            ])
+            ->contain('MetaTemplateFields')
+            ->formatResults(function (\Cake\Collection\CollectionInterface $metaTemplates) { // Set meta-template && meta-template-fields indexed by their ID
+                return $metaTemplates
+                    ->map(function ($metaTemplate) {
+                        $metaTemplate->meta_template_fields = Hash::combine($metaTemplate->meta_template_fields, '{n}.id', '{n}');
+                        return $metaTemplate;
+                    })
+                    ->indexBy('id');
+            });
+        $metaTemplates = $metaQuery->all();
         return $metaTemplates;
     }
 
@@ -142,7 +145,7 @@ class CRUDComponent extends Component
     {
         $metaTemplates = $this->getMetaTemplates();
         $data = $this->Table->newEmptyEntity();
-        // $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
+        $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
         }
@@ -158,6 +161,9 @@ class CRUDComponent extends Component
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
             }
+            $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
+            unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
+            $data = $massagedData['entity'];
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
@@ -168,9 +174,6 @@ class CRUDComponent extends Component
                     $params['afterSave']($data);
                 }
                 $message = __('{0} added.', $this->ObjectAlias);
-                if (!empty($input['metaFields'])) {
-                    $this->saveMetaFields($data->id, $input);
-                }
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($savedData, 'json');
                 } else if ($this->Controller->ParamHandler->isAjax()) {
@@ -252,7 +255,7 @@ class CRUDComponent extends Component
     // prune empty values and marshall fields
     private function massageMetaFields($entity, $input, $allMetaTemplates=[])
     {
-        if (empty($input['MetaTemplates'])) {
+        if (empty($input['MetaTemplates'] || !$this->Table->hasBehavior('MetaFields'))) {
             return ['entity' => $entity, 'metafields_to_delete' => []];
         }
 
@@ -261,8 +264,12 @@ class CRUDComponent extends Component
         if (empty($metaTemplates)) {
             $allMetaTemplates = $this->getMetaTemplates()->toArray();
         }
-        foreach ($entity->meta_fields as $i => $metaField) {
-            $metaFieldsIndex[$metaField->id] = $i;
+        if (!empty($entity->meta_fields)) {
+            foreach ($entity->meta_fields as $i => $metaField) {
+                $metaFieldsIndex[$metaField->id] = $i;
+            }
+        } else {
+            $entity->meta_fields = [];
         }
 
         $metaFieldsToDelete = [];
@@ -277,7 +284,7 @@ class CRUDComponent extends Component
                                 $metaField = $metaFieldsTable->newEmptyEntity();
                                 $metaFieldsTable->patchEntity($metaField, [
                                     'value' => $new_value,
-                                    'scope' => $this->Table->metaFields, // get scope from behavior
+                                    'scope' => $this->Table->getBehavior('MetaFields')->getScope(),
                                     'field' => $rawMetaTemplateField->field,
                                     'meta_template_id' => $rawMetaTemplateField->meta_template_id,
                                     'meta_template_field_id' => $rawMetaTemplateField->id,
@@ -286,13 +293,11 @@ class CRUDComponent extends Component
                                 ]);
                                 $entity->meta_fields[] = $metaField;
                                 $entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields[] = $metaField;
-                                // $entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields['new'][] = $metaField;
                             }
                         }
                     } else {
                         $new_value = $meta_field['value'];
-                        if (!empty($new_value)) {
-                            // update meta_field and attach validation errors
+                        if (!empty($new_value)) { // update meta_field and attach validation errors
                             if (!empty($metaFieldsIndex[$meta_field_id])) {
                                 $index = $metaFieldsIndex[$meta_field_id];
                                 $metaFieldsTable->patchEntity($entity->meta_fields[$index], [
@@ -307,7 +312,7 @@ class CRUDComponent extends Component
                                 $metaField = $metaFieldsTable->newEmptyEntity();
                                 $metaFieldsTable->patchEntity($metaField, [
                                     'value' => $new_value,
-                                    'scope' => $this->Table->metaFields, // get scope from behavior
+                                    'scope' => $this->Table->getBehavior('MetaFields')->getScope(), // get scope from behavior
                                     'field' => $rawMetaTemplateField->field,
                                     'meta_template_id' => $rawMetaTemplateField->meta_template_id,
                                     'meta_template_field_id' => $rawMetaTemplateField->id,
@@ -317,8 +322,7 @@ class CRUDComponent extends Component
                                 $entity->meta_fields[] = $metaField;
                                 $entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields[] = $metaField;
                             }
-                        } else {
-                            // Metafield value is empty, indicating the field should be removed
+                        } else { // Metafield value is empty, indicating the field should be removed
                             $index = $metaFieldsIndex[$meta_field_id];
                             $metaFieldsToDelete[] = $entity->meta_fields[$index];
                             unset($entity->meta_fields[$index]);
@@ -356,7 +360,6 @@ class CRUDComponent extends Component
         if (empty($id)) {
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
-        $metaTemplates = $this->getMetaTemplates();
         if ($this->taggingSupported()) {
             $params['contain'][] = 'Tags';
             $this->setAllTags();
@@ -373,7 +376,7 @@ class CRUDComponent extends Component
             }
         }
         $data = $this->Table->get($id, $getParam);
-        $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
+        $data = $this->attachMetaTemplatesIfNeeded($data);
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
         }
@@ -385,10 +388,12 @@ class CRUDComponent extends Component
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
             }
-            $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
-            unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
-            $data = $massagedData['entity'];
-            $metaFieldsToDelete = $massagedData['metafields_to_delete'];
+            if ($this->Table->hasBehavior('MetaFields')) {
+                $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
+                unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
+                $data = $massagedData['entity'];
+                $metaFieldsToDelete = $massagedData['metafields_to_delete'];
+            }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
@@ -436,10 +441,10 @@ class CRUDComponent extends Component
 
     public function attachMetaData($id, $data)
     {
-        if (empty($this->Table->metaFields)) {
-            return $data;
+        if (!$this->Table->hasBehavior('MetaFields')) {
+            throw new \Exception(__("Table {$this->TableAlias} does not support meta_fields"));
         }
-        $metaFieldScope = $this->Table->metaFields;
+        $metaFieldScope = $this->Table->getBehavior('MetaFields')->getScope();
         $query = $this->MetaTemplates->find()->where(['MetaTemplates.scope' => $metaFieldScope]);
         $query->contain(['MetaTemplateFields.MetaFields' => function ($q) use ($id, $metaFieldScope) {
             return $q->where(['MetaFields.scope' => $metaFieldScope, 'MetaFields.parent_id' => $id]);
@@ -468,28 +473,13 @@ class CRUDComponent extends Component
         return $metaTemplates;
     }
 
-    // public function getMetaFields($id, $data)
-    // {
-    //     if (empty($this->Table->metaFields)) {
-    //         return $data;
-    //     }
-    //     $query = $this->MetaFields->find();
-    //     $query->where(['MetaFields.scope' => $this->Table->metaFields, 'MetaFields.parent_id' => $id]);
-    //     $metaFields = $query->all();
-    //     $data['metaFields'] = [];
-    //     foreach($metaFields as $metaField) {
-    //         // $data['metaFields'][$metaField->meta_template_id][$metaField->field] = $metaField->value;
-    //         $data['metaFields'][$metaField->meta_template_id][$metaField->meta_template_field_id] = $metaField->value;
-    //     }
-    //     return $data;
-    // }
     public function getMetaFields($id)
     {
-        if (empty($this->Table->metaFields)) {
-            return $data;
+        if (!$this->Table->hasBehavior('MetaFields')) {
+            throw new \Exception(__("Table {$this->TableAlias} does not support meta_fields"));
         }
         $query = $this->MetaFields->find();
-        $query->where(['MetaFields.scope' => $this->Table->metaFields, 'MetaFields.parent_id' => $id]);
+        $query->where(['MetaFields.scope' => $this->Table->getBehavior('MetaFields')->getScope(), 'MetaFields.parent_id' => $id]);
         $metaFields = $query->all();
         $data = [];
         foreach ($metaFields as $metaField) {
@@ -503,7 +493,10 @@ class CRUDComponent extends Component
 
     public function attachMetaTemplates($data, $metaTemplates)
     {
-        $metaFields = $this->getMetaFields($data->id, $data);
+        $metaFields = [];
+        if (!empty($data->id)) {
+            $metaFields = $this->getMetaFields($data->id, $data);
+        }
         foreach ($metaTemplates as $i => $metaTemplate) {
             if (isset($metaFields[$metaTemplate->id])) {
                 foreach ($metaTemplate->meta_template_fields as $j => $meta_template_field) {
@@ -538,9 +531,8 @@ class CRUDComponent extends Component
         }
 
         $data = $this->Table->get($id, $params);
-        $metaTemplates = $this->getMetaTemplates();
-        $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
-        // $data = $this->attachMetaData($id, $data);
+        $data = $this->attachMetaTemplatesIfNeeded($data);
+        
         if (isset($params['afterFind'])) {
             $data = $params['afterFind']($data);
         }
@@ -548,6 +540,16 @@ class CRUDComponent extends Component
             $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
         }
         $this->Controller->set('entity', $data);
+    }
+
+    public function attachMetaTemplatesIfNeeded($data)
+    {
+        if (!$this->Table->hasBehavior('MetaFields')) {
+            return $data;
+        }
+        $metaTemplates = $this->getMetaTemplates();
+        $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
+        return $data;
     }
 
     public function delete($id = false): void
@@ -1028,7 +1030,7 @@ class CRUDComponent extends Component
             throw new Exception('Invalid passed conditions');
         }
         foreach ($metaANDConditions as $i => $conditions) {
-            $metaANDConditions[$i]['scope'] = $this->Table->metaFields;
+            $metaANDConditions[$i]['scope'] = $this->Table->getBehavior('MetaFields')->getScope();
         }
         $firstCondition = $this->prefixConditions('MetaFields', $metaANDConditions[0]);
         $conditionsToJoin = array_slice($metaANDConditions, 1);

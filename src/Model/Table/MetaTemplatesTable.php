@@ -8,8 +8,6 @@ use Cake\Validation\Validator;
 
 class MetaTemplatesTable extends AppTable
 {
-    public $metaFields = true;
-
     public function initialize(array $config): void
     {
         parent::initialize($config);
