@@ -19,6 +19,10 @@
         $filteringButton = '';
         if (!empty($data['allowFilering'])) {
             $activeFilters = !empty($activeFilters) ? $activeFilters : [];
+            $numberActiveFilters = count($activeFilters);
+            if (!empty($activeFilters['filteringMetaFields'])) {
+                $numberActiveFilters += count($activeFilters['filteringMetaFields']) - 1;
+            }
             $buttonConfig = [
                 'icon' => 'filter',
                 'params' => [
@@ -29,8 +33,8 @@
             if (count($activeFilters) > 0) {
                 $buttonConfig['badge'] = [
                     'variant' => 'light',
-                    'text' => count($activeFilters),
-                    'title' => __n('There is {0} active filter', 'There are {0} active filters', count($activeFilters), count($activeFilters))
+                    'text' => $numberActiveFilters,
+                    'title' => __n('There is {0} active filter', 'There are {0} active filters', $numberActiveFilters, $numberActiveFilters)
                 ];
             }
             $filteringButton = $this->Bootstrap->button($buttonConfig);

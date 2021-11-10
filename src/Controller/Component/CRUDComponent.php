@@ -106,6 +106,11 @@ class CRUDComponent extends Component
             $this->Controller->set('taggingEnabled', true);
             $this->setAllTags();
         }
+        if ($this->metaFieldsSupported()) {
+            $metaTemplates = $this->getMetaTemplates()->toArray();
+            $this->Controller->set('metaFieldsEnabled', true);
+            $this->Controller->set('metaTemplates', $metaTemplates);
+        }
         $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
         $this->Controller->set('filters', $filters);
         $this->Controller->viewBuilder()->setLayout('ajax');
@@ -954,10 +959,10 @@ class CRUDComponent extends Component
             }
             if (!empty($params['simpleFilters'])) {
                 foreach ($params['simpleFilters'] as $filter => $filterValue) {
-                    $activeFilters[$filter] = $filterValue;
                     if ($filter === 'quickFilter') {
                         continue;
                     }
+                    $activeFilters[$filter] = $filterValue;
                     if (is_array($filterValue)) {
                         $query->where([($filter . ' IN') => $filterValue]);
                     } else {
@@ -979,8 +984,24 @@ class CRUDComponent extends Component
             $query = $this->setTagFilters($query, $filteringTags);
         }
 
+        if ($this->metaFieldsSupported()) {
+            $filteringMetaFields = $this->getMetaFieldFiltersFromQuery();
+            if (!empty($filteringMetaFields)) {
+                $activeFilters['filteringMetaFields'] = $filteringMetaFields;
+            }
+            $query = $this->setMetaFieldFilters($query, $filteringMetaFields);
+        }
+
         $this->Controller->set('activeFilters', $activeFilters);
         return $query;
+    }
+
+    protected function setMetaFieldFilters($query, $metaFieldFilters)
+    {
+        $modelAlias = $this->Table->getAlias();
+        $subQuery = $this->Table->find('metaFieldValue', $metaFieldFilters)
+            ->select($modelAlias . '.id');
+        return $query->where([$modelAlias . '.id IN' => $subQuery]);
     }
 
     protected function setTagFilters($query, $tags)
@@ -1239,6 +1260,25 @@ class CRUDComponent extends Component
             ->distinct()
             ->extract($fieldToExtract)
             ->toList();
+    }
+
+    private function getMetaFieldFiltersFromQuery(): array
+    {
+        $filters = [];
+        foreach ($this->request->getQueryParams() as $filterName => $value) {
+            $prefix = '_metafield';
+            if (substr($filterName, 0, strlen($prefix)) === $prefix) {
+                $dissected = explode('_', substr($filterName, strlen($prefix)));
+                if (count($dissected) == 3) { // Skip if template_id or template_field_id not provided
+                    $filters[] = [
+                        'meta_template_id' => intval($dissected[1]),
+                        'meta_template_field_id' => intval($dissected[2]),
+                        'value' => $value,
+                    ];
+                }
+            }
+        }
+        return $filters;
     }
 
     private function renderViewInVariable($templateRelativeName, $data)
