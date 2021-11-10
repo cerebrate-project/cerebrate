@@ -1876,18 +1876,25 @@ class BoostrapDropdownMenu extends BootstrapGeneric
         if (!empty($entry['html'])) {
             return $entry['html'];
         }
-
-        $classes = ['dropdown-item'];
-        $params = ['href' => '#'];
+        $classes = [];
         $icon = '';
         if (!empty($entry['icon'])) {
-            $icon = $this->btHelper->icon($entry['icon']);
+            $icon = $this->btHelper->icon($entry['icon'], ['class' => 'me-2']);
         }
         $badge = '';
         if (!empty($entry['badge'])) {
             $bsBadge = new BoostrapBadge($entry['badge']);
             $badge = $bsBadge->badge();
         }
+
+        if (!empty($entry['header'])) {
+            return $this->genNode('h6', [
+                'class' => ['dropdown-header',],
+            ], $icon . h($entry['text']) . $badge);
+        }
+
+        $classes = ['dropdown-item'];
+        $params = ['href' => '#'];
 
         if (!empty($entry['menu'])) {
             $classes[] = 'dropdown-toggle';
@@ -1900,9 +1907,7 @@ class BoostrapDropdownMenu extends BootstrapGeneric
             $params['data-open-form-id'] = mt_rand();
         }
 
-        $label = $this->genNode('span', [
-            'class' => ['ms-2',],
-        ], h($entry['text']));
+        $label = $this->genNode('span', [], h($entry['text']));
         $content = $icon . $label . $badge;
 
         return $this->genNode('a', array_merge([
