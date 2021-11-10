@@ -193,7 +193,7 @@ class MetaFieldsBehavior extends Behavior
         if (substr($value, 0, 1) == '!') {
             $value = substr($value, 1);
             $exp->notEq($field, $value);
-        } else if (strpos($value, '%') != false) {
+        } else if (strpos($value, '%') !== false) {
             $exp->like($field, $value);
         } else {
             $exp->eq($field, $value);
