@@ -21,7 +21,6 @@ if (!empty($meta_templates)) {
         $numberActiveMetaField = !empty($tableSettings['visible_meta_column'][$meta_template->id]) ? count($tableSettings['visible_meta_column'][$meta_template->id]) : 0;
         $metaTemplateColumnMenu[] = [
             'text' => $meta_template->name,
-            'icon' => 'object-group',
             'badge' => [
                 'text' => $numberActiveMetaField,
                 'variant' => 'secondary',
@@ -40,7 +39,12 @@ if (!empty($meta_templates)) {
         ];
     }
 }
-$indexColumnMenu = array_merge([['html' => $availableColumnsHtml]], $metaTemplateColumnMenu);
+$indexColumnMenu = array_merge(
+    [['header' => true, 'text' => sprintf('%s\'s fields', $this->request->getParam('controller'))]],
+    [['html' => $availableColumnsHtml]],
+    [['header' => true, 'text' => __('Meta Templates'), 'icon' => 'object-group',]],
+    $metaTemplateColumnMenu
+);
 
 $compactDisplayHtml = $this->element('/genericElements/ListTopBar/group_table_action/compactDisplay', [
     'table_data' => $table_data,
