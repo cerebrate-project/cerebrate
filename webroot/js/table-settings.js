@@ -1,13 +1,12 @@
-// function saveHiddenColumns(table_setting_id, newTableSettings) {
-function mergeAndSaveSettings(table_setting_id, newTableSettings) {
+function mergeAndSaveSettings(table_setting_id, newTableSettings, automaticFeedback=true) {
     const settingName = 'ui.table_setting'
     const urlGet = `/user-settings/getSettingByName/${settingName}`
-    AJAXApi.quickFetchJSON(urlGet).then(tableSettings => {
+    return AJAXApi.quickFetchJSON(urlGet).then(tableSettings => {
         tableSettings = JSON.parse(tableSettings.value)
         newTableSettings = mergeNewTableSettingsIntoOld(table_setting_id, tableSettings, newTableSettings)
-        saveTableSetting(settingName, newTableSettings)
+        return saveTableSetting(settingName, newTableSettings, automaticFeedback)
     }).catch((e) => { // setting probably doesn't exist
-        saveTableSetting(settingName, newTableSettings)
+        return saveTableSetting(settingName, newTableSettings, automaticFeedback)
     })
 }
 
@@ -18,17 +17,20 @@ function mergeNewTableSettingsIntoOld(table_setting_id, oldTableSettings, newTab
     return tableSettings
 }
 
-function saveTableSetting(settingName, newTableSettings) {
+function saveTableSetting(settingName, newTableSettings, automaticFeedback=true) {
     const urlSet = `/user-settings/setSetting/${settingName}`
-    AJAXApi.quickFetchAndPostForm(urlSet, {
+    return AJAXApi.quickFetchAndPostForm(urlSet, {
         value: JSON.stringify(newTableSettings)
     }, {
         provideFeedback: false
-    }).then(() => {
-        UI.toast({
-            variant: 'success',
-            title: 'Table setting saved',
-            delay: 3000
-        })
+    }).then((postResult) => {
+        if (automaticFeedback) {
+            UI.toast({
+                variant: 'success',
+                title: 'Table setting saved',
+                delay: 3000
+            })
+        }
+        return postResult
     })
 }

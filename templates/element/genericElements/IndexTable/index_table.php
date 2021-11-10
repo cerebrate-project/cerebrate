@@ -1,5 +1,5 @@
 <?php
-    /*
+/*
      *  echo $this->element('/genericElements/IndexTable/index_table', [
      *      'top_bar' => (
      *          // search/filter bar information compliant with ListTopBar
@@ -16,6 +16,23 @@
      *  ));
      *
      */
+
+     $newMetaFields = [];
+     if (!empty($requestedMetaFields)) { // Create mapping for new index table fields on the fly
+        foreach ($requestedMetaFields as $requestedMetaField) {
+            $template_id = $requestedMetaField['template_id'];
+            $meta_template_field_id = $requestedMetaField['meta_template_field_id'];
+            $newMetaFields[] = [
+                'name' => $meta_templates[$template_id]['meta_template_fields'][$meta_template_field_id]['field'],
+                'data_path' => "MetaTemplates.{$template_id}.meta_template_fields.{$meta_template_field_id}.metaFields.{n}.value",
+                'element' => 'generic_field',
+                '_metafield' => true,
+                '_automatic_field' => true,
+            ];
+        }
+    }
+    $data['fields'] = array_merge($data['fields'], $newMetaFields);
+
     $tableRandomValue = Cake\Utility\Security::randomString(8);
     echo '<div id="table-container-' . h($tableRandomValue) . '">';
     if (!empty($data['title'])) {
@@ -104,9 +121,10 @@
     }
     $tbody = '<tbody>' . $rows . '</tbody>';
     echo sprintf(
-        '<table class="table table-hover" id="index-table-%s" data-table-random-value="%s">%s%s</table>',
+        '<table class="table table-hover" id="index-table-%s" data-table-random-value="%s" data-reload-url="%s">%s%s</table>',
         $tableRandomValue,
         $tableRandomValue,
+        h($this->Url->build(['action' => $this->request->getParam('action'),])),
         $this->element(
             '/genericElements/IndexTable/headers',
             [

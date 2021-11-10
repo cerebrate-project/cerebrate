@@ -13,6 +13,7 @@ use Cake\Routing\Router;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Collection\Collection;
+use App\Utility\UI\IndexSetting;
 
 class CRUDComponent extends Component
 {
@@ -73,6 +74,9 @@ class CRUDComponent extends Component
             }
             $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
         } else {
+            if ($this->metaFieldsSupported()) {
+                $query = $this->includeRequestedMetaFields($query);
+            }
             $this->Controller->loadComponent('Paginator');
             $data = $this->Controller->Paginator->paginate($query);
             if (isset($options['afterFind'])) {
@@ -83,6 +87,15 @@ class CRUDComponent extends Component
                 }
             }
             $this->setFilteringContext($options['contextFilters'] ?? [], $params);
+            if ($this->metaFieldsSupported()) {
+                $data = $data->toArray();
+                $metaTemplates = $this->getMetaTemplates()->toArray();
+                foreach ($data as $i => $row) {
+                    $data[$i] = $this->attachMetaTemplatesIfNeeded($row, $metaTemplates);
+                }
+                $this->Controller->set('meta_templates', $metaTemplates);
+            }
+            $this->Controller->set('model', $this->Table);
             $this->Controller->set('data', $data);
         }
     }
@@ -513,6 +526,32 @@ class CRUDComponent extends Component
         return $data;
     }
 
+    protected function includeRequestedMetaFields($query)
+    {
+        $user = $this->Controller->ACL->getUser();
+        $tableSettings = IndexSetting::getTableSetting($user, $this->Table);
+        if (empty($tableSettings['visible_meta_column'])) {
+            return $query;
+        }
+        $containConditions = ['OR' => []];
+        $requestedMetaFields = [];
+        foreach ($tableSettings['visible_meta_column'] as $template_id => $fields) {
+            $containConditions['OR'][] = [
+                'meta_template_id' => $template_id,
+                'meta_template_field_id IN' => array_map('intval', $fields),
+            ];
+            foreach ($fields as $field) {
+                $requestedMetaFields[] = ['template_id' => $template_id, 'meta_template_field_id' => intval($field)];
+            }
+        }
+        $this->Controller->set('requestedMetaFields', $requestedMetaFields);
+        return $query->contain([
+            'MetaFields' => [
+                'conditions' => $containConditions
+            ]
+        ]);
+    }
+
     public function view(int $id, array $params = []): void
     {
         if (empty($id)) {
@@ -543,13 +582,23 @@ class CRUDComponent extends Component
         $this->Controller->set('entity', $data);
     }
 
-    public function attachMetaTemplatesIfNeeded($data)
+    public function attachMetaTemplatesIfNeeded($data, array $metaTemplates = null)
     {
         if (!$this->metaFieldsSupported()) {
             return $data;
         }
-        $metaTemplates = $this->getMetaTemplates();
-        $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
+        if (!is_null($metaTemplates)) {
+            // We night be in the case where $metaTemplates gets re-used in a while loop
+            // We deep copy the meta-template so that the data attached is not preserved for the next iteration
+            $metaTemplates = array_map(function ($metaTemplate) {
+                $tmpEntity = $this->MetaTemplates->newEntity($metaTemplate->toArray());
+                $tmpEntity['meta_template_fields'] = Hash::combine($tmpEntity['meta_template_fields'], '{n}.id', '{n}'); // newEntity resets array indexing
+                return $tmpEntity;
+            }, $metaTemplates);
+        } else {
+            $metaTemplates = $this->getMetaTemplates()->toArray();
+        }
+        $data = $this->attachMetaTemplates($data, $metaTemplates);
         return $data;
     }
 
