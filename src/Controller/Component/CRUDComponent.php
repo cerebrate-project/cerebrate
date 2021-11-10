@@ -117,7 +117,7 @@ class CRUDComponent extends Component
     private function getMetaTemplates()
     {
         $metaTemplates = [];
-        if (!$this->Table->hasBehavior('MetaFields')) {
+        if (!$this->metaFieldsSupported()) {
             throw new \Exception(__("Table {$this->TableAlias} does not support meta_fields"));
         }
         $metaFieldsBehavior = $this->Table->getBehavior('MetaFields');
@@ -255,7 +255,7 @@ class CRUDComponent extends Component
     // prune empty values and marshall fields
     private function massageMetaFields($entity, $input, $allMetaTemplates=[])
     {
-        if (empty($input['MetaTemplates'] || !$this->Table->hasBehavior('MetaFields'))) {
+        if (empty($input['MetaTemplates'] || !$this->metaFieldsSupported())) {
             return ['entity' => $entity, 'metafields_to_delete' => []];
         }
 
@@ -365,7 +365,7 @@ class CRUDComponent extends Component
             $this->setAllTags();
         }
         $getParam = isset($params['get']) ? $params['get'] : $params;
-        if ($this->Table->hasBehavior('MetaFields')) {
+        if ($this->metaFieldsSupported()) {
             if (empty($getParam['contain'])) {
                 $getParam['contain'] = [];
             }
@@ -376,7 +376,8 @@ class CRUDComponent extends Component
             }
         }
         $data = $this->Table->get($id, $getParam);
-        $data = $this->attachMetaTemplatesIfNeeded($data);
+        $metaTemplates = $this->getMetaTemplates();
+        $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates);
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
         }
@@ -388,7 +389,7 @@ class CRUDComponent extends Component
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
             }
-            if ($this->Table->hasBehavior('MetaFields')) {
+            if ($this->metaFieldsSupported()) {
                 $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
                 unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
                 $data = $massagedData['entity'];
@@ -400,7 +401,7 @@ class CRUDComponent extends Component
             }
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
-                if ($this->Table->hasBehavior('MetaFields') && !empty($metaFieldsToDelete)) {
+                if ($this->metaFieldsSupported() && !empty($metaFieldsToDelete)) {
                     $this->Table->MetaFields->unlink($savedData, $metaFieldsToDelete);
                 }
                 if (isset($params['afterSave'])) {
@@ -441,7 +442,7 @@ class CRUDComponent extends Component
 
     public function attachMetaData($id, $data)
     {
-        if (!$this->Table->hasBehavior('MetaFields')) {
+        if (!$this->metaFieldsSupported()) {
             throw new \Exception(__("Table {$this->TableAlias} does not support meta_fields"));
         }
         $metaFieldScope = $this->Table->getBehavior('MetaFields')->getScope();
@@ -475,7 +476,7 @@ class CRUDComponent extends Component
 
     public function getMetaFields($id)
     {
-        if (!$this->Table->hasBehavior('MetaFields')) {
+        if (!$this->metaFieldsSupported()) {
             throw new \Exception(__("Table {$this->TableAlias} does not support meta_fields"));
         }
         $query = $this->MetaFields->find();
@@ -522,7 +523,7 @@ class CRUDComponent extends Component
             $params['contain'][] = 'Tags';
             $this->setAllTags();
         }
-        if ($this->Table->hasBehavior('MetaFields')) {
+        if ($this->metaFieldsSupported()) {
             if (!empty($this->request->getQuery('full'))) {
                 $params['contain']['MetaFields'] = ['MetaTemplateFields' => 'MetaTemplates'];
             } else {
@@ -544,7 +545,7 @@ class CRUDComponent extends Component
 
     public function attachMetaTemplatesIfNeeded($data)
     {
-        if (!$this->Table->hasBehavior('MetaFields')) {
+        if (!$this->metaFieldsSupported()) {
             return $data;
         }
         $metaTemplates = $this->getMetaTemplates();
@@ -1060,6 +1061,11 @@ class CRUDComponent extends Component
     public function taggingSupported()
     {
         return $this->Table->behaviors()->has('Tag');
+    }
+
+    public function metaFieldsSupported()
+    {
+        return $this->Table->hasBehavior('MetaFields');
     }
 
     public function setAllTags()
