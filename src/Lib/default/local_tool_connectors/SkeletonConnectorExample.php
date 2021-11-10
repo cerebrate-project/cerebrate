@@ -87,7 +87,7 @@ class SkeletonConnector extends CommonConnectorTools
                     'children' => [
                         [
                             'type' => 'search',
-                            'button' => __('Filter'),
+                            'button' => __('Search'),
                             'placeholder' => __('Enter value to search'),
                             'data' => '',
                             'searchKey' => 'value',
