@@ -22,11 +22,7 @@ class IndividualsController extends AppController
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
-            'contextFilters' => [
-                'fields' => [
-                    'Alignments.type'
-                ]
-            ],
+            'quickFilterForMetaField' => ['enabled' => true, 'wildcard_search' => true],
             'contain' => $this->containFields
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
@@ -34,7 +30,6 @@ class IndividualsController extends AppController
             return $responsePayload;
         }
         $this->set('alignmentScope', 'individuals');
-        $this->set('metaGroup', 'ContactDB');
     }
 
     public function filtering()
@@ -49,7 +44,6 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
     }
 
     public function view($id)
@@ -59,7 +53,6 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
     }
 
     public function edit($id)
@@ -69,7 +62,6 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
         $this->render('add');
     }
 
@@ -80,7 +72,6 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
     }
 
     public function tag($id)

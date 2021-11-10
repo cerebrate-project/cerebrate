@@ -36,6 +36,7 @@ class MetaFieldsBehavior extends Behavior
         ],
         'implementedMethods' => [
             'normalizeMetafields' => 'normalizeMetafields',
+            'buildMetaFieldQuerySnippetForMatchingParent' => 'buildQuerySnippetForMatchingParent',
         ],
         'implementedFinders' => [
             'metafieldValue' => 'findMetafieldValue',
@@ -135,13 +136,22 @@ class MetaFieldsBehavior extends Behavior
      */
     public function findMetafieldValue(Query $query, array $filters)
     {
+        $conditions = $this->buildQuerySnippetForMatchingParent($filters);
+        $query->where($conditions);
+        return $query;
+    }
+
+    public function buildQuerySnippetForMatchingParent(array $filters): array
+    {
         if (empty($filters)) {
-            return $query;
+            return [];
+        }
+        if (count(array_filter(array_keys($filters), 'is_string'))) {
+            $filters = [$filters];
         }
         $conjugatedFilters = $this->buildConjugatedFilters($filters);
         $conditions = $this->buildConjugatedQuerySnippet($conjugatedFilters);
-        $query->where($conditions);
-        return $query;
+        return $conditions;
     }
 
     protected function buildConjugatedFilters(array $filters): array
@@ -176,7 +186,7 @@ class MetaFieldsBehavior extends Behavior
         return $conditions;
     }
 
-    public function buildComposedQuerySnippet(array $filters, string $operator='AND'): array
+    protected function buildComposedQuerySnippet(array $filters, string $operator='AND'): array
     {
         $conditions = [];
         foreach ($filters as $filterOperator => $filter) {
@@ -188,7 +198,7 @@ class MetaFieldsBehavior extends Behavior
     }
 
 
-    protected function getQueryExpressionForField(QueryExpression $exp, string $field, string $value)
+    protected function getQueryExpressionForField(QueryExpression $exp, string $field, string $value): QueryExpression
     {
         if (substr($value, 0, 1) == '!') {
             $value = substr($value, 1);
@@ -201,7 +211,7 @@ class MetaFieldsBehavior extends Behavior
         return $exp;
     }
 
-    protected function buildQuerySnippet(array $filter)
+    protected function buildQuerySnippet(array $filter): Query
     {
         $whereClosure = function (QueryExpression $exp) use ($filter) {
             foreach ($filter as $column => $value) {

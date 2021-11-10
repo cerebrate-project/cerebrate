@@ -15,6 +15,11 @@
         if (!empty($data['quickFilter'])) {
             $quickFilter = $data['quickFilter'];
         }
+        if (!empty($quickFilterForMetaField['enabled'])) {
+            $quickFilter[] = [
+                'MetaField\'s value' => !empty($quickFilterForMetaField['wildcard_search'])
+            ];
+        }
         $filterEffective = !empty($quickFilter); // No filters will be picked up, thus rendering the filtering useless
         $filteringButton = '';
         if (!empty($data['allowFilering'])) {

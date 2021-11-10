@@ -37,6 +37,8 @@ class CRUDComponent extends Component
                 $options['filters'] = [];
             }
             $options['filters'][] = 'quickFilter';
+        } else {
+            $options['quickFilters'] = [];
         }
         $options['filters'][] = 'filteringLabel';
         if ($this->taggingSupported()) {
@@ -53,7 +55,7 @@ class CRUDComponent extends Component
             $query = $options['filterFunction']($query);
         }
         $query = $this->setFilters($params, $query, $options);
-        $query = $this->setQuickFilters($params, $query, empty($options['quickFilters']) ? [] : $options['quickFilters']);
+        $query = $this->setQuickFilters($params, $query, $options);
         if (!empty($options['contain'])) {
             $query->contain($options['contain']);
         }
@@ -896,13 +898,27 @@ class CRUDComponent extends Component
         return $massagedFilters;
     }
 
-    public function setQuickFilters(array $params, \Cake\ORM\Query $query, array $quickFilterFields): \Cake\ORM\Query
+    public function setQuickFilters(array $params, \Cake\ORM\Query $query, array $options): \Cake\ORM\Query
     {
+        $quickFilterFields = $options['quickFilters'];
         $queryConditions = [];
         $this->Controller->set('quickFilter', empty($quickFilterFields) ? [] : $quickFilterFields);
+        if ($this->metaFieldsSupported() && !empty($options['quickFilterForMetaField']['enabled'])) {
+            $this->Controller->set('quickFilterForMetaField', [
+                'enabled' => $options['quickFilterForMetaField']['enabled'] ?? false,
+                'wildcard_search' => $options['quickFilterForMetaField']['enabled'] ?? false,
+            ]);
+        }
         if (!empty($params['quickFilter']) && !empty($quickFilterFields)) {
             $this->Controller->set('quickFilterValue', $params['quickFilter']);
             $queryConditions = $this->genQuickFilterConditions($params, $quickFilterFields);
+
+            if ($this->metaFieldsSupported() && !empty($options['quickFilterForMetaField']['enabled'])) {
+                $searchValue = !empty($options['quickFilterForMetaField']['wildcard_search']) ? "%{$params['quickFilter']}%" : $params['quickFilter'];
+                $metaFieldConditions = $this->Table->buildMetaFieldQuerySnippetForMatchingParent(['value' => $searchValue]);
+                $queryConditions[] = $metaFieldConditions;
+            }
+
             $query->where(['OR' => $queryConditions]);
         } else {
             $this->Controller->set('quickFilterValue', '');
@@ -998,10 +1014,10 @@ class CRUDComponent extends Component
 
     protected function setMetaFieldFilters($query, $metaFieldFilters)
     {
-        $modelAlias = $this->Table->getAlias();
-        $subQuery = $this->Table->find('metaFieldValue', $metaFieldFilters)
-            ->select($modelAlias . '.id');
-        return $query->where([$modelAlias . '.id IN' => $subQuery]);
+        $metaFieldConditions = $this->Table->buildMetaFieldQuerySnippetForMatchingParent($metaFieldFilters);
+        $query->where($metaFieldConditions);
+
+        return $query;
     }
 
     protected function setTagFilters($query, $tags)
