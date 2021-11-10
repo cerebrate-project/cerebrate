@@ -1883,6 +1883,11 @@ class BoostrapDropdownMenu extends BootstrapGeneric
         if (!empty($entry['icon'])) {
             $icon = $this->btHelper->icon($entry['icon']);
         }
+        $badge = '';
+        if (!empty($entry['badge'])) {
+            $bsBadge = new BoostrapBadge($entry['badge']);
+            $badge = $bsBadge->badge();
+        }
 
         if (!empty($entry['menu'])) {
             $classes[] = 'dropdown-toggle';
@@ -1898,7 +1903,7 @@ class BoostrapDropdownMenu extends BootstrapGeneric
         $label = $this->genNode('span', [
             'class' => ['ms-2',],
         ], h($entry['text']));
-        $content = $icon . $label;
+        $content = $icon . $label . $badge;
 
         return $this->genNode('a', array_merge([
             'class' => $classes,
