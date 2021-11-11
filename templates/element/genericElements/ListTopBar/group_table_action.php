@@ -17,6 +17,7 @@ $availableColumnsHtml = $this->element('/genericElements/ListTopBar/group_table_
 
 $metaTemplateColumnMenu = [];
 if (!empty($meta_templates)) {
+    $metaTemplateColumnMenu[] = ['header' => true, 'text' => __('Meta Templates'), 'icon' => 'object-group',];
     foreach ($meta_templates as $meta_template) {
         $numberActiveMetaField = !empty($tableSettings['visible_meta_column'][$meta_template->id]) ? count($tableSettings['visible_meta_column'][$meta_template->id]) : 0;
         $metaTemplateColumnMenu[] = [
@@ -42,7 +43,6 @@ if (!empty($meta_templates)) {
 $indexColumnMenu = array_merge(
     [['header' => true, 'text' => sprintf('%s\'s fields', $this->request->getParam('controller'))]],
     [['html' => $availableColumnsHtml]],
-    [['header' => true, 'text' => __('Meta Templates'), 'icon' => 'object-group',]],
     $metaTemplateColumnMenu
 );
 
