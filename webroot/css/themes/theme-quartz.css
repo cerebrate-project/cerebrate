@@ -403,6 +403,9 @@ header.top-navbar .header-breadcrumb .header-breadcrumb-item > a:hover {
   background-color: #fff;
   color: #343a40; }
 
+.sidebar ul.sidebar-elements li > a.sidebar-link.have-active-child::after {
+  background-color: #e83283; }
+
 .sidebar ul.sidebar-elements li > a.sidebar-link:hover {
   background-color: #fff;
   color: #343a40; }

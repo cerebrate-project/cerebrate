@@ -411,6 +411,9 @@ header.top-navbar .header-breadcrumb .header-breadcrumb-item > a:hover {
   background-color: #dbdbdb;
   color: #000; }
 
+.sidebar ul.sidebar-elements li > a.sidebar-link.have-active-child::after {
+  background-color: var(--cerebrate-color); }
+
 .sidebar ul.sidebar-elements li > a.sidebar-link:hover {
   background-color: #ebebeb;
   color: #000; }
