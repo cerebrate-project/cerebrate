@@ -91,32 +91,35 @@ class MailingListsController extends AppController
             ->contain('MetaFields')
             ->first();
 
+        $filteringActive = !empty($queryParams['quickFilter']);
         $matchingMetaFieldParentIDs = [];
-        // Collect individuals having a matching meta_field
-        foreach ($mailingList->meta_fields as $metaField) {
-            if (
-                empty($queryParams['quickFilter']) ||
-                (
-                    str_contains($metaField->field, 'email') &&
-                    str_contains($metaField->value, $queryParams['quickFilter'])
-                )
-            ) {
-                $matchingMetaFieldParentIDs[$metaField->parent_id] = true;
+        if ($filteringActive) {
+            // Collect individuals having a matching meta_field for the requested search value
+            foreach ($mailingList->meta_fields as $metaField) {
+                if (
+                    empty($queryParams['quickFilter']) ||
+                    (
+                        str_contains($metaField->field, 'email') &&
+                        str_contains($metaField->value, $queryParams['quickFilter'])
+                    )
+                ) {
+                    $matchingMetaFieldParentIDs[$metaField->parent_id] = true;
+                }
             }
         }
         $matchingMetaFieldParentIDs = array_keys($matchingMetaFieldParentIDs);
         $mailingList = $this->MailingLists->loadInto($mailingList, [
-            'Individuals' => function (Query $q) use ($queryParams, $quickFilter, $matchingMetaFieldParentIDs) {
+            'Individuals' => function (Query $q) use ($queryParams, $quickFilter, $filteringActive, $matchingMetaFieldParentIDs) {
                 $conditions = [];
                 if (!empty($queryParams)) {
                     $conditions = $this->CRUD->genQuickFilterConditions($queryParams, $quickFilter);
                 }
-                if (!empty($matchingMetaFieldParentIDs)) {
+                if ($filteringActive && !empty($matchingMetaFieldParentIDs)) {
                     $conditions[] = function (QueryExpression $exp) use ($matchingMetaFieldParentIDs) {
                         return $exp->in('Individuals.id', $matchingMetaFieldParentIDs);
                     };
                 }
-                if (!empty($queryParams['quickFilter'])) {
+                if ($filteringActive && !empty($queryParams['quickFilter'])) {
                     $conditions[] = [
                         'MailingListsIndividuals.include_primary_email' => true,
                         'Individuals.email LIKE' => "%{$queryParams['quickFilter']}%"
@@ -247,10 +250,13 @@ class MailingListsController extends AppController
             $success = false;
             if (!is_null($individual_id)) {
                 $individualToRemove = $this->MailingLists->Individuals->get($individual_id);
-                $metaFieldsToRemove = $this->MailingLists->MetaFields->find()->where([
-                    'id IN' => Hash::extract($mailingList, 'meta_fields.{n}.id'),
-                    'parent_id' => $individual_id,
-                ])->all()->toArray();
+                $metaFieldsIDsToRemove = Hash::extract($mailingList, 'meta_fields.{n}.id');
+                if (!empty($metaFieldsIDsToRemove)) {
+                    $metaFieldsToRemove = $this->MailingLists->MetaFields->find()->where([
+                        'id IN' => $metaFieldsIDsToRemove,
+                        'parent_id' => $individual_id,
+                    ])->all()->toArray();
+                }
                 $success = (bool)$this->MailingLists->Individuals->unlink($mailingList, [$individualToRemove]);
                 if ($success && !empty($metaFieldsToRemove)) {
                     $success = (bool)$this->MailingLists->MetaFields->unlink($mailingList, $metaFieldsToRemove);
@@ -273,11 +279,12 @@ class MailingListsController extends AppController
                 $individualsToRemove = $this->MailingLists->Individuals->find()->where([
                     'id IN' => array_map('intval', $params['ids'])
                 ])->all()->toArray();
-                $metaFieldsToRemove = $this->MailingLists->MetaFields->find()->where([
-                    'id IN' => Hash::extract($mailingList, 'meta_fields.{n}.id'),
-                    'parent_id IN' => Hash::extract($mailingList, 'meta_fields.{n}.id')
-                ])->all()->toArray();
-                dd($metaFieldsToRemove);
+                $metaFieldsIDsToRemove = Hash::extract($mailingList, 'meta_fields.{n}.id');
+                if (!empty($metaFieldsIDsToRemove)) {
+                    $metaFieldsToRemove = $this->MailingLists->MetaFields->find()->where([
+                        'id IN' => $metaFieldsIDsToRemove,
+                    ])->all()->toArray();
+                }
                 $unlinkSuccesses = 0;
                 foreach ($individualsToRemove as $individualToRemove) {
                     $success = (bool)$this->MailingLists->Individuals->unlink($mailingList, [$individualToRemove]);
