@@ -48,8 +48,7 @@ echo $this->element(
                 'scope' => 'organisations'
             ]
         ],
-        'metaTemplates' => empty($metaFields) ? [] : $metaFields,
-        'combinedFieldsView' => true,
+        'combinedFieldsView' => false,
         'children' => []
     ]
 );

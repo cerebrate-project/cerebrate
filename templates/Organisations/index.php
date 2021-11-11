@@ -44,6 +44,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => __('Name'),
                 'class' => 'short',
                 'data_path' => 'name',
+                'sort' => 'name',
             ],
             [
                 'name' => __('UUID'),
@@ -67,14 +68,17 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'name' => __('Nationality'),
                 'data_path' => 'nationality',
+                'sort' => 'nationality',
             ],
             [
                 'name' => __('Sector'),
                 'data_path' => 'sector',
+                'sort' => 'sector',
             ],
             [
                 'name' => __('Type'),
                 'data_path' => 'type',
+                'sort' => 'type',
             ],
             [
                 'name' => __('Tags'),
