@@ -396,8 +396,10 @@ class CRUDComponent extends Component
             }
         }
         $data = $this->Table->get($id, $getParam);
-        $metaTemplates = $this->getMetaTemplates();
-        $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates);
+        if ($this->metaFieldsSupported()) {
+            $metaTemplates = $this->getMetaTemplates();
+            $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
+        }
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
         }
@@ -595,11 +597,11 @@ class CRUDComponent extends Component
             return $data;
         }
         if (!is_null($metaTemplates)) {
-            // We night be in the case where $metaTemplates gets re-used in a while loop
+            // We might be in the case where $metaTemplates gets re-used in a while loop
             // We deep copy the meta-template so that the data attached is not preserved for the next iteration
             $metaTemplates = array_map(function ($metaTemplate) {
                 $tmpEntity = $this->MetaTemplates->newEntity($metaTemplate->toArray());
-                $tmpEntity['meta_template_fields'] = Hash::combine($tmpEntity['meta_template_fields'], '{n}.id', '{n}'); // newEntity resets array indexing
+                $tmpEntity['meta_template_fields'] = Hash::combine($tmpEntity['meta_template_fields'], '{n}.id', '{n}'); // newEntity resets array indexing, see https://github.com/cakephp/cakephp/blob/32e3c532fea8abe2db8b697f07dfddf4dfc134ca/src/ORM/Marshaller.php#L369
                 return $tmpEntity;
             }, $metaTemplates);
         } else {
