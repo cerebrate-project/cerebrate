@@ -1,4 +1,6 @@
 <?php
+// debug($timeline);
+// $chartData = $timeline['modified']['timeline'];
 $variationIcon = '';
 $variationClass = '';
 if ($variation == 0) {
@@ -9,6 +11,22 @@ if ($variation == 0) {
 } else {
     $variationIcon = 'trends-arrow-up-white fs-6 fa-rotate-180 fa-flip-vertical';
     $variationClass = 'bg-danger';
+}
+
+$series = [];
+if (!empty($timeline['created']['timeline'])) {
+    $series[0]['name'] = __('Created');
+    $series[0]['type'] = 'column';
+    foreach ($timeline['created']['timeline'] as $entry) {
+        $series[0]['data'][] = $entry['count'];
+    }
+}
+if (!empty($timeline['modified']['timeline'])) {
+    $series[1]['name'] = __('Modified');
+    $series[1]['type'] = 'line';
+    foreach ($timeline['modified']['timeline'] as $entry) {
+        $series[1]['data'][] = $entry['count'];
+    }
 }
 
 $variationHtml = sprintf(
@@ -25,9 +43,12 @@ $leftContent = sprintf('<div class="">%s</div><h2 class="my-2">%s</h2>%s',
     $variationHtml
 );
 $rightContent = sprintf('<div class="">%s</div>', $this->element('charts/bar', [
-    'chartData' => $chartData,
+    'series' => $series,
     'chartOptions' => [
-        
+        // 'colors' => ['var(--bs-light)', 'var(--bs-primary)'],
+        'stroke' => [
+          'width' => [0, 2]
+        ],
     ]
 ]));
 
