@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Model\Entity\Individual;
 use Cake\Utility\Inflector;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
@@ -173,16 +174,13 @@ class MailingListsController extends AppController
                 'id IN' => $memberIDs
             ])->all()->toArray();
             $memberToLink = [];
-            $memberToUpdate = [];
             foreach ($members as $i => $member) {
                 $includePrimary = in_array('primary', $chosen_emails[$member->id]);
                 $chosen_emails[$member->id] = array_filter($chosen_emails[$member->id], function($entry) {
                     return $entry != 'primary';
                 });
                 $members[$i]->_joinData = new Entity(['include_primary_email' => $includePrimary]);
-                if (in_array($member->id, $linkedIndividualsIDs)) { // individual already in the list
-                    // $memberToUpdate[] = $members[$i];
-                } else { // new individual to add to the list
+                if (!in_array($member->id, $linkedIndividualsIDs)) { // individual are not already in the list
                     $memberToLink[] = $members[$i];
                 }
             }
@@ -197,28 +195,6 @@ class MailingListsController extends AppController
                     $success = (bool)$this->MailingLists->MetaFields->link($mailingList, $emailsFromMetaFields);
                 }
             }
-
-            // update existing individuals
-            if (!empty($memberToUpdate)) {
-                $memberToUpdateIDs = Hash::extract($memberToUpdate, '{n}.id');
-                $metaFieldsToRemove = array_filter($mailingList->meta_fields, function($metaField) use ($memberToUpdateIDs) {
-                    return in_array($metaField->parent_id, $memberToUpdateIDs);
-                });
-
-                // Trying to  update `include_primary`...
-                // $success = (bool)$this->MailingLists->Individuals->unlink($mailingList, $memberToUpdate, ['atomic' => false]);
-                // $success = $success && (bool)$this->MailingLists->Individuals->link($mailingList, $memberToUpdate);
-
-                // Remove and add relevant meta fields
-                // $success = (bool)$this->MailingLists->MetaFields->unlink($mailingList, $metaFieldsToRemove, ['atomic' => false]);
-                // if ($success && !empty($chosen_emails[$member->id])) { // Include any remaining emails from the metaFields
-                //     $emailsFromMetaFields = $this->MailingLists->MetaFields->find()->where([
-                //         'id IN' => $chosen_emails[$member->id]
-                //     ])->all()->toArray();
-                //     $success = (bool)$this->MailingLists->MetaFields->link($mailingList, $emailsFromMetaFields);
-                // }
-            }
-
 
             if ($success) {
                 $message = __n('{0} individual added to the mailing list.', '{0} Individuals added to the mailing list.', count($members), count($members));
