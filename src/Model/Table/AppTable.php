@@ -14,6 +14,67 @@ class AppTable extends Table
     {
     }
 
+    // Move this into a tool
+    public function getStatisticsForModel(Object $table, int $days = 30): array
+    {
+        $statistics = [];
+        if ($table->hasBehavior('Timestamp')) {
+            $statistics['created'] = $this->getActivityStatistic($table, $days, 'created');
+            $statistics['modified'] = $this->getActivityStatistic($table, $days, 'modified');
+        }
+        return $statistics;
+    }
+
+    public function getActivityStatistic(Object $table, int $days = 30, string $field = 'modified', bool $includeTimeline = true): array
+    {
+        $statistics = [];
+        $statistics['days'] = $days;
+        $statistics['amount'] = $table->find()->all()->count();
+        if ($table->behaviors()->has('Timestamp') && $includeTimeline) {
+            $statistics['timeline'] = $this->buildTimeline($table, $days, $field);
+            $statistics['variation'] = $table->find()->where(["{$field} >" => new \DateTime("-{$days} days")])->all()->count();
+            -$statistics['amount'];
+        } else {
+            $statistics['timeline'] = [];
+            $statistics['variation'] = 0;
+        }
+        return $statistics;
+    }
+
+    public function buildTimeline(Object $table, int $days = 30, string $field = 'modified'): array
+    {
+        $timeline = [];
+        $authorizedFields = ['modified', 'created'];
+        if ($table->behaviors()->has('Timestamp')) {
+            if (!in_array($field, $authorizedFields)) {
+                throw new MethodNotAllowedException(__('Cannot construct timeline for field `{0}`', $field));
+            }
+            $days = $days - 1;
+            $query = $table->find();
+            $query->select([
+                'count' => $query->func()->count('id'),
+                'date' => "DATE({$field})",
+            ])
+                ->where(["{$field} >" => new \DateTime("-{$days} days")])
+                ->group(['date'])
+                ->order(['date']);
+            $data = $query->toArray();
+            $interval = new \DateInterval('P1D');
+            $period = new \DatePeriod(new \DateTime("-{$days} days"), $interval, (new \DateTime())->modify( '+1 day' ));
+            foreach ($period as $date) {
+                $timeline[$date->format("Y-m-d")] = [
+                    'time' => $date->format("Y-m-d"),
+                    'count' => 0
+                ];
+            }
+            foreach ($data as $entry) {
+                $timeline[$entry->date]['count'] = $entry->count;
+            }
+            $timeline = array_values($timeline);
+        }
+        return $timeline;
+    }
+
     public function saveMetaFields($id, $input)
     {
         $this->MetaFields = TableRegistry::getTableLocator()->get('MetaFields');
