@@ -46,7 +46,7 @@ if (!empty($series)) {
             series: <?= json_encode($chartSeries) ?>,
             tooltip: {
                 x: {
-                    show: false
+                    // show: false
                 },
                 y: {
                     title: {
@@ -58,7 +58,7 @@ if (!empty($series)) {
                 theme: 'dark'
             },
         }
-        const chartOptions = Object.assign({}, defaultOptions, passedOptions)
+        const chartOptions = mergeDeep({}, defaultOptions, passedOptions)
         new ApexCharts(document.querySelector('#<?= $chartId ?>'), chartOptions).render();
     })
 </script>
