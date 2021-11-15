@@ -999,6 +999,8 @@ class BoostrapIcon extends BootstrapGeneric {
     private $icon = '';
     private $defaultOptions = [
         'class' => [],
+        'title' => '',
+        'params' => [],
     ];
 
     function __construct($icon, $options=[]) {
@@ -1019,12 +1021,13 @@ class BoostrapIcon extends BootstrapGeneric {
 
     private function genIcon()
     {
-        $html = $this->genNode('span', [
+        $html = $this->genNode('span', array_merge([
             'class' => array_merge(
                 is_array($this->options['class']) ? $this->options['class'] : [$this->options['class']],
                 ["fa fa-{$this->icon}"]
             ),
-        ]);
+            'title' => h($this->options['title'])
+        ], $this->options['params']));
         return $html;
     }
 }
