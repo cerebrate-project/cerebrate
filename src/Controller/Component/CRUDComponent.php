@@ -97,6 +97,10 @@ class CRUDComponent extends Component
                 }
                 $this->Controller->set('meta_templates', $metaTemplates);
             }
+            if ($this->Table->hasBehavior('Timestamp')) {
+                $modelStatistics = $this->Table->getStatisticsForModel($this->Table, !is_numeric($this->request->getQuery('statistics_days')) ? 7 : $this->request->getQuery('statistics_days'));
+                $this->Controller->set('modelStatistics', $modelStatistics);
+            }
             $this->Controller->set('model', $this->Table);
             $this->Controller->set('data', $data);
         }
