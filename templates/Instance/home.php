@@ -33,7 +33,7 @@ $bookmarks = !empty($loggedUser->user_settings_by_name['ui.bookmarks']['value'])
 </h3>
 <div class="row">
     <?php foreach ($statistics as $modelName => $statisticForModel) : ?>
-        <div class="col-sm-6 col-md-5 col-l-4 col-xl-3 mb-3">
+        <div class="col-sm-6 col-md-5 col-lg-4 col-xl-3 mb-3">
             <?php
             $exploded = explode('.', $modelName);
             $modelForDisplay = $exploded[count($exploded) - 1];
