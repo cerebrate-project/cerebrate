@@ -390,6 +390,26 @@ CREATE TABLE `meta_template_fields` (
   KEY `type` (`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `audit_logs` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+    `created` datetime NOT NULL,
+    `user_id` int(10) unsigned NOT NULL,
+    `authkey_id` int(11) DEFAULT NULL,
+    `ip` varbinary(16) DEFAULT NULL,
+    `request_type` tinyint NOT NULL,
+    `request_id` varchar(191) DEFAULT NULL,
+    `action` varchar(20) NOT NULL,
+    `model` varchar(80) NOT NULL,
+    `model_id` int(10) unsigned NOT NULL,
+    `model_title` text DEFAULT NULL,
+    `change` blob,
+    PRIMARY KEY (`id`),
+    KEY `user_id` (`user_id`),
+    KEY `ip` (`ip`),
+    KEY `model` (`model`),
+    KEY `action` (`action`),
+    KEY `model_id` (`model_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
