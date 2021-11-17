@@ -393,14 +393,14 @@ CREATE TABLE `meta_template_fields` (
 CREATE TABLE IF NOT EXISTS `audit_logs` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
     `created` datetime NOT NULL,
-    `user_id` int(10) unsigned NOT NULL,
-    `authkey_id` int(11) DEFAULT NULL,
-    `ip` varbinary(16) DEFAULT NULL,
+    `user_id` int(10) unsigned DEFAULT NULL,
+    `authkey_id` int(10) unsigned DEFAULT NULL,
+    `request_ip` varbinary(16) DEFAULT NULL,
     `request_type` tinyint NOT NULL,
     `request_id` varchar(191) DEFAULT NULL,
-    `action` varchar(20) NOT NULL,
+    `request_action` varchar(20) NOT NULL,
     `model` varchar(80) NOT NULL,
-    `model_id` int(10) unsigned NOT NULL,
+    `model_id` int(10) unsigned DEFAULT NULL,
     `model_title` text DEFAULT NULL,
     `change` blob,
     PRIMARY KEY (`id`),
@@ -409,6 +409,7 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
     KEY `model` (`model`),
     KEY `action` (`action`),
     KEY `model_id` (`model_id`)
+    KEY `created` (`created`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
