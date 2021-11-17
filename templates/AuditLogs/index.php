@@ -45,8 +45,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ],
             [
                 'name' => __('Action'),
-                'sort' => 'action',
-                'data_path' => 'action',
+                'sort' => 'request_action',
+                'data_path' => 'request_action',
             ],
             [
                 'name' => __('Change'),
