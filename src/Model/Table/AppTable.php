@@ -7,6 +7,9 @@ use Cake\Validation\Validator;
 use Cake\Core\Configure;
 use Cake\Core\Configure\Engine\PhpConfig;
 use Cake\ORM\TableRegistry;
+use Cake\Utility\Hash;
+use Cake\Database\Expression\QueryExpression;
+use Cake\ORM\Query;
 
 class AppTable extends Table
 {
@@ -14,8 +17,80 @@ class AppTable extends Table
     {
     }
 
+    public function getStatisticsUsageForModel(Object $table, array $scopes, array $options=[]): array
+    {
+        $defaultOptions = [
+            'limit' => 5,
+            'includeOthers' => true,
+            'ignoreNull' => true,
+        ];
+        $options = $this->getOptions($defaultOptions, $options);
+        $stats = [];
+        foreach ($scopes as $scope) {
+            $queryTopUsage = $table->find();
+            $queryTopUsage
+                ->select([
+                    $scope,
+                    'count' => $queryTopUsage->func()->count('id'),
+                ]);
+            if ($queryTopUsage->getDefaultTypes()[$scope] != 'boolean') {
+                $queryTopUsage->where(function (QueryExpression $exp) use ($scope) {
+                    return $exp
+                        ->isNotNull($scope)
+                        ->notEq($scope, '');
+                });
+            }
+            $queryTopUsage
+                ->group($scope)
+                ->order(['count' => 'DESC'])
+                ->limit($options['limit'])
+                ->page(1)
+                ->enableHydration(false);
+            $topUsage = $queryTopUsage->toList();
+            $stats[$scope] = $topUsage;
+            if (
+                !empty($options['includeOthers']) && !empty($topUsage) &&
+                $queryTopUsage->getDefaultTypes()[$scope] != 'boolean'  // No need to get others as we only have 2 possibilities already considered
+            ) {
+                $queryOthersUsage = $table->find();
+                $queryOthersUsage
+                    ->select([
+                        'count' => $queryOthersUsage->func()->count('id'),
+                    ])
+                    ->where(function (QueryExpression $exp, Query $query) use ($topUsage, $scope, $options) {
+                        if (!empty($options['ignoreNull'])) {
+                            return $exp
+                                ->isNotNull($scope)
+                                ->notEq($scope, '')
+                                ->notIn($scope, Hash::extract($topUsage, "{n}.{$scope}"));
+                        } else {
+                            return $exp->or([
+                                $query->newExpr()->isNull($scope),
+                                $query->newExpr()->eq($scope, ''),
+                                $query->newExpr()->notIn($scope, Hash::extract($topUsage, "{n}.{$scope}")),
+                            ]);
+                        }
+                    })
+                    ->enableHydration(false);
+                $othersUsage = $queryOthersUsage->toList();
+                if (!empty($othersUsage)) {
+                    $stats[$scope][] = [
+                        $scope => __('Others'),
+                        'count' => $othersUsage[0]['count'],
+                    ];
+                }
+            }
+        }
+        return $stats;
+    }
+
+    private function getOptions($defaults=[], $options=[]): array
+    {
+        return array_merge($defaults, $options);
+    }
+
     // Move this into a tool
-    public function getStatisticsForModel(Object $table, int $days = 30): array
+    public function getActivityStatisticsForModel(Object $table, int $days = 30): array
     {
         $statistics = [];
         if ($table->hasBehavior('Timestamp')) {

@@ -113,9 +113,11 @@ echo $this->Bootstrap->card([
 
     function statisticsDaysRedirect(clicked) {
         const endpoint = window.location.pathname
-        const searchParams = new URLSearchParams({
-            statistics_days: $(clicked).closest('.input-group').find('input').val()
-        });
+        const search = window.location.search
+        let days = $(clicked).closest('.input-group').find('input').val()
+        days = days !== undefined ? days : 7
+        const searchParams = new URLSearchParams(window.location.search)
+        searchParams.set('statistics_days', days);
         const url = endpoint + '?' + searchParams
         window.location = url
     }

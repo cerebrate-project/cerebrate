@@ -54,44 +54,12 @@ if (!empty($data['title'])) {
     );
 }
 
-$statisticsHtml = '';
 if (!empty($modelStatistics)) {
-    $panelOptions = [
-        'condensed' => true,
-        'panelNoGrow' => true,
-        'allowConfiguration' => true,
-        'chartType' => 'line',
-        'chartOptions' => [
-            'chart' => [
-                'height' => '60px',
-            ],
-            'stroke' => [
-                'width' => 2,
-                'curve' => 'smooth',
-            ],
-            'colors' => ['#0fd291'],
-        ]
-    ];
-    if (!empty($modelStatistics['created'])) {
-        $statCreated = $this->element('widgets/highlight-panel', array_merge($panelOptions, [
-            'titleHtml' => __('New {0}', $model->getAlias()),
-            'number' => $modelStatistics['created']['variation'] ?? '',
-            'timeline' => ['created' => $modelStatistics['created']],
-        ]));
-        $statisticsHtml .= sprintf('<div class="col-sm-6 col-md-5 col-lg-4 col-xl-3 mb-1">%s</div>', $statCreated);
-    }
-    if (!empty($modelStatistics['modified'])) {
-        $statModified = $this->element('widgets/highlight-panel', array_merge($panelOptions, [
-            'titleHtml' => __('Updated {0}', $model->getAlias()),
-            'number' => $modelStatistics['modified']['variation'] ?? '',
-            'timeline' => ['modified' => $modelStatistics['modified']]
-        ]));
-        $statisticsHtml .= sprintf('<div class="col-sm-6 col-md-5 col-lg-4 col-xl-3 mb-1">%s</div>', $statModified);
-    }
-    $statisticsHtml = sprintf('<div class="row gx-2">%s</div>', $statisticsHtml);
+    echo $this->element('genericElements/IndexTable/Statistics/index_statistic_scaffold', [
+        'statistics' => $modelStatistics,
+    ]);
 }
 
-echo sprintf('<div class="index-statistic-container">%s</div>', $statisticsHtml);
 
 echo '<div class="panel">';
 if (!empty($data['html'])) {
@@ -212,8 +180,6 @@ echo '</div>';
         var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
         })
-
-
     });
 </script>
 

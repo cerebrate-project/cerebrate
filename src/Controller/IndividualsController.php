@@ -16,6 +16,7 @@ class IndividualsController extends AppController
     public $quickFilterFields = ['uuid', ['email' => true], ['first_name' => true], ['last_name' => true], 'position'];
     public $filterFields = ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'];
     public $containFields = ['Alignments' => 'Organisations'];
+    public $statisticsFields = ['position'];
 
     public function index()
     {
@@ -23,7 +24,8 @@ class IndividualsController extends AppController
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'quickFilterForMetaField' => ['enabled' => true, 'wildcard_search' => true],
-            'contain' => $this->containFields
+            'contain' => $this->containFields,
+            'statisticsFields' => $this->statisticsFields,
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

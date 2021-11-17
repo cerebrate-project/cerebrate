@@ -30,7 +30,7 @@ class InstanceTable extends AppTable
         $models = ['Individuals', 'Organisations', 'Alignments', 'EncryptionKeys', 'SharingGroups', 'Users', 'Broods', 'Tags.Tags'];
         foreach ($models as $model) {
             $table = TableRegistry::getTableLocator()->get($model);
-            $statistics[$model] = $this->getStatisticsForModel($table, $days);
+            $statistics[$model] = $this->getActivityStatisticsForModel($table, $days);
         }
         return $statistics;
     }

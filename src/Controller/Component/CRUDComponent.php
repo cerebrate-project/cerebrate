@@ -97,8 +97,34 @@ class CRUDComponent extends Component
                 }
                 $this->Controller->set('meta_templates', $metaTemplates);
             }
-            if ($this->Table->hasBehavior('Timestamp')) {
-                $modelStatistics = $this->Table->getStatisticsForModel($this->Table, !is_numeric($this->request->getQuery('statistics_days')) ? 7 : $this->request->getQuery('statistics_days'));
+            if (true) { // check if stats are requested
+                $modelStatistics = [];
+                if ($this->Table->hasBehavior('Timestamp')) {
+                    $modelStatistics = $this->Table->getActivityStatisticsForModel(
+                        $this->Table,
+                        !is_numeric($this->request->getQuery('statistics_days')) ? 7 : $this->request->getQuery('statistics_days')
+                    );
+                }
+                if (!empty($options['statisticsFields'])) {
+                    $statIncludeRemaining = $this->request->getQuery('statistics_include_remainging', true);
+                    if (is_string($statIncludeRemaining)) {
+                        $statIncludeRemaining = $statIncludeRemaining == 'true' ? true : false;
+                    }
+                    $statIgnoreNull = $this->request->getQuery('statistics_ignore_null', true);
+                    if (is_string($statIgnoreNull)) {
+                        $statIgnoreNull = $statIgnoreNull == 'true' ? true : false;
+                    }
+                    $statsOptions = [
+                        'limit' => !is_numeric($this->request->getQuery('statistics_entry_amount')) ? 5 : $this->request->getQuery('statistics_entry_amount'),
+                        'includeOthers' => $statIncludeRemaining,
+                        'ignoreNull' => $statIgnoreNull,
+                    ];
+                    $modelStatistics['usage'] = $this->Table->getStatisticsUsageForModel(
+                        $this->Table,
+                        $options['statisticsFields'],
+                        $statsOptions
+                    );
+                }
                 $this->Controller->set('modelStatistics', $modelStatistics);
             }
             $this->Controller->set('model', $this->Table);

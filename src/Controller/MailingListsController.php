@@ -16,13 +16,15 @@ class MailingListsController extends AppController
     public $filterFields = ['MailingLists.uuid', 'MailingLists.name', 'description', 'releasability'];
     public $quickFilterFields = ['MailingLists.uuid', ['MailingLists.name' => true], ['description' => true], ['releasability' => true]];
     public $containFields = ['Users', 'Individuals', 'MetaFields'];
-
+    public $statisticsFields = ['active'];
+    
     public function index()
     {
         $this->CRUD->index([
             'contain' => $this->containFields,
             'filters' => $this->filterFields,
-            'quickFilters' => $this->quickFilterFields
+            'quickFilters' => $this->quickFilterFields,
+            'statisticsFields' => $this->statisticsFields,
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

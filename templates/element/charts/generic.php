@@ -8,15 +8,6 @@ $chartData = $chartData ?? [];
 $chartSeries = [];
 if (!empty($series)) {
     $chartSeries = $series;
-} else {
-    // Transform the chart data into the expected format
-    $data = [];
-    foreach ($chartData as $i => $entry) {
-        $data[] = $entry['count'];
-    }
-    $chartSeries = [
-        ['data' => $data]
-    ];
 }
 ?>
 
@@ -27,11 +18,6 @@ if (!empty($series)) {
         const passedOptions = <?= json_encode($chartOptions) ?>;
         const defaultOptions = {
             chart: {
-                id: '<?= $chartId ?>',
-                type: 'line',
-                sparkline: {
-                    enabled: true
-                },
                 dropShadow: {
                     enabled: true,
                     top: 1,
@@ -42,11 +28,8 @@ if (!empty($series)) {
                 animations: {
                     enabled: false
                 },
-            },
+            }
             series: <?= json_encode($chartSeries) ?>,
-            tooltip: {
-                theme: 'dark'
-            },
         }
         const chartOptions = mergeDeep({}, defaultOptions, passedOptions)
         new ApexCharts(document.querySelector('#<?= $chartId ?>'), chartOptions).render();
