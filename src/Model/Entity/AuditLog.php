@@ -47,9 +47,9 @@ class AuditLog extends AppModel
      */
     public function generateUserFriendlyTitle($auditLog)
     {
-        if (in_array($auditLog['action'], [self::ACTION_TAG, self::ACTION_TAG_LOCAL, self::ACTION_REMOVE_TAG, self::ACTION_REMOVE_TAG_LOCAL], true)) {
-            $attached = ($auditLog['action'] === self::ACTION_TAG || $auditLog['action'] === self::ACTION_TAG_LOCAL);
-            $local = ($auditLog['action'] === self::ACTION_TAG_LOCAL || $auditLog['action'] === self::ACTION_REMOVE_TAG_LOCAL) ? __('local') : __('global');
+        if (in_array($auditLog['request_action'], [self::ACTION_TAG, self::ACTION_TAG_LOCAL, self::ACTION_REMOVE_TAG, self::ACTION_REMOVE_TAG_LOCAL], true)) {
+            $attached = ($auditLog['request_action'] === self::ACTION_TAG || $auditLog['request_action'] === self::ACTION_TAG_LOCAL);
+            $local = ($auditLog['request_action'] === self::ACTION_TAG_LOCAL || $auditLog['request_action'] === self::ACTION_REMOVE_TAG_LOCAL) ? __('local') : __('global');
             if ($attached) {
                 return __('Attached %s tag "%s" to %s #%s', $local, $auditLog['model_title'], strtolower($auditLog['model']), $auditLog['model_id']);
             } else {

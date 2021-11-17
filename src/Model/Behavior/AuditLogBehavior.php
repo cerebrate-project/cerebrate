@@ -106,7 +106,7 @@ class AuditLogBehavior extends Behavior
             $modelTitle = $this->old[$modelTitleField];
         }
         $this->auditLogs()->insert([
-            'action' => $action,
+            'request_action' => $action,
             'model' => $entity->getSource(),
             'model_id' => $id,
             'model_title' => $modelTitle,
@@ -130,7 +130,7 @@ class AuditLogBehavior extends Behavior
         }
 
         $logEntity = $this->auditLogs()->newEntity([
-            'action' => $entity->getConstant('ACTION_DELETE'),
+            'request_action' => $entity->getConstant('ACTION_DELETE'),
             'model' => $entity->getSource(),
             'model_id' => $this->old->id,
             'model_title' => $modelTitle,
