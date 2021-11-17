@@ -19,10 +19,11 @@ class AuthKeysTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
+        $this->addBehavior('AuditLog');
         $this->belongsTo(
             'Users'
         );
-        $this->setDisplayField('authkey');
+        $this->setDisplayField('comment');
     }
 
     public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options)

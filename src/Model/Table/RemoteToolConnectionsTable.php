@@ -18,6 +18,7 @@ class RemoteToolConnectionsTable extends AppTable
             'LocalTools'
         );
         $this->setDisplayField('id');
+        $this->addBehavior('AuditLog');
     }
 
     public function validationDefault(Validator $validator): Validator

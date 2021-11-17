@@ -28,6 +28,7 @@ class OutboxProcessorsTable extends AppTable
         if (empty($this->outboxProcessors)) {
             $this->loadProcessors();
         }
+        $this->addBehavior('AuditLog');
     }
 
     public function getProcessor($scope, $action=null)
@@ -87,7 +88,7 @@ class OutboxProcessorsTable extends AppTable
             }
         }
     }
-    
+
     /**
      * getProcessorClass
      *
@@ -112,7 +113,7 @@ class OutboxProcessorsTable extends AppTable
             return $e->getMessage();
         }
     }
-    
+
     /**
      * createOutboxEntry
      *

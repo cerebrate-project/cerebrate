@@ -20,6 +20,7 @@ class OrganisationsTable extends AppTable
         parent::initialize($config);
         $this->addBehavior('Timestamp');
         $this->addBehavior('Tags.Tag');
+        $this->addBehavior('AuditLog');
         $this->hasMany(
             'Alignments',
             [

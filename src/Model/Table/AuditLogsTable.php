@@ -145,7 +145,7 @@ class AuditLogsTable extends AppTable
             }
         }
         if ($this->syslog) {
-            $entry = $data['action'];
+            $entry = $data['request_action'];
             $title = $entity->generateUserFriendlyTitle();
             if ($title) {
                 $entry .= " -- $title";
