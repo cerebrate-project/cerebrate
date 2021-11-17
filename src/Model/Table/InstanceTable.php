@@ -18,6 +18,8 @@ class InstanceTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('AuditLog');
+        $this->setDisplayField('name');
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -54,7 +56,7 @@ class InstanceTable extends AppTable
                     $timeline[$entry->date]['count'] = $entry->count;
                 }
                 $statistics[$model]['timeline'] = array_values($timeline);
-                
+
                 $startCount = $table->find()->where(['modified <' => new \DateTime("-{$days} days")])->all()->count();
                 $endCount = $statistics[$model]['amount'];
                 $statistics[$model]['variation'] = $endCount - $startCount;

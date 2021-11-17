@@ -16,6 +16,7 @@ class IndividualsTable extends AppTable
         $this->addBehavior('UUID');
         $this->addBehavior('Timestamp');
         $this->addBehavior('Tags.Tag');
+        $this->addBehavior('AuditLog');
         $this->hasMany(
             'Alignments',
             [

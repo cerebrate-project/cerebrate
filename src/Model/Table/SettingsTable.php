@@ -26,6 +26,7 @@ class SettingsTable extends AppTable
         parent::initialize($config);
         $this->setTable(false);
         $this->SettingsProvider = new CerebrateSettingsProvider();
+        $this->addBehavior('AuditLog');
     }
 
     public function getSettings($full=false): array

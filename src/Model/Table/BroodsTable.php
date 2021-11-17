@@ -19,6 +19,7 @@ class BroodsTable extends AppTable
         parent::initialize($config);
         $this->addBehavior('UUID');
         $this->addBehavior('Timestamp');
+        $this->addBehavior('AuditLog');
         $this->BelongsTo(
             'Organisations'
         );
@@ -278,7 +279,7 @@ class BroodsTable extends AppTable
         }
         return $jsonReply;
     }
-    
+
     /**
      * handleSendingFailed - Handle the case if the request could not be sent or if the remote rejected the connection request
      *
@@ -302,7 +303,7 @@ class BroodsTable extends AppTable
         ];
         return $creationResult;
     }
-    
+
     /**
      * handleMessageNotCreated - Handle the case if the request was sent but the remote brood did not save the message in the inbox
      *

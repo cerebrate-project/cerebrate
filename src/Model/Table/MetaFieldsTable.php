@@ -12,6 +12,7 @@ class MetaFieldsTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
+        $this->addBehavior('AuditLog');
         $this->setDisplayField('field');
         $this->belongsTo('MetaTemplates');
         $this->belongsTo('MetaTemplateFields');

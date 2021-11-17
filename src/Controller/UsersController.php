@@ -130,11 +130,27 @@ class UsersController extends AppController
     {
         $result = $this->Authentication->getResult();
         // If the user is logged in send them away.
+        $logModel = $this->Users->auditLogs();
         if ($result->isValid()) {
+            $user = $logModel->userInfo();
+            $logModel->insert([
+                'request_action' => 'login',
+                'model' => 'Users',
+                'model_id' => $user['id'],
+                'model_title' => $user['name'],
+                'change' => []
+            ]);
             $target = $this->Authentication->getLoginRedirect() ?? '/instance/home';
             return $this->redirect($target);
         }
         if ($this->request->is('post') && !$result->isValid()) {
+            $logModel->insert([
+                'request_action' => 'login_fail',
+                'model' => 'Users',
+                'model_id' => 0,
+                'model_title' => 'unknown_user',
+                'change' => []
+            ]);
             $this->Flash->error(__('Invalid username or password'));
         }
         $this->viewBuilder()->setLayout('login');
@@ -144,6 +160,15 @@ class UsersController extends AppController
     {
         $result = $this->Authentication->getResult();
         if ($result->isValid()) {
+            $logModel = $this->Users->auditLogs();
+            $user = $logModel->userInfo();
+            $logModel->insert([
+                'request_action' => 'logout',
+                'model' => 'Users',
+                'model_id' => $user['id'],
+                'model_title' => $user['name'],
+                'change' => []
+            ]);
             $this->Authentication->logout();
             $this->Flash->success(__('Goodbye.'));
             return $this->redirect(\Cake\Routing\Router::url('/users/login'));

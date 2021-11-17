@@ -6,3 +6,4 @@ tmp
 vendor
 webroot/theme/node_modules
 .vscode
+docker/run/

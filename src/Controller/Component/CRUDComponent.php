@@ -61,11 +61,25 @@ class CRUDComponent extends Component
         }
         if ($this->Controller->ParamHandler->isRest()) {
             $data = $query->all();
+            if (isset($options['hidden'])) {
+                $data->each(function($value, $key) use ($options) {
+                    $hidden = is_array($options['hidden']) ? $options['hidden'] : [$options['hidden']];
+                    $value->setHidden($hidden);
+                    return $value;
+                });
+            }
             if (isset($options['afterFind'])) {
+                $function = $options['afterFind'];
                 if (is_callable($options['afterFind'])) {
-                    $data = $options['afterFind']($data);
+                    $function = $options['afterFind'];
+                    $data->each(function($value, $key) use ($function) {
+                        return $function($value);
+                    });
                 } else {
-                    $data = $this->Table->{$options['afterFind']}($data);
+                    $t = $this->Table;
+                    $data->each(function($value, $key) use ($t, $function) {
+                        return $t->$function($value);
+                    });
                 }
             }
             $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
@@ -73,10 +87,17 @@ class CRUDComponent extends Component
             $this->Controller->loadComponent('Paginator');
             $data = $this->Controller->Paginator->paginate($query);
             if (isset($options['afterFind'])) {
+                $function = $options['afterFind'];
                 if (is_callable($options['afterFind'])) {
-                    $data = $options['afterFind']($data);
+                    $function = $options['afterFind'];
+                    $data->each(function($value, $key) use ($function) {
+                        return $function($value);
+                    });
                 } else {
-                    $data = $this->Table->{$options['afterFind']}($data);
+                    $t = $this->Table;
+                    $data->each(function($value, $key) use ($t, $function) {
+                        return $t->$function($value);
+                    });
                 }
             }
             $this->setFilteringContext($options['contextFilters'] ?? [], $params);

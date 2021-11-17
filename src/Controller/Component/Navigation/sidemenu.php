@@ -113,6 +113,11 @@ class Sidemenu {
                             'url' => '/instance/migrationIndex',
                             'icon' => 'database',
                         ],
+                        'AuditLogs' => [
+                            'label' => __('Audit Logs'),
+                            'url' => '/auditLogs/index',
+                            'icon' => 'history',
+                        ],
                     ]
                 ],
             ],

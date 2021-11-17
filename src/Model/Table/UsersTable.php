@@ -20,6 +20,7 @@ class UsersTable extends AppTable
         parent::initialize($config);
         $this->addBehavior('Timestamp');
         $this->addBehavior('UUID');
+        $this->addBehavior('AuditLog');
         $this->initAuthBehaviors();
         $this->belongsTo(
             'Individuals',

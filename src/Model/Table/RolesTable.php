@@ -12,6 +12,7 @@ class RolesTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
+        $this->addBehavior('AuditLog');
         $this->hasMany(
             'Users',
             [

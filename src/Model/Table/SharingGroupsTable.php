@@ -15,6 +15,7 @@ class SharingGroupsTable extends AppTable
         parent::initialize($config);
         $this->addBehavior('UUID');
         $this->addBehavior('Timestamp');
+        $this->addBehavior('AuditLog');
         $this->belongsTo(
             'Users'
         );

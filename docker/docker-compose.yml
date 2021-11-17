@@ -1,0 +1,28 @@
+version: "3"
+services:
+  database:
+    image: mariadb:10.6
+    restart: always
+    volumes:
+      - ./run/database:/var/lib/mysql
+      - ./run/dbinit:/docker-entrypoint-initdb.d/:ro
+    environment:
+      MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: "cerebrate"
+      MYSQL_USER: "cerebrate"
+      MYSQL_PASSWORD: "etarberec"
+  www:
+    image: ghcr.io/cerebrate-project/cerebrate:main
+    ports:
+      - "8080:80"
+    volumes:
+      - ./run/logs:/var/www/html/logs
+    environment:
+      DEBUG: "true"
+      CEREBRATE_DB_USERNAME: "cerebrate"
+      CEREBRATE_DB_PASSWORD: "etarberec"
+      CEREBRATE_DB_NAME: "cerebrate"
+      CEREBRATE_DB_HOST: database
+      CEREBRATE_SECURITY_SALT: supersecret
+    depends_on:
+      - database
