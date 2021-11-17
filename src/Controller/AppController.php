@@ -111,6 +111,7 @@ class AppController extends Controller
             }
             unset($user['password']);
             $this->ACL->setUser($user);
+            $this->request->getSession()->write('authUser', $user);
             $this->isAdmin = $user['role']['perm_admin'];
             $this->set('menu', $this->ACL->getMenu());
             $this->set('loggedUser', $this->ACL->getUser());
@@ -147,13 +148,31 @@ class AppController extends Controller
     {
         if (!empty($_SERVER['HTTP_AUTHORIZATION']) && strlen($_SERVER['HTTP_AUTHORIZATION'])) {
             $this->loadModel('AuthKeys');
+            $logModel = $this->Users->auditLogs();
             $authKey = $this->AuthKeys->checkKey($_SERVER['HTTP_AUTHORIZATION']);
             if (!empty($authKey)) {
                 $this->loadModel('Users');
                 $user = $this->Users->get($authKey['user_id']);
+                $user = $logModel->userInfo();
+                $logModel->insert([
+                    'action' => 'login',
+                    'model' => 'Users',
+                    'model_id' => $user['id'],
+                    'model_title' => $user['name'],
+                    'change' => []
+                ]);
                 if (!empty($user)) {
                     $this->Authentication->setIdentity($user);
                 }
+            } else {
+                $user = $logModel->userInfo();
+                $logModel->insert([
+                    'action' => 'login',
+                    'model' => 'Users',
+                    'model_id' => $user['id'],
+                    'model_title' => $user['name'],
+                    'change' => []
+                ]);
             }
         }
     }
