@@ -45,11 +45,11 @@ $panelControlHtml = sprintf(
 );
 $activityNumbers = sprintf(
     '<div class="my-1 fs-5">
-        <div class="lh-1" title="%s">%s<span class=""> %s</span></div>
-        <div class="ms-2 lh-1" title="%s">%s<span class=""> %s</span></div>
+        <div class="lh-1 d-flex align-items-center" title="%s">%s<span class="ms-1"> %s</span></div>
+        <div class="lh-1 d-flex align-items-center" title="%s">%s<span class="ms-1">%s</span></div>
     </div>',
     __('{0} Created', $timeline['created']['variation']),
-    $this->Bootstrap->icon('plus-square', ['class' => ['ms-2 fa-fw'], 'params' => ['style' => 'font-size: 60%;']]),
+    $this->Bootstrap->icon('plus', ['class' => ['fa-fw'], 'params' => ['style' => 'font-size: 60%;']]),
     $timeline['created']['variation'],
     __('{0} Modified', $timeline['modified']['variation']),
     $this->Bootstrap->icon('edit', ['class' => ['fa-fw'], 'params' => ['style' => 'font-size: 60%;']]),
