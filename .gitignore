@@ -5,4 +5,5 @@ logs
 tmp
 vendor
 webroot/theme/node_modules
+webroot/scss/*.css
 .vscode
