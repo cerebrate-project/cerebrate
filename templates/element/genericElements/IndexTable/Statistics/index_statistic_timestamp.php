@@ -40,7 +40,6 @@ $panelControlHtml = sprintf(
         'class' => ['btn-statistics-days-configurator-' . $seed,],
         'params' => [
             'data-bs-toggle' => 'popover',
-            'data-bs-title' => __('Set statistics spanning days'),
         ]
     ])
 );
@@ -103,6 +102,12 @@ $card = $this->Bootstrap->card([
             container: 'body',
             html: true,
             sanitize: false,
+            title: () => {
+                return '<div class="d-flex align-items-center justify-content-between"> \
+                            <?= __('Set spanning window') ?> \
+                            <button type = "button" class="btn-xs btn-close" aria-label="Close"></button> \
+                        </div>'
+            },
             content: () => {
                 return '<div class="input-group flex-nowrap"> \
                             <span class="input-group-text" id="addon-wrapping-<?= $seed ?>"><?= __('Days') ?></span> \
@@ -110,6 +115,14 @@ $card = $this->Bootstrap->card([
                             <button class="btn btn-primary" type="button" onclick="statisticsDaysRedirect(this)"><?= __('Get statistics') ?> </button> \
                         </div>'
             }
+        })
+        document.querySelector('.btn-statistics-days-configurator-<?= $seed ?>').addEventListener('shown.bs.popover', function(evt) {
+            const popover = bootstrap.Popover.getInstance(this)
+            const popoverEl = popover.getTipElement()
+            const popoverBtnCloseEl = popoverEl.querySelector('.popover-header button.btn-close')
+            popoverBtnCloseEl.addEventListener('click', function() {
+                popover.hide()
+            })
         })
     })
 

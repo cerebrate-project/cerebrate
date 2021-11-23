@@ -43,7 +43,6 @@ foreach ($statistics['usage'] as $scope => $graphData) {
             'class' => ['btn-statistics-pie-configurator-' . $seedPiechart],
             'params' => [
                 'data-bs-toggle' => 'popover',
-                'data-bs-title' => __('Configure chart'),
             ]
         ])
     );
@@ -66,32 +65,58 @@ foreach ($statistics['usage'] as $scope => $graphData) {
 
 <script>
     $(document).ready(function() {
-        var popoverTriggerList = [].slice.call(document.querySelectorAll('.btn-statistics-pie-configurator-<?= $seedPiechart ?>'))
-        var popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
-            return new bootstrap.Popover(popoverTriggerEl, {
+        let popoverTriggerList = [].slice.call(document.querySelectorAll('.btn-statistics-pie-configurator-<?= $seedPiechart ?>'))
+        let popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
+            const popover = new bootstrap.Popover(popoverTriggerEl, {
                 container: 'body',
                 html: true,
                 sanitize: false,
+                title: () => {
+                    return '<div class="d-flex align-items-center justify-content-between"> \
+                                <?= __('Configure chart') ?> \
+                                <button type = "button" class="btn-xs btn-close" aria-label="Close"></button> \
+                            </div>'
+                },
                 content: () => {
                     return '<div class="popover-form-container"> \
-                <div class="input-group flex-nowrap"> \
-                    <span class="input-group-text"><?= __('Amount') ?></span> \
-                    <input type="number" min="1" class="form-control entry-amount" placeholder="7" aria-label="<?= __('Days') ?>" value="<?= h($statistics_pie_amount) ?>"> \
-                </div> \
-                <div class="form-check"> \
-                    <input class="form-check-input cb-include-remaining" type="checkbox" value="" id="checkbox-include-remaining" <?= $statistics_pie_include_remaining ? 'checked' : '' ?>> \
-                    <label class="form-check-label" for="checkbox-include-remaining"> \
-                        <?= __('Merge skipped entries') ?> \
-                    </label> \
-                </div> \
-                <div class="form-check"> \
-                    <input class="form-check-input cb-ignore-null" type="checkbox" value="" id="checkbox-ignore-null" <?= $statistics_pie_ignore_null ? 'checked' : '' ?>> \
-                    <label class="form-check-label" for="checkbox-ignore-null"> \
-                        <?= __('Ignore NULL values') ?> \
-                    </label> \
-                </div> \
-                <button class="btn btn-primary" type="button" onclick="statisticsPieConfigurationRedirect(this)"><?= __('Update chart') ?> </button> \
-            </div>'
+                                <div class="input-group flex-nowrap"> \
+                                    <span class="input-group-text"><?= __('Amount') ?></span> \
+                                    <input type="number" min="1" class="form-control entry-amount" placeholder="7" aria-label="<?= __('Days') ?>" value="<?= h($statistics_pie_amount) ?>"> \
+                                </div> \
+                                <div class="form-check"> \
+                                    <input class="form-check-input cb-include-remaining" type="checkbox" value="" id="checkbox-include-remaining" <?= $statistics_pie_include_remaining ? 'checked' : '' ?>> \
+                                    <label class="form-check-label" for="checkbox-include-remaining"> \
+                                        <?= __('Merge skipped entries') ?> \
+                                    </label> \
+                                </div> \
+                                <div class="form-check"> \
+                                    <input class="form-check-input cb-ignore-null" type="checkbox" value="" id="checkbox-ignore-null" <?= $statistics_pie_ignore_null ? 'checked' : '' ?>> \
+                                    <label class="form-check-label" for="checkbox-ignore-null"> \
+                                        <?= __('Ignore NULL values') ?> \
+                                    </label> \
+                                </div> \
+                                <button class="btn btn-primary" type="button" onclick="statisticsPieConfigurationRedirect(this)"><?= __('Update chart') ?> </button> \
+                            </div>'
+                }
+            })
+            popoverTriggerEl.addEventListener('shown.bs.popover', function(evt) {
+                const popover = bootstrap.Popover.getInstance(this)
+                const popoverEl = popover.getTipElement()
+                const popoverBtnCloseEl = popoverEl.querySelector('.popover-header button.btn-close')
+                popoverBtnCloseEl.addEventListener('click', function() {
+                    popover.hide()
+                })
+            })
+            return popover
+        })
+
+        let popoverCloseBtnlist = [].slice.call(document.querySelectorAll('.popover .popover-header button.btn-close'))
+        popoverCloseBtnlist.map(function(popoverBtnCloseEl) {
+            return popoverBtnCloseEl.addEventListener('click', function() {
+                const popoverEl = this.closest('.popover')
+                const popover = bootstrap.Popover.getInstance(popoverEl)
+                if (popover !== null) {
+                    popover.hide()
                 }
             })
         })
