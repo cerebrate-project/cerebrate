@@ -59,22 +59,6 @@ class MetaFieldsTable extends AppTable
         return true;
     }
 
-    public function isValidMetaFieldOLD($entity, $options)
-    {
-        debug($entity['value']);
-        $metaFieldsTable = $options['repository'];
-        $metaTemplateField = $metaFieldsTable->MetaTemplateFields->get($entity['meta_template_field_id']);
-        $typeValid = $this->isValidType($entity['value'], $metaTemplateField['type']);
-        if ($typeValid !== true) {
-            return $typeValid;
-        }
-        $metaTemplateField['regex'] = '/123/';
-        if (!empty($metaTemplateField['regex'])) {
-            return $this->isValidRegex($entity['value'], $metaTemplateField);
-        }
-        return true;
-    }
-
     public function isValidType($value, string $type)
     {
         if (empty($value)) {
@@ -85,7 +69,9 @@ class MetaFieldsTable extends AppTable
 
     public function isValidRegex($value, $metaTemplateField)
     {
-        if (!preg_match($metaTemplateField['regex'], $value)) {
+
+        $re = $metaTemplateField['regex'];
+        if (!preg_match("/^$re$/m", $value)) {
             return __('Metafield value `{0}` for `{1}` doesn\'t pass regex validation', $value, $metaTemplateField->field);
         }
         return true;
