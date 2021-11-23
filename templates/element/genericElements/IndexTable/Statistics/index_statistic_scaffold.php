@@ -1,22 +1,6 @@
 <?php
 
 $statisticsHtml = '';
-$panelOptions = [
-    'condensed' => true,
-    'panelNoGrow' => true,
-    'allowConfiguration' => true,
-    'chartType' => 'line',
-    'chartOptions' => [
-        'chart' => [
-            'height' => '60px',
-        ],
-        'stroke' => [
-            'width' => 2,
-            'curve' => 'smooth',
-        ],
-    ]
-];
-
 if (!empty($statistics['created'])) {
     $statisticsHtml .= $this->element('genericElements/IndexTable/Statistics/index_statistic_timestamp', [
         'timeline' => $statistics,

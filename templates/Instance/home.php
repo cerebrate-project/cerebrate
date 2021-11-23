@@ -48,7 +48,7 @@ $bookmarks = !empty($loggedUser->user_settings_by_name['ui.bookmarks']['value'])
             echo $this->element('widgets/highlight-panel', [
                 'titleHtml' => $panelTitle,
                 'number' => $statisticForModel['created']['amount'],
-                'variation' => $statisticForModel['created']['variation'] ?? '',
+                'variation' => $statisticForModel['created']['variation'] ?? null,
                 'timeline' => $statisticForModel ?? []
             ]);
             ?>
