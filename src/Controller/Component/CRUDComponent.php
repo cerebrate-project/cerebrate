@@ -193,9 +193,11 @@ class CRUDComponent extends Component
 
     public function add(array $params = []): void
     {
-        $metaTemplates = $this->getMetaTemplates();
         $data = $this->Table->newEmptyEntity();
-        $data = $this->attachMetaTemplates($data, $metaTemplates->toArray());
+        if ($this->metaFieldsSupported()) {
+            $metaTemplates = $this->getMetaTemplates();
+            $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
+        }
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
         }
@@ -211,9 +213,11 @@ class CRUDComponent extends Component
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
             }
-            $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
-            unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
-            $data = $massagedData['entity'];
+            if ($this->metaFieldsSupported()) {
+                $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
+                unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
+                $data = $massagedData['entity'];
+            }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
