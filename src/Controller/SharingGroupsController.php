@@ -25,7 +25,6 @@ class SharingGroupsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function add()
@@ -43,7 +42,6 @@ class SharingGroupsController extends AppController
             return $responsePayload;
         }
         $this->set(compact('dropdownData'));
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function view($id)
@@ -55,7 +53,6 @@ class SharingGroupsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function edit($id = false)
@@ -69,7 +66,6 @@ class SharingGroupsController extends AppController
             'organisation' => $this->getAvailableOrgForSg($this->ACL->getUser())
         ];
         $this->set(compact('dropdownData'));
-        $this->set('metaGroup', 'Trust Circles');
         $this->render('add');
     }
 
@@ -80,7 +76,6 @@ class SharingGroupsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function addOrg($id)
