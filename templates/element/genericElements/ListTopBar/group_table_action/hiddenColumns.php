@@ -40,6 +40,7 @@ echo $availableColumnsHtml;
         const debouncedHiddenColumnSaverWithReload = debounce(mergeAndSaveSettingsWithReload, 2000)
 
         function attachListeners() {
+            let debouncedFunctionWithReload = false, debouncedFunction = false // used to flush debounce function if dropdown menu gets closed
             $('form.visible-column-form, form.visible-meta-column-form').find('input').change(function() {
                 const $dropdownMenu = $(this).closest(`[data-table-random-value]`)
                 const tableRandomValue = $dropdownMenu.attr('data-table-random-value')
@@ -50,15 +51,29 @@ echo $availableColumnsHtml;
                 let tableSettings = {}
                 tableSettings[table_setting_id] = genTableSettings($container)
                 if ($(this).closest('form').hasClass('visible-meta-column-form')) {
+                    debouncedFunctionWithReload = true
                     debouncedHiddenColumnSaverWithReload(table_setting_id, tableSettings, $table)
                 } else {
+                    debouncedFunction = true
                     debouncedHiddenColumnSaver(table_setting_id, tableSettings)
                 }
+            })
+
+            const $dropdownMenu = $('form.visible-column-form, form.visible-meta-column-form').closest(`[data-table-random-value]`)
+            const $rootDropdown = $dropdownMenu.find('[data-bs-toggle="dropdown"]:first')
+            $rootDropdown[0].addEventListener('hidden.bs.dropdown', function() {
+                if (debouncedFunctionWithReload) {
+                    debouncedHiddenColumnSaver.cancel()
+                    debouncedHiddenColumnSaverWithReload.flush()
+                } else if (debouncedFunction) {
+                    debouncedHiddenColumnSaver.flush()
+                }
+                debouncedFunction = false
+                debouncedFunctionWithReload = false
             })
         }
 
         function toggleColumn(columnName, isVisible, $table) {
-            // debugger;
             if (isVisible) {
                 $table.find(`th[data-columnname="${columnName}"],td[data-columnname="${columnName}"]`).show()
             } else {
