@@ -1916,7 +1916,10 @@ class BoostrapDropdownMenu extends BootstrapGeneric
         }
         $badge = '';
         if (!empty($entry['badge'])) {
-            $bsBadge = new BoostrapBadge($entry['badge']);
+            $bsBadge = new BoostrapBadge(array_merge(
+                ['class' => ['ms-auto']],
+                $entry['badge']
+            ));
             $badge = $bsBadge->badge();
         }
 
@@ -1931,6 +1934,7 @@ class BoostrapDropdownMenu extends BootstrapGeneric
 
         if (!empty($entry['menu'])) {
             $classes[] = 'dropdown-toggle';
+            $classes[] = 'd-flex align-items-center';
             $params['data-bs-toggle'] = 'dropdown';
             $params['aria-haspopup'] = 'true';
             $params['aria-expanded'] = 'false';
@@ -1940,7 +1944,7 @@ class BoostrapDropdownMenu extends BootstrapGeneric
             $params['data-open-form-id'] = mt_rand();
         }
 
-        $label = $this->genNode('span', [], h($entry['text']));
+        $label = $this->genNode('span', ['class' => 'mx-1'], h($entry['text']));
         $content = $icon . $label . $badge;
 
         return $this->genNode('a', array_merge([
