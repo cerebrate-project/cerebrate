@@ -390,7 +390,7 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
     `change` blob,
     PRIMARY KEY (`id`),
     KEY `user_id` (`user_id`),
-    KEY `ip` (`ip`),
+    KEY `request_ip` (`request_ip`),
     KEY `model` (`model`),
     KEY `action` (`action`),
     KEY `model_id` (`model_id`),
