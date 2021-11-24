@@ -170,7 +170,7 @@ class UsersController extends AppController
                 'model' => 'Users',
                 'model_id' => $user['id'],
                 'model_title' => $user['name'],
-                'change' => []
+                'changed' => []
             ]);
             $target = $this->Authentication->getLoginRedirect() ?? '/instance/home';
             return $this->redirect($target);
@@ -181,7 +181,7 @@ class UsersController extends AppController
                 'model' => 'Users',
                 'model_id' => 0,
                 'model_title' => 'unknown_user',
-                'change' => []
+                'changed' => []
             ]);
             $this->Flash->error(__('Invalid username or password'));
         }
@@ -199,7 +199,7 @@ class UsersController extends AppController
                 'model' => 'Users',
                 'model_id' => $user['id'],
                 'model_title' => $user['name'],
-                'change' => []
+                'changed' => []
             ]);
             $this->Authentication->logout();
             $this->Flash->success(__('Goodbye.'));

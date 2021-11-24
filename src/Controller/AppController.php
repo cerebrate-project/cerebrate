@@ -160,7 +160,7 @@ class AppController extends Controller
                     'model' => 'Users',
                     'model_id' => $user['id'],
                     'model_title' => $user['username'],
-                    'change' => []
+                    'changed' => []
                 ]);
                 if (!empty($user)) {
                     $this->Authentication->setIdentity($user);
@@ -172,7 +172,7 @@ class AppController extends Controller
                     'model' => 'Users',
                     'model_id' => $user['id'],
                     'model_title' => $user['name'],
-                    'change' => []
+                    'changed' => []
                 ]);
             }
         }

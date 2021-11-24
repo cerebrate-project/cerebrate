@@ -91,12 +91,12 @@ class AuditLogsTable extends AppTable
             $data['model_title'] = mb_substr($data['model_title'], 0, 252) . '...';
         }
 
-        if (isset($data['change'])) {
-            $change = json_encode($data['change'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            if ($this->compressionEnabled && strlen($change) >= self::BROTLI_MIN_LENGTH) {
-                $change = self::BROTLI_HEADER . brotli_compress($change, 4, BROTLI_TEXT);
+        if (isset($data['changed'])) {
+            $changed = json_encode($data['changed'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if ($this->compressionEnabled && strlen($changed) >= self::BROTLI_MIN_LENGTH) {
+                $changed = self::BROTLI_HEADER . brotli_compress($changed, 4, BROTLI_TEXT);
             }
-            $data['change'] = $change;
+            $data['changed'] = $changed;
         }
     }
 

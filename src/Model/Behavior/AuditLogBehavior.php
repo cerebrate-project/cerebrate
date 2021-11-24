@@ -110,7 +110,7 @@ class AuditLogBehavior extends Behavior
             'model' => $entity->getSource(),
             'model_id' => $id,
             'model_title' => $modelTitle,
-            'change' => $changedFields
+            'changed' => $changedFields
         ]);
     }
 
@@ -134,7 +134,7 @@ class AuditLogBehavior extends Behavior
             'model' => $entity->getSource(),
             'model_id' => $this->old->id,
             'model_title' => $modelTitle,
-            'change' => $this->changedFields($entity)
+            'changed' => $this->changedFields($entity)
         ]);
     }
 

@@ -23,7 +23,7 @@ class AuditLogsController extends AppController
             'quickFilters' => $this->quickFilterFields,
             'afterFind' => function($data) {
                 $data['request_ip'] = inet_ntop(stream_get_contents($data['request_ip']));
-                $data['change'] = stream_get_contents($data['change']);
+                $data['changed'] = stream_get_contents($data['changed']);
                 return $data;
             }
         ]);
