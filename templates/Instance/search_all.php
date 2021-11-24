@@ -19,14 +19,25 @@
         </span>', h($tableName), $tableResult['amount']);
 
         foreach ($tableResult['entries'] as $entry) {
-            $section .= sprintf('<a class="dropdown-item" href="%s">%s</a>',
-                Cake\Routing\Router::URL([
-                    'controller' => Cake\Utility\Inflector::pluralize($entry->getSource()),
-                    'action' => 'view',
-                    h($entry['id'])
-                ]),
-                h($entry[$fieldPath])
-            );
+            if ($entry->getSource() == 'MetaFields') {
+                $section .= sprintf('<a class="dropdown-item" href="%s">%s</a>',
+                    Cake\Routing\Router::URL([
+                        'controller' => Cake\Utility\Inflector::pluralize($entry->scope),
+                        'action' => 'view',
+                        h($entry->parent_id)
+                    ]),
+                    sprintf('%s (%s::%s)', h($entry->value), h($entry->scope), h($entry->field))
+                );
+            } else {
+                $section .= sprintf('<a class="dropdown-item" href="%s">%s</a>',
+                    Cake\Routing\Router::URL([
+                        'controller' => Cake\Utility\Inflector::pluralize($entry->getSource()),
+                        'action' => 'view',
+                        h($entry['id'])
+                    ]),
+                    h($entry[$fieldPath])
+                );
+            }
         }
         $remaining = $tableResult['amount'] - count($tableResult['entries']);
         if ($remaining > 0) {
