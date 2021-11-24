@@ -102,7 +102,7 @@ class AppController extends Controller
         $this->ACL->setPublicInterfaces();
         if (!empty($this->request->getAttribute('identity'))) {
             $user = $this->Users->get($this->request->getAttribute('identity')->getIdentifier(), [
-                'contain' => ['Roles', 'Individuals' => 'Organisations', 'UserSettings']
+                'contain' => ['Roles', 'Individuals' => 'Organisations', 'UserSettings', 'Organisations']
             ]);
             if (!empty($user['disabled'])) {
                 $this->Authentication->logout();
@@ -158,7 +158,7 @@ class AppController extends Controller
                     'action' => 'login',
                     'model' => 'Users',
                     'model_id' => $user['id'],
-                    'model_title' => $user['name'],
+                    'model_title' => $user['username'],
                     'change' => []
                 ]);
                 if (!empty($user)) {
