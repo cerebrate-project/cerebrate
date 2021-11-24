@@ -19,10 +19,9 @@
 -- Table structure for table `alignment_tags`
 --
 
-DROP TABLE IF EXISTS `alignment_tags`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `alignment_tags` (
+CREATE TABLE IF NOT EXISTS `alignment_tags` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `alignment_id` int(10) unsigned NOT NULL,
   `tag_id` int(10) unsigned NOT NULL,
@@ -48,10 +47,9 @@ CREATE TABLE `alignment_tags` (
 -- Table structure for table `alignments`
 --
 
-DROP TABLE IF EXISTS `alignments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `alignments` (
+CREATE TABLE IF NOT EXISTS `alignments` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `individual_id` int(10) unsigned NOT NULL,
   `organisation_id` int(10) unsigned NOT NULL,
@@ -68,10 +66,9 @@ CREATE TABLE `alignments` (
 -- Table structure for table `auth_keys`
 --
 
-DROP TABLE IF EXISTS `auth_keys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `auth_keys` (
+CREATE TABLE IF NOT EXISTS `auth_keys` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
   `authkey` varchar(72) CHARACTER SET ascii DEFAULT NULL,
@@ -94,10 +91,9 @@ CREATE TABLE `auth_keys` (
 -- Table structure for table `broods`
 --
 
-DROP TABLE IF EXISTS `broods`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `broods` (
+CREATE TABLE IF NOT EXISTS `broods` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(40) CHARACTER SET ascii DEFAULT NULL,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -122,10 +118,9 @@ CREATE TABLE `broods` (
 -- Table structure for table `encryption_keys`
 --
 
-DROP TABLE IF EXISTS `encryption_keys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `encryption_keys` (
+CREATE TABLE IF NOT EXISTS `encryption_keys` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(40) CHARACTER SET ascii DEFAULT NULL,
   `type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -145,10 +140,9 @@ CREATE TABLE `encryption_keys` (
 -- Table structure for table `individual_encryption_keys`
 --
 
-DROP TABLE IF EXISTS `individual_encryption_keys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `individual_encryption_keys` (
+CREATE TABLE IF NOT EXISTS `individual_encryption_keys` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `individual_id` int(10) unsigned NOT NULL,
   `encryption_key_id` int(10) unsigned NOT NULL,
@@ -168,10 +162,9 @@ CREATE TABLE `individual_encryption_keys` (
 -- Table structure for table `individuals`
 --
 
-DROP TABLE IF EXISTS `individuals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `individuals` (
+CREATE TABLE IF NOT EXISTS `individuals` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(40) CHARACTER SET ascii DEFAULT NULL,
   `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -190,8 +183,7 @@ CREATE TABLE `individuals` (
 -- Table structure for table `local_tools`
 --
 
-DROP TABLE IF EXISTS `local_tools`;
-CREATE TABLE `local_tools` (
+CREATE TABLE IF NOT EXISTS `local_tools` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `connector` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -207,10 +199,9 @@ CREATE TABLE `local_tools` (
 -- Table structure for table `organisation_encryption_keys`
 --
 
-DROP TABLE IF EXISTS `organisation_encryption_keys`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `organisation_encryption_keys` (
+CREATE TABLE IF NOT EXISTS `organisation_encryption_keys` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `organisation_id` int(10) unsigned NOT NULL,
   `encryption_key_id` int(10) unsigned NOT NULL,
@@ -226,10 +217,9 @@ CREATE TABLE `organisation_encryption_keys` (
 -- Table structure for table `organisations`
 --
 
-DROP TABLE IF EXISTS `organisations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `organisations` (
+CREATE TABLE IF NOT EXISTS `organisations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(40) CHARACTER SET ascii DEFAULT NULL,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -252,10 +242,9 @@ CREATE TABLE `organisations` (
 -- Table structure for table `roles`
 --
 
-DROP TABLE IF EXISTS `roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `roles` (
+CREATE TABLE IF NOT EXISTS `roles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(40) CHARACTER SET ascii DEFAULT NULL,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -271,10 +260,9 @@ CREATE TABLE `roles` (
 -- Table structure for table `tags`
 --
 
-DROP TABLE IF EXISTS `tags`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tags` (
+CREATE TABLE IF NOT EXISTS `tags` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
@@ -288,10 +276,7 @@ CREATE TABLE `tags` (
 -- Table structure for table `users`
 --
 
-DROP TABLE IF EXISTS `users`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(40) CHARACTER SET ascii DEFAULT NULL,
   `username` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -309,7 +294,7 @@ CREATE TABLE `users` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-CREATE TABLE `sharing_groups` (
+CREATE TABLE IF NOT EXISTS `sharing_groups` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uuid` varchar(40) CHARACTER SET ascii DEFAULT NULL,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -326,7 +311,7 @@ CREATE TABLE `sharing_groups` (
   KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `sgo` (
+CREATE TABLE IF NOT EXISTS `sgo` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `sharing_group_id` int(10) unsigned NOT NULL,
   `organisation_id` int(10) unsigned NOT NULL,
@@ -336,7 +321,7 @@ CREATE TABLE `sgo` (
   KEY `organisation_id` (`organisation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `meta_fields` (
+CREATE TABLE IF NOT EXISTS `meta_fields` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `scope` varchar(191) NOT NULL,
   `parent_id` int(10) unsigned NOT NULL,
@@ -356,7 +341,7 @@ CREATE TABLE `meta_fields` (
   KEY `meta_template_field_id` (`meta_template_field_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `meta_templates` (
+CREATE TABLE IF NOT EXISTS `meta_templates` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `scope` varchar(191) NOT NULL,
   `name` varchar(191) NOT NULL,
@@ -376,7 +361,7 @@ CREATE TABLE `meta_templates` (
   KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `meta_template_fields` (
+CREATE TABLE IF NOT EXISTS `meta_template_fields` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `field` varchar(191) NOT NULL,
   `type` varchar(191) NOT NULL,
@@ -405,10 +390,10 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
     `change` blob,
     PRIMARY KEY (`id`),
     KEY `user_id` (`user_id`),
-    KEY `ip` (`ip`),
+    KEY `request_ip` (`request_ip`),
     KEY `model` (`model`),
-    KEY `action` (`action`),
-    KEY `model_id` (`model_id`)
+    KEY `request_action` (`request_action`),
+    KEY `model_id` (`model_id`),
     KEY `created` (`created`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
