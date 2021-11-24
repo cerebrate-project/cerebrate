@@ -25,7 +25,7 @@ final class UserOrg extends AbstractMigration
                 'signed' => false,
                 'length' => 10
             ])
-            ->addIndex('org_id')
+            ->addIndex('organisation_id')
             ->update();
         $q1 = $this->getQueryBuilder();
         $org_id = $q1->select(['min(id)'])->from('organisations')->execute()->fetchAll()[0][0];
