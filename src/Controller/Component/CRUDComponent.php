@@ -50,6 +50,9 @@ class CRUDComponent extends Component
         }
         $query = $this->setFilters($params, $query, $options);
         $query = $this->setQuickFilters($params, $query, empty($options['quickFilters']) ? [] : $options['quickFilters']);
+        if (!empty($options['conditions'])) {
+            $query->where($options['conditions']);
+        }
         if (!empty($options['contain'])) {
             $query->contain($options['contain']);
         }
@@ -284,7 +287,14 @@ class CRUDComponent extends Component
             $params['contain'][] = 'Tags';
             $this->setAllTags();
         }
-        $data = $this->Table->get($id, isset($params['get']) ? $params['get'] : $params);
+        $data = $this->Table->find()->where(['id' => $id]);
+        if (!empty($params['conditions'])) {
+            $data->where($params['conditions']);
+        }
+        $data = $data->first();
+        if (empty($data)) {
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+        }
         $data = $this->getMetaFields($id, $data);
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
@@ -414,11 +424,21 @@ class CRUDComponent extends Component
         $this->Controller->set('entity', $data);
     }
 
-    public function delete($id=false): void
+    public function delete($id=false, $params=[]): void
     {
         if ($this->request->is('get')) {
             if(!empty($id)) {
-                $data = $this->Table->get($id);
+                $data = $this->Table->find()->where([$this->Table->getAlias() . '.id' => $id]);
+                if (!empty($params['conditions'])) {
+                    $data->where($params['conditions']);
+                }
+                if (!empty($params['contain'])) {
+                    $data->contain($params['contain']);
+                }
+                $data = $data->first();
+                if (empty($data)) {
+                    throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+                }
                 $this->Controller->set('id', $data['id']);
                 $this->Controller->set('data', $data);
                 $this->Controller->set('bulkEnabled', false);
@@ -430,9 +450,20 @@ class CRUDComponent extends Component
             $isBulk = count($ids) > 1;
             $bulkSuccesses = 0;
             foreach ($ids as $id) {
-                $data = $this->Table->get($id);
-                $success = $this->Table->delete($data);
-                $success = true;
+                $data = $this->Table->find()->where([$this->Table->getAlias() . '.id' => $id]);
+                if (!empty($params['conditions'])) {
+                    $data->where($params['conditions']);
+                }
+                if (!empty($params['contain'])) {
+                    $data->contain($params['contain']);
+                }
+                $data = $data->first();
+                if (!empty($data)) {
+                    $success = $this->Table->delete($data);
+                    $success = true;
+                } else {
+                    $success = false;
+                }
                 if ($success) {
                     $bulkSuccesses++;
                 }
