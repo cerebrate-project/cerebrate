@@ -12,6 +12,7 @@ use \Cake\Http\Session;
 use Cake\Http\Client;
 use Cake\Utility\Security;
 use Cake\Core\Configure;
+use Cake\Utility\Text;
 
 class UsersTable extends AppTable
 {
@@ -96,15 +97,35 @@ class UsersTable extends AppTable
         return $rules;
     }
 
+    public function test()
+    {
+        $this->Roles = TableRegistry::get('Roles');
+        $role = $this->Roles->newEntity([
+            'name' => 'admin',
+            'perm_admin' => 1,
+            'perm_org_admin' => 1,
+            'perm_sync' => 1
+        ]);
+        $this->Roles->save($role);
+    }
+
     public function checkForNewInstance(): bool
     {
         if (empty($this->find()->first())) {
             $this->Roles = TableRegistry::get('Roles');
             $role = $this->Roles->newEntity([
                 'name' => 'admin',
-                'perm_admin' => 1
+                'perm_admin' => 1,
+                'perm_org_admin' => 1,
+                'perm_sync' => 1
             ]);
             $this->Roles->save($role);
+            $this->Organisations = TableRegistry::get('Organisations');
+            $organisation = $this->Organisations->newEntity([
+                'name' => 'default_organisation',
+                'uuid' => Text::uuid()
+            ]);
+            $this->Organisations->save($organisation);
             $this->Individuals = TableRegistry::get('Individuals');
             $individual = $this->Individuals->newEntity([
                 'email' => 'admin@admin.test',
@@ -116,6 +137,7 @@ class UsersTable extends AppTable
                 'username' => 'admin',
                 'password' => 'Password1234',
                 'individual_id' => $individual->id,
+                'organisation_id' => $organisation->id,
                 'role_id' => $role->id
             ]);
             $this->save($user);
