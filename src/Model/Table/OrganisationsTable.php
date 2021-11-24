@@ -21,6 +21,7 @@ class OrganisationsTable extends AppTable
         $this->addBehavior('Timestamp');
         $this->addBehavior('Tags.Tag');
         $this->addBehavior('AuditLog');
+        $this->addBehavior('UUID');
         $this->hasMany(
             'Alignments',
             [

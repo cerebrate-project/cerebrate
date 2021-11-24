@@ -115,7 +115,6 @@ class UsersTable extends AppTable
             $this->Roles = TableRegistry::get('Roles');
             $role = $this->Roles->newEntity([
                 'name' => 'admin',
-                'uuid' => Text::uuid(),
                 'perm_admin' => 1,
                 'perm_org_admin' => 1,
                 'perm_sync' => 1
@@ -123,21 +122,18 @@ class UsersTable extends AppTable
             $this->Roles->save($role);
             $this->Organisations = TableRegistry::get('Organisations');
             $organisation = $this->Organisations->newEntity([
-                'name' => 'default_organisation',
-                'uuid' => Text::uuid()
+                'name' => 'default_organisation'
             ]);
             $this->Organisations->save($organisation);
             $this->Individuals = TableRegistry::get('Individuals');
             $individual = $this->Individuals->newEntity([
                 'email' => 'admin@admin.test',
-                'uuid' => Text::uuid(),
                 'first_name' => 'admin',
                 'last_name' => 'admin'
             ]);
             $this->Individuals->save($individual);
             $user = $this->newEntity([
                 'username' => 'admin',
-                'uuid' => Text::uuid(),
                 'password' => 'Password1234',
                 'individual_id' => $individual->id,
                 'oganisation_id' => $organisation->id,
