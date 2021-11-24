@@ -97,13 +97,28 @@ class UsersTable extends AppTable
         return $rules;
     }
 
+    public function test()
+    {
+        $this->Roles = TableRegistry::get('Roles');
+        $role = $this->Roles->newEntity([
+            'name' => 'admin',
+            'perm_admin' => 1,
+            'perm_org_admin' => 1,
+            'perm_sync' => 1
+        ]);
+        $this->Roles->save($role);
+    }
+
     public function checkForNewInstance(): bool
     {
         if (empty($this->find()->first())) {
             $this->Roles = TableRegistry::get('Roles');
             $role = $this->Roles->newEntity([
                 'name' => 'admin',
-                'perm_admin' => 1
+                'uuid' => Text::uuid(),
+                'perm_admin' => 1,
+                'perm_org_admin' => 1,
+                'perm_sync' => 1
             ]);
             $this->Roles->save($role);
             $this->Organisations = TableRegistry::get('Organisations');
@@ -115,12 +130,14 @@ class UsersTable extends AppTable
             $this->Individuals = TableRegistry::get('Individuals');
             $individual = $this->Individuals->newEntity([
                 'email' => 'admin@admin.test',
+                'uuid' => Text::uuid(),
                 'first_name' => 'admin',
                 'last_name' => 'admin'
             ]);
             $this->Individuals->save($individual);
             $user = $this->newEntity([
                 'username' => 'admin',
+                'uuid' => Text::uuid(),
                 'password' => 'Password1234',
                 'individual_id' => $individual->id,
                 'oganisation_id' => $organisation->id,
