@@ -137,7 +137,7 @@ class UsersTable extends AppTable
                 'username' => 'admin',
                 'password' => 'Password1234',
                 'individual_id' => $individual->id,
-                'oganisation_id' => $organisation->id,
+                'organisation_id' => $organisation->id,
                 'role_id' => $role->id
             ]);
             $this->save($user);
