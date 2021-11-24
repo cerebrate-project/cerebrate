@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use Phinx\Migration\AbstractMigration;
+use Migrations\AbstractMigration;
 
 final class UserOrg extends AbstractMigration
 {
@@ -18,18 +18,15 @@ final class UserOrg extends AbstractMigration
      */
     public function change(): void
     {
-        $exists = $this->hasTable('users');
-        if (!$exists) {
-            $alignments = $this->table('users')
-                ->addColumn('organisation_id', 'integer', [
-                    'default' => null,
-                    'null' => true,
-                    'signed' => false,
-                    'length' => 10
-                ])
-                ->addIndex('org_id')
-                ->update();
-        }
+        $alignments = $this->table('users')
+            ->addColumn('organisation_id', 'integer', [
+                'default' => null,
+                'null' => true,
+                'signed' => false,
+                'length' => 10
+            ])
+            ->addIndex('org_id')
+            ->update();
         $q1 = $this->getQueryBuilder();
         $org_id = $q1->select(['min(id)'])->from('organisations')->execute()->fetchAll()[0][0];
         if (!empty($org_id)) {
