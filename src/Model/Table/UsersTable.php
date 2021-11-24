@@ -36,6 +36,13 @@ class UsersTable extends AppTable
                 'cascadeCallbacks' => false
             ]
         );
+        $this->belongsTo(
+            'Organisations',
+            [
+                'dependent' => false,
+                'cascadeCallbacks' => false
+            ]
+        );
         $this->hasMany(
             'UserSettings',
             [
