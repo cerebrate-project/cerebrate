@@ -18,6 +18,20 @@ final class UserOrg extends AbstractMigration
      */
     public function change(): void
     {
+<<<<<<< HEAD
+        $exists = $this->table('users')->hasColumn('organisation_id');
+        if (!$exists) {
+            $this->table('users')
+                ->addColumn('organisation_id', 'integer', [
+                    'default' => null,
+                    'null' => true,
+                    'signed' => false,
+                    'length' => 10
+                ])
+                ->addIndex('organisation_id')
+                ->update();
+        }
+=======
         $alignments = $this->table('users')
             ->addColumn('organisation_id', 'integer', [
                 'default' => null,
@@ -27,6 +41,7 @@ final class UserOrg extends AbstractMigration
             ])
             ->addIndex('organisation_id')
             ->update();
+>>>>>>> main
         $q1 = $this->getQueryBuilder();
         $org_id = $q1->select(['min(id)'])->from('organisations')->execute()->fetchAll()[0][0];
         if (!empty($org_id)) {

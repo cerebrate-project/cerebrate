@@ -71,6 +71,18 @@ class InstanceTable extends AppTable
     public function searchAll($value, $limit=5, $model=null)
     {
         $results = [];
+
+        // search in metafields. FIXME: To be replaced by the meta-template system
+        $metaFieldTable = TableRegistry::get('MetaFields');
+        $query = $metaFieldTable->find()->where([
+            'value LIKE' => '%' . $value . '%'
+        ]);
+        $results['MetaFields']['amount'] = $query->count();
+        $result = $query->limit($limit)->all()->toList();
+        if (!empty($result)) {
+            $results['MetaFields']['entries'] = $result;
+        }
+
         $models = $this->seachAllTables;
         if (!is_null($model)) {
             if (in_array($model, $this->seachAllTables)) {
