@@ -11,17 +11,13 @@ class OrganisationsTable extends AppTable
 {
     public $metaFields = 'organisation';
 
-    protected $_accessible = [
-        'id' => false
-    ];
-
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('UUID');
         $this->addBehavior('Timestamp');
         $this->addBehavior('Tags.Tag');
         $this->addBehavior('AuditLog');
-        $this->addBehavior('UUID');
         $this->hasMany(
             'Alignments',
             [

@@ -122,7 +122,8 @@ class UsersTable extends AppTable
             $this->Roles->save($role);
             $this->Organisations = TableRegistry::get('Organisations');
             $organisation = $this->Organisations->newEntity([
-                'name' => 'default_organisation'
+                'name' => 'default_organisation',
+                'uuid' => Text::uuid()
             ]);
             $this->Organisations->save($organisation);
             $this->Individuals = TableRegistry::get('Individuals');
