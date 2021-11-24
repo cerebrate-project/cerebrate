@@ -13,20 +13,36 @@ class MetaTemplatesController extends AppController
     public $filterFields = ['name', 'uuid', 'scope', 'namespace'];
     public $containFields = ['MetaTemplateFields'];
 
-    public function update()
+    public function update($template_id=false)
     {
+        if (!empty($template_id)) {
+            $metaTemplate = $this->MetaTemplates->get($template_id);
+        }
         if ($this->request->is('post')) {
-            $result = $this->MetaTemplates->update();
+            $result = $this->MetaTemplates->update($template_id);
             if ($this->ParamHandler->isRest()) {
                 return $this->RestResponse->viewData($result, 'json');
             } else {
-                $this->Flash->success(__('{0} templates updated.', count($result)));
-                $this->redirect($this->referer());
+                if ($result['success']) {
+                    $message = __n('{0} templates updated.', 'The template has been updated.', empty($template_id), $result['updated']);
+                } else {
+                    $message = __n('{0} templates could not be updated.', 'The template could not be updated.',empty($template_id), $result['updated']);
+                }
+                $this->CRUD->setResponseForController('update', $result['success'], $message, $metaTemplate, $metaTemplate->getErrors(), ['redirect' => $this->referer()]);
+                $responsePayload = $this->CRUD->getResponsePayload();
+                if (!empty($responsePayload)) {
+                    return $responsePayload;
+                }
             }
         } else {
             if (!$this->ParamHandler->isRest()) {
-                $this->set('title', __('Update Meta Templates'));
-                $this->set('question', __('Are you sure you wish to update the Meta Template definitions?'));
+                if (!empty($template_id)) {
+                    $this->set('title', __('Update Meta Templates #{0}', h($template_id)));
+                    $this->set('question', __('Are you sure you wish to update the Meta Template definitions of the template `{0}`?', h($metaTemplate->name)));
+                } else {
+                    $this->set('title', __('Update Meta Templates'));
+                    $this->set('question', __('Are you sure you wish to update the Meta Template definitions'));
+                }
                 $this->set('actionName', __('Update'));
                 $this->set('path', ['controller' => 'metaTemplates', 'action' => 'update']);
                 $this->render('/genericTemplates/confirm');

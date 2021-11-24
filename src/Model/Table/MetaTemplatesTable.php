@@ -46,7 +46,7 @@ class MetaTemplatesTable extends AppTable
                 $files = scandir($path);
                 foreach ($files as $k => $file) {
                     if (substr($file, -5) === '.json') {
-                        if ($this->loadMetaFile($path . $file) === true) {
+                        if ($this->loadAndSaveMetaFile($path . $file) === true) {
                             $files_processed[] = $file;
                         }
                     }
@@ -89,46 +89,62 @@ class MetaTemplatesTable extends AppTable
         );
     }
 
-    public function loadMetaFile(String $filePath)
+    public function loadAndSaveMetaFile(String $filePath)
     {
         if (file_exists($filePath)) {
             $contents = file_get_contents($filePath);
             $metaTemplate = json_decode($contents, true);
-            if (!empty($metaTemplate) && !empty($metaTemplate['uuid']) && !empty($metaTemplate['version'])) {
-                $query = $this->find();
-                $query->where(['uuid' => $metaTemplate['uuid']]);
-                $template = $query->first();
-                if (empty($template)) {
-                    $template = $this->newEntity($metaTemplate);
-                    $result = $this->save($template);
-                    if (!$result) {
-                        return __('Something went wrong, could not create the template.');
-                    }
-                } else {
-                    if ($template->version >= $metaTemplate['version']) {
-                        return false;
-                    }
-                    foreach (['version', 'source', 'name', 'namespace', 'scope', 'description'] as $field) {
-                        $template->{$field} = $metaTemplate[$field];
-                    }
-                    $result = $this->save($template);
-                    if (!$result) {
-                        return __('Something went wrong, could not update the template.');
-                        return false;
-                    }
-                }
-                if ($result) {
-                    $this->MetaTemplateFields->deleteAll(['meta_template_id' => $template->id]);
-                    foreach ($metaTemplate['metaFields'] as $metaField) {
-                        $metaField['meta_template_id'] = $template->id;
-                        $metaField = $this->MetaTemplateFields->newEntity($metaField);
-                        $this->MetaTemplateFields->save($metaField);
-                    }
-
-                }
+            if (empty($metaTemplate)) {
+                return __('Could not load template file. Error while decoding the template\'s JSON');
             }
-            return true;
+            if (empty($metaTemplate['uuid']) || empty($metaTemplate['version'])) {
+                return __('Could not load template file. Invalid template file. Missing template UUID or version');
+            }
+            return $this->saveMetaFile($metaTemplate);
         }
+        return __('Could not load template file. File does not exists');
+    }
 
+    public function saveMetaFile(array $newMetaTemplate)
+    {
+        $query = $this->find();
+        $query->contain('MetaTemaplteFields')->where(['uuid' => $newMetaTemplate['uuid']]);
+        $metaTemplate = $query->first();
+        if (empty($metaTemplate)) {
+            $metaTemplate = $this->newEntity($newMetaTemplate);
+            $result = $this->save($metaTemplate);
+            if (!$result) {
+                return __('Something went wrong, could not create the template.');
+            }
+        } else {
+            if ($metaTemplate->version >= $newMetaTemplate['version']) {
+                return __('Could not update the template. Local version is newer.');
+            }
+            // Take care of meta template fields
+            $metaTemplate = $this->patchEntity($metaTemplate, $newMetaTemplate);
+            $metaTemplate = $this->save($metaTemplate);
+            if (!$metaTemplate) {
+                return __('Something went wrong, could not update the template.');
+            }
+        }
+        if ($result) {
+            $this->MetaTemplateFields->deleteAll(['meta_template_id' => $template->id]);
+            foreach ($newMetaTemplate['metaFields'] as $metaField) {
+                $metaField['meta_template_id'] = $template->id;
+                $metaField = $this->MetaTemplateFields->newEntity($metaField);
+                $this->MetaTemplateFields->save($metaField);
+            }
+        }
+    }
+
+    public function handleMetaTemplateFieldUpdateEdgeCase($metaTemplateField, $newMetaTemplateField)
+    {
+        if (false) { // Field has been removed
+        }
+        if (false) { // Field no longer multiple
+        }
+        if (false) { // Field no longer pass validation
+        }
+        return true;
     }
 }

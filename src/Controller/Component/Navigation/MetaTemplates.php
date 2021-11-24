@@ -23,7 +23,7 @@ class MetaTemplatesNavigation extends BaseNavigation
             'url_vars' => ['id' => 'id'],
         ]);
         $this->bcf->addRoute('MetaTemplates', 'update', [
-            'label' => __('Update'),
+            'label' => __('Update all templates'),
             'icon' => 'download',
             'url' => '/metaTemplates/update',
         ]);
@@ -42,6 +42,11 @@ class MetaTemplatesNavigation extends BaseNavigation
     public function addActions()
     {
         $this->bcf->addAction('MetaTemplates', 'index', 'MetaTemplates', 'update');
+        $this->bcf->addAction('MetaTemplates', 'view', 'MetaTemplates', 'update', [
+            'label' => __('Update template'),
+            'url' => '/metaTemplates/update/{{id}}',
+            'url_vars' => ['id' => 'id'],
+        ]);
         $this->bcf->addAction('MetaTemplates', 'view', 'MetaTemplates', 'enable');
         $this->bcf->addAction('MetaTemplates', 'view', 'MetaTemplates', 'set_default');
     }

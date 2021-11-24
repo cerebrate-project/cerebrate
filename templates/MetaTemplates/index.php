@@ -149,6 +149,13 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url_params_data_paths' => ['id'],
                 'icon' => 'eye'
             ],
+            [
+                'url' => '/metaTemplates/update',
+                'url_params_data_paths' => ['id'],
+                'title' => __('Update'),
+                'icon' => 'download',
+                'requirement' => true // FIXME: Check if template can be updated
+            ]
         ]
     ]
 ]);
