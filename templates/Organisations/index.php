@@ -94,12 +94,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'open_modal' => '/organisations/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'edit'
+                'icon' => 'edit',
+                'requirement' => $loggedUser['role']['perm_admin']
             ],
             [
                 'open_modal' => '/organisations/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'trash'
+                'icon' => 'trash',
+                'requirement' => $loggedUser['role']['perm_admin']
             ],
         ]
     ]

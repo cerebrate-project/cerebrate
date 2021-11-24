@@ -36,6 +36,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'name',
             ],
             [
+                'name' => __('Owner'),
+                'class' => 'short',
+                'data_path' => 'organisation.name'
+            ],
+            [
                 'name' => __('UUID'),
                 'sort' => 'uuid',
                 'class' => 'short',

@@ -49,7 +49,31 @@ class EncryptionKeysController extends AppController
 
     public function add()
     {
-        $this->CRUD->add(['redirect' => $this->referer()]);
+        $orgConditions = [];
+        $currentUser = $this->ACL->getUser();
+        $params = ['redirect' => $this->referer()];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $params['beforeSave'] = function($entity) {
+                if ($entity['owner_model'] === 'organisation') {
+                    $entity['owner_id'] = $currentUser['organisation_id'];
+                } else {
+                    if ($currentUser['role']['perm_org_admin']) {
+                        $validIndividuals = $this->Organisations->Alignments->find('list', [
+                            'fields' => ['distinct(individual_id)'],
+                            'conditions' => ['organisation_id' => $currentUser['organisation_id']]
+                        ]);
+                        if (!in_array($entity['owner_id'], $validIndividuals)) {
+                            throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
+                        }
+                    } else {
+                        if ($entity['owner_id'] !== $currentUser['id']) {
+                            throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
+                        }
+                    }
+                }
+            };
+        }
+        $this->CRUD->add($params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -58,7 +82,8 @@ class EncryptionKeysController extends AppController
         $this->loadModel('Individuals');
         $dropdownData = [
             'organisation' => $this->Organisations->find('list', [
-                'sort' => ['name' => 'asc']
+                'sort' => ['name' => 'asc'],
+                'conditions' => $orgConditions
             ]),
             'individual' => $this->Individuals->find('list', [
                 'sort' => ['email' => 'asc']
@@ -70,12 +95,19 @@ class EncryptionKeysController extends AppController
 
     public function edit($id = false)
     {
+        $conditions = [];
+        $currentUser = $this->ACL->getUser();
         $params = [
             'fields' => [
                 'type', 'encryption_key', 'revoked'
             ],
             'redirect' => $this->referer()
         ];
+        if (empty($currentUser['role']['perm_admin'])) {
+            if (empty($currentUser['role']['perm_org_admin'])) {
+
+            }
+        }
         $this->CRUD->edit($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

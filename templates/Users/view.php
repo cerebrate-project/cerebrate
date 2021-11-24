@@ -21,6 +21,14 @@ echo $this->element(
                 'path' => 'individual.email'
             ],
             [
+                'type' => 'generic',
+                'key' => __('Organisation'),
+                'path' => 'organisation.name',
+                'url' => '/organisations/view/{{0}}',
+                'url_vars' => 'organisation.id'
+            ],
+            [
+                'type' => 'generic',
                 'key' => __('Role'),
                 'path' => 'role.name',
                 'url' => '/roles/view/{{0}}',

@@ -16,15 +16,25 @@ class AuthKeysController extends AppController
 {
     public $filterFields = ['Users.username', 'authkey', 'comment', 'Users.id'];
     public $quickFilterFields = ['authkey', ['comment' => true]];
-    public $containFields = ['Users'];
+    public $containFields = ['Users' => ['fields' => ['id', 'username']]];
 
     public function index()
     {
+        $currentUser = $this->ACL->getUser();
+        $conditions = [];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $conditions['Users.organisation_id'] = $currentUser['organisation_id'];
+            if (empty($currentUser['role']['perm_org_admin'])) {
+                $conditions['Users.id'] = $currentUser['id'];
+            }
+        }
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'contain' => $this->containFields,
-            'exclude_fields' => ['authkey']
+            'exclude_fields' => ['authkey'],
+            'conditions' => $conditions,
+            'hidden' => []
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -35,7 +45,15 @@ class AuthKeysController extends AppController
 
     public function delete($id)
     {
-        $this->CRUD->delete($id);
+        $currentUser = $this->ACL->getUser();
+        $conditions = [];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $conditions['Users.organisation_id'] = $currentUser['organisation_id'];
+            if (empty($currentUser['role']['perm_org_admin'])) {
+                $conditions['Users.id'] = $currentUser['id'];
+            }
+        }
+        $this->CRUD->delete($id, ['conditions' => $conditions, 'contain' => 'Users']);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;

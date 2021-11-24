@@ -78,12 +78,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'open_modal' => '/roles/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'edit'
+                'icon' => 'edit',
+                'requirement' => !empty($loggedUser['role']['perm_site_admin'])
             ],
             [
                 'open_modal' => '/roles/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'trash'
+                'icon' => 'trash',
+                'requirement' => !empty($loggedUser['role']['perm_site_admin'])
             ],
         ]
     ]

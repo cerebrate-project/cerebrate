@@ -145,24 +145,24 @@ class ACLComponent extends Component
             'view' =>  ['*']
         ],
         'SharingGroups' => [
-            'add' => ['perm_admin'],
-            'addOrg' => ['perm_admin'],
-            'delete' => ['perm_admin'],
-            'edit' => ['perm_admin'],
+            'add' => ['perm_org_admin'],
+            'addOrg' => ['perm_org_admin'],
+            'delete' => ['perm_org_admin'],
+            'edit' => ['perm_org_admin'],
             'index' => ['*'],
             'listOrgs' => ['*'],
-            'removeOrg' => ['perm_admin'],
+            'removeOrg' => ['perm_org_admin'],
             'view' => ['*']
         ],
         'Users' => [
-            'add' => ['perm_admin'],
-            'delete' => ['perm_admin'],
+            'add' => ['perm_org_admin'],
+            'delete' => ['perm_org_admin'],
             'edit' => ['*'],
-            'index' => ['perm_admin'],
+            'index' => ['perm_org_admin'],
             'login' => ['*'],
             'logout' => ['*'],
             'register' => ['*'],
-            'toggle' => ['perm_admin'],
+            'toggle' => ['perm_org_admin'],
             'view' => ['*']
         ]
     );
@@ -289,6 +289,12 @@ class ACLComponent extends Component
                 }
                 if ($allConditionsMet) {
                     return true;
+                }
+            } else {
+                foreach ($this->aclList[$controller][$action] as $permission) {
+                    if ($this->user['role'][$permission]) {
+                        return true;
+                    }
                 }
             }
         }
