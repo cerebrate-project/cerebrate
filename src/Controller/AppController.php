@@ -113,8 +113,10 @@ class AppController extends Controller
             $this->ACL->setUser($user);
             $this->request->getSession()->write('authUser', $user);
             $this->isAdmin = $user['role']['perm_admin'];
-            $this->set('menu', $this->ACL->getMenu());
-            $this->set('loggedUser', $this->ACL->getUser());
+            if (!$this->ParamHandler->isRest()) {
+                $this->set('menu', $this->ACL->getMenu());
+                $this->set('loggedUser', $this->ACL->getUser());
+            }
         } else if ($this->ParamHandler->isRest()) {
             throw new MethodNotAllowedException(__('Invalid user credentials.'));
         }
@@ -153,9 +155,8 @@ class AppController extends Controller
             if (!empty($authKey)) {
                 $this->loadModel('Users');
                 $user = $this->Users->get($authKey['user_id']);
-                $user = $logModel->userInfo();
                 $logModel->insert([
-                    'action' => 'login',
+                    'request_action' => 'login',
                     'model' => 'Users',
                     'model_id' => $user['id'],
                     'model_title' => $user['username'],
@@ -167,7 +168,7 @@ class AppController extends Controller
             } else {
                 $user = $logModel->userInfo();
                 $logModel->insert([
-                    'action' => 'login',
+                    'request_action' => 'login',
                     'model' => 'Users',
                     'model_id' => $user['id'],
                     'model_title' => $user['name'],
