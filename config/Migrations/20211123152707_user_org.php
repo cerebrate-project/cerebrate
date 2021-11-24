@@ -18,16 +18,16 @@ final class UserOrg extends AbstractMigration
      */
     public function change(): void
     {
-        $exists = $this->hasTable('users');
+        $exists = $this->table('users')->hasColumn('organisation_id');
         if (!$exists) {
-            $alignments = $this->table('users')
+            $this->table('users')
                 ->addColumn('organisation_id', 'integer', [
                     'default' => null,
                     'null' => true,
                     'signed' => false,
                     'length' => 10
                 ])
-                ->addIndex('org_id')
+                ->addIndex('organisation_id')
                 ->update();
         }
         $q1 = $this->getQueryBuilder();
