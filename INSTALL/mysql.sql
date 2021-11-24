@@ -392,7 +392,7 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
     KEY `user_id` (`user_id`),
     KEY `request_ip` (`request_ip`),
     KEY `model` (`model`),
-    KEY `action` (`action`),
+    KEY `request_action` (`request_action`),
     KEY `model_id` (`model_id`),
     KEY `created` (`created`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
