@@ -108,7 +108,7 @@ class AuthKeycloakBehavior extends Behavior
         $role = $this->_table->Roles->find()->where($roleConditions)->first();
         $org = $this->_table->Organisations->find()->where([
             ['id' => $data['organisation_id']]
-        ]);
+        ])->first();
         $token = $this->getAdminAccessToken();
         $keyCloakUser = [
             'firstName' => $individual['first_name'],
@@ -117,7 +117,7 @@ class AuthKeycloakBehavior extends Behavior
             'email' =>  $individual['email'],
             'attributes' => [
                 'role_name' => empty($role['name']) ? Configure::read('keycloak.default_role_name') : $role['name'],
-                'org_uuid' => $orgs['uuid']
+                'org_uuid' => $org['uuid']
             ]
         ];
         $keycloakConfig = Configure::read('keycloak');
