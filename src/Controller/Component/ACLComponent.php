@@ -267,9 +267,19 @@ class ACLComponent extends Component
             return true;
         }
         //$this->__checkLoggedActions($user, $controller, $action);
+        if (isset($this->aclList['*'][$action])) {
+            if ($this->evaluateAccessLeaf('*', $action)) {
+                return true;
+            }
+        }
         if (!isset($this->aclList[$controller])) {
             return $this->__error(404, __('Invalid controller.'), $soft);
         }
+        return $this->evaluateAccessLeaf($controller, $action);
+    }
+
+    private function evaluateAccessLeaf(string $controller, string $action): bool
+    {
         if (isset($this->aclList[$controller][$action]) && !empty($this->aclList[$controller][$action])) {
             if (in_array('*', $this->aclList[$controller][$action])) {
                 return true;
