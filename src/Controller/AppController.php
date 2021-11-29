@@ -188,4 +188,9 @@ class AppController extends Controller
     {
         return $this->RestResponse->viewData($this->ACL->findMissingFunctionNames());
     }
+
+    public function getRoleAccess()
+    {
+        return $this->RestResponse->viewData($this->ACL->getRoleAccess());
+    }
 }

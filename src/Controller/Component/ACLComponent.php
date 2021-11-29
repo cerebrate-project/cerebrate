@@ -435,13 +435,19 @@ class ACLComponent extends Component
         return $missing;
     }
 
+    public function getRoleAccess($role = false)
+    {
+        $urls = $this->__checkRoleAccess($role);
+        return $urls;
+    }
+
     public function printRoleAccess($content = false)
     {
         $results = [];
-        $this->Role = TableRegistry::get('Role');
+        $this->Role = TableRegistry::get('Roles');
         $conditions = [];
         if (is_numeric($content)) {
-            $conditions = array('Role.id' => $content);
+            $conditions = array('id' => $content);
         }
         $roles = $this->Role->find('all', array(
             'recursive' => -1,
@@ -457,40 +463,40 @@ class ACLComponent extends Component
         return $results;
     }
 
-    private function __checkRoleAccess($role)
+    private function __checkRoleAccess($role = false)
     {
         $result = [];
-        foreach ($this->__aclList as $controller => $actions) {
-            $controllerNames = Inflector::variable($controller) == Inflector::underscore($controller) ? array(Inflector::variable($controller)) : array(Inflector::variable($controller), Inflector::underscore($controller));
-            foreach ($controllerNames as $controllerName) {
-                foreach ($actions as $action => $permissions) {
-                    if ($role['perm_site_admin']) {
-                        $result[] = DS . $controllerName . DS . $action;
-                    } elseif (in_array('*', $permissions)) {
-                        $result[] = DS . $controllerName . DS . $action . DS . '*';
-                    } elseif (isset($permissions['OR'])) {
-                        $access = false;
-                        foreach ($permissions['OR'] as $permission) {
-                            if ($role[$permission]) {
-                                $access = true;
-                            }
+        if ($role === false) {
+            $role = $this->getUser()['role'];
+        }
+        foreach ($this->aclList as $controller => $actions) {
+            foreach ($actions as $action => $permissions) {
+                if ($role['perm_admin']) {
+                    $result[] = DS . $controller . DS . $action;
+                } elseif (in_array('*', $permissions)) {
+                    $result[] = DS . $controller . DS . $action . DS . '*';
+                } elseif (isset($permissions['OR'])) {
+                    $access = false;
+                    foreach ($permissions['OR'] as $permission) {
+                        if ($role[$permission]) {
+                            $access = true;
                         }
-                        if ($access) {
-                            $result[] = DS . $controllerName . DS . $action . DS . '*';
-                        }
-                    } elseif (isset($permissions['AND'])) {
-                        $access = true;
-                        foreach ($permissions['AND'] as $permission) {
-                            if ($role[$permission]) {
-                                $access = false;
-                            }
-                        }
-                        if ($access) {
-                            $result[] = DS . $controllerName . DS . $action . DS . '*';
-                        }
-                    } elseif (isset($permissions[0]) && $role[$permissions[0]]) {
-                        $result[] = DS . $controllerName . DS . $action . DS . '*';
                     }
+                    if ($access) {
+                        $result[] = DS . $controller . DS . $action . DS . '*';
+                    }
+                } elseif (isset($permissions['AND'])) {
+                    $access = true;
+                    foreach ($permissions['AND'] as $permission) {
+                        if ($role[$permission]) {
+                            $access = false;
+                        }
+                    }
+                    if ($access) {
+                        $result[] = DS . $controller . DS . $action . DS . '*';
+                    }
+                } elseif (isset($permissions[0]) && $role[$permissions[0]]) {
+                    $result[] = DS . $controller . DS . $action . DS . '*';
                 }
             }
         }
