@@ -45,6 +45,9 @@ class ACLComponent extends Component
             'index' => ['*'],
             'view' => ['*']
         ],
+        'AuditLogs' => [
+            'index' => ['perm_admin']
+        ],
         'AuthKeys' => [
             'add' => ['*'],
             'delete' => ['*'],
@@ -82,19 +85,27 @@ class ACLComponent extends Component
             'add' => ['perm_admin'],
             'delete' => ['perm_admin'],
             'edit' => ['perm_admin'],
+            'filtering' => ['*'],
             'index' => ['*'],
-            'view' => ['*']
+            'tag' => ['perm_tagger'],
+            'untag' => ['perm_tagger'],
+            'view' => ['*'],
+            'viewTags' => ['*']
         ],
         'Instance' => [
             'home' => ['*'],
             'migrate' => ['perm_admin'],
             'migrationIndex' => ['perm_admin'],
             'rollback' => ['perm_admin'],
+            'saveSetting' => ['perm_admin'],
+            'searchAll' => ['*'],
+            'settings' => ['perm_admin'],
             'status' => ['*']
         ],
         'LocalTools' => [
             'action' => ['perm_admin'],
             'add' => ['perm_admin'],
+            'batchAction' => ['perm_admin'],
             'broodTools' => ['perm_admin'],
             'connectionRequest' => ['perm_admin'],
             'connectLocal' => ['perm_admin'],
@@ -123,7 +134,10 @@ class ACLComponent extends Component
             'edit' => ['perm_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
-            'view' => ['*']
+            'tag' => ['perm_tagger'],
+            'untag' => ['perm_tagger'],
+            'view' => ['*'],
+            'viewTags' => ['*']
         ],
         'Outbox' => [
             'createEntry' => ['perm_admin'],
@@ -162,8 +176,22 @@ class ACLComponent extends Component
             'login' => ['*'],
             'logout' => ['*'],
             'register' => ['*'],
+            'settings' => ['*'],
             'toggle' => ['perm_org_admin'],
             'view' => ['*']
+        ],
+        'UserSettings' => [
+            'index' => ['*'],
+            'view' => ['*'],
+            'add' => ['*'],
+            'edit' => ['*'],
+            'delete' => ['*'],
+            'getSettingByName' => ['*'],
+            'setSetting' => ['*'],
+            'saveSetting' => ['*'],
+            'getBookmarks' => ['*'],
+            'saveBookmark' => ['*'],
+            'deleteBookmark' => ['*']
         ]
     );
 
