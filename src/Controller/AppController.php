@@ -116,6 +116,7 @@ class AppController extends Controller
             if (!$this->ParamHandler->isRest()) {
                 $this->set('menu', $this->ACL->getMenu());
                 $this->set('loggedUser', $this->ACL->getUser());
+                $this->set('roleAccess', $this->ACL->getRoleAccess(false, false));
             }
         } else if ($this->ParamHandler->isRest()) {
             throw new MethodNotAllowedException(__('Invalid user credentials.'));
@@ -131,18 +132,20 @@ class AppController extends Controller
         }
 
         $this->ACL->checkAccess();
-        $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
-        $this->set('ajax', $this->request->is('ajax'));
-        $this->request->getParam('prefix');
-        $this->set('baseurl', Configure::read('App.fullBaseUrl'));
-        if (!empty($user) && !empty($user->user_settings_by_name['ui.bsTheme']['value'])) {
-            $this->set('bsTheme', $user->user_settings_by_name['ui.bsTheme']['value']);
-        } else {
-            $this->set('bsTheme', Configure::check('ui.bsTheme') ? Configure::read('ui.bsTheme') : 'default');
-        }
+        if (!$this->ParamHandler->isRest()) {
+            $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
+            $this->set('ajax', $this->request->is('ajax'));
+            $this->request->getParam('prefix');
+            $this->set('baseurl', Configure::read('App.fullBaseUrl'));
+            if (!empty($user) && !empty($user->user_settings_by_name['ui.bsTheme']['value'])) {
+                $this->set('bsTheme', $user->user_settings_by_name['ui.bsTheme']['value']);
+            } else {
+                $this->set('bsTheme', Configure::check('ui.bsTheme') ? Configure::read('ui.bsTheme') : 'default');
+            }
 
-        if ($this->modelClass == 'Tags.Tags') {
-            $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
+            if ($this->modelClass == 'Tags.Tags') {
+                $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
+            }
         }
     }
 
@@ -191,6 +194,6 @@ class AppController extends Controller
 
     public function getRoleAccess()
     {
-        return $this->RestResponse->viewData($this->ACL->getRoleAccess());
+        return $this->RestResponse->viewData($this->ACL->getRoleAccess(false, false));
     }
 }
