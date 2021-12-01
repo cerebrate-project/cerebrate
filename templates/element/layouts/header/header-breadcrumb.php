@@ -66,16 +66,22 @@ if (!empty($breadcrumb)) {
             );
         }
     }
+    $badgeNumber = 0;
     if (!empty($lastCrumb['actions'])) {
         foreach ($lastCrumb['actions'] as $i => $actionEntry) {
             if (!empty($actionEntry['url_vars'])) {
                 $actionEntry['url'] = $this->DataFromPath->buildStringFromDataPath($actionEntry['url'], $entity, $actionEntry['url_vars']);
             }
+            if (!empty($actionEntry['badge'])) {
+                $badgeNumber += 1;
+            }
             $breadcrumbAction .= sprintf(
-                '<a class="dropdown-item" href="#" onclick="%s"><i class="me-1 %s"></i>%s</a>',
+                '<a class="dropdown-item %s" href="#" onclick="%s"><i class="me-1 %s"></i>%s%s</a>',
+                !empty($actionEntry['variant']) ? sprintf('dropdown-item-%s', $actionEntry['variant']) : '',
                 sprintf('UI.overlayUntilResolve(this, UI.submissionModalAutoGuess(\'%s\'))', h(Router::url($actionEntry['url']))),
                 !empty($actionEntry['icon']) ? $this->FontAwesome->getClass(h($actionEntry['icon'])) : '',
-                h($actionEntry['label'])
+                h($actionEntry['label']),
+                !empty($actionEntry['badge']) ? $this->Bootstrap->badge($actionEntry['badge']) : ''
             );
         }
     }
@@ -97,6 +103,14 @@ echo $this->Breadcrumbs->render(
             <?php if (!empty($breadcrumbAction)) : ?>
                 <a class="btn btn-primary btn-sm dropdown-toggle" href="#" role="button" id="dropdownMenuBreadcrumbAction" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <?= __('Actions') ?>
+                    <?=
+                        $badgeNumber == 0 ? '' : $this->Bootstrap->badge([
+                            'text' => h($badgeNumber),
+                            'variant' => 'warning',
+                            'pill' => false,
+                            'title' => __n('There is {0} action available', 'There are {0} actions available', $badgeNumber, h($badgeNumber)),
+                        ])
+                    ?>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuBreadcrumbAction">
                     <?= $breadcrumbAction ?>
