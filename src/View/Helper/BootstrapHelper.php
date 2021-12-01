@@ -549,7 +549,7 @@ class BoostrapAlert extends BootstrapGeneric
 
     private function genContent()
     {
-        return !is_null($this->options['html']) ? $this->options['html'] : $this->options['text'];
+        return !is_null($this->options['html']) ? $this->options['html'] : h($this->options['text']);
     }
 }
 
@@ -1445,7 +1445,7 @@ class BoostrapProgress extends BootstrapGeneric
 class BoostrapCollapse extends BootstrapGeneric
 {
     private $defaultOptions = [
-        'text' => '',
+        'title' => '',
         'open' => false,
     ];
 
