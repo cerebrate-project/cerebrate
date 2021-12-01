@@ -37,21 +37,22 @@ class MetaTemplatesController extends AppController
         } else {
             if (!$this->ParamHandler->isRest()) {
                 if (!empty($template_id)) {
-                    $this->set('title', __('Update Meta Templates #{0}', h($template_id)));
-                    $this->set('question', __('Are you sure you wish to update the Meta Template definitions of the template `{0}`?', h($metaTemplate->name)));
+                    $this->set('metaTemplate', $metaTemplate);
+                    $this->setUpdateStatus($metaTemplate->id);
                 } else {
                     $this->set('title', __('Update Meta Templates'));
                     $this->set('question', __('Are you sure you wish to update the Meta Template definitions'));
+                    $updateableTemplates = $this->MetaTemplates->checkForUpdates();
+                    $this->set('updateableTemplates', $updateableTemplates);
+                    $this->render('updateAll');
                 }
-                $this->set('actionName', __('Update'));
-                $this->set('path', ['controller' => 'metaTemplates', 'action' => 'update']);
-                $this->render('/genericTemplates/confirm');
             }
         }
     }
 
     public function index()
     {
+        $updateableTemplate = $this->MetaTemplates->checkForUpdates();
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
@@ -64,15 +65,27 @@ class MetaTemplatesController extends AppController
                     ],
                 ]
             ],
-            'contain' => $this->containFields
+            'contain' => $this->containFields,
+            'afterFind' => function($data) use ($updateableTemplate) {
+                foreach ($data as $i => $metaTemplate) {
+                    if (!empty($updateableTemplate[$metaTemplate->uuid])) {
+                        $metaTemplate->set('status', $this->MetaTemplates->getTemplateStatus($updateableTemplate[$metaTemplate->uuid]));
+                    }
+                }
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        $updateableTemplate = [
+            'not_up_to_date' => $this->MetaTemplates->getNotUpToDateTemplates(),
+            'new' => $this->MetaTemplates->getNewTemplates(),
+        ];
         $this->set('defaultTemplatePerScope', $this->MetaTemplates->getDefaultTemplatePerScope());
         $this->set('alignmentScope', 'individuals');
-        $this->set('metaGroup', 'Administration');
+        $this->set('updateableTemplate', $updateableTemplate);
     }
 
     public function view($id)
@@ -84,7 +97,7 @@ class MetaTemplatesController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Administration');
+        $this->setUpdateStatus($id);
     }
 
     public function toggle($id, $fieldName = 'enabled')
@@ -100,5 +113,14 @@ class MetaTemplatesController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+    }
+
+    public function setUpdateStatus($id)
+    {
+        $metaTemplate = $this->MetaTemplates->get($id);
+        $templateOnDisk = $this->MetaTemplates->readTemplateFromDisk($metaTemplate->uuid);
+        $updateableTemplate = $this->MetaTemplates->checkUpdatesForTemplate($templateOnDisk);
+        $this->set('updateableTemplate', $updateableTemplate);
+        $this->set('templateOnDisk', $templateOnDisk);
     }
 }

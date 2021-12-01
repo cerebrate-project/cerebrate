@@ -1,4 +1,24 @@
 <?php
+use Cake\Utility\Hash;
+
+if (!empty($updateableTemplate)) {
+    $alertHtml = sprintf('<strong>%s</strong> %s', __('New meta-templates available!'), __n('There is one new template on disk that can be loaded in the database', 'There are {0} new templates on disk that can be loaded in the database:', count($updateableTemplate['new'])));
+    $alertList = Hash::combine(
+        $updateableTemplate,
+        null,
+        ['%s :: %s', 'new.{s}.template.namespace', 'new.{s}.template.name'],
+        'new.{n}.template.namespace'
+    );
+    $alertList = array_map(function($entry) {
+        return h($entry);
+    }, $alertList);
+    $alertHtml .= $this->Html->nestedList($alertList); 
+    echo $this->Bootstrap->alert([
+        'html' => $alertHtml,
+        'variant' => 'warning',
+    ]);
+}
+
 echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $data,
@@ -138,7 +158,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => __('UUID'),
                 'sort' => 'uuid',
                 'data_path' => 'uuid'
-            ]
+            ],
+            [
+                'name' => __('Updateable'),
+                'data_path' => 'status',
+                'element' => 'update_status',
+            ],
         ],
         'title' => __('Meta Field Templates'),
         'description' => __('The various templates used to enrich certain objects by a set of standardised fields.'),
@@ -150,11 +175,15 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'eye'
             ],
             [
-                'url' => '/metaTemplates/update',
-                'url_params_data_paths' => ['id'],
-                'title' => __('Update'),
+                'open_modal' => '/metaTemplates/update/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'title' => __('Update Meta-Template'),
                 'icon' => 'download',
-                'requirement' => true // FIXME: Check if template can be updated
+                'complex_requirement' => [
+                    'function' => function ($row, $options) {
+                        return empty($row['status']['up_to_date']);
+                    }
+                ]
             ]
         ]
     ]
