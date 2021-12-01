@@ -10,7 +10,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         'data' => [
                             'type' => 'simple',
                             'text' => __('Add sharing group'),
-                            'popover_url' => '/SharingGroups/add'
+                            'popover_url' => '/SharingGroups/add',
+                            'requirement' => $this->ACL->checkAccess('SharingGroups', 'add')
                         ]
                     ]
                 ],
