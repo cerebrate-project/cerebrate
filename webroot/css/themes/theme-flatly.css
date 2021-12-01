@@ -110,6 +110,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #2c3e50; }
+  .dropdown-item.dropdown-item-primary:hover {
+    color: #fff;
+    background-color: #253544; }
 
 .dropdown-item.dropdown-item-outline-primary:hover {
   color: #fff;
@@ -119,6 +122,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #95a5a6; }
+  .dropdown-item.dropdown-item-secondary:hover {
+    color: #fff;
+    background-color: #7f8c8d; }
 
 .dropdown-item.dropdown-item-outline-secondary:hover {
   color: #fff;
@@ -128,6 +134,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #18bc9c; }
+  .dropdown-item.dropdown-item-success:hover {
+    color: #fff;
+    background-color: #14a085; }
 
 .dropdown-item.dropdown-item-outline-success:hover {
   color: #fff;
@@ -137,6 +146,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #3498db; }
+  .dropdown-item.dropdown-item-info:hover {
+    color: #fff;
+    background-color: #2c81ba; }
 
 .dropdown-item.dropdown-item-outline-info:hover {
   color: #fff;
@@ -146,6 +158,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #f39c12; }
+  .dropdown-item.dropdown-item-warning:hover {
+    color: #fff;
+    background-color: #cf850f; }
 
 .dropdown-item.dropdown-item-outline-warning:hover {
   color: #fff;
@@ -155,6 +170,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #e74c3c; }
+  .dropdown-item.dropdown-item-danger:hover {
+    color: #fff;
+    background-color: #c44133; }
 
 .dropdown-item.dropdown-item-outline-danger:hover {
   color: #fff;
@@ -164,6 +182,9 @@
   color: #000;
   text-decoration: none;
   background-color: #ecf0f1; }
+  .dropdown-item.dropdown-item-light:hover {
+    color: #000;
+    background-color: #eff2f3; }
 
 .dropdown-item.dropdown-item-outline-light:hover {
   color: #000;
@@ -173,6 +194,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #7b8a8b; }
+  .dropdown-item.dropdown-item-dark:hover {
+    color: #fff;
+    background-color: #697576; }
 
 .dropdown-item.dropdown-item-outline-dark:hover {
   color: #fff;
@@ -255,8 +279,14 @@
 .mw-75 {
   max-width: 75% !important; }
 
+.mw-66 {
+  max-width: 66% !important; }
+
 .mw-50 {
   max-width: 50% !important; }
+
+.mw-33 {
+  max-width: 33% !important; }
 
 .mw-25 {
   max-width: 25% !important; }
@@ -264,8 +294,14 @@
 .mh-75 {
   max-height: 75% !important; }
 
+.mh-66 {
+  max-height: 66% !important; }
+
 .mh-50 {
   max-height: 50% !important; }
+
+.mh-33 {
+  max-height: 33% !important; }
 
 .mh-25 {
   max-height: 25% !important; }

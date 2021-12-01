@@ -110,6 +110,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #e83283; }
+  .dropdown-item.dropdown-item-primary:hover {
+    color: #fff;
+    background-color: #c52b6f; }
 
 .dropdown-item.dropdown-item-outline-primary:hover {
   color: #fff;
@@ -119,6 +122,9 @@
   color: #000;
   text-decoration: none;
   background-color: rgba(255, 255, 255, 0.4); }
+  .dropdown-item.dropdown-item-secondary:hover {
+    color: #000;
+    background-color: rgba(255, 255, 255, 0.49); }
 
 .dropdown-item.dropdown-item-outline-secondary:hover {
   color: #000;
@@ -128,6 +134,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #41d7a7; }
+  .dropdown-item.dropdown-item-success:hover {
+    color: #fff;
+    background-color: #37b78e; }
 
 .dropdown-item.dropdown-item-outline-success:hover {
   color: #fff;
@@ -137,6 +146,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #39cbfb; }
+  .dropdown-item.dropdown-item-info:hover {
+    color: #fff;
+    background-color: #30add5; }
 
 .dropdown-item.dropdown-item-outline-info:hover {
   color: #fff;
@@ -146,6 +158,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #ffc107; }
+  .dropdown-item.dropdown-item-warning:hover {
+    color: #fff;
+    background-color: #d9a406; }
 
 .dropdown-item.dropdown-item-outline-warning:hover {
   color: #fff;
@@ -155,6 +170,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #fd7e14; }
+  .dropdown-item.dropdown-item-danger:hover {
+    color: #fff;
+    background-color: #d76b11; }
 
 .dropdown-item.dropdown-item-outline-danger:hover {
   color: #fff;
@@ -164,6 +182,9 @@
   color: #000;
   text-decoration: none;
   background-color: #e9e9e8; }
+  .dropdown-item.dropdown-item-light:hover {
+    color: #000;
+    background-color: #ececeb; }
 
 .dropdown-item.dropdown-item-outline-light:hover {
   color: #000;
@@ -173,6 +194,9 @@
   color: #fff;
   text-decoration: none;
   background-color: #212529; }
+  .dropdown-item.dropdown-item-dark:hover {
+    color: #fff;
+    background-color: #1c1f23; }
 
 .dropdown-item.dropdown-item-outline-dark:hover {
   color: #fff;
@@ -255,8 +279,14 @@
 .mw-75 {
   max-width: 75% !important; }
 
+.mw-66 {
+  max-width: 66% !important; }
+
 .mw-50 {
   max-width: 50% !important; }
+
+.mw-33 {
+  max-width: 33% !important; }
 
 .mw-25 {
   max-width: 25% !important; }
@@ -264,8 +294,14 @@
 .mh-75 {
   max-height: 75% !important; }
 
+.mh-66 {
+  max-height: 66% !important; }
+
 .mh-50 {
   max-height: 50% !important; }
+
+.mh-33 {
+  max-height: 33% !important; }
 
 .mh-25 {
   max-height: 25% !important; }

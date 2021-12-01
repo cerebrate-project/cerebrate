@@ -50,6 +50,11 @@ $toast-color-level:                 70% !default;
             color: color-contrast($value);
             text-decoration: none;
             background-color: $value;
+
+            &:hover {
+                color: color-contrast($value);
+                background-color: if(color-contrast($value) == $color-contrast-light, shade-color($value, $btn-hover-bg-shade-amount), tint-color($value, $btn-hover-bg-tint-amount))
+            }
         }
 
         &.dropdown-item-outline-#{$color} {
@@ -135,9 +140,15 @@ $toast-color-level:                 70% !default;
 // );
 .mw-75 {
     max-width: 75% !important;
-  }
+}
+.mw-66 {
+    max-width: 66% !important;
+}
 .mw-50 {
     max-width: 50% !important;
+}
+.mw-33 {
+    max-width: 33% !important;
 }
 .mw-25 {
     max-width: 25% !important;
@@ -145,8 +156,14 @@ $toast-color-level:                 70% !default;
 .mh-75 {
     max-height: 75% !important;
 }
+.mh-66 {
+    max-height: 66% !important;
+}
 .mh-50 {
     max-height: 50% !important;
+}
+.mh-33 {
+    max-height: 33% !important;
 }
 .mh-25 {
     max-height: 25% !important;
