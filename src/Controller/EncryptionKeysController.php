@@ -62,16 +62,18 @@ class EncryptionKeysController extends AppController
                     'id' => $currentUser['individual_id']
                 ];
             }
-            $params['beforeSave'] = function($entity) {
+            $params['beforeSave'] = function($entity) use($currentUser) {
                 if ($entity['owner_model'] === 'organisation') {
                     $entity['owner_id'] = $currentUser['organisation_id'];
                 } else {
                     if ($currentUser['role']['perm_org_admin']) {
-                        $validIndividuals = $this->Organisations->find('list', [
-                            'fields' => ['distinct(id)'],
+                        $this->loadModel('Alignments');
+                        $validIndividuals = $this->Alignments->find('list', [
+                            'keyField' => 'individual_id',
+                            'valueField' => 'id',
                             'conditions' => ['organisation_id' => $currentUser['organisation_id']]
-                        ]);
-                        if (!in_array($entity['owner_id'], $validIndividuals)) {
+                        ])->toArray();
+                        if (!isset($validIndividuals[$entity['owner_id']])) {
                             throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
                         }
                     } else {
@@ -80,6 +82,7 @@ class EncryptionKeysController extends AppController
                         }
                     }
                 }
+                return $entity;
             };
         }
         $this->CRUD->add($params);
