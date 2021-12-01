@@ -37,6 +37,7 @@ class ACLComponent extends Component
         '*' => [
             'checkPermission' => ['*'],
             'generateUUID' => ['*'],
+            'getRoleAccess' => ['*'],
             'queryACL' => ['perm_admin']
         ],
         'Alignments' => [
@@ -435,10 +436,9 @@ class ACLComponent extends Component
         return $missing;
     }
 
-    public function getRoleAccess($role = false)
+    public function getRoleAccess($role = false, $url_mode = true)
     {
-        $urls = $this->__checkRoleAccess($role);
-        return $urls;
+        return $this->__checkRoleAccess($role, $url_mode);
     }
 
     public function printRoleAccess($content = false)
@@ -463,18 +463,28 @@ class ACLComponent extends Component
         return $results;
     }
 
-    private function __checkRoleAccess($role = false)
+    private function __formatControllerAction(array $results, string $controller, string $action, $url_mode = true): array
     {
-        $result = [];
+        if ($url_mode) {
+            $results[] = DS . $controller . DS . $action . DS . '*';
+        } else {
+            $results[$controller][] = $action;
+        }
+        return $results;
+    }
+
+    private function __checkRoleAccess($role = false, $url_mode = true)
+    {
+        $results = [];
         if ($role === false) {
             $role = $this->getUser()['role'];
         }
         foreach ($this->aclList as $controller => $actions) {
             foreach ($actions as $action => $permissions) {
                 if ($role['perm_admin']) {
-                    $result[] = DS . $controller . DS . $action;
+                    $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
                 } elseif (in_array('*', $permissions)) {
-                    $result[] = DS . $controller . DS . $action . DS . '*';
+                    $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
                 } elseif (isset($permissions['OR'])) {
                     $access = false;
                     foreach ($permissions['OR'] as $permission) {
@@ -483,7 +493,7 @@ class ACLComponent extends Component
                         }
                     }
                     if ($access) {
-                        $result[] = DS . $controller . DS . $action . DS . '*';
+                        $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
                     }
                 } elseif (isset($permissions['AND'])) {
                     $access = true;
@@ -493,14 +503,14 @@ class ACLComponent extends Component
                         }
                     }
                     if ($access) {
-                        $result[] = DS . $controller . DS . $action . DS . '*';
+                        $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
                     }
                 } elseif (isset($permissions[0]) && $role[$permissions[0]]) {
-                    $result[] = DS . $controller . DS . $action . DS . '*';
+                    $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
                 }
             }
         }
-        return $result;
+        return $results;
     }
 
     public function getMenu()
