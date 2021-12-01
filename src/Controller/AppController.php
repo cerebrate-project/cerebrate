@@ -128,7 +128,6 @@ class AppController extends Controller
         }
 
         $this->ACL->checkAccess();
-        $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
         $this->set('ajax', $this->request->is('ajax'));
         $this->request->getParam('prefix');
         $this->set('baseurl', Configure::read('App.fullBaseUrl'));
@@ -141,6 +140,11 @@ class AppController extends Controller
         if ($this->modelClass == 'Tags.Tags') {
             $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
         }
+    }
+
+    public function beforeRender(EventInterface $event)
+    {
+        $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
     }
 
     private function authApiUser(): void

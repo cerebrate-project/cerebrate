@@ -42,7 +42,7 @@ class NavigationComponent extends Component
         $this->request = $config['request'];
     }
 
-    public function beforeFilter($event)
+    public function beforeRender($event)
     {
         $this->fullBreadcrumb = $this->genBreadcrumb();
         $this->breadcrumb = $this->getBreadcrumb();
@@ -140,7 +140,8 @@ class NavigationComponent extends Component
             $navigationClassname = str_replace('.php', '', $navigationFile);
             require_once(APP . 'Controller' . DS . 'Component' . DS . 'Navigation' . DS . $navigationFile);
             $reflection = new \ReflectionClass("BreadcrumbNavigation\\{$navigationClassname}Navigation");
-            $navigationClasses[$navigationClassname] = $reflection->newInstance($bcf, $request);
+            $viewVars = $this->_registry->getController()->viewBuilder()->getVars();
+            $navigationClasses[$navigationClassname] = $reflection->newInstance($bcf, $request, $viewVars);
         }
         return $navigationClasses;
     }
@@ -249,6 +250,7 @@ class BreadcrumbFactory
         $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'icon');
         $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'label');
         $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'textGetter');
+        $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'badge');
         return $routeConfig;
     }
 
