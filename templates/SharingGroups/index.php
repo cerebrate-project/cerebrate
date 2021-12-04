@@ -49,7 +49,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ],
             [
                 'name' => __('Members'),
-                'data_path' => 'alignments',
+                'data_path' => 'sharing_group_orgs',
                 'element' =>  'count_summary',
                 'url' => '/sharingGroups/view/{{id}}',
                 'url_data_path' => 'id'
