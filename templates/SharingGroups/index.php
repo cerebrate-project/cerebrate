@@ -51,7 +51,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => __('Members'),
                 'data_path' => 'sharing_group_orgs',
                 'element' =>  'count_summary',
-                'url' => '/sharingGroups/view/{{id}}',
+                'url' => '/sharingGroups/view/{{url_data}}',
                 'url_data_path' => 'id'
             ]
         ],
