@@ -159,11 +159,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'sort' => 'uuid',
                 'data_path' => 'uuid'
             ],
-            [
-                'name' => __('Updateable'),
-                'data_path' => 'status',
-                'element' => 'update_status',
-            ],
         ],
         'title' => __('Meta Field Templates'),
         'description' => __('The various templates used to enrich certain objects by a set of standardised fields.'),
@@ -176,15 +171,39 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ],
             [
                 'open_modal' => '/metaTemplates/update/[onclick_params_data_path]',
-                'modal_params_data_path' => 'id',
+                'modal_params_data_path' => 'uuid',
                 'title' => __('Update Meta-Template'),
                 'icon' => 'download',
                 'complex_requirement' => [
                     'function' => function ($row, $options) {
-                        return empty($row['status']['up_to_date']);
+                        return empty($row['status']['up_to_date']) && empty($row['status']['to_existing']);
                     }
                 ]
-            ]
+            ],
+            [
+                'open_modal' => '/metaTemplates/getMetaFieldsToUpdate/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'title' => __('Get meta-fields that should be moved to the newest version of this meta-template'),
+                'icon' => 'exclamation-triangle',
+                'variant' => 'warning',
+                'complex_requirement' => [
+                    'function' => function ($row, $options) {
+                        return !empty($row['status']['to_existing']) && empty($row['status']['can_be_removed']);
+                    }
+                ]
+            ],
+            [
+                'open_modal' => '/metaTemplates/delete/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'title' => __('Get meta-fields that should be moved to the newest version of this meta-template'),
+                'icon' => 'trash',
+                'variant' => 'success',
+                'complex_requirement' => [
+                    'function' => function ($row, $options) {
+                        return !empty($row['status']['to_existing']) && !empty($row['status']['can_be_removed']);
+                    }
+                ]
+            ],
         ]
     ]
 ]);

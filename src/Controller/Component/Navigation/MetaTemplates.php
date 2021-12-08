@@ -80,8 +80,8 @@ class MetaTemplatesNavigation extends BaseNavigation
         if (empty($this->viewVars['updateableTemplate']['up-to-date'])) {
             $this->bcf->addAction('MetaTemplates', 'view', 'MetaTemplates', 'update', [
                 'label' => __('Update template'),
-                'url' => '/metaTemplates/update/{{id}}',
-                'url_vars' => ['id' => 'id'],
+                'url' => '/metaTemplates/update/{{uuid}}',
+                'url_vars' => ['uuid' => 'uuid'],
                 'variant' => 'warning',
                 'badge' => [
                     'variant' => 'warning',

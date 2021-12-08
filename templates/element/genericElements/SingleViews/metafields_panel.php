@@ -1,19 +1,15 @@
-    <?php
+<?php
+use \Cake\Routing\Router;
+
 $tabData = [
     'navs' => [],
     'content' => []
 ];
 foreach($data['MetaTemplates'] as $metaTemplate) {
     if (!empty($metaTemplate->meta_template_fields)) {
-        if ($metaTemplate->is_default) {
-            $tabData['navs'][] = [
-                'html' => $this->element('/genericElements/MetaTemplates/metaTemplateNav', ['metaTemplate' => $metaTemplate])
-            ];
-        } else {
-            $tabData['navs'][] = [
-                'text' => $metaTemplate->name
-            ];
-        }
+        $tabData['navs'][] = [
+            'html' => $this->element('/genericElements/MetaTemplates/metaTemplateNav', ['metaTemplate' => $metaTemplate])
+        ];
         $fields = [];
         foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
             $labelPrintedOnce = false;
@@ -40,6 +36,28 @@ foreach($data['MetaTemplates'] as $metaTemplate) {
                 count($fields)
             )
         ]);
+        if (!empty($metaTemplate['hasNewerVersion'])) {
+            $listTable = $this->Bootstrap->alert([
+                'html' => sprintf(
+                    '<div>%s</div><div>%s</div>',
+                    __('These meta-fields are registered under an outdated template. Newest template is {0}, current is {1}.', $metaTemplate['hasNewerVersion']->version, $metaTemplate->version),
+                    $this->Bootstrap->button([
+                        'text' => __('Migrate to version {0}', $metaTemplate['hasNewerVersion']->version),
+                        'variant' => 'success',
+                        'nodeType' => 'a',
+                        'params' => [
+                            'href' => Router::url([
+                                'controller' => 'metaTemplates',
+                                'action' => 'migrateOldMetaTemplateToNewestVersionForEntity',
+                                $metaTemplate->id,
+                                $data->id,
+                            ])
+                        ]
+                    ])
+                ),
+                'variant' => 'warning',
+            ]) . $listTable;
+        }
         $tabData['content'][] = $listTable;
     }
 }

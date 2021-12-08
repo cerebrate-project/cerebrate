@@ -49,6 +49,11 @@ class MetaFieldsTable extends AppTable
         $metaFieldsTable = $context['providers']['table'];
         $entityData = $context['data'];
         $metaTemplateField = $metaFieldsTable->MetaTemplateFields->get($entityData['meta_template_field_id']);
+        return $this->isValidMetaFieldForMetaTemplateField($value, $metaTemplateField);
+    }
+
+    public function isValidMetaFieldForMetaTemplateField($value, $metaTemplateField)
+    {
         $typeValid = $this->isValidType($value, $metaTemplateField['type']);
         if ($typeValid !== true) {
             return $typeValid;
@@ -72,7 +77,7 @@ class MetaFieldsTable extends AppTable
 
         $re = $metaTemplateField['regex'];
         if (!preg_match("/^$re$/m", $value)) {
-            return __('Metafield value `{0}` for `{1}` doesn\'t pass regex validation', $value, $metaTemplateField->field);
+            return __('Metafield value `{0}` for `{1}` doesn\'t pass regex validation', $value, $metaTemplateField['field']);
         }
         return true;
     }

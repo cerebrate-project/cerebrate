@@ -20,14 +20,21 @@ class MetaTemplateFieldsTable extends AppTable
         $this->setDisplayField('field');
     }
 
+    public function beforeSave($event, $entity, $options)
+    {
+        if (empty($entity->meta_template_id)) {
+            $event->stopPropagation();
+            $event->setResult(false);
+            return;
+        }
+    }
+
     public function validationDefault(Validator $validator): Validator
     {
         $validator
             ->notEmptyString('field')
             ->notEmptyString('type')
-            ->numeric('meta_template_id')
-            ->notBlank('meta_template_id')
-            ->requirePresence(['meta_template_id', 'field', 'type'], 'create');
+            ->requirePresence(['field', 'type'], 'create');
         return $validator;
     }
 }

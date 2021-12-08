@@ -176,7 +176,6 @@ class CRUDComponent extends Component
             ->order(['is_default' => 'DESC'])
             ->where([
                 'scope' => $metaFieldsBehavior->getScope(),
-                'enabled' => 1
             ])
             ->contain('MetaTemplateFields')
             ->formatResults(function (\Cake\Collection\CollectionInterface $metaTemplates) { // Set meta-template && meta-template-fields indexed by their ID
@@ -307,7 +306,7 @@ class CRUDComponent extends Component
     }
 
     // prune empty values and marshall fields
-    private function massageMetaFields($entity, $input, $allMetaTemplates=[])
+    public function massageMetaFields($entity, $input, $allMetaTemplates=[])
     {
         if (empty($input['MetaTemplates'] || !$this->metaFieldsSupported())) {
             return ['entity' => $entity, 'metafields_to_delete' => []];
@@ -548,11 +547,12 @@ class CRUDComponent extends Component
         return $data;
     }
 
-    public function attachMetaTemplates($data, $metaTemplates)
+    public function attachMetaTemplates($data, $metaTemplates, $pruneEmptyDisabled=true)
     {
+        $this->MetaTemplates = TableRegistry::getTableLocator()->get('MetaTemplates');
         $metaFields = [];
         if (!empty($data->id)) {
-            $metaFields = $this->getMetaFields($data->id, $data);
+            $metaFields = $this->getMetaFields($data->id);
         }
         foreach ($metaTemplates as $i => $metaTemplate) {
             if (isset($metaFields[$metaTemplate->id])) {
@@ -563,6 +563,14 @@ class CRUDComponent extends Component
                         $metaTemplates[$metaTemplate->id]->meta_template_fields[$j]['metaFields'] = [];
                     }
                 }
+            } else {
+                if (!empty($pruneEmptyDisabled) && !$metaTemplate->enabled) {
+                    unset($metaTemplates[$i]);
+                }
+            }
+            $newestTemplate = $this->MetaTemplates->getNewestVersion($metaTemplate);
+            if (!empty($newestTemplate) && !empty($metaTemplates[$i])) {
+                $metaTemplates[$i]['hasNewerVersion'] = $newestTemplate;
             }
         }
         $data['MetaTemplates'] = $metaTemplates;
@@ -686,7 +694,6 @@ class CRUDComponent extends Component
             }
             $this->setResponseForController('delete', $bulkSuccesses, $message, $data, null, $additionalData);
         }
-        $this->Controller->set('metaGroup', 'ContactDB');
         $this->Controller->set('scope', 'users');
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/delete');

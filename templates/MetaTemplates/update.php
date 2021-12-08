@@ -17,6 +17,26 @@ if ($updateableTemplate['up-to-date']) {
             'html' => __('This meta-template can be updated to version {0} (current: {1}).', sprintf('<strong>%s</strong>', h($templateOnDisk['version'])), h($metaTemplate->version)),
             'dismissible' => false,
         ]);
+        $form = $this->element('genericElements/Form/genericForm', [
+            'entity' => null,
+            'ajax' => false,
+            'raw' => true,
+            'data' => [
+                'model' => 'MetaTemplate',
+                'fields' => [
+                    [
+                        'field' => 'update_strategy',
+                        'type' => 'checkbox',
+                        'value' => 'update',
+                        'checked' => true,
+                    ]
+                ],
+                'submit' => [
+                    'action' => $this->request->getParam('action')
+                ],
+            ]
+        ]);
+        $bodyHtml .= sprintf('<div class="d-none">%s</div>', $form);
     } else {
         $modalSize = 'xl';
         $bodyHtml .= $this->Bootstrap->alert([
@@ -47,7 +67,7 @@ echo $this->Bootstrap->modal([
     'size' => $modalSize,
     'type' => $modalType,
     'confirmText' => __('Update meta-templates'),
-    'confirmFunction' => 'updateMetaTemplate',
+    // 'confirmFunction' => 'updateMetaTemplate',
 ]);
 ?>
 
