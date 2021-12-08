@@ -20,7 +20,7 @@
     $entity = isset($entity) ? $entity : null;
     $fieldsString = '';
     $simpleFieldWhitelist = [
-        'default', 'type', 'placeholder', 'label', 'empty', 'rows', 'div', 'required', 'templates'
+        'default', 'type', 'placeholder', 'label', 'empty', 'rows', 'div', 'required', 'templates', 'options', 'value', 'checked'
     ];
     if (empty($data['url'])) {
         $data['url'] = ["controller" => $this->request->getParam('controller'), "action" => $this->request->getParam('url')];
@@ -37,6 +37,8 @@
         'select' => '<select name="{{name}}" {{attrs}}>{{content}}</select>',
         'checkbox' => '<input type="checkbox" name="{{name}}" value="{{value}}"{{attrs}}>',
         'checkboxFormGroup' => '{{label}}',
+        'radio' => '<input type="radio" name="{{name}}" value="{{value}}"{{attrs}}>',
+        'radioWrapper' => '{{label}}',
         'formGroup' => '<label class="col-sm-2 col-form-label form-label" {{attrs}}>{{label}}</label><div class="col-sm-10">{{input}}{{error}}</div>',
         'nestingLabel' => '{{hidden}}<div class="col-sm-2 form-label">{{text}}</div><div class="col-sm-10">{{input}}</div>',
         'option' => '<option value="{{value}}"{{attrs}}>{{text}}</option>',
@@ -60,6 +62,9 @@
                 $formTemplate['label'] = '<label{{attrs}}>{{text}}</label>';
                 $formTemplate['formGroup'] = '{{input}}{{label}}';
                 $fieldData['placeholder'] = !empty($fieldData['label']) ? $fieldData['label'] : h($fieldData['field']);
+            }
+            if (!empty($data['templates'])) {
+                $formTemplate = array_merge($formTemplate, $data['templates']);
             }
             // we reset the template each iteration as individual fields might override the defaults.
             $this->Form->setConfig($formTemplate);

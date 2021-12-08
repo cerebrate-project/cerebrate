@@ -32,7 +32,7 @@
         } else {
             $params['class'] = '';
         }
-        if (empty($fieldData['type']) || $fieldData['type'] !== 'checkbox' ) {
+        if (empty($fieldData['type']) || ($fieldData['type'] !== 'checkbox' && $fieldData['type'] !== 'radio')) {
             $params['class'] .= ' form-control';
         }
         foreach ($fieldData as $k => $fd) {
