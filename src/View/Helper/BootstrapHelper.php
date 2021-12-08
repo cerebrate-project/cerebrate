@@ -986,6 +986,7 @@ class BoostrapBadge extends BootstrapGeneric
     private function processOptions($options)
     {
         $this->options = array_merge($this->defaultOptions, $options);
+        $this->options['class'] = is_array($this->options['class']) ? $this->options['class'] : [$this->options['class']];
         $this->checkOptionValidity();
     }
 
