@@ -34,6 +34,11 @@ class MoreMetaFieldColumns extends AbstractMigration
                 'comment' => 'Field used by the CounterCache behaviour to count the occurence of meta_template_fields'
             ])
             ->update();
+        
+        $metaTemplate = $this->table('meta_templates')
+            ->removeIndex(['uuid'])
+            ->addIndex(['uuid'])
+            ->update();
 
         // TODO: Make sure FK constraints are set between meta_field, meta_template and meta_template_fields
     }
