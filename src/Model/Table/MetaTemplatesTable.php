@@ -49,18 +49,6 @@ class MetaTemplatesTable extends AppTable
     public function update($template_uuid=null, $strategy=null)
     {
         $files_processed = [];
-        // foreach (self::TEMPLATE_PATH as $path) {
-        //     if (is_dir($path)) {
-        //         $files = scandir($path);
-        //         foreach ($files as $k => $file) {
-        //             if (substr($file, -5) === '.json') {
-        //                 if ($this->loadAndSaveMetaFile($path . $file) === true) {
-        //                     $files_processed[] = $file;
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
         $readErrors = [];
         $preUpdateChecks = [];
         $updatesErrors = [];
@@ -417,54 +405,6 @@ class MetaTemplatesTable extends AppTable
             ['scope' => $scope]
         );
     }
-
-    // public function loadAndSaveMetaFile(String $filePath)
-    // {
-    //     if (file_exists($filePath)) {
-    //         $contents = file_get_contents($filePath);
-    //         $metaTemplate = json_decode($contents, true);
-    //         if (empty($metaTemplate)) {
-    //             return __('Could not load template file. Error while decoding the template\'s JSON');
-    //         }
-    //         if (empty($metaTemplate['uuid']) || empty($metaTemplate['version'])) {
-    //             return __('Could not load template file. Invalid template file. Missing template UUID or version');
-    //         }
-    //         return $this->saveMetaFile($metaTemplate);
-    //     }
-    //     return __('Could not load template file. File does not exists');
-    // }
-
-    // public function saveMetaFile(array $newMetaTemplate)
-    // {
-    //     $query = $this->find();
-    //     $query->contain('MetaTemplateFields')->where(['uuid' => $newMetaTemplate['uuid']]);
-    //     $metaTemplate = $query->first();
-    //     if (empty($metaTemplate)) {
-    //         $metaTemplate = $this->newEntity($newMetaTemplate);
-    //         $result = $this->save($metaTemplate);
-    //         if (!$result) {
-    //             return __('Something went wrong, could not create the template.');
-    //         }
-    //     } else {
-    //         if ($metaTemplate->version >= $newMetaTemplate['version']) {
-    //             return __('Could not update the template. Local version is newer.');
-    //         }
-    //         // Take care of meta template fields
-    //         $metaTemplate = $this->patchEntity($metaTemplate, $newMetaTemplate);
-    //         $metaTemplate = $this->save($metaTemplate);
-    //         if (!$metaTemplate) {
-    //             return __('Something went wrong, could not update the template.');
-    //         }
-    //     }
-    //     if ($result) {
-    //         $this->MetaTemplateFields->deleteAll(['meta_template_id' => $template->id]);
-    //         foreach ($newMetaTemplate['metaFields'] as $metaField) {
-    //             $metaField['meta_template_id'] = $template->id;
-    //             $metaField = $this->MetaTemplateFields->newEntity($metaField);
-    //             $this->MetaTemplateFields->save($metaField);
-    //         }
-    //     }
-    // }
 
     public function saveNewMetaTemplate(array $template, array &$errors=[], &$savedMetaTemplate=null): bool
     {
@@ -829,6 +769,7 @@ class MetaTemplatesTable extends AppTable
                 ->order(['version' => 'DESC']);
             $metaTemplate = $query->first();
         }
+        debug($metaTemplate);
         if (!empty($metaTemplate)) {
             $result['existing_template'] = $metaTemplate;
             $result['current_version'] = $metaTemplate->version;
