@@ -1113,8 +1113,14 @@ class CRUDComponent extends Component
     protected function setFilteringContext($contextFilters, $params)
     {
         $filteringContexts = [];
-        if (!isset($contextFilters['allow_all']) || $contextFilters['allow_all']) {
-            $filteringContexts[] = ['label' => __('All')];
+        if (
+            !isset($contextFilters['_all']) ||
+            !isset($contextFilters['_all']['enabled']) ||
+            !empty($contextFilters['_all']['enabled'])
+        ) {
+            $filteringContexts[] = [
+                'label' => !empty($contextFilters['_all']['text']) ? h($contextFilters['_all']['text']) : __('All')
+            ];
         }
         if (!empty($contextFilters['fields'])) {
             foreach ($contextFilters['fields'] as $field) {
