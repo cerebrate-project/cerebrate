@@ -15,7 +15,7 @@ $tableHtml .= sprintf('<th class="text-nowrap">%s</th>', __('Will be updated'));
 $tableHtml .= '</tr></thead><tbody>';
 $numberOfUpdates = 0;
 $numberOfSkippedUpdates = 0;
-foreach ($updateableTemplates as $uuid => $status) {
+foreach ($templatesUpdateStatus as $uuid => $status) {
     $tableHtml .= '<tr>';
     if (!empty($status['new'])) {
         $tableHtml .= sprintf('<td>%s</td>', h($uuid));
@@ -53,7 +53,7 @@ foreach ($updateableTemplates as $uuid => $status) {
     if (!empty($status['new'])) {
         $tableHtml .= sprintf('<td>%s</td>', $this->Bootstrap->icon('check', ['class' => 'text-success']));
     } else {
-        if (!empty($status['new']) || !empty($status['updateable'])) {
+        if (!empty($status['new']) || !empty($status['automatically-updateable'])) {
             $numberOfUpdates += 1;
             $tableHtml .= sprintf('<td>%s</td>', $this->Bootstrap->icon('check', ['class' => 'text-success']));
         } else {

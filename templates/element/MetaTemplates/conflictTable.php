@@ -12,7 +12,7 @@ use Cake\Routing\Router;
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($updateableTemplate['conflicts'] as $fieldName => $fieldConflict) : ?>
+        <?php foreach ($templateStatus['conflicts'] as $fieldName => $fieldConflict) : ?>
             <?php foreach ($fieldConflict['conflicts'] as $conflict) : ?>
                 <tr>
                     <th scope="row"><?= h($fieldName) ?></th>
@@ -30,11 +30,11 @@ use Cake\Routing\Router;
                                 break;
                             }
                             $url = Router::url([
-                                'controller' => Inflector::pluralize($updateableTemplate['existing_template']->scope),
+                                'controller' => Inflector::pluralize($templateStatus['existing_template']->scope),
                                 'action' => 'view',
                                 $id
                             ]);
-                            echo sprintf('<a href="%s" target="_blank">%s</a>', $url, __('{0} #{1}', h(Inflector::humanize($updateableTemplate['existing_template']->scope)),  h($id)));
+                            echo sprintf('<a href="%s" target="_blank">%s</a>', $url, __('{0} #{1}', h(Inflector::humanize($templateStatus['existing_template']->scope)),  h($id)));
                         }
                         ?>
                     </td>

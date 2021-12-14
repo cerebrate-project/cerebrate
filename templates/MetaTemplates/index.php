@@ -1,10 +1,10 @@
 <?php
 use Cake\Utility\Hash;
 
-if (!empty($updateableTemplate)) {
-    $alertHtml = sprintf('<strong>%s</strong> %s', __('New meta-templates available!'), __n('There is one new template on disk that can be loaded in the database', 'There are {0} new templates on disk that can be loaded in the database:', count($updateableTemplate['new'])));
+if (!empty($updateableTemplates['new'])) {
+    $alertHtml = sprintf('<strong>%s</strong> %s', __('New meta-templates available!'), __n('There is one new template on disk that can be loaded in the database', 'There are {0} new templates on disk that can be loaded in the database:', count($updateableTemplates['new'])));
     $alertList = Hash::combine(
-        $updateableTemplate,
+        $updateableTemplates,
         null,
         ['%s :: %s', 'new.{s}.template.namespace', 'new.{s}.template.name'],
         'new.{n}.template.namespace'
@@ -171,12 +171,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ],
             [
                 'open_modal' => '/metaTemplates/update/[onclick_params_data_path]',
-                'modal_params_data_path' => 'uuid',
+                'modal_params_data_path' => 'id',
                 'title' => __('Update Meta-Template'),
                 'icon' => 'download',
                 'complex_requirement' => [
                     'function' => function ($row, $options) {
-                        return empty($row['status']['up_to_date']) && empty($row['status']['to_existing']);
+                        return empty($row['updateStatus']['up-to-date']) && empty($row['updateStatus']['to-existing']);
                     }
                 ]
             ],
@@ -188,7 +188,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'variant' => 'warning',
                 'complex_requirement' => [
                     'function' => function ($row, $options) {
-                        return !empty($row['status']['to_existing']) && empty($row['status']['can_be_removed']);
+                        return !empty($row['updateStatus']['to-existing']) && empty($row['updateStatus']['can-be-removed']);
                     }
                 ]
             ],
@@ -200,7 +200,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'variant' => 'success',
                 'complex_requirement' => [
                     'function' => function ($row, $options) {
-                        return !empty($row['status']['to_existing']) && !empty($row['status']['can_be_removed']);
+                        return !empty($row['updateStatus']['to-existing']) && !empty($row['updateStatus']['can-be-removed']);
                     }
                 ]
             ],

@@ -37,9 +37,10 @@ class MoreMetaFieldColumns extends AbstractMigration
         
         $metaTemplate = $this->table('meta_templates')
             ->removeIndex(['uuid'])
-            ->addIndex(['uuid'])
+            ->addIndex(['uuid', 'version'])
             ->update();
 
         // TODO: Make sure FK constraints are set between meta_field, meta_template and meta_template_fields
+        // TODO: Make sure to add constraints on meta_template `uuid` and `version`
     }
 }

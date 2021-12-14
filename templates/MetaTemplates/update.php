@@ -3,7 +3,7 @@
 $bodyHtml = '';
 $modalType = 'confirm';
 $modalSize = 'lg';
-if ($updateableTemplate['up-to-date']) {
+if ($updateStatus['up-to-date']) {
     $bodyHtml .= $this->Bootstrap->alert([
         'variant' => 'success',
         'text' => __('This meta-template is already up-to-date!'),
@@ -11,7 +11,7 @@ if ($updateableTemplate['up-to-date']) {
     ]);
     $modalType = 'ok-only';
 } else {
-    if ($updateableTemplate['updateable']) {
+    if ($updateStatus['automatically-updateable']) {
         $bodyHtml .= $this->Bootstrap->alert([
             'variant' => 'success',
             'html' => __('This meta-template can be updated to version {0} (current: {1}).', sprintf('<strong>%s</strong>', h($templateOnDisk['version'])), h($metaTemplate->version)),
@@ -45,7 +45,7 @@ if ($updateableTemplate['up-to-date']) {
             'dismissible' => false,
         ]);
         $conflictTable = $this->element('MetaTemplates/conflictTable', [
-            'updateableTemplate' => $updateableTemplate,
+            'templateStatus' => $templateStatus,
             'metaTemplate' => $metaTemplate,
             'templateOnDisk' => $templateOnDisk,
         ]);
@@ -54,7 +54,7 @@ if ($updateableTemplate['up-to-date']) {
             'open' => false
         ], $conflictTable);
         $bodyHtml .= $this->element('MetaTemplates/conflictResolution', [
-            'updateableTemplate' => $updateableTemplate,
+            'templateStatus' => $templateStatus,
             'metaTemplate' => $metaTemplate,
             'templateOnDisk' => $templateOnDisk,
         ]);
