@@ -50,19 +50,30 @@ class EncryptionKeysController extends AppController
     public function add()
     {
         $orgConditions = [];
+        $individualConditions = [];
         $currentUser = $this->ACL->getUser();
         $params = ['redirect' => $this->referer()];
         if (empty($currentUser['role']['perm_admin'])) {
-            $params['beforeSave'] = function($entity) {
+            $orgConditions = [
+                'id' => $currentUser['organisation_id']
+            ];
+            if (empty($currentUser['role']['perm_org_admin'])) {
+                $individualConditions = [
+                    'id' => $currentUser['individual_id']
+                ];
+            }
+            $params['beforeSave'] = function($entity) use($currentUser) {
                 if ($entity['owner_model'] === 'organisation') {
                     $entity['owner_id'] = $currentUser['organisation_id'];
                 } else {
                     if ($currentUser['role']['perm_org_admin']) {
-                        $validIndividuals = $this->Organisations->Alignments->find('list', [
-                            'fields' => ['distinct(individual_id)'],
+                        $this->loadModel('Alignments');
+                        $validIndividuals = $this->Alignments->find('list', [
+                            'keyField' => 'individual_id',
+                            'valueField' => 'id',
                             'conditions' => ['organisation_id' => $currentUser['organisation_id']]
-                        ]);
-                        if (!in_array($entity['owner_id'], $validIndividuals)) {
+                        ])->toArray();
+                        if (!isset($validIndividuals[$entity['owner_id']])) {
                             throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
                         }
                     } else {
@@ -71,6 +82,7 @@ class EncryptionKeysController extends AppController
                         }
                     }
                 }
+                return $entity;
             };
         }
         $this->CRUD->add($params);
@@ -86,7 +98,8 @@ class EncryptionKeysController extends AppController
                 'conditions' => $orgConditions
             ]),
             'individual' => $this->Individuals->find('list', [
-                'sort' => ['email' => 'asc']
+                'sort' => ['email' => 'asc'],
+                'conditions' => $individualConditions
             ])
         ];
         $this->set(compact('dropdownData'));

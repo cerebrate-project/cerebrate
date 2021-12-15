@@ -37,6 +37,7 @@ class ACLComponent extends Component
         '*' => [
             'checkPermission' => ['*'],
             'generateUUID' => ['*'],
+            'getRoleAccess' => ['*'],
             'queryACL' => ['perm_admin']
         ],
         'Alignments' => [
@@ -44,6 +45,9 @@ class ACLComponent extends Component
             'delete' => ['perm_admin'],
             'index' => ['*'],
             'view' => ['*']
+        ],
+        'AuditLogs' => [
+            'index' => ['perm_admin']
         ],
         'AuthKeys' => [
             'add' => ['*'],
@@ -82,19 +86,27 @@ class ACLComponent extends Component
             'add' => ['perm_admin'],
             'delete' => ['perm_admin'],
             'edit' => ['perm_admin'],
+            'filtering' => ['*'],
             'index' => ['*'],
-            'view' => ['*']
+            'tag' => ['perm_tagger'],
+            'untag' => ['perm_tagger'],
+            'view' => ['*'],
+            'viewTags' => ['*']
         ],
         'Instance' => [
             'home' => ['*'],
             'migrate' => ['perm_admin'],
             'migrationIndex' => ['perm_admin'],
             'rollback' => ['perm_admin'],
+            'saveSetting' => ['perm_admin'],
+            'searchAll' => ['*'],
+            'settings' => ['perm_admin'],
             'status' => ['*']
         ],
         'LocalTools' => [
             'action' => ['perm_admin'],
             'add' => ['perm_admin'],
+            'batchAction' => ['perm_admin'],
             'broodTools' => ['perm_admin'],
             'connectionRequest' => ['perm_admin'],
             'connectLocal' => ['perm_admin'],
@@ -123,7 +135,10 @@ class ACLComponent extends Component
             'edit' => ['perm_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
-            'view' => ['*']
+            'tag' => ['perm_tagger'],
+            'untag' => ['perm_tagger'],
+            'view' => ['*'],
+            'viewTags' => ['*']
         ],
         'Outbox' => [
             'createEntry' => ['perm_admin'],
@@ -162,8 +177,22 @@ class ACLComponent extends Component
             'login' => ['*'],
             'logout' => ['*'],
             'register' => ['*'],
+            'settings' => ['*'],
             'toggle' => ['perm_org_admin'],
             'view' => ['*']
+        ],
+        'UserSettings' => [
+            'index' => ['*'],
+            'view' => ['*'],
+            'add' => ['*'],
+            'edit' => ['*'],
+            'delete' => ['*'],
+            'getSettingByName' => ['*'],
+            'setSetting' => ['*'],
+            'saveSetting' => ['*'],
+            'getBookmarks' => ['*'],
+            'saveBookmark' => ['*'],
+            'deleteBookmark' => ['*']
         ]
     );
 
@@ -267,9 +296,19 @@ class ACLComponent extends Component
             return true;
         }
         //$this->__checkLoggedActions($user, $controller, $action);
+        if (isset($this->aclList['*'][$action])) {
+            if ($this->evaluateAccessLeaf('*', $action)) {
+                return true;
+            }
+        }
         if (!isset($this->aclList[$controller])) {
             return $this->__error(404, __('Invalid controller.'), $soft);
         }
+        return $this->evaluateAccessLeaf($controller, $action);
+    }
+
+    private function evaluateAccessLeaf(string $controller, string $action): bool
+    {
         if (isset($this->aclList[$controller][$action]) && !empty($this->aclList[$controller][$action])) {
             if (in_array('*', $this->aclList[$controller][$action])) {
                 return true;
@@ -397,13 +436,18 @@ class ACLComponent extends Component
         return $missing;
     }
 
+    public function getRoleAccess($role = false, $url_mode = true)
+    {
+        return $this->__checkRoleAccess($role, $url_mode);
+    }
+
     public function printRoleAccess($content = false)
     {
         $results = [];
-        $this->Role = TableRegistry::get('Role');
+        $this->Role = TableRegistry::get('Roles');
         $conditions = [];
         if (is_numeric($content)) {
-            $conditions = array('Role.id' => $content);
+            $conditions = array('id' => $content);
         }
         $roles = $this->Role->find('all', array(
             'recursive' => -1,
@@ -419,44 +463,54 @@ class ACLComponent extends Component
         return $results;
     }
 
-    private function __checkRoleAccess($role)
+    private function __formatControllerAction(array $results, string $controller, string $action, $url_mode = true): array
     {
-        $result = [];
-        foreach ($this->__aclList as $controller => $actions) {
-            $controllerNames = Inflector::variable($controller) == Inflector::underscore($controller) ? array(Inflector::variable($controller)) : array(Inflector::variable($controller), Inflector::underscore($controller));
-            foreach ($controllerNames as $controllerName) {
-                foreach ($actions as $action => $permissions) {
-                    if ($role['perm_site_admin']) {
-                        $result[] = DS . $controllerName . DS . $action;
-                    } elseif (in_array('*', $permissions)) {
-                        $result[] = DS . $controllerName . DS . $action . DS . '*';
-                    } elseif (isset($permissions['OR'])) {
-                        $access = false;
-                        foreach ($permissions['OR'] as $permission) {
-                            if ($role[$permission]) {
-                                $access = true;
-                            }
+        if ($url_mode) {
+            $results[] = DS . $controller . DS . $action . DS . '*';
+        } else {
+            $results[$controller][] = $action;
+        }
+        return $results;
+    }
+
+    private function __checkRoleAccess($role = false, $url_mode = true)
+    {
+        $results = [];
+        if ($role === false) {
+            $role = $this->getUser()['role'];
+        }
+        foreach ($this->aclList as $controller => $actions) {
+            foreach ($actions as $action => $permissions) {
+                if ($role['perm_admin']) {
+                    $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
+                } elseif (in_array('*', $permissions)) {
+                    $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
+                } elseif (isset($permissions['OR'])) {
+                    $access = false;
+                    foreach ($permissions['OR'] as $permission) {
+                        if ($role[$permission]) {
+                            $access = true;
                         }
-                        if ($access) {
-                            $result[] = DS . $controllerName . DS . $action . DS . '*';
-                        }
-                    } elseif (isset($permissions['AND'])) {
-                        $access = true;
-                        foreach ($permissions['AND'] as $permission) {
-                            if ($role[$permission]) {
-                                $access = false;
-                            }
-                        }
-                        if ($access) {
-                            $result[] = DS . $controllerName . DS . $action . DS . '*';
-                        }
-                    } elseif (isset($permissions[0]) && $role[$permissions[0]]) {
-                        $result[] = DS . $controllerName . DS . $action . DS . '*';
                     }
+                    if ($access) {
+                        $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
+                    }
+                } elseif (isset($permissions['AND'])) {
+                    $access = true;
+                    foreach ($permissions['AND'] as $permission) {
+                        if ($role[$permission]) {
+                            $access = false;
+                        }
+                    }
+                    if ($access) {
+                        $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
+                    }
+                } elseif (isset($permissions[0]) && $role[$permissions[0]]) {
+                    $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
                 }
             }
         }
-        return $result;
+        return $results;
     }
 
     public function getMenu()
