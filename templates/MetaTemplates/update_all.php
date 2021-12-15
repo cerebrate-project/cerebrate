@@ -6,6 +6,7 @@ $modalType = 'confirm';
 $modalSize = 'lg';
 
 $tableHtml = '<table class="table"><thead><tr>';
+$tableHtml .= sprintf('<th class="text-nowrap">%s</th>', __('ID'));
 $tableHtml .= sprintf('<th class="text-nowrap">%s</th>', __('Template'));
 $tableHtml .= sprintf('<th class="text-nowrap">%s</th>', __('Version'));
 $tableHtml .= sprintf('<th class="text-nowrap">%s</th>', __('New Template'));
@@ -17,6 +18,14 @@ $numberOfUpdates = 0;
 $numberOfSkippedUpdates = 0;
 foreach ($templatesUpdateStatus as $uuid => $status) {
     $tableHtml .= '<tr>';
+    if (!empty($status['new'])) {
+        $tableHtml .= sprintf('<td>%s</td>', __('N/A'));
+    } else {
+        $tableHtml .= sprintf('<td><a href="%s">%s</a></td>',
+            Router::url(['controller' => 'MetaTemplates', 'action' => 'view', 'plugin' => null, h($status['existing_template']->id)]),
+            h($status['existing_template']->id)
+        );
+    }
     if (!empty($status['new'])) {
         $tableHtml .= sprintf('<td>%s</td>', h($uuid));
     } else {
@@ -53,7 +62,10 @@ foreach ($templatesUpdateStatus as $uuid => $status) {
     if (!empty($status['new'])) {
         $tableHtml .= sprintf('<td>%s</td>', $this->Bootstrap->icon('check', ['class' => 'text-success']));
     } else {
-        if (!empty($status['new']) || !empty($status['automatically-updateable'])) {
+        // Depends on the strategy used by the update_all function. Right now, every update create a brand new template
+        // leaving existing data untouched. So regardless of the conflict, the new template will be created
+        // if (!empty($status['new']) || !empty($status['automatically-updateable'])) {
+        if (!empty($status['new']) || empty($status['up-to-date'])) {
             $numberOfUpdates += 1;
             $tableHtml .= sprintf('<td>%s</td>', $this->Bootstrap->icon('check', ['class' => 'text-success']));
         } else {

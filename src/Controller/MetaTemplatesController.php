@@ -61,6 +61,35 @@ class MetaTemplatesController extends AppController
     //     }
     // }
 
+    public function updateAllTemplates()
+    {
+        if ($this->request->is('post')) {
+            $result = $this->MetaTemplates->updateAllTemplates();
+            if ($this->ParamHandler->isRest()) {
+                return $this->RestResponse->viewData($result, 'json');
+            } else {
+                if ($result['success']) {
+                    $message = __n('{0} templates updated.', 'The template has been updated.', empty($template_id), $result['files_processed']);
+                } else {
+                    $message = __n('{0} templates could not be updated.', 'The template could not be updated.', empty($template_id), $result['files_processed']);
+                }
+                $this->CRUD->setResponseForController('updateAllTemplate', $result['success'], $message, $result['files_processed'], $result['update_errors'], ['redirect' => $this->referer()]);
+                $responsePayload = $this->CRUD->getResponsePayload();
+                if (!empty($responsePayload)) {
+                    return $responsePayload;
+                }
+            }
+        } else {
+            if (!$this->ParamHandler->isRest()) {
+                $this->set('title', __('Update All Meta Templates'));
+                $this->set('question', __('Are you sure you wish to update all the Meta Template definitions'));
+                $templatesUpdateStatus = $this->MetaTemplates->getUpdateStatusForTemplates();
+                $this->set('templatesUpdateStatus', $templatesUpdateStatus);
+                $this->render('updateAll');
+            }
+        }
+    }
+
     /**
      * Update the provided template or all templates
      *
