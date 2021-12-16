@@ -31,7 +31,7 @@ foreach ($entities as $entity) {
 $bodyHtml .= '</ul>';
 
 echo $this->Bootstrap->modal([
-    'titleHtml' => __('{0} is an old meta-template and has meta-fields to be updated', sprintf('<i class="me-1">%s</i>', h($metaTemplate->name))),
+    'titleHtml' => __('{0} has a new meta-template and meta-fields to be updated', sprintf('<i class="me-1">%s</i>', h($metaTemplate->name))),
     'bodyHtml' => $bodyHtml,
     'size' => 'lg',
     'type' => 'ok-only',
