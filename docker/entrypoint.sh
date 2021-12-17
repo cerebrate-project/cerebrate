@@ -10,7 +10,7 @@ run_all_migrations() {
 }
 
 delete_model_cache() {
-	echo >&2 "Deleting cackephp cache..."
+	echo >&2 "Deleting cakephp cache..."
 	rm -rf ./tmp/cache/models/*
 	rm -rf ./tmp/cache/persistent/*
 }
