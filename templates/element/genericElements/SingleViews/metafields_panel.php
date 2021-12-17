@@ -36,7 +36,7 @@ foreach($data['MetaTemplates'] as $metaTemplate) {
                 count($fields)
             )
         ]);
-        if (!empty($metaTemplate['hasNewerVersion'])) {
+        if (!empty($metaTemplate['hasNewerVersion']) && !empty($fields)) {
             $listTable = $this->Bootstrap->alert([
                 'html' => sprintf(
                     '<div>%s</div><div>%s</div>',
