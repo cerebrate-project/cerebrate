@@ -17,6 +17,8 @@ services:
       - "8080:80"
     volumes:
       - ./run/logs:/var/www/html/logs
+      - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh:ro
+    entrypoint: wait-for-it.sh -t 0 -h database -p 3306 -- /entrypoint.sh
     environment:
       DEBUG: "true"
       CEREBRATE_DB_USERNAME: "cerebrate"
