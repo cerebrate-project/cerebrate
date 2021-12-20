@@ -192,6 +192,44 @@ class MetaTemplatesTable extends AppTable
     }
 
     /**
+     * Load the templates stored on the disk update and create the one having the provided UUID in the database
+     * Will do nothing if the UUID is already known
+     *
+     * @param string $uuid
+     * @return array The update result containing potential errors and the successes
+     */
+    public function createNewTemplate(string $uuid): array
+    {
+        $templateOnDisk = $this->readTemplateFromDisk($uuid);
+        $templateStatus = $this->getUpdateStatusForTemplate($templateOnDisk);
+        $errors = [];
+        $updatesErrors = [];
+        $files_processed = [];
+        $savedMetaTemplate = null;
+        $success = false;
+        if (empty($templateStatus['new'])) {
+            $error['message'] = __('Template UUID already exists');
+            $success = true;
+        } else if ($this->isStrategyAllowed(MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW)) {
+            $success = $this->saveNewMetaTemplate($templateOnDisk, $errors, $savedMetaTemplate);
+        } else {
+            $errors['message'] = __('Could not create template. Something went wrong.');
+        }
+        if ($success) {
+            $files_processed[] = $templateOnDisk['uuid'];
+        }
+        if (!empty($errors)) {
+            $updatesErrors[] = $errors;
+        }
+        $results = [
+            'update_errors' => $updatesErrors,
+            'files_processed' => $files_processed,
+            'success' => !empty($files_processed),
+        ];
+        return $results;
+    }
+
+    /**
      * Load the templates stored on the disk and compute their update status.
      * Only compute the result if an UUID is provided
      *
@@ -741,12 +779,12 @@ class MetaTemplatesTable extends AppTable
         $tmp = $this->save($metaTemplate, [
             'associated' => ['MetaTemplateFields']
         ]);
-        $error = null;
-        if (empty($tmp)) {
+        if ($tmp === false) {
             $errors[] = new UpdateError(false, __('Could not save the template.'), $metaTemplate->getErrors());
+            return false;
         }
         $savedMetaTemplate = $tmp;
-        return !is_null($error);
+        return true;
     }
 
     /**

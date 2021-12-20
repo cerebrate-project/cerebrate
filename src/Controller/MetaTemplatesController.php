@@ -142,6 +142,40 @@ class MetaTemplatesController extends AppController
         }
     }
 
+    /**
+     * Create a new template by loading the template on the disk having the provided UUID.
+     *
+     * @param string $uuid
+     */
+    public function createNewTemplate(string $uuid)
+    {
+        if ($this->request->is('post')) {
+            $result = $this->MetaTemplates->createNewTemplate($uuid);
+            if ($this->ParamHandler->isRest()) {
+                return $this->RestResponse->viewData($result, 'json');
+            } else {
+                if ($result['success']) {
+                    $message = __('The template {0} has been created.', $uuid);
+                } else {
+                    $message = __('The template {0} could not be created.', $uuid);
+                }
+                $this->CRUD->setResponseForController('createNewTemplate', $result['success'], $message, $result['files_processed'], $result['update_errors']);
+                $responsePayload = $this->CRUD->getResponsePayload();
+                if (!empty($responsePayload)) {
+                    return $responsePayload;
+                }
+            }
+        } else {
+            if (!$this->ParamHandler->isRest()) {
+                $this->set('title', __('Create Meta Template'));
+                $this->set('question', __('Are you sure you wish to load the meta template with UUID: {0} in the database', h($uuid)));
+                $this->set('actionName', __('Create template'));
+                $this->set('path', ['controller' => 'meta-templates', 'action' => 'create_new_template', $uuid]);
+                $this->render('/genericTemplates/confirm');
+            }
+        }
+    }
+
     public function getMetaFieldsToUpdate($template_id)
     {
         $metaTemplate = $this->MetaTemplates->get($template_id);
@@ -302,11 +336,15 @@ class MetaTemplatesController extends AppController
 
     public function delete($id)
     {
-        $updateableTemplate = $this->getUpdateStatus($id);
-        if (empty($updateableTemplate['can-be-removed'])) {
-            throw MethodNotAllowedException(__('This meta-template cannot be removed'));
+        $metaTemplate = $this->MetaTemplates->get($id, [
+            'contain' => ['MetaTemplateFields']
+        ]);
+        $templateOnDisk = $this->MetaTemplates->readTemplateFromDisk($metaTemplate->uuid);
+        $templateStatus = $this->MetaTemplates->getStatusForMetaTemplate($templateOnDisk, $metaTemplate);
+        if (empty($templateStatus['can-be-removed'])) {
+            throw new MethodNotAllowedException(__('This meta-template cannot be removed'));
         }
-        $this->set('deletionText', __('The meta-template "{0}" has no meta-field and can be safely removed.', h($updateableTemplate['existing_template']->name)));
+        $this->set('deletionText', __('The meta-template "{0}" has no meta-field and can be safely removed.', h($templateStatus['existing_template']->name)));
         $this->CRUD->delete($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
