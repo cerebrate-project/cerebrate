@@ -2,24 +2,33 @@
 use Cake\Utility\Hash;
 
 if (!empty($updateableTemplates['new'])) {
-    $alertHtml = sprintf('<strong>%s</strong> %s', __('New meta-templates available!'), __n('There is one new template on disk that can be loaded in the database', 'There are {0} new templates on disk that can be loaded in the database:', count($updateableTemplates['new'])));
-    $alertList = Hash::combine(
-        $updateableTemplates,
-        null,
-        ['%s :: %s', 'new.{s}.template.namespace', 'new.{s}.template.name'],
-        'new.{n}.template.namespace'
+    $alertHtml = sprintf(
+        '<strong>%s</strong> %s',
+        __('New meta-templates available!'),
+        __n('There is one new template on disk that can be loaded in the database', 'There are {0} new templates on disk that can be loaded in the database:', count($updateableTemplates['new']))
     );
+    $alertList = [];
+    $alertList = Hash::extract($updateableTemplates['new'], '{s}.template');
     $alertList = array_map(function($entry) {
-        return h($entry);
+        return sprintf('%s:%s %s',
+            h($entry['namespace']),
+            h($entry['name']),
+            $this->Bootstrap->button([
+                'variant' => 'link',
+                'size' => 'sm',
+                'icon' => 'download',
+                'title' => __('Create this template'),
+                'params' => [
+                    'onclick' => "UI.submissionModalForIndex('/metaTemplates/createNewTemplate/{$entry['uuid']}', '/meta-templates')"
+                ]
+            ])
+        );
     }, $alertList);
     $alertHtml .= $this->Html->nestedList($alertList); 
-    echo $this->Bootstrap->alert([
-        'html' => $alertHtml,
-        'variant' => 'warning',
-    ]);
 }
 
 echo $this->element('genericElements/IndexTable/index_table', [
+    'notice' => !empty($alertHtml) ? ['html' => $alertHtml, 'variant' => 'warning',] : false,
     'data' => [
         'data' => $data,
         'top_bar' => [
@@ -162,7 +171,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('Meta Field Templates'),
         'description' => __('The various templates used to enrich certain objects by a set of standardised fields.'),
-        'pull' => 'right',
         'actions' => [
             [
                 'url' => '/metaTemplates/view',

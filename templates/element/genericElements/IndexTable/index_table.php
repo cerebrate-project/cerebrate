@@ -54,6 +54,10 @@ if (!empty($data['title'])) {
     );
 }
 
+if(!empty($notice)) {
+    echo $this->Bootstrap->alert($notice);
+}
+
 if (!empty($modelStatistics)) {
     echo $this->element('genericElements/IndexTable/Statistics/index_statistic_scaffold', [
         'statistics' => $modelStatistics,
