@@ -819,7 +819,7 @@ class MispConnector extends CommonConnectorTools
                         [
                             'field' => 'connection_ids',
                             'type' => 'hidden',
-                            'value' => $params['connection_ids']
+                            'value' => json_encode($params['connection_ids'])
                         ],
                         [
                             'field' => 'method',
