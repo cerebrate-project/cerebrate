@@ -50,12 +50,13 @@ class InstanceTable extends AppTable
             $controller = $this->getController($tableName);
             $table = TableRegistry::get($tableName);
             $query = $table->find();
-            $quickFilterOptions = $this->getQuickFiltersFieldsFromController($controller);
+            $quickFilters = $this->getQuickFiltersFieldsFromController($controller);
             $containFields = $this->getContainFieldsFromController($controller);
-            if (empty($quickFilterOptions)) {
+            if (empty($quickFilters)) {
                 continue; // make sure we are filtering on something
             }
             $params = ['quickFilter' => $value];
+            $quickFilterOptions = ['quickFilters' => $quickFilters];
             $query = $controller->CRUD->setQuickFilters($params, $query, $quickFilterOptions);
             if (!empty($containFields)) {
                 $query->contain($containFields);
