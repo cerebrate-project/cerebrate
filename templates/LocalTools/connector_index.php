@@ -155,7 +155,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
             tableData
         )
         const $footer = $(modalObject.ajaxApi.statusNode).parent()
-        modalObject.ajaxApi.statusNode.remove()
+        modalObject.ajaxApi.options.statusNode.remove()
         const $cancelButton = $footer.find('button[data-dismiss="modal"]')
         $cancelButton.text('<?= __('OK') ?>').removeClass('btn-secondary').addClass('btn-primary')
     }
