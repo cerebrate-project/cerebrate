@@ -68,7 +68,11 @@ class LocalToolsController extends AppController
             foreach ($connections as $connection) {
                 $actionDetails = $this->LocalTools->getActionDetails($actionName);
                 $params['connection'] = $connection;
-                $tmpResult = $this->LocalTools->action($this->ACL->getUser()['id'], $connection->connector, $actionName, $params, $this->request);
+                try {
+                    $tmpResult = $this->LocalTools->action($this->ACL->getUser()['id'], $connection->connector, $actionName, $params, $this->request);
+                } catch (\Exception $e) {
+                    $tmpResult = ['success' => false, 'message' => $e->getMessage(), 'data' => []];
+                }
                 $tmpResult['connection'] = $connection;
                 $results[$connection->id] = $tmpResult;
                 $successes += $tmpResult['success'] ? 1 : 0;
