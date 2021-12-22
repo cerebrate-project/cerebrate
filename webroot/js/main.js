@@ -279,10 +279,12 @@ $(document).ready(() => {
     overloadBSDropdown();
     addSupportOfNestedDropdown();
 
-    const debouncedGlobalSearch = debounce(performGlobalSearch, 400)
-    $('#globalSearch')
-        .keydown(debouncedGlobalSearch)
-        .keydown(focusSearchResults);
+    if (window.debounce) {
+        const debouncedGlobalSearch = debounce(performGlobalSearch, 400)
+        $('#globalSearch')
+            .keydown(debouncedGlobalSearch)
+            .keydown(focusSearchResults);
+    }
 
     $('.lock-sidebar a.btn-lock-sidebar').click(() => {
         const $sidebar = $('.sidebar')
