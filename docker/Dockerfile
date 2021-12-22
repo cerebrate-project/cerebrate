@@ -24,7 +24,6 @@ RUN curl -sL https://getcomposer.org/installer | \
 USER www-data
 
 RUN composer install \
-	--ignore-platform-reqs \
 	--no-interaction \
 	--no-plugins \
 	--no-scripts \
