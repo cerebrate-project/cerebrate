@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -17,6 +18,8 @@ declare(strict_types=1);
 
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
+use Cake\TestSuite\Fixture\SchemaLoader;
+use Migrations\TestSuite\Migrator;
 
 /**
  * Test runner bootstrap.
@@ -50,3 +53,17 @@ ConnectionManager::alias('test_debug_kit', 'debug_kit');
 // does not allow the sessionid to be set after stdout
 // has been written to.
 session_id('cli');
+
+// Load db schema from mysql.sql and run migrations
+// super hacky way to skip migrations
+if (!in_array('skip-migrations', $_SERVER['argv'])) {
+    // TODO: Removing mysql.sql and relying only in migrations would be ideal
+    // in the meantime, `'skip' => ['*']`, prevents migrations from droping already created tables
+    (new SchemaLoader())->loadSqlFiles('./INSTALL/mysql.sql', 'test');
+    $migrator = new Migrator();
+    $migrator->runMany([
+        ['connection' => 'test', 'skip' => ['*']],
+        ['plugin' => 'Tags', 'connection' => 'test', 'skip' => ['*']],
+        ['plugin' => 'ADmad/SocialAuth', 'connection' => 'test', 'skip' => ['*']]
+    ]);
+}

@@ -7,3 +7,5 @@ vendor
 webroot/theme/node_modules
 .vscode
 docker/run/
+.phpunit.result.cache
+config.json
