@@ -23,8 +23,8 @@ class UsersControllerTest extends TestCase
         $this->enableSecurityToken();
 
         $this->post('/users/login', [
-            'username' => UsersFixture::ADMIN_USER,
-            'password' => UsersFixture::ADMIN_PASSWORD,
+            'username' => UsersFixture::USER_ADMIN_USERNAME,
+            'password' => UsersFixture::USER_ADMIN_PASSWORD,
         ]);
 
         $this->assertSessionHasKey('authUser.uuid');
