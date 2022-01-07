@@ -1,0 +1,215 @@
+openapi: 3.0.0
+info:
+  version: 1.3.0
+  title: Cerebrate Project API
+  description: |
+
+    TODO: markdown description
+
+servers:
+  - url: https://cerebrate.local
+
+tags:
+  - name: Users
+    description: "TODO: users resource descriptions"
+
+paths:
+  /api/v1/users/view:
+    get:
+      summary: "Get information about the current user"
+      operationId: viewUserMe
+      tags:
+        - Users
+      responses:
+        "200":
+          $ref: "#/components/responses/ViewUserResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/users/view/{userId}:
+    get:
+      summary: "Get information of a user by id"
+      operationId: viewUserById
+      tags:
+        - Users
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      responses:
+        "200":
+          $ref: "#/components/responses/ViewUserResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+components:
+  schemas:
+    # General
+    UUID:
+      type: string
+      format: uuid
+      maxLength: 36
+      example: "c99506a6-1255-4b71-afa5-7b8ba48c3b1b"
+
+    ID:
+      type: integer
+      format: int32
+      example: 1
+
+    DateTime:
+      type: string
+      format: datetime
+      example: "2022-01-05T11:19:26+00:00"
+
+    # Users
+    Username:
+      type: string
+      example: "admin"
+
+    User:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        uuid:
+          $ref: "#/components/schemas/UUID"
+        username:
+          $ref: "#/components/schemas/Username"
+        role_id:
+          $ref: "#/components/schemas/ID"
+        individual_id:
+          $ref: "#/components/schemas/ID"
+        disabled:
+          type: boolean
+        created:
+          $ref: "#/components/schemas/DateTime"
+        modified:
+          $ref: "#/components/schemas/DateTime"
+        organisation_id:
+          $ref: "#/components/schemas/ID"
+
+    # Individuals
+
+    # Organisations
+
+    # Roles
+    RoleName:
+      type: string
+      maxLength: 255
+      example: "admin"
+
+    Role:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        name:
+          $ref: "#/components/schemas/RoleName"
+        is_default:
+          type: boolean
+        perm_admin:
+          type: boolean
+        perm_sync:
+          type: boolean
+        perm_org_admin:
+          type: boolean
+
+    # Errors
+    ApiError:
+      type: object
+      required:
+        - name
+        - message
+        - url
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        url:
+          type: string
+          example: "/users"
+
+    UnauthorizedApiError:
+      type: object
+      required:
+        - name
+        - message
+        - url
+      properties:
+        name:
+          type: string
+          example: "Authentication failed. Please make sure you pass the API key of an API enabled user along in the Authorization header."
+        message:
+          type: string
+          example: "Authentication failed. Please make sure you pass the API key of an API enabled user along in the Authorization header."
+        url:
+          type: string
+          example: "/users"
+
+    NotFoundApiError:
+      type: object
+      required:
+        - name
+        - message
+        - url
+      properties:
+        name:
+          type: string
+          example: "Invalid user"
+        message:
+          type: string
+          example: "Invalid user"
+        url:
+          type: string
+          example: "/users/1234"
+
+  parameters:
+    userId:
+      name: userId
+      in: path
+      description: "Numeric ID of the User"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        The authorization is performed by using the following header in the HTTP requests:
+
+            Authorization: YOUR_API_KEY
+
+  # requestBodies:
+
+  responses:
+    # User
+    ViewUserResponse:
+      description: "User response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/User"
+
+    # Errors
+    ApiErrorResponse:
+      description: "Unexpected API error"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+
+    UnauthorizedApiErrorResponse:
+      description: "Authentication failed. Please make sure you pass the API key of an API enabled user along in the Authorization header."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UnauthorizedApiError"
+
+security:
+  - ApiKeyAuth: []

@@ -19,7 +19,9 @@
         "cakephp/bake": "^2.0.3",
         "cakephp/cakephp-codesniffer": "~4.0.0",
         "cakephp/debug_kit": "^4.0",
+        "fzaninotto/faker": "^1.9",
         "josegonzalez/dotenv": "^3.2",
+        "league/openapi-psr7-validator": "^0.16.4",
         "phpunit/phpunit": "^8.5",
         "psy/psysh": "@stable"
     },
@@ -44,7 +46,6 @@
     "scripts": {
         "post-install-cmd": "App\\Console\\Installer::postInstall",
         "post-create-project-cmd": "App\\Console\\Installer::postInstall",
-        "post-autoload-dump": "Cake\\Composer\\Installer\\PluginInstaller::postAutoloadDump",
         "check": [
             "@test",
             "@cs-check"

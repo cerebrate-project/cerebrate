@@ -10,16 +10,64 @@ class IndividualsFixture extends TestFixture
 {
     public $connection = 'test';
 
-    public $records = [
-        [
-            'id' => 1,
-            'uuid' => '3ebfbe50-e7d2-406e-a092-f031e604b6e1',
-            'email' => 'admin@admin.test',
-            'first_name' => 'admin',
-            'last_name' => 'admin',
-            'position' => 'admin',
-            'created' => '2022-01-04 10:00:00',
-            'modified' => '2022-01-04 10:00:00'
-        ]
-    ];
+    // Admin individual
+    public const INDIVIDUAL_ADMIN_ID = 1;
+
+    // Sync individual
+    public const INDIVIDUAL_SYNC_ID = 2;
+
+    // Org Admin individual
+    public const INDIVIDUAL_ORG_ADMIN_ID = 3;
+
+    // Regular User individual
+    public const INDIVIDUAL_REGULAR_USER_ID = 4;
+
+    public function init(): void
+    {
+        $faker = \Faker\Factory::create();
+
+        $this->records = [
+            [
+                'id' => self::INDIVIDUAL_ADMIN_ID,
+                'uuid' => $faker->uuid(),
+                'email' => $faker->email(),
+                'first_name' => $faker->firstName,
+                'last_name' => $faker->lastName,
+                'position' => 'admin',
+                'created' => $faker->dateTime()->getTimestamp(),
+                'modified' => $faker->dateTime()->getTimestamp()
+            ],
+            [
+                'id' => self::INDIVIDUAL_SYNC_ID,
+                'uuid' => $faker->uuid(),
+                'email' => $faker->email(),
+                'first_name' => $faker->firstName,
+                'last_name' => $faker->lastName,
+                'position' => 'sync',
+                'created' => $faker->dateTime()->getTimestamp(),
+                'modified' => $faker->dateTime()->getTimestamp()
+            ],
+            [
+                'id' => self::INDIVIDUAL_ORG_ADMIN_ID,
+                'uuid' => $faker->uuid(),
+                'email' => $faker->email(),
+                'first_name' => $faker->firstName,
+                'last_name' => $faker->lastName,
+                'position' => 'org_admin',
+                'created' => $faker->dateTime()->getTimestamp(),
+                'modified' => $faker->dateTime()->getTimestamp()
+            ],
+            [
+                'id' => self::INDIVIDUAL_REGULAR_USER_ID,
+                'uuid' => $faker->uuid(),
+                'email' => $faker->email(),
+                'first_name' => $faker->firstName,
+                'last_name' => $faker->lastName,
+                'position' => 'user',
+                'created' => $faker->dateTime()->getTimestamp(),
+                'modified' => $faker->dateTime()->getTimestamp()
+            ]
+        ];
+        parent::init();
+    }
 }

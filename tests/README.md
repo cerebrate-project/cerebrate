@@ -1,5 +1,14 @@
 # Testing
-Add a test database to your `config/app_local.php` config file and set `debug` mode to `true`.
+
+1. Add a `cerebrate_test` database to the db:
+```mysql
+CREATE DATABASE cerebrate_test;
+GRANT ALL PRIVILEGES ON cerebrate_test.* to cerebrate@localhost;
+FLUSH PRIVILEGES;
+QUIT;
+```
+
+2. Add a the test database to your `config/app_local.php` config file and set `debug` mode to `true`.
 ```php
 'debug' => true,
 'Datasources' => [

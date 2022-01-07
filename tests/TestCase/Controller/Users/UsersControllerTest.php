@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Test\TestCase\Controller;
+namespace App\Test\TestCase\Controller\Users;
 
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;

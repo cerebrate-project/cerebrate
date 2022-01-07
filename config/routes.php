@@ -92,14 +92,14 @@ $routes->prefix('Open', function (RouteBuilder $routes) {
     $routes->fallbacks(DashedRoute::class);
 });
 
-/*
- * If you need a different set of middleware or none at all,
- * open new scope and define routes there.
- *
- * ```
- * $routes->scope('/api', function (RouteBuilder $builder) {
- *     // No $builder->applyMiddleware() here.
- *     // Connect API actions here.
- * });
- * ```
- */
+// API routes
+$routes->scope('/api', function (RouteBuilder $routes) {
+    // $routes->applyMiddleware('ratelimit', 'auth.api');
+    $routes->scope('/v1', function (RouteBuilder $routes) {
+        // $routes->applyMiddleware('v1compat');
+        $routes->setExtensions(['json']);
+
+        // Generic API route
+        $routes->connect('/{controller}/{action}/*');
+    });
+});

@@ -66,4 +66,6 @@ if (!in_array('skip-migrations', $_SERVER['argv'])) {
         ['plugin' => 'Tags', 'connection' => 'test', 'skip' => ['*']],
         ['plugin' => 'ADmad/SocialAuth', 'connection' => 'test', 'skip' => ['*']]
     ]);
+}else{
+    echo "[ * ] Skipping migrations ...\n";
 }
