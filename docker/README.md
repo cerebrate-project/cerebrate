@@ -1,20 +1,3 @@
-# Database init
-
-For the `docker-compose` setup to work you must initialize database with
-what is in `../INSTALL/mysql.sql`
-
-```
-mkdir -p run/dbinit/
-cp ../INSTALL/mysql.sql run/dbinit/
-```
-
-The MariaDB container has a volume mounted as follow
-`- ./run/dbinit:/docker-entrypoint-initdb.d/:ro`
-
-So that on startup the container will source files in this directory to seed
-the database. Once it's done the container will run normally and Cerebrate will
-be able to roll its database migration scripts
-
 # Actual data and volumes
 
 The actual database will be located in `./run/database` exposed with the

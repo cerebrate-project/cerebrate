@@ -54,18 +54,14 @@ ConnectionManager::alias('test_debug_kit', 'debug_kit');
 // has been written to.
 session_id('cli');
 
-// Load db schema from mysql.sql and run migrations
-// super hacky way to skip migrations
+// hacky way to skip migrations
 if (!in_array('skip-migrations', $_SERVER['argv'])) {
-    // TODO: Removing mysql.sql and relying only in migrations would be ideal
-    // in the meantime, `'skip' => ['*']`, prevents migrations from droping already created tables
-    (new SchemaLoader())->loadSqlFiles('./INSTALL/mysql.sql', 'test');
     $migrator = new Migrator();
     $migrator->runMany([
-        ['connection' => 'test', 'skip' => ['*']],
-        ['plugin' => 'Tags', 'connection' => 'test', 'skip' => ['*']],
-        ['plugin' => 'ADmad/SocialAuth', 'connection' => 'test', 'skip' => ['*']]
+        ['connection' => 'test'],
+        ['plugin' => 'Tags', 'connection' => 'test'],
+        ['plugin' => 'ADmad/SocialAuth', 'connection' => 'test']
     ]);
-}else{
+} else {
     echo "[ * ] Skipping migrations ...\n";
 }
