@@ -1,5 +1,5 @@
 # Testing
-
+## Configuration
 1. Add a `cerebrate_test` database to the db:
 ```mysql
 CREATE DATABASE cerebrate_test;
@@ -54,4 +54,15 @@ Available suites:
 By default the database is re-generated before running the test suite, to skip this step and speed up the test run use the `-d skip-migrations` option:
 ```
 $ vendor/bin/phpunit -d skip-migrations
+```
+
+## Coverage
+HTML:
+```
+$ vendor/bin/phpunit --coverage-html tmp/coverage
+```
+
+XML:
+```
+$ vendor/bin/phpunit --verbose --coverage-clover=coverage.xml
 ```

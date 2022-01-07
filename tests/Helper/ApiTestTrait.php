@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Test\Helper;
 
+use Cake\Http\Exception\NotImplementedException;
 use \League\OpenAPIValidation\PSR7\ValidatorBuilder;
 use \League\OpenAPIValidation\PSR7\RequestValidator;
 use \League\OpenAPIValidation\PSR7\ResponseValidator;
@@ -36,6 +37,12 @@ trait ApiTestTrait
                 'Authorization' => $this->_authToken
             ]
         ]);
+    }
+
+    public function assertResponseContainsArray(array $expected): void
+    {
+        $responseArray = json_decode((string)$this->_response->getBody(), true);
+        throw new NotImplementedException('TODO: see codeception seeResponseContainsJson()');
     }
 
     /**
