@@ -3,8 +3,7 @@ info:
   version: 1.3.0
   title: Cerebrate Project API
   description: |
-
-    TODO: markdown description
+    Cerebrate is an open-source platform meant to act as a trusted contact information provider and interconnection orchestrator for other security tools.
 
 servers:
   - url: https://cerebrate.local
@@ -22,7 +21,7 @@ paths:
         - Users
       responses:
         "200":
-          $ref: "#/components/responses/GetUsersResponse"
+          $ref: "#/components/responses/UserListResponse"
         "403":
           $ref: "#/components/responses/UnauthorizedApiErrorResponse"
         "405":
@@ -38,9 +37,11 @@ paths:
         - Users
       responses:
         "200":
-          $ref: "#/components/responses/GetUserResponse"
+          $ref: "#/components/responses/UserResponse"
         "403":
           $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
@@ -54,9 +55,85 @@ paths:
         - $ref: "#/components/parameters/userId"
       responses:
         "200":
-          $ref: "#/components/responses/GetUserResponse"
+          $ref: "#/components/responses/UserResponse"
         "403":
           $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/users/add:
+    post:
+      summary: "Add user"
+      operationId: addUser
+      tags:
+        - Users
+      requestBody:
+        $ref: "#/components/requestBodies/AddUserRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/UserResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/users/edit:
+    put:
+      summary: "Edit current user"
+      operationId: editUser
+      tags:
+        - Users
+      requestBody:
+        $ref: "#/components/requestBodies/EditUserRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/UserResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/users/edit/{userId}:
+    put:
+      summary: "Edit current user"
+      operationId: editUserById
+      tags:
+        - Users
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      requestBody:
+        $ref: "#/components/requestBodies/EditUserRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/UserResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/users/delete/{userId}:
+    delete:
+      summary: "Delete user by ID"
+      operationId: deleteUserById
+      tags:
+        - Users
+      parameters:
+        - $ref: "#/components/parameters/userId"
+      responses:
+        "200":
+          $ref: "#/components/responses/UserResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
@@ -224,19 +301,58 @@ components:
 
             Authorization: YOUR_API_KEY
 
-  # requestBodies:
+  requestBodies:
+    AddUserRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              individual_id:
+                $ref: "#/components/schemas/ID"
+              organisation_id:
+                $ref: "#/components/schemas/ID"
+              role_id:
+                $ref: "#/components/schemas/ID"
+              disabled:
+                type: boolean
+              username:
+                $ref: "#/components/schemas/Username"
+              password:
+                type: string
+
+    EditUserRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              individual_id:
+                $ref: "#/components/schemas/ID"
+              organisation_id:
+                $ref: "#/components/schemas/ID"
+              role_id:
+                $ref: "#/components/schemas/ID"
+              disabled:
+                type: boolean
+              username:
+                $ref: "#/components/schemas/Username"
+              password:
+                type: string
 
   responses:
     # User
-    GetUserResponse:
+    UserResponse:
       description: "User response"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/User"
 
-    GetUsersResponse:
-      description: "User response"
+    UserListResponse:
+      description: "Users list response"
       content:
         application/json:
           schema:
