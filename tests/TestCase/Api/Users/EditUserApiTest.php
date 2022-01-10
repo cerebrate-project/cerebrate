@@ -20,6 +20,7 @@ class EditUserApiTest extends TestCase
     protected const ENDPOINT = '/api/v1/users/edit';
 
     protected $fixtures = [
+        'app.Organisations',
         'app.Individuals',
         'app.Roles',
         'app.Users',

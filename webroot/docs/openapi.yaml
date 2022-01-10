@@ -11,6 +11,8 @@ servers:
 tags:
   - name: Users
     description: "Users enrolled in this Cerebrate instance."
+  - name: Organisations
+    description: "Organisations can be equivalent to legal entities or specific individual teams within such entities. Their purpose is to relate individuals to their affiliations and for release control of information using the Trust Circles."
 
 paths:
   /api/v1/users/index:
@@ -137,6 +139,44 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
+  /api/v1/organisations/add:
+    post:
+      summary: "Add organisation"
+      operationId: addOrganisation
+      tags:
+        - Organisations
+      requestBody:
+        $ref: "#/components/requestBodies/AddOrganisationRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/OrganisationResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/organisations/edit/{organisationId}:
+    put:
+      summary: "Edit organisation"
+      operationId: editOrganisation
+      tags:
+        - Organisations
+      parameters:
+        - $ref: "#/components/parameters/organisationId"
+      requestBody:
+        $ref: "#/components/requestBodies/EditOrganisationRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/OrganisationResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
 components:
   schemas:
     # General
@@ -191,6 +231,73 @@ components:
     # Individuals
 
     # Organisations
+    OrganisationName:
+      type: string
+
+    OrganisationUrl:
+      type: string
+
+    OrganisationSector:
+      type: string
+      nullable: true
+
+    OrganisationType:
+      type: string
+      nullable: true
+
+    OrganisationContacts:
+      type: string
+      nullable: true
+
+    OrganisationNationality:
+      type: string
+      nullable: true
+
+    Organisation:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        uuid:
+          $ref: "#/components/schemas/UUID"
+        name:
+          $ref: "#/components/schemas/OrganisationName"
+        url:
+          $ref: "#/components/schemas/OrganisationUrl"
+        nationality:
+          $ref: "#/components/schemas/OrganisationNationality"
+        sector:
+          $ref: "#/components/schemas/OrganisationSector"
+        type:
+          $ref: "#/components/schemas/OrganisationType"
+        contacts:
+          $ref: "#/components/schemas/OrganisationContacts"
+        created:
+          $ref: "#/components/schemas/DateTime"
+        modified:
+          $ref: "#/components/schemas/DateTime"
+        tags:
+          $ref: "#/components/schemas/TagList"
+        aligments:
+          $ref: "#/components/schemas/AligmentList"
+
+    # Tags
+    Tag:
+      type: object
+
+    TagList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Tag"
+
+    # Alignments
+    Alignment:
+      type: object
+
+    AligmentList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Alignment"
 
     # Roles
     RoleName:
@@ -291,6 +398,14 @@ components:
       schema:
         $ref: "#/components/schemas/ID"
 
+    organisationId:
+      name: organisationId
+      in: path
+      description: "Numeric ID of the Organisation"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
@@ -342,6 +457,50 @@ components:
               password:
                 type: string
 
+    AddOrganisationRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              name:
+                $ref: "#/components/schemas/OrganisationName"
+              url:
+                $ref: "#/components/schemas/OrganisationUrl"
+              nationality:
+                $ref: "#/components/schemas/OrganisationNationality"
+              sector:
+                $ref: "#/components/schemas/OrganisationSector"
+              type:
+                $ref: "#/components/schemas/OrganisationType"
+              contacts:
+                $ref: "#/components/schemas/OrganisationContacts"
+
+    EditOrganisationRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              name:
+                $ref: "#/components/schemas/OrganisationName"
+              url:
+                $ref: "#/components/schemas/OrganisationUrl"
+              nationality:
+                $ref: "#/components/schemas/OrganisationNationality"
+              sector:
+                $ref: "#/components/schemas/OrganisationSector"
+              type:
+                $ref: "#/components/schemas/OrganisationType"
+              contacts:
+                $ref: "#/components/schemas/OrganisationContacts"
+
   responses:
     # User
     UserResponse:
@@ -357,6 +516,13 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/UserList"
+
+    OrganisationResponse:
+      description: "Organisation response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Organisation"
 
     # Errors
     ApiErrorResponse:

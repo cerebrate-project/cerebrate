@@ -7,17 +7,14 @@ namespace App\Test\TestCase\Api\Users;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
-use App\Test\Fixture\UsersFixture;
-use App\Test\Fixture\OrganisationsFixture;
-use App\Test\Fixture\RolesFixture;
 use App\Test\Helper\ApiTestTrait;
 
-class AddUserApiTest extends TestCase
+class AddOrganisationApiTest extends TestCase
 {
     use IntegrationTestTrait;
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/users/add';
+    protected const ENDPOINT = '/api/v1/organisations/add';
 
     protected $fixtures = [
         'app.Organisations',
@@ -33,45 +30,55 @@ class AddUserApiTest extends TestCase
         $this->initializeValidator(APP . '../webroot/docs/openapi.yaml');
     }
 
-    public function testAddUser(): void
+    public function testAddOrganisation(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
+
+        $faker = \Faker\Factory::create();
+        $uuid = $faker->uuid;
+
         $this->post(
             self::ENDPOINT,
             [
-                'individual_id' => UsersFixture::USER_REGULAR_USER_ID,
-                'organisation_id' => OrganisationsFixture::ORGANISATION_A_ID,
-                'role_id' => RolesFixture::ROLE_REGULAR_USER_ID,
-                'disabled' => false,
-                'username' => 'test',
-                'password' => 'Password123456!',
+                'name' => 'Test Organisation',
+                'description' => $faker->text,
+                'uuid' => $uuid,
+                'url' => 'http://example.com',
+                'nationality' => 'US',
+                'sector' => 'sector',
+                'type' => 'type',
             ]
         );
 
         $this->assertResponseOk();
-        $this->assertResponseContains('"username": "test"');
-        $this->assertDbRecordExists('Users', ['username' => 'test']);
+        $this->assertResponseContains(sprintf('"uuid": "%s"', $uuid));
+        $this->assertDbRecordExists('Organisations', ['uuid' => $uuid]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 
-    public function testAddUserNotAllowedToRegularUser(): void
+    public function testAddOrganisationNotAllowedToRegularUser(): void
     {
         $this->setAuthToken(AuthKeysFixture::REGULAR_USER_API_KEY);
+
+        $faker = \Faker\Factory::create();
+        $uuid = $faker->uuid;
+
         $this->post(
             self::ENDPOINT,
             [
-                'individual_id' => UsersFixture::USER_REGULAR_USER_ID,
-                'organisation_id' => OrganisationsFixture::ORGANISATION_A_ID,
-                'role_id' => RolesFixture::ROLE_REGULAR_USER_ID,
-                'disabled' => false,
-                'username' => 'test',
-                'password' => 'Password123456!'
+                'name' => 'Test Organisation',
+                'description' => $faker->text,
+                'uuid' => $uuid,
+                'url' => 'http://example.com',
+                'nationality' => 'US',
+                'sector' => 'sector',
+                'type' => 'type',
             ]
         );
 
         $this->assertResponseCode(405);
-        $this->assertDbRecordNotExists('Users', ['username' => 'test']);
+        $this->assertDbRecordNotExists('Organisations', ['uuid' => $uuid]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }

@@ -20,6 +20,7 @@ class DeleteUserApiTest extends TestCase
     protected const ENDPOINT = '/api/v1/users/delete';
 
     protected $fixtures = [
+        'app.Organisations',
         'app.Individuals',
         'app.Roles',
         'app.Users',

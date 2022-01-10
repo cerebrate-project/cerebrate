@@ -18,6 +18,7 @@ class ViewUserApiTest extends TestCase
     protected const ENDPOINT = '/api/v1/users/view';
 
     protected $fixtures = [
+        'app.Organisations',
         'app.Individuals',
         'app.Roles',
         'app.Users',

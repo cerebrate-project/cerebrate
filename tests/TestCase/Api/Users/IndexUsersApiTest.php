@@ -18,6 +18,7 @@ class IndexUsersApiTest extends TestCase
     protected const ENDPOINT = '/api/v1/users/index';
 
     protected $fixtures = [
+        'app.Organisations',
         'app.Individuals',
         'app.Roles',
         'app.Users',

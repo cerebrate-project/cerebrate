@@ -31,7 +31,7 @@ QUIT;
 
 ```
 $ composer install
-$ vendor/bin/phpunit
+$ vendor/bin/phpunit 
 PHPUnit 8.5.22 by Sebastian Bergmann and contributors.
 
 .....                                     5 / 5 (100%)
@@ -43,7 +43,7 @@ OK (5 tests, 15 assertions)
 
 Running a specific suite:
 ```
-$ vendor/bin/phpunit --testsuite=api
+$ vendor/bin/phpunit --testsuite=api --testdox
 ```
 Available suites:
 * `app`: runs all test suites
