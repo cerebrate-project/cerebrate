@@ -65,7 +65,7 @@ trait ApiTestTrait
      * @param string $method The HTTP method used to call the endpoint 
      * @return void
      */
-    public function validateRequest(string $endpoint, string $method = 'get'): void
+    public function assertRequestMatchesOpenApiSpec(string $endpoint, string $method = 'get'): void
     {
         // TODO: find a workaround to create a PSR-7 request object for validation
         throw NotImplementedException("Unfortunately cakephp does not save the PSR-7 request object in the test context");
@@ -78,9 +78,49 @@ trait ApiTestTrait
      * @param string $method The HTTP method used to call the endpoint
      * @return void
      */
-    public function validateResponse(string $endpoint, string $method = 'get'): void
+    public function assertResponseMatchesOpenApiSpec(string $endpoint, string $method = 'get'): void
     {
         $address = new OperationAddress($endpoint, $method);
         $this->responseValidator->validate($address, $this->_response);
+    }
+
+    /** 
+     * Validates a record exists in the database
+     * 
+     * @param string $table The table name
+     * @param array $conditions The conditions to check
+     * @return void
+     * @throws \Exception
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException
+     * 
+     * @see https://book.cakephp.org/4/en/orm-query-builder.html
+     */
+    public function assertDbRecordExists(string $table, array $conditions): void
+    {
+        $record = $this->getTableLocator()->get($table)->find()->where($conditions)->first();
+        if (!$record) {
+            throw new \PHPUnit\Framework\AssertionFailedError("Record not found in table '$table' with conditions: " . json_encode($conditions));
+        }
+        $this->assertNotEmpty($record);
+    }
+
+    /** 
+     * Validates a record do notexists in the database
+     * 
+     * @param string $table The table name
+     * @param array $conditions The conditions to check
+     * @return void
+     * @throws \Exception
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException
+     * 
+     * @see https://book.cakephp.org/4/en/orm-query-builder.html
+     */
+    public function assertDbRecordNotExists(string $table, array $conditions): void
+    {
+        $record = $this->getTableLocator()->get($table)->find()->where($conditions)->first();
+        if ($record) {
+            throw new \PHPUnit\Framework\AssertionFailedError("Record found in table '$table' with conditions: " . json_encode($conditions));
+        }
+        $this->assertEmpty($record);
     }
 }

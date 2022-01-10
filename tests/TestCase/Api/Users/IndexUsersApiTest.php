@@ -30,14 +30,14 @@ class IndexUsersApiTest extends TestCase
         $this->initializeValidator(APP . '../webroot/docs/openapi.yaml');
     }
 
-    public function testIndex(): void
+    public function testIndexUsers(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
         $this->get(self::ENDPOINT);
 
         $this->assertResponseOk();
         $this->assertResponseContains(sprintf('"username": "%s"', UsersFixture::USER_ADMIN_USERNAME));
-        // TODO: $this->validateRequest()
-        $this->validateResponse(self::ENDPOINT);
+        // TODO: $this->assertRequestMatchesOpenApiSpec();
+        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT);
     }
 }

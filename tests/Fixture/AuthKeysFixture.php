@@ -14,7 +14,7 @@ class AuthKeysFixture extends TestFixture
     public const ADMIN_API_KEY = 'd033e22ae348aeb5660fc2140aec35850c4da997';
     public const SYNC_API_KEY = '6b387ced110858dcbcda36edb044dc18f91a0894';
     public const ORG_ADMIN_API_KEY = '1c4685d281d478dbcebd494158024bc3539004d0';
-    public const USER_API_KEY = '12dea96fec20593566ab75692c9949596833adc9';
+    public const REGULAR_USER_API_KEY = '12dea96fec20593566ab75692c9949596833adc9';
 
     public function init(): void
     {
@@ -57,9 +57,9 @@ class AuthKeysFixture extends TestFixture
             ],
             [
                 'uuid' => $faker->uuid(),
-                'authkey' => $hasher->hash(self::USER_API_KEY),
-                'authkey_start' => substr(self::USER_API_KEY, 0, 4),
-                'authkey_end' => substr(self::USER_API_KEY, -4),
+                'authkey' => $hasher->hash(self::REGULAR_USER_API_KEY),
+                'authkey_start' => substr(self::REGULAR_USER_API_KEY, 0, 4),
+                'authkey_end' => substr(self::REGULAR_USER_API_KEY, -4),
                 'expiration' => 0,
                 'user_id' => UsersFixture::USER_REGULAR_USER_ID,
                 'comment' => '',

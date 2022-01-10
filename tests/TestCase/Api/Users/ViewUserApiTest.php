@@ -30,26 +30,26 @@ class ViewUserApiTest extends TestCase
         $this->initializeValidator(APP . '../webroot/docs/openapi.yaml');
     }
 
-    public function testViewMe(): void
+    public function testViewMyUser(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
         $this->get(self::ENDPOINT);
 
         $this->assertResponseOk();
         $this->assertResponseContains(sprintf('"username": "%s"', UsersFixture::USER_ADMIN_USERNAME));
-        // TODO: $this->validateRequest()
-        $this->validateResponse(self::ENDPOINT);
+        // TODO: $this->assertRequestMatchesOpenApiSpec();
+        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT);
     }
-    
-    public function testViewById(): void
+
+    public function testViewUserById(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
-        $url = sprintf('%s/%d', self::ENDPOINT, UsersFixture::USER_ADMIN_ID);
+        $url = sprintf('%s/%d', self::ENDPOINT, UsersFixture::USER_REGULAR_USER_ID);
         $this->get($url);
-        
+
         $this->assertResponseOk();
-        $this->assertResponseContains(sprintf('"username": "%s"', UsersFixture::USER_ADMIN_USERNAME));
-        // TODO: $this->validateRequest()
-        $this->validateResponse($url);
+        $this->assertResponseContains(sprintf('"username": "%s"', UsersFixture::USER_REGULAR_USER_USERNAME));
+        // TODO: $this->assertRequestMatchesOpenApiSpec();
+        $this->assertResponseMatchesOpenApiSpec($url);
     }
 }
