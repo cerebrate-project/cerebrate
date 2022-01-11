@@ -44,7 +44,7 @@ class DeleteOrganisationApiTest extends TestCase
         $this->addWarning('TODO: CRUDComponent::delete() sets some view variables, does not take into account `isRest()`, fix it.');
     }
 
-    public function testDeleteOrganisationNotAllowedToRegularUser(): void
+    public function testDeleteOrganisationNotAllowedAsRegularUser(): void
     {
         $this->setAuthToken(AuthKeysFixture::REGULAR_USER_API_KEY);
         $url = sprintf('%s/%d', self::ENDPOINT, OrganisationsFixture::ORGANISATION_B_ID);

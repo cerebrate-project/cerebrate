@@ -11,10 +11,7 @@ class OrganisationsFixture extends TestFixture
 {
     public $connection = 'test';
 
-    // Organisation A
     public const ORGANISATION_A_ID = 1;
-
-    // Organisation B
     public const ORGANISATION_B_ID = 2;
 
     public function init(): void

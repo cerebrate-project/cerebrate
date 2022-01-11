@@ -9,6 +9,8 @@ servers:
   - url: https://cerebrate.local
 
 tags:
+  - name: Individuals
+    description: "Individuals are natural persons. They are meant to describe the basic information about an individual that may or may not be a user of this community. Users in genral require an individual object to identify the person behind them - however, no user account is required to store information about an individual. Individuals can have affiliations to organisations and broods as well as cryptographic keys, using which their messages can be verified and which can be used to securely contact them."
   - name: Users
     description: "Users enrolled in this Cerebrate instance."
   - name: Organisations
@@ -17,12 +19,88 @@ tags:
     description: "Tags can be attached to entity to quickly classify them, allowing further filtering and searches."
 
 paths:
+  /api/v1/individuals/index:
+    get:
+      summary: "Get individuals list"
+      operationId: getIndividuals
+      tags:
+        - Individuals
+      parameters:
+        - $ref: "#/components/parameters/quickFilter"
+      responses:
+        "200":
+          $ref: "#/components/responses/IndividualListResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/individuals/add:
+    post:
+      summary: "Add individual"
+      operationId: addIndividual
+      tags:
+        - Users
+      requestBody:
+        $ref: "#/components/requestBodies/AddIndividualRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/IndividualResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/individuals/edit/{individualId}:
+    put:
+      summary: "Edit individual"
+      operationId: editIndividual
+      tags:
+        - Individuals
+      parameters:
+        - $ref: "#/components/parameters/individualId"
+      requestBody:
+        $ref: "#/components/requestBodies/EditIndividualRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/IndividualResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/individuals/delete/{individualId}:
+    delete:
+      summary: "Delete individual by ID"
+      operationId: deleteIndividualById
+      tags:
+        - Individuals
+      parameters:
+        - $ref: "#/components/parameters/individualId"
+      responses:
+        "200":
+          $ref: "#/components/responses/IndividualResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
   /api/v1/users/index:
     get:
       summary: "Get users list"
       operationId: getUsers
       tags:
         - Users
+      parameters:
+        - $ref: "#/components/parameters/quickFilter"
       responses:
         "200":
           $ref: "#/components/responses/UserListResponse"
@@ -185,9 +263,29 @@ paths:
       operationId: getOrganisations
       tags:
         - Organisations
+      parameters:
+        - $ref: "#/components/parameters/quickFilter"
       responses:
         "200":
           $ref: "#/components/responses/OrganisationListResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/organisations/view/{organisationId}:
+    get:
+      summary: "View organisation by ID"
+      operationId: getOrganisationById
+      tags:
+        - Organisations
+      parameters:
+        - $ref: "#/components/parameters/organisationId"
+      responses:
+        "200":
+          $ref: "#/components/responses/OrganisationResponse"
         "403":
           $ref: "#/components/responses/UnauthorizedApiErrorResponse"
         "405":
@@ -259,6 +357,8 @@ paths:
       operationId: getTags
       tags:
         - Tags
+      parameters:
+        - $ref: "#/components/parameters/quickFilter"
       responses:
         "200":
           $ref: "#/components/responses/TagListResponse"
@@ -288,10 +388,63 @@ components:
       format: datetime
       example: "2022-01-05T11:19:26+00:00"
 
+    Email:
+      type: string
+      format: email
+      example: "user@example.com"
+
+    # Individuals
+    IndividualFirstName:
+      type: string
+      example: "John"
+
+    IndividualLastName:
+      type: string
+      example: "Doe"
+
+    IndividualFullName:
+      type: string
+      example: "John Doe"
+
+    IndividualPosition:
+      type: string
+      example: "Security Analyst"
+
+    Individual:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        uuid:
+          $ref: "#/components/schemas/UUID"
+        email:
+          $ref: "#/components/schemas/Email"
+        first_name:
+          $ref: "#/components/schemas/IndividualFirstName"
+        last_name:
+          $ref: "#/components/schemas/IndividualLastName"
+        full_name:
+          $ref: "#/components/schemas/IndividualFullName"
+        position:
+          $ref: "#/components/schemas/IndividualPosition"
+        tags:
+          $ref: "#/components/schemas/TagList"
+        aligments:
+          $ref: "#/components/schemas/AligmentList"
+        created:
+          $ref: "#/components/schemas/DateTime"
+        modified:
+          $ref: "#/components/schemas/DateTime"
+
     # Users
     Username:
       type: string
       example: "admin"
+
+    IndividualList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Individual"
 
     User:
       type: object
@@ -319,8 +472,6 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/User"
-
-    # Individuals
 
     # Organisations
     OrganisationName:
@@ -533,6 +684,14 @@ components:
           example: 404
 
   parameters:
+    individualId:
+      name: userId
+      in: path
+      description: "Numeric ID of the User"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
     userId:
       name: userId
       in: path
@@ -549,6 +708,14 @@ components:
       schema:
         $ref: "#/components/schemas/ID"
 
+    quickFilter:
+      name: quickFilter
+      in: query
+      description: "Quick filter used to match multiple attributes such as name, description, emails, etc."
+      schema:
+        type: string
+        example: "user@example.com"
+
   securitySchemes:
     ApiKeyAuth:
       type: apiKey
@@ -560,6 +727,43 @@ components:
             Authorization: YOUR_API_KEY
 
   requestBodies:
+    # Individuals
+    AddIndividualRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              email:
+                $ref: "#/components/schemas/IndividualLastName"
+              first_name:
+                $ref: "#/components/schemas/IndividualFirstName"
+              last_name:
+                type: boolean
+              position:
+                $ref: "#/components/schemas/IndividualPosition"
+
+    EditIndividualRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              email:
+                $ref: "#/components/schemas/IndividualLastName"
+              first_name:
+                $ref: "#/components/schemas/IndividualFirstName"
+              last_name:
+                type: boolean
+              position:
+                $ref: "#/components/schemas/IndividualPosition"
+
     # Users
     AddUserRequest:
       required: true
@@ -588,6 +792,8 @@ components:
           schema:
             type: object
             properties:
+              id:
+                $ref: "#/components/schemas/ID"
               individual_id:
                 $ref: "#/components/schemas/ID"
               organisation_id:
@@ -671,6 +877,21 @@ components:
                 example: '["red"]'
 
   responses:
+    # Individuals
+    IndividualResponse:
+      description: "Individual response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Individual"
+
+    IndividualListResponse:
+      description: "Individuals list response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/IndividualList"
+
     # Users
     UserResponse:
       description: "User response"

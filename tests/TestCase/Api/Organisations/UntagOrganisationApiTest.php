@@ -59,7 +59,7 @@ class UntagOrganisationApiTest extends TestCase
         $this->assertResponseMatchesOpenApiSpec($url, 'post');
     }
 
-    public function testUntagOrganisationNotAllowedToRegularUser(): void
+    public function testUntagOrganisationNotAllowedAsRegularUser(): void
     {
         $this->setAuthToken(AuthKeysFixture::REGULAR_USER_API_KEY);
 

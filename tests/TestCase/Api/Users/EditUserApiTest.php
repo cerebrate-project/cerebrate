@@ -53,7 +53,7 @@ class EditUserApiTest extends TestCase
         $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }
 
-    public function testEditRoleNotAllowedToRegularUser(): void
+    public function testEditRoleNotAllowedAsRegularUser(): void
     {
         $this->setAuthToken(AuthKeysFixture::REGULAR_USER_API_KEY);
         $this->put(

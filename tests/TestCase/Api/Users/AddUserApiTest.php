@@ -55,7 +55,7 @@ class AddUserApiTest extends TestCase
         $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 
-    public function testAddUserNotAllowedToRegularUser(): void
+    public function testAddUserNotAllowedAsRegularUser(): void
     {
         $this->setAuthToken(AuthKeysFixture::REGULAR_USER_API_KEY);
         $this->post(

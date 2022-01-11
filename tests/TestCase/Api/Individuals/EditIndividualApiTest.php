@@ -7,15 +7,15 @@ namespace App\Test\TestCase\Api\Users;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
-use App\Test\Fixture\OrganisationsFixture;
+use App\Test\Fixture\IndividualsFixture;
 use App\Test\Helper\ApiTestTrait;
 
-class EditOrganisationApiTest extends TestCase
+class EditIndividualApiTest extends TestCase
 {
     use IntegrationTestTrait;
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/organisations/edit';
+    protected const ENDPOINT = '/api/v1/individuals/edit';
 
     protected $fixtures = [
         'app.Organisations',
@@ -31,50 +31,42 @@ class EditOrganisationApiTest extends TestCase
         $this->initializeValidator(APP . '../webroot/docs/openapi.yaml');
     }
 
-    public function testEditOrganisation(): void
+    public function testEditIndividualAsAdmin(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
-
-        $url = sprintf('%s/%d', self::ENDPOINT, OrganisationsFixture::ORGANISATION_A_ID);
+        $url = sprintf('%s/%d', self::ENDPOINT, IndividualsFixture::INDIVIDUAL_REGULAR_USER_ID);
         $this->put(
             $url,
             [
-                'name' => 'Test Organisation 4321',
+                'email' => 'foo@bar.com',
             ]
         );
 
         $this->assertResponseOk();
-        $this->assertDbRecordExists(
-            'Organisations',
-            [
-                'id' => OrganisationsFixture::ORGANISATION_A_ID,
-                'name' => 'Test Organisation 4321',
-            ]
-        );
+        $this->assertDbRecordExists('Individuals', [
+            'id' => IndividualsFixture::INDIVIDUAL_REGULAR_USER_ID,
+            'email' => 'foo@bar.com'
+        ]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }
 
-    public function testEditOrganisationNotAllowedAsRegularUser(): void
+    public function testEditAnyIndividualNotAllowedAsRegularUser(): void
     {
         $this->setAuthToken(AuthKeysFixture::REGULAR_USER_API_KEY);
-
-        $url = sprintf('%s/%d', self::ENDPOINT, OrganisationsFixture::ORGANISATION_B_ID);
+        $url = sprintf('%s/%d', self::ENDPOINT, IndividualsFixture::INDIVIDUAL_ADMIN_ID);
         $this->put(
             $url,
             [
-                'name' => 'Test Organisation 1234'
+                'email' => 'foo@bar.com',
             ]
         );
 
         $this->assertResponseCode(405);
-        $this->assertDbRecordNotExists(
-            'Organisations',
-            [
-                'id' => OrganisationsFixture::ORGANISATION_B_ID,
-                'name' => 'Test Organisation 1234'
-            ]
-        );
+        $this->assertDbRecordNotExists('Individuals', [
+            'id' => IndividualsFixture::INDIVIDUAL_ADMIN_ID,
+            'email' => 'foo@bar.com'
+        ]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }

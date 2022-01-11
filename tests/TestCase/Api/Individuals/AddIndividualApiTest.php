@@ -9,12 +9,12 @@ use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Helper\ApiTestTrait;
 
-class AddOrganisationApiTest extends TestCase
+class AddIndividualApiTest extends TestCase
 {
     use IntegrationTestTrait;
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/organisations/add';
+    protected const ENDPOINT = '/api/v1/individuals/add';
 
     protected $fixtures = [
         'app.Organisations',
@@ -30,55 +30,41 @@ class AddOrganisationApiTest extends TestCase
         $this->initializeValidator(APP . '../webroot/docs/openapi.yaml');
     }
 
-    public function testAddOrganisation(): void
+    public function testAddIndividual(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
-
-        $faker = \Faker\Factory::create();
-        $uuid = $faker->uuid;
-
         $this->post(
             self::ENDPOINT,
             [
-                'name' => 'Test Organisation',
-                'description' => $faker->text,
-                'uuid' => $uuid,
-                'url' => 'http://example.com',
-                'nationality' => 'US',
-                'sector' => 'sector',
-                'type' => 'type',
+                'email' => 'john@example.com',
+                'first_name' => 'John',
+                'last_name' => 'Doe',
+                'position' => 'Security Analyst'
             ]
         );
 
         $this->assertResponseOk();
-        $this->assertResponseContains(sprintf('"uuid": "%s"', $uuid));
-        $this->assertDbRecordExists('Organisations', ['uuid' => $uuid]);
+        $this->assertResponseContains('"email": "john@example.com"');
+        $this->assertDbRecordExists('Individuals', ['email' => 'john@example.com']);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 
-    public function testAddOrganisationNotAllowedAsRegularUser(): void
+    public function testAddUserNotAllowedAsRegularUser(): void
     {
         $this->setAuthToken(AuthKeysFixture::REGULAR_USER_API_KEY);
-
-        $faker = \Faker\Factory::create();
-        $uuid = $faker->uuid;
-
         $this->post(
             self::ENDPOINT,
             [
-                'name' => 'Test Organisation',
-                'description' => $faker->text,
-                'uuid' => $uuid,
-                'url' => 'http://example.com',
-                'nationality' => 'US',
-                'sector' => 'sector',
-                'type' => 'type',
+                'email' => 'john@example.com',
+                'first_name' => 'John',
+                'last_name' => 'Doe',
+                'position' => 'Security Analyst'
             ]
         );
 
         $this->assertResponseCode(405);
-        $this->assertDbRecordNotExists('Organisations', ['uuid' => $uuid]);
+        $this->assertDbRecordNotExists('Individuals', ['email' => 'john@example.com']);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }

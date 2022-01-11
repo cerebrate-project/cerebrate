@@ -59,7 +59,7 @@ class TagOrganisationApiTest extends TestCase
         $this->assertResponseMatchesOpenApiSpec($url, 'post');
     }
 
-    public function testTagOrganisationNotAllowedToRegularUser(): void
+    public function testTagOrganisationNotAllowedAsRegularUser(): void
     {
         $this->setAuthToken(AuthKeysFixture::REGULAR_USER_API_KEY);
 
