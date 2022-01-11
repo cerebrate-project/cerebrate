@@ -13,6 +13,8 @@ tags:
     description: "Users enrolled in this Cerebrate instance."
   - name: Organisations
     description: "Organisations can be equivalent to legal entities or specific individual teams within such entities. Their purpose is to relate individuals to their affiliations and for release control of information using the Trust Circles."
+  - name: Tags
+    description: "Tags can be attached to entity to quickly classify them, allowing further filtering and searches."
 
 paths:
   /api/v1/users/index:
@@ -177,6 +179,96 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
+  /api/v1/organisations/index:
+    get:
+      summary: "Get organisations"
+      operationId: getOrganisations
+      tags:
+        - Organisations
+      responses:
+        "200":
+          $ref: "#/components/responses/OrganisationListResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/organisations/delete/{organisationId}:
+    delete:
+      summary: "Delete organisation by ID"
+      operationId: deleteOrganisationById
+      tags:
+        - Organisations
+      parameters:
+        - $ref: "#/components/parameters/organisationId"
+      responses:
+        "200":
+          $ref: "#/components/responses/OrganisationResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/organisations/tag/{organisationId}:
+    post:
+      summary: "Tag organisation by ID"
+      operationId: tagOrganisationById
+      tags:
+        - Organisations
+      parameters:
+        - $ref: "#/components/parameters/organisationId"
+      requestBody:
+        $ref: "#/components/requestBodies/TagOrganisationRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/OrganisationResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/organisations/untag/{organisationId}:
+    post:
+      summary: "Remove organisation tag by ID"
+      operationId: untagOrganisationById
+      tags:
+        - Organisations
+      parameters:
+        - $ref: "#/components/parameters/organisationId"
+      requestBody:
+        $ref: "#/components/requestBodies/UntagOrganisationRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/OrganisationResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/tags/index:
+    get:
+      summary: "Get tags list"
+      operationId: getTags
+      tags:
+        - Tags
+      responses:
+        "200":
+          $ref: "#/components/responses/TagListResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
 components:
   schemas:
     # General
@@ -281,9 +373,60 @@ components:
         aligments:
           $ref: "#/components/schemas/AligmentList"
 
+    OrganisationList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Organisation"
+
     # Tags
+    TagName:
+      type: string
+      example: "white"
+
+    TagNamespace:
+      type: string
+      nullable: true
+      example: "tlp"
+
+    TagPredicate:
+      type: string
+      nullable: true
+
+    TagValue:
+      type: string
+      nullable: true
+
+    TagColour:
+      type: string
+      example: "FFFFFF"
+
+    TagTextColour:
+      type: string
+      example: "white"
+
     Tag:
       type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        name:
+          $ref: "#/components/schemas/TagName"
+        namespace:
+          $ref: "#/components/schemas/TagNamespace"
+        predicate:
+          $ref: "#/components/schemas/TagPredicate"
+        value:
+          $ref: "#/components/schemas/TagValue"
+        colour:
+          $ref: "#/components/schemas/TagColour"
+        text_colour:
+          $ref: "#/components/schemas/TagTextColour"
+        counter:
+          type: integer
+        created:
+          $ref: "#/components/schemas/DateTime"
+        modified:
+          $ref: "#/components/schemas/DateTime"
 
     TagList:
       type: array
@@ -417,6 +560,7 @@ components:
             Authorization: YOUR_API_KEY
 
   requestBodies:
+    # Users
     AddUserRequest:
       required: true
       content:
@@ -457,6 +601,7 @@ components:
               password:
                 type: string
 
+    # Organisations
     AddOrganisationRequest:
       required: true
       content:
@@ -501,8 +646,32 @@ components:
               contacts:
                 $ref: "#/components/schemas/OrganisationContacts"
 
+    TagOrganisationRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              tag_list:
+                type: string
+                description: "Stringified JSON array of the tag names to add."
+                example: '["red"]'
+
+    UntagOrganisationRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              tag_list:
+                type: string
+                description: "Stringified JSON array of the tag names to remove."
+                example: '["red"]'
+
   responses:
-    # User
+    # Users
     UserResponse:
       description: "User response"
       content:
@@ -517,12 +686,35 @@ components:
           schema:
             $ref: "#/components/schemas/UserList"
 
+    # Organisations
     OrganisationResponse:
       description: "Organisation response"
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/Organisation"
+
+    OrganisationListResponse:
+      description: "Organisations list response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/OrganisationList"
+
+    # Tags
+    TagResponse:
+      description: "Tag response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Tag"
+
+    TagListResponse:
+      description: "Tags list response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/TagList"
 
     # Errors
     ApiErrorResponse:

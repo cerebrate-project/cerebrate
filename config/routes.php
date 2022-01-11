@@ -101,5 +101,18 @@ $routes->scope('/api', function (RouteBuilder $routes) {
 
         // Generic API route
         $routes->connect('/{controller}/{action}/*');
+
+        // Tags plugin routes
+        $routes->plugin(
+            'tags',
+            ['path' => '/tags'],
+            function ($routes) {
+                $routes->setRouteClass(DashedRoute::class);
+                $routes->connect(
+                    '/{action}/*',
+                    ['controller' => 'Tags']
+                );
+            }
+        );
     });
 });
