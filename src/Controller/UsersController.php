@@ -97,7 +97,7 @@ class UsersController extends AppController
     public function edit($id = false)
     {
         $currentUser = $this->ACL->getUser();
-        if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_site_admin']))) {
+        if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
             $id = $currentUser['id'];
         }
 
