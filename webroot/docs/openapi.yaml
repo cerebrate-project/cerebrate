@@ -659,6 +659,9 @@ components:
       enum:
         - "User"
         - "LocalTool"
+        - "Brood"
+        - "Proposal"
+        - "Synchronisation"
 
     InboxAction:
       type: string
@@ -667,6 +670,10 @@ components:
         - "IncomingConnectionRequest"
         - "AcceptedRequest"
         - "DeclinedRequest"
+        - "Synchronisation"
+        - "OneWaySynchronization"
+        - "ProposalEdit"
+        - "DataExchange"
 
     InboxTitle:
       type: string
