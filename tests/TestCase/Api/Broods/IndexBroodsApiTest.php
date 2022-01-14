@@ -7,15 +7,15 @@ namespace App\Test\TestCase\Api\Users;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
-use App\Test\Fixture\SharingGroupsFixture;
+use App\Test\Fixture\BroodsFixture;
 use App\Test\Helper\ApiTestTrait;
 
-class ViewSharingGroupApiTest extends TestCase
+class IndexBroodsApiTest extends TestCase
 {
     use IntegrationTestTrait;
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/sharingGroups/view';
+    protected const ENDPOINT = '/api/v1/users/index';
 
     protected $fixtures = [
         'app.Organisations',
@@ -23,7 +23,7 @@ class ViewSharingGroupApiTest extends TestCase
         'app.Roles',
         'app.Users',
         'app.AuthKeys',
-        'app.SharingGroups'
+        'app.Broods'
     ];
 
     public function setUp(): void
@@ -32,15 +32,14 @@ class ViewSharingGroupApiTest extends TestCase
         $this->initializeValidator(APP . '../webroot/docs/openapi.yaml');
     }
 
-    public function testViewSharingGroupById(): void
+    public function testIndexBroods(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
-        $url = sprintf('%s/%d', self::ENDPOINT, SharingGroupsFixture::SHARING_GROUP_A_ID);
-        $this->get($url);
+        $this->get(self::ENDPOINT);
 
         $this->assertResponseOk();
-        $this->assertResponseContains(sprintf('"id": %d', SharingGroupsFixture::SHARING_GROUP_A_ID));
+        $this->assertResponseContains(sprintf('"id": %d', BroodsFixture::BROOD_A_ID));
         // TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url);
+        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT);
     }
 }

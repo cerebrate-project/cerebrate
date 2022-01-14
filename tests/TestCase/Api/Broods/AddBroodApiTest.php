@@ -1,0 +1,91 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Test\TestCase\Api\Users;
+
+use Cake\TestSuite\IntegrationTestTrait;
+use Cake\TestSuite\TestCase;
+use App\Test\Fixture\OrganisationsFixture;
+use App\Test\Fixture\AuthKeysFixture;
+use App\Test\Helper\ApiTestTrait;
+
+class AddBroodApiTest extends TestCase
+{
+    use IntegrationTestTrait;
+    use ApiTestTrait;
+
+    protected const ENDPOINT = '/api/v1/broods/add';
+
+    protected $fixtures = [
+        'app.Organisations',
+        'app.Individuals',
+        'app.Roles',
+        'app.Users',
+        'app.AuthKeys',
+        'app.Broods'
+    ];
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->initializeValidator(APP . '../webroot/docs/openapi.yaml');
+    }
+
+    public function testAddBrood(): void
+    {
+        $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
+
+        $faker = \Faker\Factory::create();
+        $uuid = $faker->uuid;
+
+        $this->post(
+            self::ENDPOINT,
+            [
+                'uuid' => $uuid,
+                'name' => 'Brood A',
+                'url' => $faker->url,
+                'description' => $faker->text,
+                'organisation_id' => OrganisationsFixture::ORGANISATION_A_ID,
+                'trusted' => true,
+                'pull' => true,
+                'skip_proxy' => true,
+                'authkey' => $faker->sha1,
+            ]
+        );
+
+        $this->assertResponseOk();
+        $this->assertResponseContains(sprintf('"uuid": "%s"', $uuid));
+        $this->assertDbRecordExists('Broods', ['uuid' => $uuid]);
+        //TODO: $this->assertRequestMatchesOpenApiSpec();
+        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
+    }
+
+    public function testAddBroodNotAllowedAsRegularUser(): void
+    {
+        $this->setAuthToken(AuthKeysFixture::REGULAR_USER_API_KEY);
+
+        $faker = \Faker\Factory::create();
+        $uuid = $faker->uuid;
+
+        $this->post(
+            self::ENDPOINT,
+            [
+                'uuid' => $uuid,
+                'name' => 'Brood A',
+                'url' => $faker->url,
+                'description' => $faker->text,
+                'organisation_id' => OrganisationsFixture::ORGANISATION_A_ID,
+                'trusted' => true,
+                'pull' => true,
+                'skip_proxy' => true,
+                'authkey' => $faker->sha1,
+            ]
+        );
+
+        $this->assertResponseCode(405);
+        $this->assertDbRecordNotExists('Broods', ['uuid' => $uuid]);
+        //TODO: $this->assertRequestMatchesOpenApiSpec();
+        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
+    }
+}

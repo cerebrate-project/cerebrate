@@ -56,6 +56,7 @@ session_id('cli');
 
 // hacky way to skip migrations
 if (!in_array('skip-migrations', $_SERVER['argv'])) {
+    echo "[ * ] Running DB migrations, it may take some time ...\n";
     $migrator = new Migrator();
     $migrator->runMany([
         ['connection' => 'test'],
@@ -63,5 +64,5 @@ if (!in_array('skip-migrations', $_SERVER['argv'])) {
         ['plugin' => 'ADmad/SocialAuth', 'connection' => 'test']
     ]);
 } else {
-    echo "[ * ] Skipping migrations ...\n";
+    echo "[ * ] Skipping DB migrations ...\n";
 }

@@ -21,6 +21,8 @@ tags:
     description: "Inbox messages represent A list of requests to be manually processed."
   - name: SharingGroups
     description: "Sharing groups are distribution lists usable by tools that can exchange information with a list of trusted partners. Create recurring or ad hoc sharing groups and share them with the members of the sharing group."
+  - name: Broods
+    description: "Cerebrate can connect to other Cerebrate instances to exchange trust information and to instrument interconnectivity between connected local tools. Each such Cerebrate instance with its connected tools is considered to be a brood."
 
 paths:
   /api/v1/individuals/index:
@@ -66,7 +68,7 @@ paths:
       tags:
         - Users
       requestBody:
-        $ref: "#/components/requestBodies/AddIndividualRequest"
+        $ref: "#/components/requestBodies/CreateIndividualRequest"
       responses:
         "200":
           $ref: "#/components/responses/IndividualResponse"
@@ -174,7 +176,7 @@ paths:
       tags:
         - Users
       requestBody:
-        $ref: "#/components/requestBodies/AddUserRequest"
+        $ref: "#/components/requestBodies/CreateUserRequest"
       responses:
         "200":
           $ref: "#/components/responses/UserResponse"
@@ -248,7 +250,7 @@ paths:
       tags:
         - Organisations
       requestBody:
-        $ref: "#/components/requestBodies/AddOrganisationRequest"
+        $ref: "#/components/requestBodies/CreateOrganisationRequest"
       responses:
         "200":
           $ref: "#/components/responses/OrganisationResponse"
@@ -445,6 +447,24 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
+  /api/v1/sharingGroups/add:
+    post:
+      summary: "Add sharing group"
+      operationId: addSharingGroup
+      tags:
+        - SharingGroups
+      requestBody:
+        $ref: "#/components/requestBodies/CreateSharingGroupRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/IndividualResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
   /api/v1/sharingGroups/view/{sharingGroupId}:
     get:
       summary: "Get sharing group by ID"
@@ -501,6 +521,98 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
+  /api/v1/broods/index:
+    get:
+      summary: "Get broods list"
+      operationId: getBroods
+      tags:
+        - Broods
+      parameters:
+        - $ref: "#/components/parameters/quickFilter"
+      responses:
+        "200":
+          $ref: "#/components/responses/BroodListResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/broods/view/{broodId}:
+    get:
+      summary: "Get brood by ID"
+      operationId: getBroodById
+      tags:
+        - Broods
+      parameters:
+        - $ref: "#/components/parameters/broodId"
+      responses:
+        "200":
+          $ref: "#/components/responses/BroodResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/broods/add:
+    post:
+      summary: "Add brood"
+      operationId: addBrood
+      tags:
+        - Broods
+      requestBody:
+        $ref: "#/components/requestBodies/CreateBroodRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/BroodResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/broods/edit/{sharingGroupId}:
+    put:
+      summary: "Edit brood"
+      operationId: editBrood
+      tags:
+        - Broods
+      parameters:
+        - $ref: "#/components/parameters/broodId"
+      requestBody:
+        $ref: "#/components/requestBodies/EditBroodRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/BroodResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/broods/delete/{broodId}:
+    delete:
+      summary: "Delete brood by ID"
+      operationId: deleteBroodById
+      tags:
+        - Broods
+      parameters:
+        - $ref: "#/components/parameters/broodId"
+      responses:
+        "200":
+          $ref: "#/components/responses/BroodResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
 components:
   schemas:
     # General
@@ -524,6 +636,9 @@ components:
       type: string
       format: email
       example: "user@example.com"
+
+    AuthKey:
+      type: string
 
     # Individuals
     IndividualFirstName:
@@ -906,6 +1021,59 @@ components:
       items:
         $ref: "#/components/schemas/SharingGroup"
 
+    # Broods
+    BroodName:
+      type: string
+
+    BroodDescription:
+      type: string
+
+    BroodUrl:
+      type: string
+
+    BroodIsTrusted:
+      type: boolean
+      description: "Trusted upstream source"
+
+    BroodIsPull:
+      type: boolean
+      description: "Enable pulling of trust information"
+
+    Brood:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        uuid:
+          $ref: "#/components/schemas/UUID"
+        name:
+          $ref: "#/components/schemas/BroodName"
+        url:
+          $ref: "#/components/schemas/BroodUrl"
+        description:
+          $ref: "#/components/schemas/BroodDescription"
+        organisation_id:
+          $ref: "#/components/schemas/ID"
+        trusted:
+          $ref: "#/components/schemas/BroodIsTrusted"
+        pull:
+          $ref: "#/components/schemas/BroodIsPull"
+        skip_proxy:
+          type: boolean
+        authkey:
+          $ref: "#/components/schemas/AuthKey"
+        created:
+          $ref: "#/components/schemas/DateTime"
+        modified:
+          $ref: "#/components/schemas/DateTime"
+        organisation:
+          $ref: "#/components/schemas/Organisation"
+
+    BroodList:
+      type: array
+      items:
+        $ref: "#/components/schemas/Brood"
+
     # Errors
     ApiError:
       type: object
@@ -1007,6 +1175,14 @@ components:
       schema:
         $ref: "#/components/schemas/ID"
 
+    broodId:
+      name: broodId
+      in: path
+      description: "Numeric ID of the Brood"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
     quickFilter:
       name: quickFilter
       in: query
@@ -1027,7 +1203,7 @@ components:
 
   requestBodies:
     # Individuals
-    AddIndividualRequest:
+    CreateIndividualRequest:
       required: true
       content:
         application/json:
@@ -1064,7 +1240,7 @@ components:
                 $ref: "#/components/schemas/IndividualPosition"
 
     # Users
-    AddUserRequest:
+    CreateUserRequest:
       required: true
       content:
         application/json:
@@ -1107,7 +1283,7 @@ components:
                 type: string
 
     # Organisations
-    AddOrganisationRequest:
+    CreateOrganisationRequest:
       required: true
       content:
         application/json:
@@ -1190,6 +1366,30 @@ components:
                 type: string
 
     # SharingGroups
+    CreateSharingGroupRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              name:
+                $ref: "#/components/schemas/SharingGroupName"
+              releasability:
+                $ref: "#/components/schemas/SharingGroupReleasability"
+              description:
+                $ref: "#/components/schemas/SharingGroupDescription"
+              organisation_id:
+                $ref: "#/components/schemas/ID"
+              user_id:
+                $ref: "#/components/schemas/ID"
+              active:
+                type: boolean
+              local:
+                type: boolean
+
     EditSharingGroupRequest:
       required: true
       content:
@@ -1213,6 +1413,59 @@ components:
                 type: boolean
               local:
                 type: boolean
+
+    # Broods
+    CreateBroodRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              name:
+                $ref: "#/components/schemas/BroodName"
+              url:
+                $ref: "#/components/schemas/BroodUrl"
+              description:
+                $ref: "#/components/schemas/BroodDescription"
+              organisation_id:
+                $ref: "#/components/schemas/ID"
+              trusted:
+                $ref: "#/components/schemas/BroodIsTrusted"
+              pull:
+                $ref: "#/components/schemas/BroodIsPull"
+              skip_proxy:
+                type: boolean
+              authkey:
+                $ref: "#/components/schemas/AuthKey"
+
+    EditBroodRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              name:
+                $ref: "#/components/schemas/BroodName"
+              url:
+                $ref: "#/components/schemas/BroodUrl"
+              description:
+                $ref: "#/components/schemas/BroodDescription"
+              organisation_id:
+                $ref: "#/components/schemas/ID"
+              trusted:
+                $ref: "#/components/schemas/BroodIsTrusted"
+              pull:
+                $ref: "#/components/schemas/BroodIsPull"
+              skip_proxy:
+                type: boolean
+              authkey:
+                $ref: "#/components/schemas/AuthKey"
 
   responses:
     # Individuals
@@ -1336,6 +1589,21 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/SharingGroupList"
+
+    # Broods
+    BroodResponse:
+      description: "Brood response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Brood"
+
+    BroodListResponse:
+      description: "Brood list response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/BroodList"
 
     # Errors
     ApiErrorResponse:
