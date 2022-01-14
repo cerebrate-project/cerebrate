@@ -19,6 +19,8 @@ tags:
     description: "Tags can be attached to entity to quickly classify them, allowing further filtering and searches."
   - name: Inbox
     description: "Inbox messages represent A list of requests to be manually processed."
+  - name: SharingGroups
+    description: "Sharing groups are distribution lists usable by tools that can exchange information with a list of trusted partners. Create recurring or ad hoc sharing groups and share them with the members of the sharing group."
 
 paths:
   /api/v1/individuals/index:
@@ -32,6 +34,24 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/IndividualListResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/individuals/view/{individualId}:
+    get:
+      summary: "Get individual by ID"
+      operationId: getIndividualById
+      tags:
+        - Individuals
+      parameters:
+        - $ref: "#/components/parameters/individualId"
+      responses:
+        "200":
+          $ref: "#/components/responses/IndividualResponse"
         "403":
           $ref: "#/components/responses/UnauthorizedApiErrorResponse"
         "405":
@@ -131,7 +151,7 @@ paths:
 
   /api/v1/users/view/{userId}:
     get:
-      summary: "Get information of a user by id"
+      summary: "Get information of a user by ID"
       operationId: viewUserById
       tags:
         - Users
@@ -400,6 +420,80 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/CreateUserRegistrationInboxEntryResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/sharingGroups/index:
+    get:
+      summary: "Get a sharing groups list"
+      operationId: getSharingGroups
+      tags:
+        - SharingGroups
+      parameters:
+        - $ref: "#/components/parameters/quickFilter"
+      responses:
+        "200":
+          $ref: "#/components/responses/SharingGroupListResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/sharingGroups/view/{sharingGroupId}:
+    get:
+      summary: "Get sharing group by ID"
+      operationId: getSharingGroupById
+      tags:
+        - SharingGroups
+      parameters:
+        - $ref: "#/components/parameters/sharingGroupId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SharingGroupResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/sharingGroups/delete/{sharingGroupId}:
+    delete:
+      summary: "Delete sharing group by ID"
+      operationId: deleteSharingGroupById
+      tags:
+        - SharingGroups
+      parameters:
+        - $ref: "#/components/parameters/sharingGroupId"
+      responses:
+        "200":
+          $ref: "#/components/responses/SharingGroupResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/sharingGroups/edit/{sharingGroupId}:
+    put:
+      summary: "Edit sharing group"
+      operationId: editSharingGroup
+      tags:
+        - SharingGroups
+      parameters:
+        - $ref: "#/components/parameters/sharingGroupId"
+      requestBody:
+        $ref: "#/components/requestBodies/EditSharingGroupRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/SharingGroupResponse"
         "403":
           $ref: "#/components/responses/UnauthorizedApiErrorResponse"
         "405":
@@ -763,6 +857,55 @@ components:
           - $ref: "#/components/schemas/UserRegistrationInbox"
           - $ref: "#/components/schemas/IncomingConnectionRequestInbox"
 
+    # SharingGroups
+    SharingGroupName:
+      type: string
+
+    SharingGroupReleasability:
+      type: string
+
+    SharingGroupDescription:
+      type: string
+
+    SharingGroup:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        uuid:
+          $ref: "#/components/schemas/UUID"
+        name:
+          $ref: "#/components/schemas/SharingGroupName"
+        releasability:
+          $ref: "#/components/schemas/SharingGroupReleasability"
+        description:
+          $ref: "#/components/schemas/SharingGroupDescription"
+        organisation_id:
+          $ref: "#/components/schemas/ID"
+        user_id:
+          $ref: "#/components/schemas/ID"
+        active:
+          type: boolean
+        local:
+          type: boolean
+        sharing_group_orgs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Organisation"
+        user:
+          $ref: "#/components/schemas/User"
+        organisation:
+          $ref: "#/components/schemas/Organisation"
+        created:
+          $ref: "#/components/schemas/DateTime"
+        modified:
+          $ref: "#/components/schemas/DateTime"
+
+    SharingGroupList:
+      type: array
+      items:
+        $ref: "#/components/schemas/SharingGroup"
+
     # Errors
     ApiError:
       type: object
@@ -852,6 +995,14 @@ components:
       name: organisationId
       in: path
       description: "Numeric ID of the Organisation"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
+    sharingGroupId:
+      name: sharingGroupId
+      in: path
+      description: "Numeric ID of the Sharing Group"
       required: true
       schema:
         $ref: "#/components/schemas/ID"
@@ -1038,6 +1189,31 @@ components:
               password:
                 type: string
 
+    # SharingGroups
+    EditSharingGroupRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              name:
+                $ref: "#/components/schemas/SharingGroupName"
+              releasability:
+                $ref: "#/components/schemas/SharingGroupReleasability"
+              description:
+                $ref: "#/components/schemas/SharingGroupDescription"
+              organisation_id:
+                $ref: "#/components/schemas/ID"
+              user_id:
+                $ref: "#/components/schemas/ID"
+              active:
+                type: boolean
+              local:
+                type: boolean
+
   responses:
     # Individuals
     IndividualResponse:
@@ -1144,6 +1320,22 @@ components:
                 type: array
                 items:
                   type: object
+                  # TODO: describe
+
+    # SharingGroups
+    SharingGroupResponse:
+      description: "Sharing group response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SharingGroup"
+
+    SharingGroupListResponse:
+      description: "Sharing groups list response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SharingGroupList"
 
     # Errors
     ApiErrorResponse:
