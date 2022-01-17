@@ -119,12 +119,15 @@ class UsersController extends AppController
                 'password'
             ],
             'fields' => [
-                'id', 'individual_id', 'username', 'disabled', 'password', 'confirm_password'
+                'password', 'confirm_password'
             ]
         ];
         if (!empty($this->ACL->getUser()['role']['perm_admin'])) {
+            $params['fields'][] = 'individual_id';
+            $params['fields'][] = 'username';
             $params['fields'][] = 'role_id';
             $params['fields'][] = 'organisation_id';
+            $params['fields'][] = 'disabled';
         }
         $this->CRUD->edit($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
