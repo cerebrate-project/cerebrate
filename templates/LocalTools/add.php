@@ -22,7 +22,8 @@
                     'codemirror' => [
                         'height' => '10rem',
                         'hints' => $connectors[0]['connector_settings']
-                    ]
+                    ],
+                    'placeholder' => json_encode($connectors[0]['connector_settings_placeholder'], JSON_FORCE_OBJECT | JSON_PRETTY_PRINT)
                 ],
                 [
                     'field' => 'description',
