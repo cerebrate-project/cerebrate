@@ -11,7 +11,7 @@ use App\Settings\SettingsProvider\UserSettingsProvider;
 
 class UserSettingsTable extends AppTable
 {
-    protected $BOOKMARK_SETTING_NAME = 'ui.bookmarks';
+    public $BOOKMARK_SETTING_NAME = 'ui.bookmarks';
 
     public function initialize(array $config): void
     {
