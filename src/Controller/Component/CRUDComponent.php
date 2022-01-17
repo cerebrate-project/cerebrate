@@ -175,6 +175,9 @@ class CRUDComponent extends Component
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
+                if ($data === false) {
+                    throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                }
             }
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
