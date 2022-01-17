@@ -97,8 +97,16 @@ class UsersController extends AppController
     public function edit($id = false)
     {
         $currentUser = $this->ACL->getUser();
-        if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
+        if (empty($id)) {
             $id = $currentUser['id'];
+        } else {
+            if ((empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
+                if ($id !== $currentUser['id']) {
+                    throw new MethodNotAllowedException(__('You are not authorised to edit that user.'));
+                } else {
+                    $id = $currentUser['id'];
+                }
+            }
         }
 
         $params = [
