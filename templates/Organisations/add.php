@@ -8,10 +8,6 @@
                     'field' => 'name'
                 ),
                 array(
-                    'field' => 'description',
-                    'type' => 'textarea'
-                ),
-                array(
                     'field' => 'uuid',
                     'label' => 'UUID',
                     'type' => 'uuid'
