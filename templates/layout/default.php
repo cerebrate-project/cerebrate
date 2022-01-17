@@ -52,6 +52,7 @@ $sidebarOpen = $loggedUser->user_settings_by_name_with_fallback['ui.sidebar.expa
     <?= $this->Html->script('CodeMirror/addon/lint/json-lint') ?>
     <?= $this->Html->script('CodeMirror/addon/edit/matchbrackets') ?>
     <?= $this->Html->script('CodeMirror/addon/edit/closebrackets') ?>
+    <?= $this->Html->script('CodeMirror/addon/display/placeholder') ?>
     <?= $this->Html->css('CodeMirror/codemirror') ?>
     <?= $this->Html->css('CodeMirror/codemirror-additional') ?>
     <?= $this->Html->css('CodeMirror/addon/hint/show-hint') ?>
