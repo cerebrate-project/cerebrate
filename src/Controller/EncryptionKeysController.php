@@ -39,7 +39,15 @@ class EncryptionKeysController extends AppController
 
     public function delete($id)
     {
-        $this->CRUD->delete($id);
+        $orgConditions = [];
+        $individualConditions = [];
+        $dropdownData = [];
+        $currentUser = $this->ACL->getUser();
+        $params = [];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $params = $this->buildBeforeSave($params, $currentUser, $orgConditions, $individualConditions, $dropdownData);
+        }
+        $this->CRUD->delete($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -47,49 +55,38 @@ class EncryptionKeysController extends AppController
         $this->set('metaGroup', 'ContactDB');
     }
 
-    public function add()
+    private function buildBeforeSave(array $params, $currentUser, array &$orgConditions, array &$individualConditions, array &$dropdownData): array
     {
-        $orgConditions = [];
-        $individualConditions = [];
-        $currentUser = $this->ACL->getUser();
-        $params = ['redirect' => $this->referer()];
-        if (empty($currentUser['role']['perm_admin'])) {
-            $orgConditions = [
-                'id' => $currentUser['organisation_id']
+        $orgConditions = [
+            'id' => $currentUser['organisation_id']
+        ];
+        if (empty($currentUser['role']['perm_org_admin'])) {
+            $individualConditions = [
+                'id' => $currentUser['individual_id']
             ];
-            if (empty($currentUser['role']['perm_org_admin'])) {
-                $individualConditions = [
-                    'id' => $currentUser['individual_id']
-                ];
-            }
-            $params['beforeSave'] = function($entity) use($currentUser) {
-                if ($entity['owner_model'] === 'organisation') {
-                    $entity['owner_id'] = $currentUser['organisation_id'];
+        }
+        $params['beforeSave'] = function($entity) use($currentUser) {
+            if ($entity['owner_model'] === 'organisation') {
+                $entity['owner_id'] = $currentUser['organisation_id'];
+            } else {
+                if ($currentUser['role']['perm_org_admin']) {
+                    $this->loadModel('Alignments');
+                    $validIndividuals = $this->Alignments->find('list', [
+                        'keyField' => 'individual_id',
+                        'valueField' => 'id',
+                        'conditions' => ['organisation_id' => $currentUser['organisation_id']]
+                    ])->toArray();
+                    if (!isset($validIndividuals[$entity['owner_id']])) {
+                        throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
+                    }
                 } else {
-                    if ($currentUser['role']['perm_org_admin']) {
-                        $this->loadModel('Alignments');
-                        $validIndividuals = $this->Alignments->find('list', [
-                            'keyField' => 'individual_id',
-                            'valueField' => 'id',
-                            'conditions' => ['organisation_id' => $currentUser['organisation_id']]
-                        ])->toArray();
-                        if (!isset($validIndividuals[$entity['owner_id']])) {
-                            throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
-                        }
-                    } else {
-                        if ($entity['owner_id'] !== $currentUser['id']) {
-                            throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
-                        }
+                    if ($entity['owner_id'] !== $currentUser['id']) {
+                        throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
                     }
                 }
-                return $entity;
-            };
-        }
-        $this->CRUD->add($params);
-        $responsePayload = $this->CRUD->getResponsePayload();
-        if (!empty($responsePayload)) {
-            return $responsePayload;
-        }
+            }
+            return $entity;
+        };
         $this->loadModel('Organisations');
         $this->loadModel('Individuals');
         $dropdownData = [
@@ -102,13 +99,35 @@ class EncryptionKeysController extends AppController
                 'conditions' => $individualConditions
             ])
         ];
+        return $params;
+    }
+
+    public function add()
+    {
+        $orgConditions = [];
+        $individualConditions = [];
+        $dropdownData = [];
+        $currentUser = $this->ACL->getUser();
+        $params = [
+            'redirect' => $this->referer()
+        ];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $params = $this->buildBeforeSave($params, $currentUser, $orgConditions, $individualConditions, $dropdownData);
+        }
+        $this->CRUD->add($params);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
         $this->set(compact('dropdownData'));
         $this->set('metaGroup', 'ContactDB');
     }
 
     public function edit($id = false)
     {
-        $conditions = [];
+        $orgConditions = [];
+        $individualConditions = [];
+        $dropdownData = [];
         $currentUser = $this->ACL->getUser();
         $params = [
             'fields' => [
@@ -117,9 +136,7 @@ class EncryptionKeysController extends AppController
             'redirect' => $this->referer()
         ];
         if (empty($currentUser['role']['perm_admin'])) {
-            if (empty($currentUser['role']['perm_org_admin'])) {
-
-            }
+            $params = $this->buildBeforeSave($params, $currentUser, $orgConditions, $individualConditions, $dropdownData);
         }
         $this->CRUD->edit($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
