@@ -18,7 +18,6 @@ declare(strict_types=1);
 
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
-use Cake\TestSuite\Fixture\SchemaLoader;
 use Migrations\TestSuite\Migrator;
 
 /**
@@ -54,8 +53,7 @@ ConnectionManager::alias('test_debug_kit', 'debug_kit');
 // has been written to.
 session_id('cli');
 
-// hacky way to skip migrations
-if (!in_array('skip-migrations', $_SERVER['argv'])) {
+if (!$_ENV['SKIP_DB_MIGRATIONS']) {
     echo "[ * ] Running DB migrations, it may take some time ...\n";
     $migrator = new Migrator();
     $migrator->runMany([

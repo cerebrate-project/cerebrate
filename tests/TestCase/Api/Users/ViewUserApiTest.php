@@ -25,12 +25,6 @@ class ViewUserApiTest extends TestCase
         'app.AuthKeys'
     ];
 
-    public function setUp(): void
-    {
-        parent::setUp();
-        $this->initializeValidator(APP . '../webroot/docs/openapi.yaml');
-    }
-
     public function testViewMyUser(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);

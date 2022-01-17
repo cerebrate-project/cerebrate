@@ -613,6 +613,24 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
+  /api/v1/broods/testConnection/{broodId}:
+    get:
+      summary: "Test brood connection by ID"
+      operationId: testBroodConnectionById
+      tags:
+        - Broods
+      parameters:
+        - $ref: "#/components/parameters/broodId"
+      responses:
+        "200":
+          $ref: "#/components/responses/TestBroodConnectionResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
 components:
   schemas:
     # General
@@ -714,6 +732,15 @@ components:
           $ref: "#/components/schemas/DateTime"
         organisation_id:
           $ref: "#/components/schemas/ID"
+        organisation:
+          $ref: "#/components/schemas/Organisation"
+        individual:
+          $ref: "#/components/schemas/Individual"
+        role:
+          $ref: "#/components/schemas/Role"
+        # user_settings: TODO
+        # user_settings_by_name: TODO
+        # user_settings_by_name_with_fallback: TODO
 
     UserList:
       type: array
@@ -1604,6 +1631,33 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/BroodList"
+
+    TestBroodConnectionResponse:
+      description: "Brood list response"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                description: "HTTP status code"
+                example: 200
+              response:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: "0.1"
+                  application:
+                    type: string
+                    example: "Cerebrate"
+                  user:
+                    type: string
+                    example: "sync"
+              ping:
+                type: number
+                format: float
 
     # Errors
     ApiErrorResponse:

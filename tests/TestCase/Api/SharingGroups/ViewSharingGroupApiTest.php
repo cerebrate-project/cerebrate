@@ -26,12 +26,6 @@ class ViewSharingGroupApiTest extends TestCase
         'app.SharingGroups'
     ];
 
-    public function setUp(): void
-    {
-        parent::setUp();
-        $this->initializeValidator(APP . '../webroot/docs/openapi.yaml');
-    }
-
     public function testViewSharingGroupById(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);

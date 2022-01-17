@@ -9,3 +9,4 @@ webroot/theme/node_modules
 docker/run/
 .phpunit.result.cache
 config.json
+phpunit.xml

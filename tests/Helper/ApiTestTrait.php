@@ -24,6 +24,12 @@ trait ApiTestTrait
     /** @var ResponseValidator */
     private $responseValidator;
 
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->initializeOpenApiValidator($_ENV['OPENAPI_SPEC'] ?? APP . '../webroot/docs/openapi.yaml');
+    }
+
     public function setAuthToken(string $authToken): void
     {
         $this->_authToken = $authToken;
@@ -51,7 +57,7 @@ trait ApiTestTrait
      * @param string $specFile
      * @return void
      */
-    public function initializeValidator(string $specFile): void
+    public function initializeOpenApiValidator(string $specFile): void
     {
         $this->validator = (new ValidatorBuilder)->fromYamlFile($specFile);
         $this->requestValidator = $this->validator->getRequestValidator();

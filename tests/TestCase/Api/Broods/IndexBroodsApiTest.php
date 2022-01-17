@@ -26,12 +26,6 @@ class IndexBroodsApiTest extends TestCase
         'app.Broods'
     ];
 
-    public function setUp(): void
-    {
-        parent::setUp();
-        $this->initializeValidator(APP . '../webroot/docs/openapi.yaml');
-    }
-
     public function testIndexBroods(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
