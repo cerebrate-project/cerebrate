@@ -130,4 +130,16 @@ class EncryptionKeysController extends AppController
         $this->set('metaGroup', 'ContactDB');
         $this->render('add');
     }
+
+    public function view($id = false)
+    {
+        $this->CRUD->view($id, [
+            'contain' => ['Individuals', 'Organisations']
+        ]);
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
+        $this->set('metaGroup', 'ContactDB');
+    }
 }
