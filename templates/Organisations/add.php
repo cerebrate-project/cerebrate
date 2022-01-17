@@ -17,7 +17,7 @@
                     'type' => 'uuid'
                 ),
                 array(
-                    'field' => 'URL'
+                    'field' => 'url'
                 ),
                 array(
                     'field' => 'nationality'
