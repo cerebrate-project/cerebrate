@@ -89,12 +89,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url_params_data_paths' => ['id'],
                 'icon' => 'eye'
             ],
+            /*
             [
                 'open_modal' => '/localTools/connectLocal/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'reload_url' => sprintf('/localTools/connectorIndex/%s', h($connectorName)),
                 'icon' => 'plug'
             ],
+            */
             [
                 'open_modal' => '/localTools/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',

@@ -340,6 +340,7 @@ class LocalToolsController extends AppController
         }
     }
 
+/*
     public function connectLocal($local_tool_id)
     {
         $params = [
@@ -367,4 +368,5 @@ class LocalToolsController extends AppController
             ]);
         }
     }
+*/
 }
