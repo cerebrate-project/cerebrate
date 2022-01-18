@@ -23,6 +23,8 @@ tags:
     description: "Sharing groups are distribution lists usable by tools that can exchange information with a list of trusted partners. Create recurring or ad hoc sharing groups and share them with the members of the sharing group."
   - name: Broods
     description: "Cerebrate can connect to other Cerebrate instances to exchange trust information and to instrument interconnectivity between connected local tools. Each such Cerebrate instance with its connected tools is considered to be a brood."
+  - name: EncryptionKeys
+    description: "Assign encryption keys to the user, used to securely communicate or validate messages coming from the user."
 
 paths:
   /api/v1/individuals/index:
@@ -575,7 +577,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/broods/edit/{sharingGroupId}:
+  /api/v1/broods/edit/{broodId}:
     put:
       summary: "Edit brood"
       operationId: editBrood
@@ -631,6 +633,43 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
+  # EncryptionKeys
+  /api/v1/encryptionKeys/index:
+    get:
+      summary: "Get encryption keys list"
+      operationId: getEncryptionKeys
+      tags:
+        - EncryptionKeys
+      parameters:
+        - $ref: "#/components/parameters/quickFilter"
+      responses:
+        "200":
+          $ref: "#/components/responses/EncryptionKeyListResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/encryptionKeys/delete/{encryptionKeyId}:
+    delete:
+      summary: "Delete encryption key by ID"
+      operationId: deleteEncryptionKeyById
+      tags:
+        - EncryptionKeys
+      parameters:
+        - $ref: "#/components/parameters/encryptionKeyId"
+      responses:
+        "200":
+          $ref: "#/components/responses/EncryptionKeyResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
 components:
   schemas:
     # General
@@ -657,6 +696,18 @@ components:
 
     AuthKey:
       type: string
+
+    ModelName:
+      type: string
+      enum:
+        - "Organisation"
+        - "User"
+        - "Individual"
+        - "EncryptionKey"
+        - "Role"
+        - "Tag"
+        - "SharingGroup"
+        - "Brood"
 
     # Individuals
     IndividualFirstName:
@@ -1089,17 +1140,65 @@ components:
           type: boolean
         authkey:
           $ref: "#/components/schemas/AuthKey"
+        organisation:
+          $ref: "#/components/schemas/Organisation"
         created:
           $ref: "#/components/schemas/DateTime"
         modified:
           $ref: "#/components/schemas/DateTime"
-        organisation:
-          $ref: "#/components/schemas/Organisation"
 
     BroodList:
       type: array
       items:
         $ref: "#/components/schemas/Brood"
+
+    # EncryptionKeys
+    EncryptionKeyType:
+      type: string
+      enum:
+        - "pgp"
+        - "smime"
+
+    EncryptionKeyValue:
+      type: string
+      example: |
+        -----BEGIN PGP PUBLIC KEY BLOCK-----
+        ...
+        -----END PGP PUBLIC KEY BLOCK-----
+
+    EncryptionKeyExpiration:
+      type: integer
+      description: "Timestamp or null of there is no expiration"
+      nullable: true
+
+    EncryptionKey:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        uuid:
+          $ref: "#/components/schemas/UUID"
+        type:
+          $ref: "#/components/schemas/EncryptionKeyType"
+        encryption_key:
+          $ref: "#/components/schemas/EncryptionKeyValue"
+        revoked:
+          type: boolean
+        expires:
+          $ref: "#/components/schemas/EncryptionKeyExpiration"
+        owner_id:
+          $ref: "#/components/schemas/ID"
+        owner_model:
+          $ref: "#/components/schemas/ModelName"
+        created:
+          $ref: "#/components/schemas/DateTime"
+        modified:
+          $ref: "#/components/schemas/DateTime"
+
+    EncryptionKeyList:
+      type: array
+      items:
+        $ref: "#/components/schemas/EncryptionKey"
 
     # Errors
     ApiError:
@@ -1206,6 +1305,14 @@ components:
       name: broodId
       in: path
       description: "Numeric ID of the Brood"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
+    encryptionKeyId:
+      name: encryptionKeyId
+      in: path
+      description: "Numeric ID of the EncryptionKey"
       required: true
       schema:
         $ref: "#/components/schemas/ID"
@@ -1658,6 +1765,21 @@ components:
               ping:
                 type: number
                 format: float
+
+    # EncryptionKeys
+    EncryptionKeyResponse:
+      description: "Encryption key response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/EncryptionKey"
+
+    EncryptionKeyListResponse:
+      description: "Encryption key list response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/EncryptionKeyList"
 
     # Errors
     ApiErrorResponse:
