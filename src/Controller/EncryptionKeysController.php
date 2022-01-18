@@ -14,7 +14,7 @@ use Cake\Error\Debugger;
 
 class EncryptionKeysController extends AppController
 {
-    public $filterFields = ['owner_model', 'organisation_id', 'individual_id', 'encryption_key'];
+    public $filterFields = ['owner_model', 'owner_id', 'encryption_key'];
     public $quickFilterFields = ['encryption_key'];
     public $containFields = ['Individuals', 'Organisations'];
 
@@ -65,6 +65,13 @@ class EncryptionKeysController extends AppController
                 $individualConditions = [
                     'id' => $currentUser['individual_id']
                 ];
+            } else {
+                $this->loadModel('Alignments');
+                $individualConditions = ['id IN' => $this->Alignments->find('list', [
+                    'keyField' => 'id',
+                    'valueField' => 'individual_id',
+                    'conditions' => ['organisation_id' => $currentUser['organisation_id']]
+                ])->toArray()];
             }
             $params['beforeSave'] = function($entity) use($currentUser) {
                 if ($entity['owner_model'] === 'organisation') {

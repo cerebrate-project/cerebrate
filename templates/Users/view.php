@@ -56,8 +56,8 @@ echo $this->element(
                 'title' => __('Authentication keys')
             ],
             [
-                'url' => '/EncryptionKeys/index?Users.id={{0}}',
-                'url_params' => ['id'],
+                'url' => '/EncryptionKeys/index?owner_id={{0}}',
+                'url_params' => ['individual_id'],
                 'title' => __('Encryption keys')
             ],
             [
