@@ -2,6 +2,8 @@
 
 namespace CommonConnectorTools;
 use Cake\ORM\Locator\LocatorAwareTrait;
+use Cake\Log\Log;
+use Cake\Log\Engine\FileLog;
 
 class CommonConnectorTools
 {
@@ -19,6 +21,35 @@ class CommonConnectorTools
     const STATE_SENDING_ERROR = 'Error while sending request';
     const STATE_CANCELLED = 'Request cancelled';
     const STATE_DECLINED = 'Request declined by remote';
+
+    public function __construct()
+    {
+        Log::setConfig("LocalToolDebug", [
+            'className' => FileLog::class,
+            'path' => LOGS,
+            'file' => "{$this->connectorName}-debug",
+            'scopes' => [$this->connectorName],
+            'levels' => ['notice', 'info', 'debug'],
+        ]);
+        Log::setConfig("LocalToolError", [
+            'className' => FileLog::class,
+            'path' => LOGS,
+            'file' => "{$this->connectorName}-error",
+            'scopes' => [$this->connectorName],
+            'levels' => ['warning', 'error', 'critical', 'alert', 'emergency'],
+        ]);
+
+    }
+
+    protected function logDebug($message)
+    {
+        Log::debug($message, [$this->connectorName]);
+    }
+
+    protected function logError($message, $scope=[])
+    {
+        Log::error($message, [$this->connectorName]);
+    }
 
     public function addExposedFunction(string $functionName): void
     {
