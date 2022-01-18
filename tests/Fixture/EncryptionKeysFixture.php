@@ -45,7 +45,7 @@ class EncryptionKeysFixture extends TestFixture
                 'encryption_key' => $this->getPublicKey(self::KEY_TYPE_EDCH),
                 'revoked' => false,
                 'expires' => null,
-                'owner_id' => OrganisationsFixture::ORGANISATION_A_ID,
+                'owner_id' => OrganisationsFixture::ORGANISATION_B_ID,
                 'owner_model' => 'Organisation',
                 'created' => $faker->dateTime()->getTimestamp(),
                 'modified' => $faker->dateTime()->getTimestamp()
@@ -54,7 +54,7 @@ class EncryptionKeysFixture extends TestFixture
         parent::init();
     }
 
-    public function getPublicKey(string $type): string
+    public static function getPublicKey(string $type): string
     {
         switch ($type) {
             case self::KEY_TYPE_EDCH:
@@ -90,7 +90,7 @@ class EncryptionKeysFixture extends TestFixture
         }
     }
 
-    private function getPrivateKey(string $type): string
+    private static function getPrivateKey(string $type): string
     {
         switch ($type) {
             case self::KEY_TYPE_EDCH:

@@ -652,6 +652,62 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
+  /api/v1/encryptionKeys/view/{encryptionKeyId}:
+    get:
+      summary: "Get encryption key by ID"
+      operationId: getEncryptionKeyId
+      tags:
+        - EncryptionKeys
+      parameters:
+        - $ref: "#/components/parameters/encryptionKeyId"
+      responses:
+        "200":
+          $ref: "#/components/responses/EncryptionKeyResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/encryptionKeys/add:
+    post:
+      summary: "Add encryption key"
+      operationId: addEncryptionKey
+      tags:
+        - EncryptionKeys
+      requestBody:
+        $ref: "#/components/requestBodies/CreateEncryptionKeyRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/EncryptionKeyResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/encryptionKeys/edit/{encryptionKeyId}:
+    put:
+      summary: "Edit encryption key"
+      operationId: editEncryptionKey
+      tags:
+        - EncryptionKeys
+      parameters:
+        - $ref: "#/components/parameters/encryptionKeyId"
+      requestBody:
+        $ref: "#/components/requestBodies/EditEncryptionKeyRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/EncryptionKeyResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
   /api/v1/encryptionKeys/delete/{encryptionKeyId}:
     delete:
       summary: "Delete encryption key by ID"
@@ -1600,6 +1656,50 @@ components:
                 type: boolean
               authkey:
                 $ref: "#/components/schemas/AuthKey"
+
+    CreateEncryptionKeyRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              type:
+                $ref: "#/components/schemas/EncryptionKeyType"
+              encryption_key:
+                $ref: "#/components/schemas/EncryptionKeyValue"
+              revoked:
+                type: boolean
+              expires:
+                $ref: "#/components/schemas/EncryptionKeyExpiration"
+              owner_id:
+                $ref: "#/components/schemas/ID"
+              owner_model:
+                $ref: "#/components/schemas/ModelName"
+
+    EditEncryptionKeyRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              type:
+                $ref: "#/components/schemas/EncryptionKeyType"
+              encryption_key:
+                $ref: "#/components/schemas/EncryptionKeyValue"
+              revoked:
+                type: boolean
+              expires:
+                $ref: "#/components/schemas/EncryptionKeyExpiration"
+              owner_id:
+                $ref: "#/components/schemas/ID"
+              owner_model:
+                $ref: "#/components/schemas/ModelName"
 
   responses:
     # Individuals
