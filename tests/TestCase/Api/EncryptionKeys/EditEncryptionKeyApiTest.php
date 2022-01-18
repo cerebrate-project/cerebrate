@@ -10,7 +10,7 @@ use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\EncryptionKeysFixture;
 use App\Test\Helper\ApiTestTrait;
 
-class EditBroodApiTest extends TestCase
+class EditEncryptionKeyApiTest extends TestCase
 {
     use IntegrationTestTrait;
     use ApiTestTrait;
