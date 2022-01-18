@@ -467,24 +467,18 @@ class CRUDComponent extends Component
                 if (!empty($params['contain'])) {
                     $data->contain($params['contain']);
                 }
+                $data = $data->first();
                 if (isset($params['beforeSave'])) {
                     $data = $params['beforeSave']($data);
-                    if ($data === false) {
-                        $skipExecution = true;
-                        $success = false;
-                    }
                 }
-                if (!$skipExecution) {
-                    $data = $data->first();
-                    if (!empty($data)) {
-                        $success = $this->Table->delete($data);
-                        $success = true;
-                    } else {
-                        $success = false;
-                    }
-                    if ($success) {
-                        $bulkSuccesses++;
-                    }
+                if (!empty($data)) {
+                    $success = $this->Table->delete($data);
+                    $success = true;
+                } else {
+                    $success = false;
+                }
+                if ($success) {
+                    $bulkSuccesses++;
                 }
             }
             $message = $this->getMessageBasedOnResult(
