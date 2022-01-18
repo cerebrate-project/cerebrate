@@ -7,6 +7,7 @@ use Cake\Utility\Text;
 use Cake\ORM\TableRegistry;
 use \Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\UnauthorizedException;
+use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Core\Configure;
 
 class UsersController extends AppController
@@ -100,11 +101,10 @@ class UsersController extends AppController
         if (empty($id)) {
             $id = $currentUser['id'];
         } else {
+            $id = intval($id);
             if ((empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
                 if ($id !== $currentUser['id']) {
                     throw new MethodNotAllowedException(__('You are not authorised to edit that user.'));
-                } else {
-                    $id = $currentUser['id'];
                 }
             }
         }
