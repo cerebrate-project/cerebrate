@@ -442,6 +442,12 @@ class CRUDComponent extends Component
                 if (empty($data)) {
                     throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
                 }
+                if (isset($params['beforeSave'])) {
+                    $data = $params['beforeSave']($data);
+                    if ($data === false) {
+                        throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                    }
+                }
                 $this->Controller->set('id', $data['id']);
                 $this->Controller->set('data', $data);
                 $this->Controller->set('bulkEnabled', false);
@@ -453,6 +459,7 @@ class CRUDComponent extends Component
             $isBulk = count($ids) > 1;
             $bulkSuccesses = 0;
             foreach ($ids as $id) {
+                $skipExecution = false;
                 $data = $this->Table->find()->where([$this->Table->getAlias() . '.id' => $id]);
                 if (!empty($params['conditions'])) {
                     $data->where($params['conditions']);
@@ -460,15 +467,24 @@ class CRUDComponent extends Component
                 if (!empty($params['contain'])) {
                     $data->contain($params['contain']);
                 }
-                $data = $data->first();
-                if (!empty($data)) {
-                    $success = $this->Table->delete($data);
-                    $success = true;
-                } else {
-                    $success = false;
+                if (isset($params['beforeSave'])) {
+                    $data = $params['beforeSave']($data);
+                    if ($data === false) {
+                        $skipExecution = true;
+                        $success = false;
+                    }
                 }
-                if ($success) {
-                    $bulkSuccesses++;
+                if (!$skipExecution) {
+                    $data = $data->first();
+                    if (!empty($data)) {
+                        $success = $this->Table->delete($data);
+                        $success = true;
+                    } else {
+                        $success = false;
+                    }
+                    if ($success) {
+                        $bulkSuccesses++;
+                    }
                 }
             }
             $message = $this->getMessageBasedOnResult(
