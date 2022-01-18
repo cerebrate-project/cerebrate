@@ -90,14 +90,8 @@ class EncryptionKeysController extends AppController
         $this->loadModel('Organisations');
         $this->loadModel('Individuals');
         $dropdownData = [
-            'organisation' => $this->Organisations->find('list', [
-                'sort' => ['name' => 'asc'],
-                'conditions' => $orgConditions
-            ]),
-            'individual' => $this->Individuals->find('list', [
-                'sort' => ['email' => 'asc'],
-                'conditions' => $individualConditions
-            ])
+            'organisation' => $this->Organisations->find('list')->order(['name' => 'asc'])->where($orgConditions)->all()->toArray(),
+            'individual' => $this->Individuals->find('list')->order(['email' => 'asc'])->where($individualConditions)->all()->toArray()
         ];
         return $params;
     }
