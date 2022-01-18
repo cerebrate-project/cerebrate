@@ -36,7 +36,6 @@ class DeleteSharingGroupApiTest extends TestCase
         $this->assertDbRecordNotExists('SharingGroups', ['id' => SharingGroupsFixture::SHARING_GROUP_A_ID]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec($url, 'delete');
-        $this->addWarning('TODO: CRUDComponent::delete() sets some view variables, does not take into account `isRest()`, fix it.');
     }
 
     public function testDeleteSharingGroupNotAllowedAsRegularUser(): void
@@ -49,6 +48,5 @@ class DeleteSharingGroupApiTest extends TestCase
         $this->assertDbRecordExists('SharingGroups', ['id' => SharingGroupsFixture::SHARING_GROUP_A_ID]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec($url, 'delete');
-        $this->addWarning('TODO: CRUDComponent::delete() sets some view variables, does not take into account `isRest()`, fix it.');
     }
 }

@@ -25,6 +25,8 @@ tags:
     description: "Cerebrate can connect to other Cerebrate instances to exchange trust information and to instrument interconnectivity between connected local tools. Each such Cerebrate instance with its connected tools is considered to be a brood."
   - name: EncryptionKeys
     description: "Assign encryption keys to the user, used to securely communicate or validate messages coming from the user."
+  - name: AuthKeys
+    description: "Authkeys are used for API access. A user can have more than one authkey, so if you would like to use separate keys per tool that queries Cerebrate, add additional keys. Use the comment field to make identifying your keys easier."
 
 paths:
   /api/v1/individuals/index:
@@ -726,6 +728,61 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
+  # AuthKeys
+  /api/v1/authKeys/index:
+    get:
+      summary: "Get auth keys list"
+      operationId: getAuthKeys
+      tags:
+        - AuthKeys
+      parameters:
+        - $ref: "#/components/parameters/quickFilter"
+      responses:
+        "200":
+          $ref: "#/components/responses/AuthKeyListResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/authKeys/add:
+    post:
+      summary: "Add auth keys"
+      operationId: addAuthKey
+      tags:
+        - AuthKeys
+      requestBody:
+        $ref: "#/components/requestBodies/CreateAuthKeyRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/AuthKeyResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /api/v1/authKeys/delete/{authKeyId}:
+    delete:
+      summary: "Delete auth key by ID"
+      operationId: deleteAuthKeyById
+      tags:
+        - AuthKeys
+      parameters:
+        - $ref: "#/components/parameters/authKeyId"
+      responses:
+        "200":
+          $ref: "#/components/responses/AuthKeyResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
 components:
   schemas:
     # General
@@ -749,9 +806,6 @@ components:
       type: string
       format: email
       example: "user@example.com"
-
-    AuthKey:
-      type: string
 
     ModelName:
       type: string
@@ -1195,7 +1249,7 @@ components:
         skip_proxy:
           type: boolean
         authkey:
-          $ref: "#/components/schemas/AuthKey"
+          $ref: "#/components/schemas/AuthKeyRaw"
         organisation:
           $ref: "#/components/schemas/Organisation"
         created:
@@ -1224,7 +1278,7 @@ components:
 
     EncryptionKeyExpiration:
       type: integer
-      description: "Timestamp or null of there is no expiration"
+      description: "UNIX timestamp or null of there is no expiration"
       nullable: true
 
     EncryptionKey:
@@ -1255,6 +1309,58 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/EncryptionKey"
+
+    # AuthKeys
+    AuthKeyRaw:
+      type: string
+
+    AuthKeyHashed:
+      type: string
+
+    AuthKeyExpiration:
+      type: integer
+      description: "0 or UNIX timestamp"
+      example: 0
+
+    AuthKeyCreatedAt:
+      type: integer
+      description: "UNIX timestamp"
+
+    AuthKeyComment:
+      type: string
+
+    AuthKey:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        uuid:
+          $ref: "#/components/schemas/UUID"
+        authkey:
+          $ref: "#/components/schemas/AuthKeyHashed"
+        authkey_start:
+          type: string
+          example: abcd
+        authkey_end:
+          type: string
+          example: abcd
+        created:
+          $ref: "#/components/schemas/AuthKeyCreatedAt"
+        expiration:
+          $ref: "#/components/schemas/AuthKeyExpiration"
+          type: integer
+          description: "0 or UNIX timestamp"
+        user_id:
+          $ref: "#/components/schemas/ID"
+        comment:
+          $ref: "#/components/schemas/AuthKeyComment"
+        user:
+          $ref: "#/components/schemas/User"
+
+    AuthKeyList:
+      type: array
+      items:
+        $ref: "#/components/schemas/AuthKey"
 
     # Errors
     ApiError:
@@ -1369,6 +1475,14 @@ components:
       name: encryptionKeyId
       in: path
       description: "Numeric ID of the EncryptionKey"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
+    authKeyId:
+      name: authKeyId
+      in: path
+      description: "Numeric ID of the AuthKey"
       required: true
       schema:
         $ref: "#/components/schemas/ID"
@@ -1629,7 +1743,7 @@ components:
               skip_proxy:
                 type: boolean
               authkey:
-                $ref: "#/components/schemas/AuthKey"
+                $ref: "#/components/schemas/AuthKeyRaw"
 
     EditBroodRequest:
       required: true
@@ -1655,7 +1769,7 @@ components:
               skip_proxy:
                 type: boolean
               authkey:
-                $ref: "#/components/schemas/AuthKey"
+                $ref: "#/components/schemas/AuthKeyRaw"
 
     CreateEncryptionKeyRequest:
       required: true
@@ -1700,6 +1814,25 @@ components:
                 $ref: "#/components/schemas/ID"
               owner_model:
                 $ref: "#/components/schemas/ModelName"
+
+    # AuthKeys
+    CreateAuthKeyRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              uuid:
+                $ref: "#/components/schemas/UUID"
+              authkey:
+                $ref: "#/components/schemas/AuthKeyRaw"
+              expiration:
+                $ref: "#/components/schemas/AuthKeyExpiration"
+              user_id:
+                $ref: "#/components/schemas/ID"
+              comment:
+                $ref: "#/components/schemas/AuthKeyComment"
 
   responses:
     # Individuals
@@ -1880,6 +2013,21 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/EncryptionKeyList"
+
+    # AuthKeys
+    AuthKeyResponse:
+      description: "Auth key response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AuthKey"
+
+    AuthKeyListResponse:
+      description: "Auth key list response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AuthKeyList"
 
     # Errors
     ApiErrorResponse:

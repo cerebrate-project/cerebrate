@@ -10,7 +10,7 @@ use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\BroodsFixture;
 use App\Test\Helper\ApiTestTrait;
 
-class DeleteBroodsApiTest extends TestCase
+class DeleteBroodApiTest extends TestCase
 {
     use IntegrationTestTrait;
     use ApiTestTrait;
@@ -36,7 +36,6 @@ class DeleteBroodsApiTest extends TestCase
         $this->assertDbRecordNotExists('Broods', ['id' => BroodsFixture::BROOD_A_ID]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec($url, 'delete');
-        $this->addWarning('TODO: CRUDComponent::delete() sets some view variables, does not take into account `isRest()`, fix it.');
     }
 
     public function testDeleteBroodNotAllowedAsRegularUser(): void
@@ -49,6 +48,5 @@ class DeleteBroodsApiTest extends TestCase
         $this->assertDbRecordExists('Broods', ['id' => BroodsFixture::BROOD_A_ID]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec($url, 'delete');
-        $this->addWarning('TODO: CRUDComponent::delete() sets some view variables, does not take into account `isRest()`, fix it.');
     }
 }

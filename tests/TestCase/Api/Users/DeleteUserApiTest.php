@@ -37,7 +37,6 @@ class DeleteUserApiTest extends TestCase
         $this->assertDbRecordNotExists('Users', ['id' => UsersFixture::USER_REGULAR_USER_ID]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec($url, 'delete');
-        $this->addWarning('TODO: CRUDComponent::delete() sets some view variables, does not take into account `isRest()`, fix it.');
     }
 
     public function testDeleteUserNotAllowedAsRegularUser(): void
@@ -50,6 +49,5 @@ class DeleteUserApiTest extends TestCase
         $this->assertDbRecordExists('Users', ['id' => UsersFixture::USER_ORG_ADMIN_ID]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec($url, 'delete');
-        $this->addWarning('TODO: CRUDComponent::delete() sets some view variables, does not take into account `isRest()`, fix it.');
     }
 }

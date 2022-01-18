@@ -57,6 +57,7 @@ class EditUserApiTest extends TestCase
             ]
         );
 
+        $this->assertResponseOk();
         $this->assertDbRecordNotExists('Users', [
             'id' => UsersFixture::USER_REGULAR_USER_ID,
             'role_id' => RolesFixture::ROLE_ADMIN_ID
@@ -75,6 +76,7 @@ class EditUserApiTest extends TestCase
             ]
         );
 
+        $this->assertResponseOk();
         $this->assertDbRecordExists('Users', [
             'id' => UsersFixture::USER_REGULAR_USER_ID,
             'username' => 'test'

@@ -11,9 +11,18 @@ class AuthKeysFixture extends TestFixture
 {
     public $connection = 'test';
 
+    public const ADMIN_API_ID = 1;
     public const ADMIN_API_KEY = 'd033e22ae348aeb5660fc2140aec35850c4da997';
+
+
+    public const SYNC_API_ID = 2;
     public const SYNC_API_KEY = '6b387ced110858dcbcda36edb044dc18f91a0894';
+
+
+    public const ORG_ADMIN_API_ID = 3;
     public const ORG_ADMIN_API_KEY = '1c4685d281d478dbcebd494158024bc3539004d0';
+
+    public const REGULAR_USER_API_ID = 4;
     public const REGULAR_USER_API_KEY = '12dea96fec20593566ab75692c9949596833adc9';
 
     public function init(): void
@@ -23,6 +32,7 @@ class AuthKeysFixture extends TestFixture
 
         $this->records = [
             [
+                'id' => self::ADMIN_API_ID,
                 'uuid' => $faker->uuid(),
                 'authkey' => $hasher->hash(self::ADMIN_API_KEY),
                 'authkey_start' => substr(self::ADMIN_API_KEY, 0, 4),
@@ -34,6 +44,7 @@ class AuthKeysFixture extends TestFixture
                 'modified' => $faker->dateTime()->getTimestamp()
             ],
             [
+                'id' => self::SYNC_API_ID,
                 'uuid' => $faker->uuid(),
                 'authkey' => $hasher->hash(self::SYNC_API_KEY),
                 'authkey_start' => substr(self::SYNC_API_KEY, 0, 4),
@@ -45,6 +56,7 @@ class AuthKeysFixture extends TestFixture
                 'modified' => $faker->dateTime()->getTimestamp()
             ],
             [
+                'id' => self::ORG_ADMIN_API_ID,
                 'uuid' => $faker->uuid(),
                 'authkey' => $hasher->hash(self::ORG_ADMIN_API_KEY),
                 'authkey_start' => substr(self::ORG_ADMIN_API_KEY, 0, 4),
@@ -56,6 +68,7 @@ class AuthKeysFixture extends TestFixture
                 'modified' => $faker->dateTime()->getTimestamp()
             ],
             [
+                'id' => self::REGULAR_USER_API_ID,
                 'uuid' => $faker->uuid(),
                 'authkey' => $hasher->hash(self::REGULAR_USER_API_KEY),
                 'authkey_start' => substr(self::REGULAR_USER_API_KEY, 0, 4),
