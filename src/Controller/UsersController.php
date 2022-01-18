@@ -97,8 +97,16 @@ class UsersController extends AppController
     public function edit($id = false)
     {
         $currentUser = $this->ACL->getUser();
-        if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_site_admin']))) {
+        if (empty($id)) {
             $id = $currentUser['id'];
+        } else {
+            if ((empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
+                if ($id !== $currentUser['id']) {
+                    throw new MethodNotAllowedException(__('You are not authorised to edit that user.'));
+                } else {
+                    $id = $currentUser['id'];
+                }
+            }
         }
 
         $params = [
@@ -111,12 +119,15 @@ class UsersController extends AppController
                 'password'
             ],
             'fields' => [
-                'id', 'individual_id', 'username', 'disabled', 'password', 'confirm_password'
+                'password', 'confirm_password'
             ]
         ];
         if (!empty($this->ACL->getUser()['role']['perm_admin'])) {
+            $params['fields'][] = 'individual_id';
+            $params['fields'][] = 'username';
             $params['fields'][] = 'role_id';
             $params['fields'][] = 'organisation_id';
+            $params['fields'][] = 'disabled';
         }
         $this->CRUD->edit($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();

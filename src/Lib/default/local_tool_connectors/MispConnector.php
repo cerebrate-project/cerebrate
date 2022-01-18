@@ -122,6 +122,11 @@ class MispConnector extends CommonConnectorTools
             'type' => 'boolean'
         ],
     ];
+    public $settingsPlaceholder = [
+        'url' => 'https://your.misp.intance',
+        'authkey' => '',
+        'skip_ssl' => '0',
+    ];
 
     public function addSettingValidatorRules($validator)
     {
@@ -183,6 +188,7 @@ class MispConnector extends CommonConnectorTools
         $settings = json_decode($connection->settings, true);
         $http = $this->genHTTPClient($connection, $options);
         $url = sprintf('%s%s', $settings['url'], $relativeURL);
+        $this->logDebug(sprintf('%s %s %s', __('Posting data') . PHP_EOL, "POST {$url}" . PHP_EOL, json_encode($data)));
         return $http->post($url, $data, $options);
     }
 
@@ -234,14 +240,18 @@ class MispConnector extends CommonConnectorTools
             if (!empty($params['softError'])) {
                 return $response;
             }
-            throw new NotFoundException(__('Could not retrieve the requested resource.'));
+            $errorMsg = __('Could not post to the requested resource for `{0}`. Remote returned:', $url) . PHP_EOL . $response->getStringBody();
+            $this->logError($errorMsg);
+            throw new NotFoundException($errorMsg);
         }
     }
 
     private function postData(string $url, array $params): Response
     {
         if (empty($params['connection'])) {
-            throw new NotFoundException(__('No connection object received.'));
+            $errorMsg = __('No connection object received.');
+            $this->logError($errorMsg);
+            throw new NotFoundException($errorMsg);
         }
         $url = $this->urlAppendParams($url, $params);
         if (!is_string($params['body'])) {
@@ -251,7 +261,9 @@ class MispConnector extends CommonConnectorTools
         if ($response->isOk()) {
             return $response;
         } else {
-            throw new NotFoundException(__('Could not post to the requested resource. Remote returned:') . PHP_EOL . $response->getStringBody());
+            $errorMsg = __('Could not post to the requested resource for `{0}`. Remote returned:', $url) . PHP_EOL . $response->getStringBody();
+            $this->logError($errorMsg);
+            throw new NotFoundException($errorMsg);
         }
     }
 

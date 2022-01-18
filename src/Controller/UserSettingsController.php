@@ -9,6 +9,8 @@ use \Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\UnauthorizedException;
+
 
 class UserSettingsController extends AppController
 {
@@ -19,8 +21,12 @@ class UserSettingsController extends AppController
     public function index()
     {
         $conditions = [];
+        $currentUser = $this->ACL->getUser();
+        if (empty($currentUser['role']['perm_admin'])) {
+            $conditions['user_id'] = $currentUser->id;
+        }
         $this->CRUD->index([
-            'conditions' => [],
+            'conditions' => $conditions,
             'contain' => $this->containFields,
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
@@ -39,6 +45,9 @@ class UserSettingsController extends AppController
 
     public function view($id)
     {
+        if (!$this->isLoggedUserAllowedToEdit($id)) {
+            throw new NotFoundException(__('Invalid {0}.', 'user setting'));
+        }
         $this->CRUD->view($id, [
             'contain' => ['Users']
         ]);
@@ -50,10 +59,13 @@ class UserSettingsController extends AppController
 
     public function add($user_id = false)
     {
+        $currentUser = $this->ACL->getUser();
         $this->CRUD->add([
             'redirect' => ['action' => 'index', $user_id],
-            'beforeSave' => function($data) use ($user_id) {
-                $data['user_id'] = $user_id;
+            'beforeSave' => function ($data) use ($currentUser) {
+                if (empty($currentUser['role']['perm_admin'])) {
+                    $data['user_id'] = $currentUser->id;
+                }
                 return $data;
             }
         ]);
@@ -61,10 +73,13 @@ class UserSettingsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        $allUsers = $this->UserSettings->Users->find('list', ['keyField' => 'id', 'valueField' => 'username'])->order(['username' => 'ASC']);
+        if (empty($currentUser['role']['perm_admin'])) {
+            $allUsers->where(['id' => $currentUser->id]);
+            $user_id = $currentUser->id;
+        }
         $dropdownData = [
-            'user' => $this->UserSettings->Users->find('list', [
-                'sort' => ['username' => 'asc']
-            ]),
+            'user' => $allUsers->all()->toArray(),
         ];
         $this->set(compact('dropdownData'));
         $this->set('user_id', $user_id);
@@ -75,6 +90,11 @@ class UserSettingsController extends AppController
         $entity = $this->UserSettings->find()->where([
             'id' => $id
         ])->first();
+
+        if (!$this->isLoggedUserAllowedToEdit($entity)) {
+            throw new NotFoundException(__('Invalid {0}.', 'user setting'));
+        }
+
         $entity = $this->CRUD->edit($id, [
             'redirect' => ['action' => 'index', $entity->user_id]
         ]);
@@ -94,6 +114,9 @@ class UserSettingsController extends AppController
 
     public function delete($id)
     {
+        if (!$this->isLoggedUserAllowedToEdit($id)) {
+            throw new NotFoundException(__('Invalid {0}.', 'user setting'));
+        }
         $this->CRUD->delete($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -160,7 +183,7 @@ class UserSettingsController extends AppController
         }
     }
 
-    public function getBookmarks($forSidebar=false)
+    public function getBookmarks($forSidebar = false)
     {
         $bookmarks = $this->UserSettings->getSettingByName($this->ACL->getUser(), $this->UserSettings->BOOKMARK_SETTING_NAME);
         $bookmarks = json_decode($bookmarks['value'], true);
@@ -200,4 +223,29 @@ class UserSettingsController extends AppController
         $this->set('user_id', $this->ACL->getUser()->id);
     }
 
+    /**
+     * isLoggedUserAllowedToEdit 
+     *
+     * @param int|\App\Model\Entity\UserSetting $setting
+     * @return boolean
+     */
+    private function isLoggedUserAllowedToEdit($setting): bool
+    {
+        $currentUser = $this->ACL->getUser();
+        $isAllowed = false;
+        if (!empty($currentUser['role']['perm_admin'])) {
+            $isAllowed = true;
+        } else {
+            if (is_numeric($setting)) {
+                $setting = $this->UserSettings->find()->where([
+                    'id' => $setting
+                ])->first();
+                if (empty($setting)) {
+                    return false;
+                }
+            }
+            $isAllowed = $setting->user_id == $currentUser->id;
+        }
+        return $isAllowed;
+    }
 }

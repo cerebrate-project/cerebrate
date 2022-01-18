@@ -68,6 +68,7 @@ class ACLComponent extends Component
             'view' => ['perm_admin']
         ],
         'EncryptionKeys' => [
+            'view' => ['*'],
             'add' => ['*'],
             'edit' => ['*'],
             'delete' => ['*'],
@@ -109,7 +110,7 @@ class ACLComponent extends Component
             'batchAction' => ['perm_admin'],
             'broodTools' => ['perm_admin'],
             'connectionRequest' => ['perm_admin'],
-            'connectLocal' => ['perm_admin'],
+            // 'connectLocal' => ['perm_admin'],
             'delete' => ['perm_admin'],
             'edit' => ['perm_admin'],
             'exposedTools' => ['OR' => ['perm_admin', 'perm_sync']],

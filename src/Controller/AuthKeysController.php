@@ -64,8 +64,30 @@ class AuthKeysController extends AppController
     public function add()
     {
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $validUsers = [];
+        $userConditions = [];
+        $currentUser = $this->ACL->getUser();
+        if (empty($currentUser['role']['perm_admin'])) {
+            if (empty($currentUser['role']['perm_org_admin'])) {
+                $userConditions['id'] = $currentUser['id'];
+            } else {
+                $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0])->all()->extract('id')->toList();
+                $userConditions['role_id IN'] = $role_ids;
+            }
+        }
+        $users = $this->Users->find('list');
+        if (!empty($userConditions)) {
+            $users->where($userConditions);
+        }
+        $users = $users->order(['username' => 'asc'])->all()->toList();
         $this->CRUD->add([
-            'displayOnSuccess' => 'authkey_display'
+            'displayOnSuccess' => 'authkey_display',
+            'beforeSave' => function($data) use ($users) {
+                if (!in_array($data['user_id'], array_keys($users))) {
+                    return false;
+                }
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload([
             'displayOnSuccess' => 'authkey_display'
@@ -75,9 +97,7 @@ class AuthKeysController extends AppController
         }
         $this->loadModel('Users');
         $dropdownData = [
-            'user' => $this->Users->find('list', [
-                'sort' => ['username' => 'asc']
-            ])
+            'user' => $users
         ];
         $this->set(compact('dropdownData'));
     }

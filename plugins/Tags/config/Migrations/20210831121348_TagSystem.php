@@ -10,22 +10,22 @@ class TagSystem extends AbstractMigration
         $tags = $this->table('tags_tags');
         $tags->addColumn('namespace', 'string', [
                 'default' => null,
-                'limit' => 255,
+                'limit' => 191,
                 'null' => true,
             ])
             ->addColumn('predicate', 'string', [
                 'default' => null,
-                'limit' => 255,
+                'limit' => 191,
                 'null' => true,
             ])
             ->addColumn('value', 'string', [
                 'default' => null,
-                'limit' => 255,
+                'limit' => 191,
                 'null' => true,
             ])
             ->addColumn('name', 'string', [
                 'default' => null,
-                'limit' => 255,
+                'limit' => 191,
                 'null' => false,
             ])
             ->addColumn('colour', 'string', [
@@ -66,7 +66,7 @@ class TagSystem extends AbstractMigration
             ])
             ->addColumn('fk_model', 'string', [
                 'default' => null,
-                'limit' => 255,
+                'limit' => 191,
                 'null' => false,
                 'comment' => 'The model name of the entity being tagged'
             ])
