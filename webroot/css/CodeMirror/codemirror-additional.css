@@ -27,3 +27,7 @@
 .CodeMirror-hints {
     z-index: 1060 !important; /* Make sure hint is above modal */
 }
+
+.CodeMirror pre.CodeMirror-placeholder {
+    color: #999; 
+}

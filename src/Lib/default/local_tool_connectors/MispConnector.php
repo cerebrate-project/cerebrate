@@ -122,6 +122,11 @@ class MispConnector extends CommonConnectorTools
             'type' => 'boolean'
         ],
     ];
+    public $settingsPlaceholder = [
+        'url' => 'https://your.misp.intance',
+        'authkey' => '',
+        'skip_ssl' => '0',
+    ];
 
     public function addSettingValidatorRules($validator)
     {

@@ -68,6 +68,7 @@ class ACLComponent extends Component
             'view' => ['perm_admin']
         ],
         'EncryptionKeys' => [
+            'view' => ['*'],
             'add' => ['*'],
             'edit' => ['*'],
             'delete' => ['*'],
