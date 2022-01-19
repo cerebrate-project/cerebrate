@@ -3,7 +3,7 @@
 This document list the requirements that have to be met in order to perform the desired usecase.
 
 ## Connect a local tool to cerebrate
-- **Networking**: The *cerebrate* application must be able to contact the local tool service. That means the address and the port of the local must be reachable by *cerebrate*.
+- **Networking**: The *cerebrate* application must be able to contact the local tool service. That means the address and the port of the local tool must be reachable by *cerebrate*.
 - **User permissions**: Depends on the actions performed by Cerebrate on the local tool.
     - Example: For a standard MISP configuration, a simple user with the `user` role is enough for Cerebrate to pass the health check.
 
