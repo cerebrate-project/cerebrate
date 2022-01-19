@@ -13,7 +13,7 @@ class ViewUserApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/users/view';
+    protected const ENDPOINT = '/users/view';
 
     protected $fixtures = [
         'app.Organisations',

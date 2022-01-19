@@ -12,7 +12,7 @@ class CreateInboxEntryApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/inbox/createEntry';
+    protected const ENDPOINT = '/inbox/createEntry';
 
     protected $fixtures = [
         'app.Inbox',

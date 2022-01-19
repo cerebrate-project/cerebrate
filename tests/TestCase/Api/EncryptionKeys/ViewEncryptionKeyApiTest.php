@@ -13,7 +13,7 @@ class ViewEncryptionKeyApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/encryptionKeys/view';
+    protected const ENDPOINT = '/encryptionKeys/view';
 
     protected $fixtures = [
         'app.Organisations',

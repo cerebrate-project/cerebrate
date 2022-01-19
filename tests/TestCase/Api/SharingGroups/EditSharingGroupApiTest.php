@@ -13,7 +13,7 @@ class EditSharingGroupApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/sharingGroups/edit';
+    protected const ENDPOINT = '/sharingGroups/edit';
 
     protected $fixtures = [
         'app.Organisations',

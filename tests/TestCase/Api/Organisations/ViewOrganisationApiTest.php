@@ -13,7 +13,7 @@ class ViewOrganisationApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/organisations/view';
+    protected const ENDPOINT = '/organisations/view';
 
     protected $fixtures = [
         'app.TagsTags',

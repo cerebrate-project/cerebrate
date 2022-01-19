@@ -14,7 +14,7 @@ class TagOrganisationApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/organisations/tag';
+    protected const ENDPOINT = '/organisations/tag';
 
     protected $fixtures = [
         'app.TagsTags',

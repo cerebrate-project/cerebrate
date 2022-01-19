@@ -13,7 +13,7 @@ class EditIndividualApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/individuals/edit';
+    protected const ENDPOINT = '/individuals/edit';
 
     protected $fixtures = [
         'app.Organisations',

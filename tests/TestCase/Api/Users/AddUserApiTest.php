@@ -15,7 +15,7 @@ class AddUserApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/users/add';
+    protected const ENDPOINT = '/users/add';
 
     protected $fixtures = [
         'app.Organisations',

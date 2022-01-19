@@ -12,7 +12,7 @@ class IndexTagsApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/tags/index';
+    protected const ENDPOINT = '/tags/index';
 
     protected $fixtures = [
         'app.TagsTags',

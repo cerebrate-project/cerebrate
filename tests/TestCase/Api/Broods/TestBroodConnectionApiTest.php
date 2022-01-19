@@ -16,7 +16,7 @@ class TestBroodConnectionApiTest extends TestCase
     use ApiTestTrait;
     use WireMockTestTrait;
 
-    protected const ENDPOINT = '/api/v1/broods/testConnection';
+    protected const ENDPOINT = '/broods/testConnection';
 
     protected $fixtures = [
         'app.Organisations',

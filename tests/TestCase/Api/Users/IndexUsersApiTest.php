@@ -13,7 +13,7 @@ class IndexUsersApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/users/index';
+    protected const ENDPOINT = '/users/index';
 
     protected $fixtures = [
         'app.Organisations',

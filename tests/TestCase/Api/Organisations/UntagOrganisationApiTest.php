@@ -14,7 +14,7 @@ class UntagOrganisationApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/organisations/untag';
+    protected const ENDPOINT = '/organisations/untag';
 
     protected $fixtures = [
         'app.TagsTags',

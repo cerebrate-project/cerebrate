@@ -13,7 +13,7 @@ class DeleteBroodApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/broods/delete';
+    protected const ENDPOINT = '/broods/delete';
 
     protected $fixtures = [
         'app.Organisations',

@@ -13,7 +13,7 @@ class AddAuthKeyApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/authKeys/add';
+    protected const ENDPOINT = '/authKeys/add';
 
     protected $fixtures = [
         'app.Organisations',

@@ -13,7 +13,7 @@ class IndexInboxApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/inbox/index';
+    protected const ENDPOINT = '/inbox/index';
 
     protected $fixtures = [
         'app.Inbox',

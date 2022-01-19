@@ -13,7 +13,7 @@ class IndexSharingGroupsApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/sharingGroups/index';
+    protected const ENDPOINT = '/sharingGroups/index';
 
     protected $fixtures = [
         'app.Organisations',

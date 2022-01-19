@@ -13,7 +13,7 @@ class DeleteSharingGroupApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/sharingGroups/delete';
+    protected const ENDPOINT = '/sharingGroups/delete';
 
     protected $fixtures = [
         'app.Organisations',

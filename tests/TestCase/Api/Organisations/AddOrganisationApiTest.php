@@ -12,7 +12,7 @@ class AddOrganisationApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/organisations/add';
+    protected const ENDPOINT = '/organisations/add';
 
     protected $fixtures = [
         'app.Organisations',

@@ -13,7 +13,7 @@ class DeleteEncryptionKeyApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/encryptionKeys/delete';
+    protected const ENDPOINT = '/encryptionKeys/delete';
 
     protected $fixtures = [
         'app.Organisations',

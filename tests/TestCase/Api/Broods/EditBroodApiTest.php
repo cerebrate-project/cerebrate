@@ -14,7 +14,7 @@ class EditBroodApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/broods/edit';
+    protected const ENDPOINT = '/broods/edit';
 
     protected $fixtures = [
         'app.Organisations',

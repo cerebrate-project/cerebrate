@@ -12,7 +12,7 @@ class DeleteAuthKeyApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/authKeys/delete';
+    protected const ENDPOINT = '/authKeys/delete';
 
     protected $fixtures = [
         'app.Organisations',

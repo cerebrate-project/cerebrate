@@ -13,7 +13,7 @@ class ViewBroodApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/broods/view';
+    protected const ENDPOINT = '/broods/view';
 
     protected $fixtures = [
         'app.Organisations',

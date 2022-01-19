@@ -14,7 +14,7 @@ class AddSharingGroupApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/sharingGroups/add';
+    protected const ENDPOINT = '/sharingGroups/add';
 
     protected $fixtures = [
         'app.Organisations',

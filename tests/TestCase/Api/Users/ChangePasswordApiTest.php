@@ -17,7 +17,7 @@ class ChangePasswordApiTest extends TestCase
 {
     use ApiTestTrait;
 
-    protected const ENDPOINT = '/api/v1/users/edit';
+    protected const ENDPOINT = '/users/edit';
 
     /** @var \Cake\Auth\FormAuthenticate */
     protected $auth;

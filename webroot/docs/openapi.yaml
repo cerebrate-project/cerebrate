@@ -29,7 +29,7 @@ tags:
     description: "Authkeys are used for API access. A user can have more than one authkey, so if you would like to use separate keys per tool that queries Cerebrate, add additional keys. Use the comment field to make identifying your keys easier."
 
 paths:
-  /api/v1/individuals/index:
+  /individuals/index:
     get:
       summary: "Get individuals list"
       operationId: getIndividuals
@@ -47,7 +47,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/individuals/view/{individualId}:
+  /individuals/view/{individualId}:
     get:
       summary: "Get individual by ID"
       operationId: getIndividualById
@@ -65,7 +65,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/individuals/add:
+  /individuals/add:
     post:
       summary: "Add individual"
       operationId: addIndividual
@@ -83,7 +83,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/individuals/edit/{individualId}:
+  /individuals/edit/{individualId}:
     put:
       summary: "Edit individual"
       operationId: editIndividual
@@ -103,7 +103,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/individuals/delete/{individualId}:
+  /individuals/delete/{individualId}:
     delete:
       summary: "Delete individual by ID"
       operationId: deleteIndividualById
@@ -121,7 +121,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/users/index:
+  /users/index:
     get:
       summary: "Get users list"
       operationId: getUsers
@@ -139,7 +139,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/users/view:
+  /users/view:
     get:
       summary: "Get information about the current user"
       operationId: viewUserMe
@@ -155,7 +155,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/users/view/{userId}:
+  /users/view/{userId}:
     get:
       summary: "Get information of a user by ID"
       operationId: viewUserById
@@ -173,7 +173,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/users/add:
+  /users/add:
     post:
       summary: "Add user"
       operationId: addUser
@@ -191,7 +191,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/users/edit:
+  /users/edit:
     put:
       summary: "Edit current user"
       operationId: editUser
@@ -209,7 +209,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/users/edit/{userId}:
+  /users/edit/{userId}:
     put:
       summary: "Edit current user"
       operationId: editUserById
@@ -229,7 +229,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/users/delete/{userId}:
+  /users/delete/{userId}:
     delete:
       summary: "Delete user by ID"
       operationId: deleteUserById
@@ -247,7 +247,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/organisations/add:
+  /organisations/add:
     post:
       summary: "Add organisation"
       operationId: addOrganisation
@@ -265,7 +265,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/organisations/edit/{organisationId}:
+  /organisations/edit/{organisationId}:
     put:
       summary: "Edit organisation"
       operationId: editOrganisation
@@ -285,7 +285,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/organisations/index:
+  /organisations/index:
     get:
       summary: "Get organisations"
       operationId: getOrganisations
@@ -303,7 +303,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/organisations/view/{organisationId}:
+  /organisations/view/{organisationId}:
     get:
       summary: "View organisation by ID"
       operationId: getOrganisationById
@@ -321,7 +321,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/organisations/delete/{organisationId}:
+  /organisations/delete/{organisationId}:
     delete:
       summary: "Delete organisation by ID"
       operationId: deleteOrganisationById
@@ -339,7 +339,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/organisations/tag/{organisationId}:
+  /organisations/tag/{organisationId}:
     post:
       summary: "Tag organisation by ID"
       operationId: tagOrganisationById
@@ -359,7 +359,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/organisations/untag/{organisationId}:
+  /organisations/untag/{organisationId}:
     post:
       summary: "Remove organisation tag by ID"
       operationId: untagOrganisationById
@@ -379,7 +379,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/tags/index:
+  /tags/index:
     get:
       summary: "Get tags list"
       operationId: getTags
@@ -397,7 +397,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/inbox/index:
+  /inbox/index:
     get:
       summary: "Get inbox list"
       operationId: getinbox
@@ -415,7 +415,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/inbox/createEntry/User/Registration:
+  /inbox/createEntry/User/Registration:
     post:
       summary: "Create user registration inbox entry"
       operationId: createInboxEntry
@@ -433,7 +433,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/sharingGroups/index:
+  /sharingGroups/index:
     get:
       summary: "Get a sharing groups list"
       operationId: getSharingGroups
@@ -451,7 +451,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/sharingGroups/add:
+  /sharingGroups/add:
     post:
       summary: "Add sharing group"
       operationId: addSharingGroup
@@ -469,7 +469,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/sharingGroups/view/{sharingGroupId}:
+  /sharingGroups/view/{sharingGroupId}:
     get:
       summary: "Get sharing group by ID"
       operationId: getSharingGroupById
@@ -487,7 +487,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/sharingGroups/delete/{sharingGroupId}:
+  /sharingGroups/delete/{sharingGroupId}:
     delete:
       summary: "Delete sharing group by ID"
       operationId: deleteSharingGroupById
@@ -505,7 +505,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/sharingGroups/edit/{sharingGroupId}:
+  /sharingGroups/edit/{sharingGroupId}:
     put:
       summary: "Edit sharing group"
       operationId: editSharingGroup
@@ -525,7 +525,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/broods/index:
+  /broods/index:
     get:
       summary: "Get broods list"
       operationId: getBroods
@@ -543,7 +543,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/broods/view/{broodId}:
+  /broods/view/{broodId}:
     get:
       summary: "Get brood by ID"
       operationId: getBroodById
@@ -561,7 +561,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/broods/add:
+  /broods/add:
     post:
       summary: "Add brood"
       operationId: addBrood
@@ -579,7 +579,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/broods/edit/{broodId}:
+  /broods/edit/{broodId}:
     put:
       summary: "Edit brood"
       operationId: editBrood
@@ -599,7 +599,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/broods/delete/{broodId}:
+  /broods/delete/{broodId}:
     delete:
       summary: "Delete brood by ID"
       operationId: deleteBroodById
@@ -617,7 +617,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/broods/testConnection/{broodId}:
+  /broods/testConnection/{broodId}:
     get:
       summary: "Test brood connection by ID"
       operationId: testBroodConnectionById
@@ -636,7 +636,7 @@ paths:
           $ref: "#/components/responses/ApiErrorResponse"
 
   # EncryptionKeys
-  /api/v1/encryptionKeys/index:
+  /encryptionKeys/index:
     get:
       summary: "Get encryption keys list"
       operationId: getEncryptionKeys
@@ -654,7 +654,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/encryptionKeys/view/{encryptionKeyId}:
+  /encryptionKeys/view/{encryptionKeyId}:
     get:
       summary: "Get encryption key by ID"
       operationId: getEncryptionKeyId
@@ -672,7 +672,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/encryptionKeys/add:
+  /encryptionKeys/add:
     post:
       summary: "Add encryption key"
       operationId: addEncryptionKey
@@ -690,7 +690,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/encryptionKeys/edit/{encryptionKeyId}:
+  /encryptionKeys/edit/{encryptionKeyId}:
     put:
       summary: "Edit encryption key"
       operationId: editEncryptionKey
@@ -710,7 +710,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/encryptionKeys/delete/{encryptionKeyId}:
+  /encryptionKeys/delete/{encryptionKeyId}:
     delete:
       summary: "Delete encryption key by ID"
       operationId: deleteEncryptionKeyById
@@ -729,7 +729,7 @@ paths:
           $ref: "#/components/responses/ApiErrorResponse"
 
   # AuthKeys
-  /api/v1/authKeys/index:
+  /authKeys/index:
     get:
       summary: "Get auth keys list"
       operationId: getAuthKeys
@@ -747,7 +747,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/authKeys/add:
+  /authKeys/add:
     post:
       summary: "Add auth keys"
       operationId: addAuthKey
@@ -765,7 +765,7 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
-  /api/v1/authKeys/delete/{authKeyId}:
+  /authKeys/delete/{authKeyId}:
     delete:
       summary: "Delete auth key by ID"
       operationId: deleteAuthKeyById
@@ -1374,7 +1374,7 @@ components:
           type: string
         url:
           type: string
-          example: "/api/v1/users"
+          example: "/users"
         code:
           type: integer
           example: 500
@@ -1391,7 +1391,7 @@ components:
           example: "Authentication failed. Please make sure you pass the API key of an API enabled user along in the Authorization header."
         url:
           type: string
-          example: "/api/v1/users"
+          example: "/users"
         code:
           type: integer
           example: 403
@@ -1408,7 +1408,7 @@ components:
           example: "You do not have permission to use this functionality."
         url:
           type: string
-          example: "/api/v1/users/index"
+          example: "/users/index"
         code:
           type: integer
           example: 405
@@ -1425,7 +1425,7 @@ components:
           example: "Invalid user"
         url:
           type: string
-          example: "/api/v1/users/users/view/1234"
+          example: "/users/users/view/1234"
         code:
           type: integer
           example: 404
