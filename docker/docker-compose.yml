@@ -5,7 +5,6 @@ services:
     restart: always
     volumes:
       - ./run/database:/var/lib/mysql
-      - ./run/dbinit:/docker-entrypoint-initdb.d/:ro
     environment:
       MARIADB_RANDOM_ROOT_PASSWORD: "yes"
       MYSQL_DATABASE: "cerebrate"
