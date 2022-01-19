@@ -121,8 +121,3 @@ The default OpenAPI spec path is set in `phpunit.xml` as a environment variablea
 $ export XDEBUG_CONFIG="idekey=IDEKEY"
 $ phpunit
 ```
-    
-## TODO
-- [ ] Validate API requests against the OpenAPI spec
-- [ ] Validate response content matches / implement _seeResponseContainsJson()_ or equivalent
-- [ ] Parse OpenAPI spec only once per test run, currently re-loading in every _TestCase::setUp()_
