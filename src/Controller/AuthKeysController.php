@@ -79,7 +79,7 @@ class AuthKeysController extends AppController
         if (!empty($userConditions)) {
             $users->where($userConditions);
         }
-        $users = $users->order(['username' => 'asc'])->all()->toList();
+        $users = $users->order(['username' => 'asc'])->all()->toArray();
         $this->CRUD->add([
             'displayOnSuccess' => 'authkey_display',
             'beforeSave' => function($data) use ($users) {
