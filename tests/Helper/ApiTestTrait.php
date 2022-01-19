@@ -129,4 +129,34 @@ trait ApiTestTrait
         }
         $this->assertEmpty($record);
     }
+
+    /** 
+     * Parses the response body and returns the decoded JSON
+     * 
+     * @return void
+     * @throws \Exception
+     * 
+     * @see https://book.cakephp.org/4/en/orm-query-builder.html
+     */
+    public function getJsonResponseAsArray(): array
+    {
+        if ($this->_response->getHeaders()['Content-Type'][0] !== 'application/json') {
+            throw new \Exception('The response is not a JSON response');
+        }
+
+        return json_decode((string)$this->_response->getBody(), true);
+    }
+
+    /** 
+     * Gets a database records as an array
+     * 
+     * @param string $table The table name
+     * @param array $conditions The conditions to check
+     * @return array
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException
+     */
+    public function getRecordFromDb(string $table, array $conditions): array
+    {
+        return $this->getTableLocator()->get($table)->find()->where($conditions)->first()->toArray();
+    }
 }

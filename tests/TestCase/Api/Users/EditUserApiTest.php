@@ -10,6 +10,7 @@ use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\UsersFixture;
 use App\Test\Fixture\RolesFixture;
 use App\Test\Helper\ApiTestTrait;
+use Authentication\PasswordHasher\DefaultPasswordHasher;
 
 class EditUserApiTest extends TestCase
 {
@@ -61,25 +62,6 @@ class EditUserApiTest extends TestCase
         $this->assertDbRecordNotExists('Users', [
             'id' => UsersFixture::USER_REGULAR_USER_ID,
             'role_id' => RolesFixture::ROLE_ADMIN_ID
-        ]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'put');
-    }
-
-    public function testEditSelfUser(): void
-    {
-        $this->setAuthToken(AuthKeysFixture::REGULAR_USER_API_KEY);
-        $this->put(
-            self::ENDPOINT,
-            [
-                'username' => 'test',
-            ]
-        );
-
-        $this->assertResponseOk();
-        $this->assertDbRecordExists('Users', [
-            'id' => UsersFixture::USER_REGULAR_USER_ID,
-            'username' => 'test'
         ]);
         //TODO: $this->assertRequestMatchesOpenApiSpec();
         $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'put');
