@@ -14,7 +14,7 @@ use Cake\Error\Debugger;
 
 class EncryptionKeysController extends AppController
 {
-    public $filterFields = ['owner_model', 'organisation_id', 'individual_id', 'encryption_key'];
+    public $filterFields = ['owner_model', 'owner_id', 'encryption_key'];
     public $quickFilterFields = ['encryption_key'];
     public $containFields = ['Individuals', 'Organisations'];
 
@@ -57,47 +57,52 @@ class EncryptionKeysController extends AppController
 
     private function buildBeforeSave(array $params, $currentUser, array &$orgConditions, array &$individualConditions, array &$dropdownData): array
     {
-        $orgConditions = [
-            'id' => $currentUser['organisation_id']
-        ];
-        if (empty($currentUser['role']['perm_org_admin'])) {
-            $individualConditions = [
-                'id' => $currentUser['individual_id']
+        if (empty($currentUser['role']['perm_admin'])) {
+            $orgConditions = [
+                'id' => $currentUser['organisation_id']
             ];
-        }
-        $params['beforeSave'] = function($entity) use($currentUser) {
-            if ($entity['owner_model'] === 'organisation') {
-                $entity['owner_id'] = $currentUser['organisation_id'];
+            if (empty($currentUser['role']['perm_org_admin'])) {
+                $individualConditions = [
+                    'id' => $currentUser['individual_id']
+                ];
             } else {
-                if ($currentUser['role']['perm_org_admin']) {
-                    $this->loadModel('Alignments');
-                    $validIndividuals = $this->Alignments->find('list', [
-                        'keyField' => 'individual_id',
-                        'valueField' => 'id',
-                        'conditions' => ['organisation_id' => $currentUser['organisation_id']]
-                    ])->toArray();
-                    if (!isset($validIndividuals[$entity['owner_id']])) {
-                        throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
+                $this->loadModel('Alignments');
+                $individualConditions = ['id IN' => $this->Alignments->find('list', [
+                    'keyField' => 'id',
+                    'valueField' => 'individual_id',
+                    'conditions' => ['organisation_id' => $currentUser['organisation_id']]
+                ])->toArray()];
+            }
+            $params['beforeSave'] = function($entity) use($currentUser) {
+                if ($entity['owner_model'] === 'organisation') {
+                    if ($entity['owner_id'] !== $currentUser['organisation_id']) {
+                        throw new MethodNotAllowedException(__('Selected organisation cannot be linked by the current user.'));
                     }
                 } else {
-                    if ($entity['owner_id'] !== $currentUser['id']) {
-                        throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
+                    if ($currentUser['role']['perm_org_admin']) {
+                        $this->loadModel('Alignments');
+                        $validIndividuals = $this->Alignments->find('list', [
+                            'keyField' => 'individual_id',
+                            'valueField' => 'id',
+                            'conditions' => ['organisation_id' => $currentUser['organisation_id']]
+                        ])->toArray();
+                        if (!isset($validIndividuals[$entity['owner_id']])) {
+                            throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
+                        }
+                    } else {
+                        if ($entity['owner_id'] !== $currentUser['id']) {
+                            throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
+                        }
                     }
                 }
-            }
-            return $entity;
-        };
+                return $entity;
+            };
+        }
         $this->loadModel('Organisations');
         $this->loadModel('Individuals');
         $dropdownData = [
-            'organisation' => $this->Organisations->find('list', [
-                'sort' => ['name' => 'asc'],
-                'conditions' => $orgConditions
-            ]),
-            'individual' => $this->Individuals->find('list', [
-                'sort' => ['email' => 'asc'],
-                'conditions' => $individualConditions
-            ])
+            'organisation' => $this->Organisations->find('list')->order(['name' => 'asc'])->where($orgConditions)->all()->toArray(),
+            'individual' => $this->Individuals->find('list')->order(['email' => 'asc'])->where($individualConditions)->all()->toArray()
         ];
         return $params;
     }
@@ -111,9 +116,7 @@ class EncryptionKeysController extends AppController
         $params = [
             'redirect' => $this->referer()
         ];
-        if (empty($currentUser['role']['perm_admin'])) {
-            $params = $this->buildBeforeSave($params, $currentUser, $orgConditions, $individualConditions, $dropdownData);
-        }
+        $params = $this->buildBeforeSave($params, $currentUser, $orgConditions, $individualConditions, $dropdownData);
         $this->CRUD->add($params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
