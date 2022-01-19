@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\OrganisationsFixture;
 use App\Test\Fixture\UsersFixture;
@@ -13,7 +12,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class AddSharingGroupApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/sharingGroups/add';
@@ -51,8 +49,6 @@ class AddSharingGroupApiTest extends TestCase
         $this->assertResponseOk();
         $this->assertResponseContains(sprintf('"uuid": "%s"', $uuid));
         $this->assertDbRecordExists('SharingGroups', ['uuid' => $uuid]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 
     public function testAddSharingGroupNotAllowedAsRegularUser(): void
@@ -78,7 +74,5 @@ class AddSharingGroupApiTest extends TestCase
 
         $this->assertResponseCode(405);
         $this->assertDbRecordNotExists('SharingGroups', ['uuid' => $uuid]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 }

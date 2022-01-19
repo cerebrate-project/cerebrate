@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\SharingGroupsFixture;
@@ -12,7 +11,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class DeleteSharingGroupApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/sharingGroups/delete';
@@ -34,8 +32,6 @@ class DeleteSharingGroupApiTest extends TestCase
 
         $this->assertResponseOk();
         $this->assertDbRecordNotExists('SharingGroups', ['id' => SharingGroupsFixture::SHARING_GROUP_A_ID]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'delete');
     }
 
     public function testDeleteSharingGroupNotAllowedAsRegularUser(): void
@@ -46,7 +42,5 @@ class DeleteSharingGroupApiTest extends TestCase
 
         $this->assertResponseCode(405);
         $this->assertDbRecordExists('SharingGroups', ['id' => SharingGroupsFixture::SHARING_GROUP_A_ID]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'delete');
     }
 }

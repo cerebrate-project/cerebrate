@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\EncryptionKeysFixture;
@@ -12,7 +11,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class DeleteEncryptionKeyApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/encryptionKeys/delete';
@@ -46,7 +44,5 @@ class DeleteEncryptionKeyApiTest extends TestCase
 
         $this->assertResponseCode(405);
         $this->assertDbRecordExists('EncryptionKeys', ['id' => EncryptionKeysFixture::ENCRYPTION_KEY_ORG_B_ID]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'delete');
     }
 }

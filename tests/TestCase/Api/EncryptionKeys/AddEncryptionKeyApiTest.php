@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\EncryptionKeysFixture;
@@ -13,7 +12,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class AddEncryptionKeyApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/encryptionKeys/add';
@@ -50,8 +48,6 @@ class AddEncryptionKeyApiTest extends TestCase
         $this->assertResponseOk();
         $this->assertResponseContains(sprintf('"uuid": "%s"', $uuid));
         $this->assertDbRecordExists('EncryptionKeys', ['uuid' => $uuid]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 
     public function testAddAdminUserEncryptionKeyNotAllowedAsRegularUser(): void
@@ -76,7 +72,5 @@ class AddEncryptionKeyApiTest extends TestCase
 
         $this->assertResponseCode(405);
         $this->assertDbRecordNotExists('EncryptionKeys', ['uuid' => $uuid]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 }

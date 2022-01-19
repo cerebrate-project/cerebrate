@@ -115,6 +115,12 @@ The default OpenAPI spec path is set in `phpunit.xml` as a environment variablea
     <env name="OPENAPI_SPEC" value="webroot/docs/openapi.yaml" />
 </php>
 ```
+
+### Debugging tests
+```
+$ export XDEBUG_CONFIG="idekey=IDEKEY"
+$ phpunit
+```
     
 ## TODO
 - [ ] Validate API requests against the OpenAPI spec

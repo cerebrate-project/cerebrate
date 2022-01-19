@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\SharingGroupsFixture;
@@ -12,7 +11,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class IndexSharingGroupsApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/sharingGroups/index';
@@ -34,7 +32,5 @@ class IndexSharingGroupsApiTest extends TestCase
         $this->assertResponseOk();
         $this->assertResponseContains(sprintf('"id": %d', SharingGroupsFixture::SHARING_GROUP_A_ID));
         $this->assertResponseContains(sprintf('"id": %d', SharingGroupsFixture::SHARING_GROUP_B_ID));
-        // TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT);
     }
 }

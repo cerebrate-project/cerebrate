@@ -7,13 +7,11 @@ namespace App\Test\TestCase\Api\Users;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
-use App\Test\Fixture\OrganisationsFixture;
 use App\Test\Fixture\BroodsFixture;
 use App\Test\Helper\ApiTestTrait;
 
 class EditBroodApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/broods/edit';
@@ -47,8 +45,6 @@ class EditBroodApiTest extends TestCase
                 'name' => 'Test Brood 4321',
             ]
         );
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }
 
     public function testEditBroodNotAllowedAsRegularUser(): void
@@ -71,7 +67,5 @@ class EditBroodApiTest extends TestCase
                 'name' => 'Test Brood 1234'
             ]
         );
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }
 }

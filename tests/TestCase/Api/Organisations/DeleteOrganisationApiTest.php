@@ -12,7 +12,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class DeleteOrganisationApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/organisations/delete';
@@ -33,8 +32,6 @@ class DeleteOrganisationApiTest extends TestCase
 
         $this->assertResponseOk();
         $this->assertDbRecordNotExists('Organisations', ['id' => OrganisationsFixture::ORGANISATION_B_ID]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'delete');
     }
 
     public function testDeleteOrganisationNotAllowedAsRegularUser(): void
@@ -45,7 +42,5 @@ class DeleteOrganisationApiTest extends TestCase
 
         $this->assertResponseCode(405);
         $this->assertDbRecordExists('Organisations', ['id' => OrganisationsFixture::ORGANISATION_B_ID]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'delete');
     }
 }

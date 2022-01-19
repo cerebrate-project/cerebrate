@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\IndividualsFixture;
@@ -12,7 +11,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class EditIndividualApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/individuals/edit';
@@ -41,8 +39,6 @@ class EditIndividualApiTest extends TestCase
             'id' => IndividualsFixture::INDIVIDUAL_REGULAR_USER_ID,
             'email' => 'foo@bar.com'
         ]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }
 
     public function testEditAnyIndividualNotAllowedAsRegularUser(): void
@@ -61,7 +57,5 @@ class EditIndividualApiTest extends TestCase
             'id' => IndividualsFixture::INDIVIDUAL_ADMIN_ID,
             'email' => 'foo@bar.com'
         ]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }
 }

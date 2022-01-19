@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\UsersFixture;
@@ -12,7 +11,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class ViewUserApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/users/view';
@@ -32,8 +30,6 @@ class ViewUserApiTest extends TestCase
 
         $this->assertResponseOk();
         $this->assertResponseContains(sprintf('"username": "%s"', UsersFixture::USER_ADMIN_USERNAME));
-        // TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT);
     }
 
     public function testViewUserById(): void
@@ -44,7 +40,5 @@ class ViewUserApiTest extends TestCase
 
         $this->assertResponseOk();
         $this->assertResponseContains(sprintf('"username": "%s"', UsersFixture::USER_REGULAR_USER_USERNAME));
-        // TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url);
     }
 }

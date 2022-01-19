@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\UsersFixture;
-use App\Test\Fixture\OrganisationsFixture;
-use App\Test\Fixture\RolesFixture;
 use App\Test\Helper\ApiTestTrait;
 
 class DeleteUserApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/users/delete';
@@ -35,8 +31,6 @@ class DeleteUserApiTest extends TestCase
 
         $this->assertResponseOk();
         $this->assertDbRecordNotExists('Users', ['id' => UsersFixture::USER_REGULAR_USER_ID]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'delete');
     }
 
     public function testDeleteUserNotAllowedAsRegularUser(): void
@@ -47,7 +41,5 @@ class DeleteUserApiTest extends TestCase
 
         $this->assertResponseCode(405);
         $this->assertDbRecordExists('Users', ['id' => UsersFixture::USER_ORG_ADMIN_ID]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'delete');
     }
 }

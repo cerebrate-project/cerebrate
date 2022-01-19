@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\UsersFixture;
@@ -12,7 +11,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class AddAuthKeyApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/authKeys/add';
@@ -46,8 +44,6 @@ class AddAuthKeyApiTest extends TestCase
         $this->assertResponseOk();
         $this->assertResponseContains(sprintf('"uuid": "%s"', $uuid));
         $this->assertDbRecordExists('AuthKeys', ['uuid' => $uuid]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 
     public function testAddAdminAuthKeyNotAllowedAsRegularUser(): void
@@ -72,7 +68,5 @@ class AddAuthKeyApiTest extends TestCase
         $this->assertResponseCode(404);
         $this->addWarning('Should return 405 Method Not Allowed instead of 404 Not Found');
         $this->assertDbRecordNotExists('AuthKeys', ['uuid' => $uuid]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 }

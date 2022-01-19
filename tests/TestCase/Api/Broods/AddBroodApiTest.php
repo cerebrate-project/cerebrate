@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\OrganisationsFixture;
 use App\Test\Fixture\AuthKeysFixture;
@@ -12,7 +11,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class AddBroodApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/broods/add';
@@ -51,8 +49,6 @@ class AddBroodApiTest extends TestCase
         $this->assertResponseOk();
         $this->assertResponseContains(sprintf('"uuid": "%s"', $uuid));
         $this->assertDbRecordExists('Broods', ['uuid' => $uuid]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 
     public function testAddBroodNotAllowedAsRegularUser(): void
@@ -79,7 +75,5 @@ class AddBroodApiTest extends TestCase
 
         $this->assertResponseCode(405);
         $this->assertDbRecordNotExists('Broods', ['uuid' => $uuid]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'post');
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\OrganisationsFixture;
@@ -12,7 +11,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class EditOrganisationApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/organisations/edit';
@@ -45,8 +43,6 @@ class EditOrganisationApiTest extends TestCase
                 'name' => 'Test Organisation 4321',
             ]
         );
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }
 
     public function testEditOrganisationNotAllowedAsRegularUser(): void
@@ -69,7 +65,5 @@ class EditOrganisationApiTest extends TestCase
                 'name' => 'Test Organisation 1234'
             ]
         );
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }
 }

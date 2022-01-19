@@ -70,7 +70,7 @@ paths:
       summary: "Add individual"
       operationId: addIndividual
       tags:
-        - Users
+        - Individuals
       requestBody:
         $ref: "#/components/requestBodies/CreateIndividualRequest"
       responses:
@@ -1517,11 +1517,11 @@ components:
               uuid:
                 $ref: "#/components/schemas/UUID"
               email:
-                $ref: "#/components/schemas/IndividualLastName"
+                $ref: "#/components/schemas/Email"
               first_name:
                 $ref: "#/components/schemas/IndividualFirstName"
               last_name:
-                type: boolean
+                $ref: "#/components/schemas/IndividualLastName"
               position:
                 $ref: "#/components/schemas/IndividualPosition"
 

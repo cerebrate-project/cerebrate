@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\UsersFixture;
@@ -16,7 +15,6 @@ use Cake\Controller\ComponentRegistry;
 
 class ChangePasswordApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/users/edit';
@@ -59,8 +57,6 @@ class ChangePasswordApiTest extends TestCase
         );
 
         $this->assertResponseOk();
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec(self::ENDPOINT, 'put');
 
         // Test new password with form login
         $request = new ServerRequest([

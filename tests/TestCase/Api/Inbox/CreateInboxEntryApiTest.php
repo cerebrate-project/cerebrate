@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Helper\ApiTestTrait;
 
 class CreateInboxEntryApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/inbox/createEntry';
@@ -51,8 +49,6 @@ class CreateInboxEntryApiTest extends TestCase
                 'action' => 'Registration',
             ]
         );
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'post');
     }
 
     public function testAddUserRegistrationInboxNotAllowedAsRegularUser(): void
@@ -70,7 +66,5 @@ class CreateInboxEntryApiTest extends TestCase
 
         $this->assertResponseCode(405);
         $this->assertDbRecordNotExists('Inbox', ['id' => 3]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'post');
     }
 }

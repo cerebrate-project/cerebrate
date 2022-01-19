@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\OrganisationsFixture;
-use App\Test\Fixture\UsersFixture;
 use App\Test\Helper\ApiTestTrait;
 
 class ViewOrganisationApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/organisations/view';
@@ -36,7 +33,5 @@ class ViewOrganisationApiTest extends TestCase
 
         $this->assertResponseOk();
         $this->assertResponseContains('"name": "Organisation A"');
-        // TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url);
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\BroodsFixture;
@@ -14,7 +13,6 @@ use \WireMock\Client\WireMock;
 
 class TestBroodConnectionApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
     use WireMockTestTrait;
 
@@ -46,8 +44,6 @@ class TestBroodConnectionApiTest extends TestCase
 
         $this->assertResponseOk();
         $this->assertResponseContains('"user": "wiremock"');
-        // TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url);
     }
 
     private function mockCerebrateStatusResponse(): \WireMock\Stubbing\StubMapping

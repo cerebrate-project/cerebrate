@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\EncryptionKeysFixture;
@@ -12,7 +11,6 @@ use App\Test\Helper\ApiTestTrait;
 
 class EditEncryptionKeyApiTest extends TestCase
 {
-    use IntegrationTestTrait;
     use ApiTestTrait;
 
     protected const ENDPOINT = '/api/v1/encryptionKeys/edit';
@@ -46,8 +44,6 @@ class EditEncryptionKeyApiTest extends TestCase
                 'revoked' => true,
             ]
         );
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }
 
     public function testRevokeAdminEncryptionKeyNotAllowedAsRegularUser(): void
@@ -70,7 +66,5 @@ class EditEncryptionKeyApiTest extends TestCase
                 'revoked' => true
             ]
         );
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'put');
     }
 }

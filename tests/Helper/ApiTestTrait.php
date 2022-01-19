@@ -4,25 +4,45 @@ declare(strict_types=1);
 
 namespace App\Test\Helper;
 
+use Cake\TestSuite\IntegrationTestTrait;
 use Cake\Http\Exception\NotImplementedException;
+use Cake\Http\ServerRequestFactory;
+use Cake\Http\ServerRequest;
 use \League\OpenAPIValidation\PSR7\ValidatorBuilder;
 use \League\OpenAPIValidation\PSR7\RequestValidator;
 use \League\OpenAPIValidation\PSR7\ResponseValidator;
 use \League\OpenAPIValidation\PSR7\OperationAddress;
+use PHPUnit\Exception as PHPUnitException;
 
+/**
+ * Trait ApiTestTrait
+ *
+ * @package App\Test\TestCase\Helper
+ */
 trait ApiTestTrait
 {
+    use IntegrationTestTrait {
+        IntegrationTestTrait::_buildRequest as _buildRequestOriginal;
+        IntegrationTestTrait::_sendRequest as _sendRequestOriginal;
+    }
+
     /** @var string */
     protected $_authToken = '';
 
     /** @var ValidatorBuilder */
-    private $validator;
+    private $_validator;
 
     /** @var RequestValidator */
-    private $requestValidator;
+    private $_requestValidator;
 
     /** @var ResponseValidator */
-    private $responseValidator;
+    private $_responseValidator;
+
+    /** @var ServerRequest */
+    protected $_psrRequest;
+
+    /* @var boolean */
+    protected $_skipOpenApiValidations = false;
 
     public function setUp(): void
     {
@@ -40,9 +60,20 @@ trait ApiTestTrait
         $this->configRequest([
             'headers' => [
                 'Accept' => 'application/json',
-                'Authorization' => $this->_authToken
+                'Authorization' => $this->_authToken,
+                'Content-Type' => 'application/json'
             ]
         ]);
+    }
+
+    /**
+     * Skip OpenAPI validations.
+     *
+     * @return void
+     */
+    public function skipOpenApiValidations(): void
+    {
+        $this->_skipOpenApiValidations = true;
     }
 
     public function assertResponseContainsArray(array $expected): void
@@ -59,22 +90,19 @@ trait ApiTestTrait
      */
     public function initializeOpenApiValidator(string $specFile): void
     {
-        $this->validator = (new ValidatorBuilder)->fromYamlFile($specFile);
-        $this->requestValidator = $this->validator->getRequestValidator();
-        $this->responseValidator = $this->validator->getResponseValidator();
+        $this->_validator = (new ValidatorBuilder)->fromYamlFile($specFile);
+        $this->_requestValidator = $this->_validator->getRequestValidator();
+        $this->_responseValidator = $this->_validator->getResponseValidator();
     }
 
     /**
      * Validates the API request against the OpenAPI spec
      * 
-     * @param string $path The path to the API endpoint 
-     * @param string $method The HTTP method used to call the endpoint 
      * @return void
      */
-    public function assertRequestMatchesOpenApiSpec(string $endpoint, string $method = 'get'): void
+    public function assertRequestMatchesOpenApiSpec(): void
     {
-        // TODO: find a workaround to create a PSR-7 request object for validation
-        throw NotImplementedException("Unfortunately cakephp does not save the PSR-7 request object in the test context");
+        $this->_requestValidator->validate($this->_psrRequest);
     }
 
     /**
@@ -87,7 +115,7 @@ trait ApiTestTrait
     public function assertResponseMatchesOpenApiSpec(string $endpoint, string $method = 'get'): void
     {
         $address = new OperationAddress($endpoint, $method);
-        $this->responseValidator->validate($address, $this->_response);
+        $this->_responseValidator->validate($address, $this->_response);
     }
 
     /** 
@@ -111,7 +139,7 @@ trait ApiTestTrait
     }
 
     /** 
-     * Validates a record do notexists in the database
+     * Validates a record do not exists in the database
      * 
      * @param string $table The table name
      * @param array $conditions The conditions to check
@@ -133,10 +161,8 @@ trait ApiTestTrait
     /** 
      * Parses the response body and returns the decoded JSON
      * 
-     * @return void
+     * @return array
      * @throws \Exception
-     * 
-     * @see https://book.cakephp.org/4/en/orm-query-builder.html
      */
     public function getJsonResponseAsArray(): array
     {
@@ -158,5 +184,109 @@ trait ApiTestTrait
     public function getRecordFromDb(string $table, array $conditions): array
     {
         return $this->getTableLocator()->get($table)->find()->where($conditions)->first()->toArray();
+    }
+
+    /**
+     * This method intercepts IntegrationTestTrait::_buildRequest()
+     * in the quest to get a PSR-7 request object and saves it for 
+     * later inspection, also validates it against the OpenAPI spec.
+     * @see \Cake\TestSuite\IntegrationTestTrait::_buildRequest()
+     * 
+     * @param string $url The URL
+     * @param string $method The HTTP method
+     * @param array|string $data The request data.
+     * @return array The request context
+     */
+    protected function _buildRequest(string $url, $method, $data = []): array
+    {
+        $spec = $this->_buildRequestOriginal($url, $method, $data);
+
+        $this->_psrRequest = $this->_createPsr7RequestFromSpec($spec);
+
+        // Validate request against OpenAPI spec
+        if (!$this->_skipOpenApiValidations) {
+            try {
+                $this->assertRequestMatchesOpenApiSpec();
+            } catch (\Exception $exception) {
+                $this->fail($exception->getMessage());
+            }
+        } else {
+            $this->addWarning(
+                sprintf(
+                    'OpenAPI spec validations skipped for request [%s]%s.',
+                    $this->_psrRequest->getMethod(),
+                    $this->_psrRequest->getPath()
+                )
+            );
+        }
+
+        return $spec;
+    }
+
+    /**
+     * This method intercepts IntegrationTestTrait::_buildRequest()
+     * and validates the response against the OpenAPI spec.
+     *
+     * @see \Cake\TestSuite\IntegrationTestTrait::_sendRequest()
+     *
+     * @param array|string $url The URL
+     * @param string $method The HTTP method
+     * @param array|string $data The request data.
+     * @return void
+     * @throws \PHPUnit\Exception|\Throwable
+     */
+    protected function _sendRequest($url, $method, $data = []): void
+    {
+        // Adding Content-Type: application/json $this->configRequest() prevents this from happening somehow
+        if (in_array($method, ['POST', 'PATCH', 'PUT']) && $this->_request['headers']['Content-Type'] === 'application/json') {
+            $data = json_encode($data);
+        }
+
+        $this->_sendRequestOriginal($url, $method, $data);
+
+        // Validate response against OpenAPI spec
+        if (!$this->_skipOpenApiValidations) {
+            $this->assertResponseMatchesOpenApiSpec(
+                $this->_psrRequest->getPath(),
+                strtolower($this->_psrRequest->getMethod())
+            );
+        } else {
+            $this->addWarning(
+                sprintf(
+                    'OpenAPI spec validations skipped for response of [%s]%s.',
+                    $this->_psrRequest->getMethod(),
+                    $this->_psrRequest->getPath()
+                )
+            );
+        }
+    }
+
+    /**
+     * Create a PSR-7 request from the request spec.
+     * @see \Cake\TestSuite\MiddlewareDispatcher::_createRequest()
+     * 
+     * @param array<string, mixed> $spec The request spec.
+     * @return \Cake\Http\ServerRequest
+     */
+    private function _createPsr7RequestFromSpec(array $spec): ServerRequest
+    {
+        if (isset($spec['input'])) {
+            $spec['post'] = [];
+            $spec['environment']['CAKEPHP_INPUT'] = $spec['input'];
+        }
+        $environment = array_merge(
+            array_merge($_SERVER, ['REQUEST_URI' => $spec['url']]),
+            $spec['environment']
+        );
+        if (strpos($environment['PHP_SELF'], 'phpunit') !== false) {
+            $environment['PHP_SELF'] = '/';
+        }
+        return ServerRequestFactory::fromGlobals(
+            $environment,
+            $spec['query'],
+            $spec['post'],
+            $spec['cookies'],
+            $spec['files']
+        );
     }
 }
