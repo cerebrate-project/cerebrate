@@ -36,7 +36,7 @@ class ChangePasswordApiTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        $this->initializeOpenApiValidator($_ENV['OPENAPI_SPEC'] ?? APP . '../webroot/docs/openapi.yaml');
+        $this->initializeOpenApiValidator();
 
         $this->collection = new ComponentRegistry();
         $this->auth = new FormAuthenticate($this->collection, [

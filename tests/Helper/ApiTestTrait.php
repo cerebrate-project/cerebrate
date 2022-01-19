@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Test\Helper;
 
 use Cake\TestSuite\IntegrationTestTrait;
-use Cake\Http\Exception\NotImplementedException;
+use Cake\Core\Configure;
 use Cake\Http\ServerRequestFactory;
 use Cake\Http\ServerRequest;
+use Cake\Http\Exception\NotImplementedException;
 use \League\OpenAPIValidation\PSR7\ValidatorBuilder;
 use \League\OpenAPIValidation\PSR7\RequestValidator;
 use \League\OpenAPIValidation\PSR7\ResponseValidator;
 use \League\OpenAPIValidation\PSR7\OperationAddress;
-use PHPUnit\Exception as PHPUnitException;
 
 /**
  * Trait ApiTestTrait
@@ -47,7 +47,7 @@ trait ApiTestTrait
     public function setUp(): void
     {
         parent::setUp();
-        $this->initializeOpenApiValidator($_ENV['OPENAPI_SPEC'] ?? APP . '../webroot/docs/openapi.yaml');
+        $this->initializeOpenApiValidator();
     }
 
     public function setAuthToken(string $authToken): void
@@ -83,16 +83,18 @@ trait ApiTestTrait
     }
 
     /**
-     * Parse the OpenAPI specification and create a validator
+     * Load OpenAPI specification validator
      * 
-     * @param string $specFile
      * @return void
      */
-    public function initializeOpenApiValidator(string $specFile): void
+    public function initializeOpenApiValidator(): void
     {
-        $this->_validator = (new ValidatorBuilder)->fromYamlFile($specFile);
-        $this->_requestValidator = $this->_validator->getRequestValidator();
-        $this->_responseValidator = $this->_validator->getResponseValidator();
+        if (!$this->_skipOpenApiValidations) {
+            $this->_validator =  Configure::read('App.OpenAPIValidator');
+            if ($this->_validator === null) {
+                throw new \Exception('OpenAPI validator is not configured');
+            }
+        }
     }
 
     /**
@@ -102,7 +104,7 @@ trait ApiTestTrait
      */
     public function assertRequestMatchesOpenApiSpec(): void
     {
-        $this->_requestValidator->validate($this->_psrRequest);
+        $this->_validator->getRequestValidator()->validate($this->_psrRequest);
     }
 
     /**
@@ -115,7 +117,7 @@ trait ApiTestTrait
     public function assertResponseMatchesOpenApiSpec(string $endpoint, string $method = 'get'): void
     {
         $address = new OperationAddress($endpoint, $method);
-        $this->_responseValidator->validate($address, $this->_response);
+        $this->_validator->getResponseValidator()->validate($address, $this->_response);
     }
 
     /** 
