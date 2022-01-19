@@ -32,8 +32,6 @@ class DeleteEncryptionKeyApiTest extends TestCase
 
         $this->assertResponseOk();
         $this->assertDbRecordNotExists('EncryptionKeys', ['id' => EncryptionKeysFixture::ENCRYPTION_KEY_ORG_A_ID]);
-        //TODO: $this->assertRequestMatchesOpenApiSpec();
-        $this->assertResponseMatchesOpenApiSpec($url, 'delete');
     }
 
     public function testDeleteEncryptionKeyNotAllowedAsRegularUser(): void
