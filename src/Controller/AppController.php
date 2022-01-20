@@ -150,7 +150,9 @@ class AppController extends Controller
 
     public function beforeRender(EventInterface $event)
     {
-        $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
+        if (!$this->ParamHandler->isRest()) {
+            $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
+        }
     }
 
     private function authApiUser(): void
