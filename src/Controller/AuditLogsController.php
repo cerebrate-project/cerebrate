@@ -31,6 +31,11 @@ class AuditLogsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Administration');
     }
+
+    public function filtering()
+    {
+        $this->CRUD->filtering();
+    }
+
 }
