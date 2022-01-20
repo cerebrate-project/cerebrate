@@ -30,9 +30,13 @@ foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
         } else {
             $metaField = reset($metaTemplateField->metaFields);
             $fieldData = [
-                'field' => sprintf('MetaTemplates.%s.meta_template_fields.%s.metaFields.%s.value', $metaField->meta_template_id, $metaField->meta_template_field_id, $metaField->id),
                 'label' => $metaTemplateField->label,
             ];
+            if (isset($metaField->id)) {
+                $fieldData['field'] = sprintf('MetaTemplates.%s.meta_template_fields.%s.metaFields.%s.value', $metaField->meta_template_id, $metaField->meta_template_field_id, $metaField->id);
+            } else {
+                $fieldData['field'] = sprintf('MetaTemplates.%s.meta_template_fields.%s.metaFields.%s.value', $metaField->meta_template_id, $metaField->meta_template_field_id, array_key_first($metaTemplateField->metaFields));
+            }
             $this->Form->setTemplates($backupTemplates);
             $fieldsHtml .= $this->element(
                 'genericElements/Form/fieldScaffold',

@@ -1,5 +1,7 @@
-<?
+<?php
 
+use Cake\Utility\Inflector;
+use Cake\Routing\Router;
 ?>
 <h3><?= h($oldMetaTemplate->name) ?></h3>
 <div class="container-fluid">
@@ -7,7 +9,13 @@
         <div class="col">
             <div class="panel">
                 <h4 class="d-flex justify-content-between align-items-center">
-                    <?= __('Version {0}', h($oldMetaTemplate->version)) ?>
+                    <?php
+                    $url = Router::url([
+                        'action' => 'view',
+                        $oldMetaTemplate->id
+                    ]);
+                    ?>
+                    <a href="<?= $url ?>" class="text-decoration-none" target="__blank"><?= __('Version {0}', h($oldMetaTemplate->version)) ?></a>
                     <?=
                     $this->Bootstrap->badge([
                         'text' => __('Data to be migrated over'),
@@ -32,7 +40,13 @@
         <div class="col">
             <div class="panel">
                 <h4 class="d-flex justify-content-between align-items-center">
-                    <?= __('Version {0}', h($newMetaTemplate->version)) ?>
+                    <?php
+                    $url = Router::url([
+                        'action' => 'view',
+                        $newMetaTemplate->id
+                    ]);
+                    ?>
+                    <a href="<?= $url ?>" class="text-decoration-none" target="__blank"><?= __('Version {0}', h($newMetaTemplate->version)) ?></a>
                     <?=
                     $this->Bootstrap->badge([
                         'text' => __('Data to be saved'),
@@ -86,7 +100,10 @@ echo $this->Html->scriptBlock(sprintf(
     function submitMigration() {
         const $form = $('.to-save-container form')
         console.log($form.attr('action'));
-        AJAXApi.quickPostForm($form[0])
-        // $form.submit()
+        AJAXApi.quickPostForm($form[0]).then((postResult) => {
+            if (postResult.additionalData.redirect.url !== undefined) {
+                window.location = postResult.additionalData.redirect.url
+            }
+        })
     }
 </script>

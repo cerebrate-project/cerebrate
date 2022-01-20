@@ -10,56 +10,14 @@ use Cake\ORM\TableRegistry;
 use \Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\Routing\Router;
+
 
 class MetaTemplatesController extends AppController
 {
     public $quickFilterFields = [['name' => true], 'uuid', ['scope' => true]];
     public $filterFields = ['name', 'uuid', 'scope', 'namespace'];
     public $containFields = ['MetaTemplateFields'];
-
-    // public function update($template_uuid=null)
-    // {
-    //     $metaTemplate = false;
-    //     if (!is_null($template_uuid)) {
-    //         $metaTemplate = $this->MetaTemplates->find()->where([
-    //             'uuid' => $template_uuid
-    //         ])->first();
-    //         if (empty($metaTemplate)) {
-    //             throw new NotFoundException(__('Invalid {0}.', $this->MetaTemplates->getAlias()));
-    //         }
-    //     }
-    //     if ($this->request->is('post')) {
-    //         $updateStrategy = $this->request->getData('update_strategy', null);
-    //         $result = $this->MetaTemplates->update($template_uuid, $updateStrategy);
-    //         if ($this->ParamHandler->isRest()) {
-    //             return $this->RestResponse->viewData($result, 'json');
-    //         } else {
-    //             if ($result['success']) {
-    //                 $message = __n('{0} templates updated.', 'The template has been updated.', empty($template_uuid), $result['files_processed']);
-    //             } else {
-    //                 $message = __n('{0} templates could not be updated.', 'The template could not be updated.', empty($template_uuid), $result['files_processed']);
-    //             }
-    //             $this->CRUD->setResponseForController('update', $result['success'], $message, $result['files_processed'], $result['update_errors'], ['redirect' => $this->referer()]);
-    //             $responsePayload = $this->CRUD->getResponsePayload();
-    //             if (!empty($responsePayload)) {
-    //                 return $responsePayload;
-    //             }
-    //         }
-    //     } else {
-    //         if (!$this->ParamHandler->isRest()) {
-    //             if (!is_null($template_uuid)) {
-    //                 $this->set('metaTemplate', $metaTemplate);
-    //                 $this->setUpdateStatus($metaTemplate->id);
-    //             } else {
-    //                 $this->set('title', __('Update Meta Templates'));
-    //                 $this->set('question', __('Are you sure you wish to update the Meta Template definitions'));
-    //                 $templatesUpdateStatus = $this->MetaTemplates->getUpdateStatusForTemplates();
-    //                 $this->set('templatesUpdateStatus', $templatesUpdateStatus);
-    //                 $this->render('updateAll');
-    //             }
-    //         }
-    //     }
-    // }
 
     public function updateAllTemplates()
     {
@@ -180,10 +138,12 @@ class MetaTemplatesController extends AppController
     {
         $metaTemplate = $this->MetaTemplates->get($template_id);
         $newestMetaTemplate = $this->MetaTemplates->getNewestVersion($metaTemplate);
-        $entities = $this->MetaTemplates->getEntitiesHavingMetaFieldsFromTemplate($template_id);
+        $amountOfEntitiesToUpdate = 0;
+        $entities = $this->MetaTemplates->getEntitiesHavingMetaFieldsFromTemplate($template_id, 10, $amountOfEntitiesToUpdate);
         $this->set('metaTemplate', $metaTemplate);
         $this->set('newestMetaTemplate', $newestMetaTemplate);
         $this->set('entities', $entities);
+        $this->set('amountOfEntitiesToUpdate', $amountOfEntitiesToUpdate);
     }
 
     public function migrateOldMetaTemplateToNewestVersionForEntity($template_id, $entity_id)
@@ -232,9 +192,12 @@ class MetaTemplatesController extends AppController
                 $message,
                 $savedData,
                 [],
-                ['redirect' => [
-                    'controller' => $className,
-                    'action' => 'view', $entity_id]
+                [
+                    'redirect' => [
+                        'controller' => $className,
+                        'action' => 'view', $entity_id,
+                        'url' => Router::url(['controller' => $className, 'action' => 'view', $entity_id])
+                    ]
                 ]
             );
             $responsePayload = $this->CRUD->getResponsePayload();
@@ -242,7 +205,7 @@ class MetaTemplatesController extends AppController
                 return $responsePayload;
             }
         }
-        $conflicts = $this->MetaTemplates->getMetaTemplateConflictsForMetaTemplate($metaTemplate, $newestMetaTemplate);
+        $conflicts = $this->MetaTemplates->getMetaFieldsConflictsUnderTemplate($entity->meta_fields, $newestMetaTemplate);
         foreach ($conflicts as $conflict) {
             if (!empty($conflict['existing_meta_template_field'])) {
                 $existingMetaTemplateField = $conflict['existing_meta_template_field'];
@@ -257,7 +220,7 @@ class MetaTemplatesController extends AppController
             if (!empty($conflicts[$metaTemplateField->field]['conflicts'])) {
                 continue;
             }
-            foreach ($newestMetaTemplate->meta_template_fields as $newMetaTemplateField) {
+            foreach ($newestMetaTemplate->meta_template_fields as $i => $newMetaTemplateField) {
                 if ($metaTemplateField->field == $newMetaTemplateField->field && empty($newMetaTemplateField->metaFields)) {
                     $movedMetaTemplateFields[] = $metaTemplateField->id;
                     $copiedMetaFields = array_map(function ($e) use ($newMetaTemplateField) {
@@ -298,14 +261,12 @@ class MetaTemplatesController extends AppController
                 ]
             ],
             'contain' => $this->containFields,
-            'afterFind' => function($data) use ($templatesUpdateStatus) {
-                foreach ($data as $i => $metaTemplate) {
-                    if (!empty($templatesUpdateStatus[$metaTemplate->uuid])) {
-                        $templateStatus = $this->MetaTemplates->getStatusForMetaTemplate($templatesUpdateStatus[$metaTemplate->uuid]['template'], $metaTemplate);
-                        $metaTemplate->set('updateStatus', $this->MetaTemplates->computeFullUpdateStatusForMetaTemplate($templateStatus, $metaTemplate));
-                    }
+            'afterFind' => function($metaTemplate) use ($templatesUpdateStatus) {
+                if (!empty($templatesUpdateStatus[$metaTemplate->uuid])) {
+                    $templateStatus = $this->MetaTemplates->getStatusForMetaTemplate($templatesUpdateStatus[$metaTemplate->uuid]['template'], $metaTemplate);
+                    $metaTemplate->set('updateStatus', $this->MetaTemplates->computeFullUpdateStatusForMetaTemplate($templateStatus, $metaTemplate));
                 }
-                return $data;
+                return $metaTemplate;
             }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();

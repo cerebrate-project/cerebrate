@@ -595,9 +595,10 @@ class MetaTemplatesTable extends AppTable
      * Collect all enties having meta-fields belonging to the provided template
      *
      * @param integer $template_id
+     * @param integer|bool $limit The limit of entities to be returned. Pass null to be ignore the limit
      * @return array List of entities
      */
-    public function getEntitiesHavingMetaFieldsFromTemplate(int $metaTemplateId): array
+    public function getEntitiesHavingMetaFieldsFromTemplate(int $metaTemplateId, $limit=10, int &$totalAmount=0): array
     {
         $metaTemplate = $this->get($metaTemplateId);
         $queryParentEntities = $this->MetaTemplateFields->MetaFields->find();
@@ -618,6 +619,10 @@ class MetaTemplatesTable extends AppTable
                     ]
                 ]
             ]);
+        if (!is_null($limit)) {
+            $totalAmount = $entityQuery->all()->count();
+            $entityQuery->limit($limit);
+        }
         $entities = $entityQuery->all()->toList();
         return $entities;
     }
@@ -876,7 +881,7 @@ class MetaTemplatesTable extends AppTable
             $this->updateMetaTemplate($metaTemplate, $template, $errors);
             return !empty($errors) ? $errors[0] : true;
         }
-        $entities = $this->getEntitiesHavingMetaFieldsFromTemplate($metaTemplate->id);
+        $entities = $this->getEntitiesHavingMetaFieldsFromTemplate($metaTemplate->id, null);
 
         $conflictingEntities = [];
         foreach ($entities as $entity) {
@@ -935,7 +940,7 @@ class MetaTemplatesTable extends AppTable
             $this->updateMetaTemplate($metaTemplate, $template, $errors);
             return !empty($errors) ? $errors[0] : true;
         }
-        $entities = $this->getEntitiesHavingMetaFieldsFromTemplate($metaTemplate->id);
+        $entities = $this->getEntitiesHavingMetaFieldsFromTemplate($metaTemplate->id, null);
 
         foreach ($entities as $entity) {
             $conflicts = $this->getMetaFieldsConflictsUnderTemplate($entity['meta_fields'], $template);
@@ -1002,11 +1007,18 @@ class MetaTemplatesTable extends AppTable
      */
     public function getMetaFieldsConflictsUnderTemplate(array $metaFields, $template): array
     {
+        if (!is_array($template) && get_class($template) == 'App\Model\Entity\MetaTemplate') {
+            $metaTemplateFields = $template->meta_template_fields;
+            $existingMetaTemplate = true;
+        } else {
+            $metaTemplateFields = $template['metaFields'];
+        }
         $conflicting = [];
         $metaTemplateFieldByName = [];
-        $existingMetaTemplate = !is_array($template);
-        $metaTemplateFields = !$existingMetaTemplate ? $template['metaFields'] : $template->meta_template_fields;
         foreach ($metaTemplateFields as $metaTemplateField) {
+            if (!is_array($template)) {
+                $metaTemplateField = $metaTemplateField->toArray();
+            }
             $metaTemplateFieldByName[$metaTemplateField['field']] = $this->MetaTemplateFields->newEntity($metaTemplateField);
         }
         foreach ($metaFields as $metaField) {
@@ -1026,7 +1038,7 @@ class MetaTemplatesTable extends AppTable
 
     /**
      * Compute the potential conflict that would be introduced by updating an existing meta-template-field with the provided one.
-     * This will go through all instanciation of the existing meta-template-field and checking their validaty against the provided one.
+     * This will go through all instanciation of the existing meta-template-field and checking their validity against the provided one.
      *
      * @param \App\Model\Entity\MetaTemplateField $metaTemplateField
      * @param array $templateField

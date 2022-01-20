@@ -28,6 +28,9 @@ foreach ($entities as $entity) {
         __('has {0} meta-fields to update', count($entity->meta_fields))
     );
 }
+if ($amountOfEntitiesToUpdate > 0) {
+    $bodyHtml .= sprintf('<li class="list-inline-item fw-light fs-7">%s</li>', __('{0} more entities', h($amountOfEntitiesToUpdate)));
+}
 $bodyHtml .= '</ul>';
 
 echo $this->Bootstrap->modal([
