@@ -44,10 +44,9 @@ jobs:
         run: |
           sudo apt-get -y update
           sudo apt-get install -y --no-install-recommends curl git zip unzip libicu-dev libxml2-dev
+          composer install --no-progress --no-interaction
 
       - name: Run tests
-        run: |
-          composer install --no-progress --no-interaction
-          composer test
+        run: composer test
         env:
           DEBUG: true
