@@ -94,8 +94,12 @@ class AppTable extends Table
     {
         $statistics = [];
         if ($table->hasBehavior('Timestamp')) {
-            $statistics['created'] = $this->getActivityStatistic($table, $days, 'created');
-            $statistics['modified'] = $this->getActivityStatistic($table, $days, 'modified');
+            if ($table->getSchema()->getColumnType('created') == 'datetime') {
+                $statistics['created'] = $this->getActivityStatistic($table, $days, 'created');
+            }
+            if ($table->getSchema()->getColumnType('modified') == 'datetime') {
+                $statistics['modified'] = $this->getActivityStatistic($table, $days, 'modified');
+            }
         }
         return $statistics;
     }
@@ -132,7 +136,7 @@ class AppTable extends Table
                 ->where(["{$field} >" => new \DateTime("-{$days} days")])
                 ->group(['date'])
                 ->order(['date']);
-            $data = $query->toArray();
+            $data = $query->all()->toArray();
             $interval = new \DateInterval('P1D');
             $period = new \DatePeriod(new \DateTime("-{$days} days"), $interval, (new \DateTime())->modify( '+1 day' ));
             foreach ($period as $date) {
