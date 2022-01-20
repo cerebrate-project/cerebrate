@@ -36,7 +36,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 ],
                 [
                     'type' => 'search',
-                    'button' => __('Filter'),
+                    'button' => __('Search'),
                     'placeholder' => __('Enter value to search'),
                     'data' => '',
                     'searchKey' => 'value'
@@ -89,12 +89,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url_params_data_paths' => ['id'],
                 'icon' => 'eye'
             ],
+            /*
             [
                 'open_modal' => '/localTools/connectLocal/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'reload_url' => sprintf('/localTools/connectorIndex/%s', h($connectorName)),
                 'icon' => 'plug'
             ],
+            */
             [
                 'open_modal' => '/localTools/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
@@ -155,7 +157,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
             tableData
         )
         const $footer = $(modalObject.ajaxApi.statusNode).parent()
-        modalObject.ajaxApi.statusNode.remove()
+        modalObject.ajaxApi.options.statusNode.remove()
         const $cancelButton = $footer.find('button[data-dismiss="modal"]')
         $cancelButton.text('<?= __('OK') ?>').removeClass('btn-secondary').addClass('btn-primary')
     }

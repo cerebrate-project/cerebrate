@@ -9,8 +9,6 @@ use Cake\Error\Debugger;
 
 class OrganisationsTable extends AppTable
 {
-    public $metaFields = 'organisation';
-
     protected $_accessible = [
         'id' => false
     ];
@@ -18,8 +16,10 @@ class OrganisationsTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('UUID');
         $this->addBehavior('Timestamp');
         $this->addBehavior('Tags.Tag');
+        $this->addBehavior('AuditLog');
         $this->hasMany(
             'Alignments',
             [
@@ -35,14 +35,7 @@ class OrganisationsTable extends AppTable
                 'conditions' => ['owner_model' => 'organisation']
             ]
         );
-        $this->hasMany(
-            'MetaFields',
-            [
-                'dependent' => true,
-                'foreignKey' => 'parent_id',
-                'conditions' => ['MetaFields.scope' => 'organisation']
-            ]
-        );
+        $this->addBehavior('MetaFields');
         $this->setDisplayField('name');
     }
 

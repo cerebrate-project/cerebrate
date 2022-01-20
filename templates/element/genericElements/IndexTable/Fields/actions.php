@@ -101,12 +101,13 @@
                 $action['onclick'] = sprintf('UI.submissionModalForIndex(\'%s\', \'%s\', \'%s\')', $modal_url, $reload_url, $tableRandomValue);
             }
             echo sprintf(
-                '<a href="%s" title="%s" aria-label="%s" %s %s class="btn btn-sm btn-outline-dark table-link-action"><i class="%s"></i></a> ',
+                '<a href="%s" title="%s" aria-label="%s" %s %s class="btn btn-sm btn-%s table-link-action"><i class="%s"></i></a> ',
                 $url,
                 empty($action['title']) ? '' : h($action['title']),
                 empty($action['title']) ? '' : h($action['title']),
                 empty($action['dbclickAction']) ? '' : 'class="dblclickActionElement"',
                 empty($action['onclick']) ? '' : sprintf('onClick="%s"', $action['onclick']),
+                empty($action['variant']) ? 'outline-dark' : h($action['variant']),
                 $this->FontAwesome->getClass($action['icon'])
             );
         }

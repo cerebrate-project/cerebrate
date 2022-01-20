@@ -9,7 +9,7 @@
         "admad/cakephp-social-auth": "^1.1",
         "cakephp/authentication": "^2.0",
         "cakephp/authorization": "^2.0",
-        "cakephp/cakephp": "^4.0",
+        "cakephp/cakephp": "^4.3",
         "cakephp/migrations": "^3.0",
         "cakephp/plugin-installer": "^1.2",
         "erusev/parsedown": "^1.7",
@@ -19,9 +19,12 @@
         "cakephp/bake": "^2.0.3",
         "cakephp/cakephp-codesniffer": "~4.0.0",
         "cakephp/debug_kit": "^4.0",
+        "fzaninotto/faker": "^1.9",
         "josegonzalez/dotenv": "^3.2",
+        "league/openapi-psr7-validator": "^0.16.4",
         "phpunit/phpunit": "^8.5",
-        "psy/psysh": "@stable"
+        "psy/psysh": "@stable",
+        "wiremock-php/wiremock-php": "^2.32"
     },
     "suggest": {
         "markstory/asset_compress": "An asset compression plugin which provides file concatenation and a flexible filter system for preprocessing and minification.",
@@ -44,7 +47,6 @@
     "scripts": {
         "post-install-cmd": "App\\Console\\Installer::postInstall",
         "post-create-project-cmd": "App\\Console\\Installer::postInstall",
-        "post-autoload-dump": "Cake\\Composer\\Installer\\PluginInstaller::postAutoloadDump",
         "check": [
             "@test",
             "@cs-check"
@@ -52,7 +54,11 @@
         "cs-check": "phpcs --colors -p --standard=vendor/cakephp/cakephp-codesniffer/CakePHP src/ tests/",
         "cs-fix": "phpcbf --colors --standard=vendor/cakephp/cakephp-codesniffer/CakePHP src/ tests/",
         "stan": "phpstan analyse src/",
-        "test": "phpunit --colors=always"
+        "test": [
+            "sh ./tests/Helper/wiremock/start.sh",
+            "phpunit",
+            "sh ./tests/Helper/wiremock/stop.sh"
+        ]
     },
     "prefer-stable": true,
     "config": {

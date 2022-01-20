@@ -8,16 +8,12 @@
                     'field' => 'name'
                 ),
                 array(
-                    'field' => 'description',
-                    'type' => 'textarea'
-                ),
-                array(
                     'field' => 'uuid',
                     'label' => 'UUID',
                     'type' => 'uuid'
                 ),
                 array(
-                    'field' => 'URL'
+                    'field' => 'url'
                 ),
                 array(
                     'field' => 'nationality'
@@ -29,7 +25,6 @@
                     'field' => 'type'
                 )
             ),
-            'metaTemplates' => empty($metaTemplates) ? [] : $metaTemplates,
             'submit' => array(
                 'action' => $this->request->getParam('action')
             )

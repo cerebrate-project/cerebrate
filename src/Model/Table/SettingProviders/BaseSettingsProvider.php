@@ -1,27 +1,27 @@
 <?php
-namespace App\Model\Table;
+namespace App\Settings\SettingsProvider;
 
 use App\Model\Table\AppTable;
 use Cake\Validation\Validator;
 use Cake\ORM\TableRegistry;
 
-class SettingsProviderTable extends AppTable
+class BaseSettingsProvider
 {
-    private $settingsConfiguration = [];
-    private $error_critical = '',
+    protected $settingsConfiguration = [];
+    protected $error_critical = '',
             $error_warning = '',
             $error_info = '';
-    private $severities = ['info', 'warning', 'critical'];
+    protected $severities = ['info', 'warning', 'critical'];
 
-    public function initialize(array $config): void
+    public function __construct()
     {
-        parent::initialize($config);
         $this->settingsConfiguration = $this->generateSettingsConfiguration();
-        $this->setTable(false);
         $this->error_critical =  __('Cerebrate will not operate correctly or will be unsecure until these issues are resolved.');
         $this->error_warning =  __('Some of the features of Cerebrate cannot be utilised until these issues are resolved.');
         $this->error_info =  __('There are some optional tweaks that could be done to improve the looks of your Cerebrate instance.');
-        $this->settingValidator = new SettingValidator();
+        if (!isset($this->settingValidator)) {
+            $this->settingValidator = new SettingValidator();
+        }
     }
 
     /**
@@ -46,151 +46,9 @@ class SettingsProviderTable extends AppTable
      *     redacted    [optional]: Should the setting value be redacted. FIXME: To implement
      *     cli_only    [optional]: Should this setting be modified only via the CLI.
      */
-    private function generateSettingsConfiguration()
+    protected function generateSettingsConfiguration()
     {
-        return [
-            'Application' => [
-                'General' => [
-                    'Essentials' => [
-                        '_description' => __('Ensentials settings required for the application to run normally.'),
-                        '_icon' => 'user-cog',
-                        'app.baseurl' => [
-                            'name' => __('Base URL'),
-                            'type' => 'string',
-                            'description' => __('The base url of the application (in the format https://www.mymispinstance.com or https://myserver.com/misp). Several features depend on this setting being correctly set to function.'),
-                            'default' => '',
-                            'severity' => 'critical',
-                            'test' => 'testBaseURL',
-                        ],
-                        'app.uuid' => [
-                            'name' => 'UUID',
-                            'type' => 'string',
-                            'description' => __('The Cerebrate instance UUID. This UUID is used to identify this instance.'),
-                            'default' => '',
-                            'severity' => 'critical',
-                            'test' => 'testUuid',
-                        ],
-                    ],
-                    'Miscellaneous' => [
-                        'sc2.hero' => [
-                            'description' => 'The true hero',
-                            'default' => 'Sarah Kerrigan',
-                            'name' => 'Hero',
-                            'options' => [
-                                'Jim Raynor' => 'Jim Raynor',
-                                'Sarah Kerrigan' => 'Sarah Kerrigan',
-                                'Artanis' => 'Artanis',
-                                'Zeratul' => 'Zeratul',
-                            ],
-                            'type' => 'select'
-                        ],
-                        'sc2.antagonists' => [
-                            'description' => 'The bad guys',
-                            'default' => 'Amon',
-                            'name' => 'Antagonists',
-                            'options' => function($settingsProviders) {
-                                return [
-                                    'Amon' => 'Amon',
-                                    'Sarah Kerrigan' => 'Sarah Kerrigan',
-                                    'Narud' => 'Narud',
-                                ];
-                            },
-                            'severity' => 'warning',
-                            'type' => 'multi-select'
-                        ],
-                    ],
-                    'floating-setting' => [
-                        'description' => 'floaringSetting',
-                        // 'default' => 'A default value',
-                        'name' => 'Uncategorized Setting',
-                        // 'severity' => 'critical',
-                        'severity' => 'warning',
-                        // 'severity' => 'info',
-                        'type' => 'integer'
-                    ],
-                ],
-                'Network' => [
-                    'Proxy' => [
-                        'proxy.host' => [
-                            'name' => __('Host'),
-                            'type' => 'string',
-                            'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
-                            'test' => 'testHostname',
-                        ],
-                        'proxy.port' => [
-                            'name' => __('Port'),
-                            'type' => 'integer',
-                            'description' => __('The TCP port for the HTTP proxy.'),
-                            'test' => 'testForRangeXY',
-                        ],
-                        'proxy.user' => [
-                            'name' => __('User'),
-                            'type' => 'string',
-                            'description' => __('The authentication username for the HTTP proxy.'),
-                            'default' => 'admin',
-                            'dependsOn' => 'proxy.host',
-                        ],
-                        'proxy.password' => [
-                            'name' => __('Password'),
-                            'type' => 'string',
-                            'description' => __('The authentication password for the HTTP proxy.'),
-                            'default' => '',
-                            'dependsOn' => 'proxy.host',
-                        ],
-                    ],
-                ],
-                'UI' => [
-                    'General' => [
-                        'ui.bsTheme' => [
-                            'description' => 'The Bootstrap theme to use for the application',
-                            'default' => 'default',
-                            'name' => 'UI Theme',
-                            'options' => function($settingsProviders) {
-                                $instanceTable = TableRegistry::getTableLocator()->get('Instance');
-                                $themes = $instanceTable->getAvailableThemes();
-                                return array_combine($themes, $themes);
-                            },
-                            'severity' => 'info',
-                            'type' => 'select'
-                        ],
-                    ],
-                ],
-            ],
-            'Security' => [
-                'Development' => [
-                    'Debugging' => [
-                        'security.debug' => [
-                            'name' => __('Debug Level'),
-                            'type' => 'select',
-                            'description' => __('The debug level of the instance'),
-                            'default' => 0,
-                            'options' => [
-                                0 => __('Debug Off'),
-                                1 => __('Debug On'),
-                                2 => __('Debug On + SQL Dump'),
-                            ],
-                            'test' => function($value, $setting, $validator) {
-                                $validator->range('value', [0, 3]);
-                                return testValidator($value, $validator);
-                            },
-                        ],
-                    ],
-                ]
-            ],
-            'Features' => [
-                'Demo Settings' => [
-                    'demo.switch' => [
-                        'name' => __('Switch'),
-                        'type' => 'boolean',
-                        'description' => __('A switch acting as a checkbox'),
-                        'default' => false,
-                        'test' => function() {
-                            return 'Fake error';
-                        },
-                    ],
-                ]
-            ],
-        ];
+        return [];
     }
 
     /**
@@ -206,7 +64,7 @@ class SettingsProviderTable extends AppTable
         }
         return $settingConf;
     }
-    
+
     /**
      * mergeSettingsIntoSettingConfiguration Inject the provided settings into the configuration while performing depencency and validation checks
      *
@@ -214,7 +72,7 @@ class SettingsProviderTable extends AppTable
      * @param  array $settings the settings
      * @return void
      */
-    private function mergeSettingsIntoSettingConfiguration(array $settingConf, array $settings, string $path=''): array
+    protected function mergeSettingsIntoSettingConfiguration(array $settingConf, array $settings, string $path=''): array
     {
         foreach ($settingConf as $key => $value) {
             if ($this->isSettingMetaKey($key)) {
@@ -249,7 +107,7 @@ class SettingsProviderTable extends AppTable
         }
         return $flattenedSettings;
     }
-    
+
     /**
      * getNoticesFromSettingsConfiguration Summarize the validation errors
      *
@@ -277,12 +135,12 @@ class SettingsProviderTable extends AppTable
         return $notices;
     }
 
-    private function isLeaf($setting)
+    protected function isLeaf($setting)
     {
         return !empty($setting['name']) && !empty($setting['type']);
     }
 
-    private function evaluateLeaf($setting, $settingSection)
+    protected function evaluateLeaf($setting, $settingSection)
     {
         $skipValidation = false;
         if ($setting['type'] == 'select' || $setting['type'] == 'multi-select') {
@@ -322,7 +180,7 @@ class SettingsProviderTable extends AppTable
         }
         return $setting;
     }
-    
+
     /**
      * evaluateFunctionForSetting - evaluate the provided function. If function could not be evaluated, its result is defaulted to true
      *
@@ -353,12 +211,6 @@ class SettingsProviderTable extends AppTable
     }
 }
 
-function testValidator($value, $validator)
-{
-    $errors = $validator->validate(['value' => $value]);
-    return !empty($errors) ? implode(', ', $errors['value']) : true;
-}
-
 class SettingValidator
 {
 
@@ -383,23 +235,5 @@ class SettingValidator
     public function testForEmpty($value, &$setting)
     {
         return !empty($value) ? true : __('Cannot be empty');
-    }
-
-    public function testBaseURL($value, &$setting)
-    {
-        if (empty($value)) {
-            return __('Cannot be empty');
-        }
-        if (!empty($value) && !preg_match('/^http(s)?:\/\//i', $value)) {
-            return __('Invalid URL, please make sure that the protocol is set.');
-        }
-        return true;
-    }
-
-    public function testUuid($value, &$setting) {
-        if (empty($value) || !preg_match('/^\{?[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}\}?$/', $value)) {
-            return __('Invalid UUID.');
-        }
-        return true;
     }
 }

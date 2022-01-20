@@ -17,7 +17,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 ],
                 [
                     'type' => 'search',
-                    'button' => __('Filter'),
+                    'button' => __('Search'),
                     'placeholder' => __('Enter value to search'),
                     'data' => '',
                     'searchKey' => 'value'
@@ -52,6 +52,13 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'username',
             ],
             [
+                'name' => __('Organisation'),
+                'sort' => 'organisation.name',
+                'data_path' => 'organisation.name',
+                'url' => '/organisations/view/{{0}}',
+                'url_vars' => ['organisation.id']
+            ],
+            [
                 'name' => __('Email'),
                 'sort' => 'individual.email',
                 'data_path' => 'individual.email',
@@ -74,6 +81,13 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'role.name',
                 'url' => '/roles/view/{{0}}',
                 'url_vars' => ['role.id']
+            ],
+            [
+                'name' => __('# User Settings'),
+                'element' => 'count_summary',
+                'data_path' => 'user_settings',
+                'url' => '/user-settings/index?Users.id={{url_data}}',
+                'url_data_path' => 'id'
             ],
         ],
         'title' => __('User index'),

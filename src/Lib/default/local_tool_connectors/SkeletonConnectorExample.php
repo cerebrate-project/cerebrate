@@ -46,6 +46,22 @@ class SkeletonConnector extends CommonConnectorTools
             'redirect' => 'serverSettingsAction'
         ]
     ];
+    public $settings = [
+        'url' => [
+            'type' => 'text'
+        ],
+        'authkey' => [
+            'type' => 'text'
+        ],
+        'skip_ssl' => [
+            'type' => 'boolean'
+        ],
+    ];
+    public $settingsPlaceholder = [
+        'url' => 'https://your.url',
+        'authkey' => '',
+        'skip_ssl' => '0',
+    ];
 
     public function health(Object $connection): array
     {
@@ -87,7 +103,7 @@ class SkeletonConnector extends CommonConnectorTools
                     'children' => [
                         [
                             'type' => 'search',
-                            'button' => __('Filter'),
+                            'button' => __('Search'),
                             'placeholder' => __('Enter value to search'),
                             'data' => '',
                             'searchKey' => 'value',

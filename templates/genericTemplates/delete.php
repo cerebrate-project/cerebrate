@@ -18,7 +18,7 @@ $form = $this->element('genericElements/Form/genericForm', [
 ]);
 $formHTML = sprintf('<div class="d-none">%s</div>', $form);
 
-$bodyMessage = !empty($deletionText) ? __($deletionText) : __('Are you sure you want to delete {0} #{1}?', h(Cake\Utility\Inflector::singularize($this->request->getParam('controller'))), h($id));
+$bodyMessage = !empty($deletionText) ? h($deletionText) : __('Are you sure you want to delete {0} #{1}?', h(Cake\Utility\Inflector::singularize($this->request->getParam('controller'))), h($id));
 $bodyHTML = sprintf('%s%s', $formHTML, $bodyMessage);
 
 echo $this->Bootstrap->modal([

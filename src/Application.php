@@ -118,6 +118,7 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
                     'collectionFactory' => null,
                     'logErrors' => true,
                 ]));
+                \SocialConnect\JWX\JWT::$screw = Configure::check('keycloak.screw') ? Configure::read('keycloak.screw') : 0;
             }
             $middlewareQueue->add(new AuthenticationMiddleware($this))
             ->add(new BodyParserMiddleware());

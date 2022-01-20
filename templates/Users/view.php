@@ -21,6 +21,14 @@ echo $this->element(
                 'path' => 'individual.email'
             ],
             [
+                'type' => 'generic',
+                'key' => __('Organisation'),
+                'path' => 'organisation.name',
+                'url' => '/organisations/view/{{0}}',
+                'url_vars' => 'organisation.id'
+            ],
+            [
+                'type' => 'generic',
                 'key' => __('Role'),
                 'path' => 'role.name',
                 'url' => '/roles/view/{{0}}',
@@ -48,9 +56,14 @@ echo $this->element(
                 'title' => __('Authentication keys')
             ],
             [
-                'url' => '/EncryptionKeys/index?Users.id={{0}}',
-                'url_params' => ['id'],
+                'url' => '/EncryptionKeys/index?owner_id={{0}}',
+                'url_params' => ['individual_id'],
                 'title' => __('Encryption keys')
+            ],
+            [
+                'url' => '/UserSettings/index?Users.id={{0}}',
+                'url_params' => ['id'],
+                'title' => __('User settings')
             ]
         ]
     ]

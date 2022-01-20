@@ -18,15 +18,9 @@ class OutboxTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new'
-                ]
-            ]
-        ]);
-
+        $this->addBehavior('Timestamp');
         $this->belongsTo('Users');
+        $this->addBehavior('AuditLog');
         $this->setDisplayField('title');
     }
 

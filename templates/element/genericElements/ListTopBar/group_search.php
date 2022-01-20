@@ -15,12 +15,22 @@
         if (!empty($data['quickFilter'])) {
             $quickFilter = $data['quickFilter'];
         }
+        if (!empty($quickFilterForMetaField['enabled'])) {
+            $quickFilter[] = [
+                'MetaField\'s value' => !empty($quickFilterForMetaField['wildcard_search'])
+            ];
+        }
         $filterEffective = !empty($quickFilter); // No filters will be picked up, thus rendering the filtering useless
         $filteringButton = '';
         if (!empty($data['allowFilering'])) {
             $activeFilters = !empty($activeFilters) ? $activeFilters : [];
+            $numberActiveFilters = count($activeFilters);
+            if (!empty($activeFilters['filteringMetaFields'])) {
+                $numberActiveFilters += count($activeFilters['filteringMetaFields']) - 1;
+            }
             $buttonConfig = [
                 'icon' => 'filter',
+                'variant' => $numberActiveFilters > 0 ? 'warning' : 'primary',
                 'params' => [
                     'title' => __('Filter index'),
                     'id' => sprintf('toggleFilterButton-%s', h($tableRandomValue))
@@ -29,8 +39,8 @@
             if (count($activeFilters) > 0) {
                 $buttonConfig['badge'] = [
                     'variant' => 'light',
-                    'text' => count($activeFilters),
-                    'title' => __n('There is {0} active filter', 'There are {0} active filters', count($activeFilters), count($activeFilters))
+                    'text' => $numberActiveFilters,
+                    'title' => __n('There is {0} active filter', 'There are {0} active filters', $numberActiveFilters, $numberActiveFilters)
                 ];
             }
             $filteringButton = $this->Bootstrap->button($buttonConfig);
@@ -58,7 +68,8 @@
             $filterEffective ? '' : 'disabled="disabled"'
         );
         echo sprintf(
-            '<div class="input-group" data-table-random-value="%s" style="margin-left: auto;">%s%s</div>',
+            '<div class="input-group %s" data-table-random-value="%s" style="margin-left: auto;">%s%s</div>',
+            $filterEffective ? '' : 'd-none',
             h($tableRandomValue),
             $input,
             $button

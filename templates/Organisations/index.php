@@ -26,6 +26,10 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'data' => '',
                     'searchKey' => 'value',
                     'allowFilering' => true
+                ],
+                [
+                    'type' => 'table_action',
+                    'table_setting_id' => 'organisation_index',
                 ]
             ]
         ],
@@ -40,6 +44,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => __('Name'),
                 'class' => 'short',
                 'data_path' => 'name',
+                'sort' => 'name',
             ],
             [
                 'name' => __('UUID'),
@@ -63,14 +68,17 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'name' => __('Nationality'),
                 'data_path' => 'nationality',
+                'sort' => 'nationality',
             ],
             [
                 'name' => __('Sector'),
                 'data_path' => 'sector',
+                'sort' => 'sector',
             ],
             [
                 'name' => __('Type'),
                 'data_path' => 'type',
+                'sort' => 'type',
             ],
             [
                 'name' => __('Tags'),
@@ -80,7 +88,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('ContactDB Organisation Index'),
         'description' => __('A list of organisations known by your Cerebrate instance. This list can get populated either directly, by adding new organisations or by fetching them from trusted remote sources.'),
-        'pull' => 'right',
         'actions' => [
             [
                 'url' => '/organisations/view',
@@ -90,12 +97,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'open_modal' => '/organisations/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'edit'
+                'icon' => 'edit',
+                'requirement' => $loggedUser['role']['perm_admin']
             ],
             [
                 'open_modal' => '/organisations/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'trash'
+                'icon' => 'trash',
+                'requirement' => $loggedUser['role']['perm_admin']
             ],
         ]
     ]

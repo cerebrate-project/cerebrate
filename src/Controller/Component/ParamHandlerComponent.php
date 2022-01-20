@@ -4,6 +4,7 @@ namespace App\Controller\Component;
 
 use Cake\Controller\Component;
 use Cake\Core\Configure;
+use Cake\Http\Exception\MethodNotAllowedException;
 
 class ParamHandlerComponent extends Component
 {
@@ -26,15 +27,15 @@ class ParamHandlerComponent extends Component
             $queryString = str_replace('.', '_', $filter);
             $queryString = str_replace(' ', '_', $queryString);
             if ($this->request->getQuery($queryString) !== null) {
-                $parsedParams[$filter] = $this->request->getQuery($queryString);
-                continue;
-            }
-            if (($this->request->getQuery($filter)) !== null) {
-                $parsedParams[$filter] = $this->request->getQuery($filter);
+                if (is_array($this->request->getQuery($queryString))) {
+                    $parsedParams[$filter] = array_map('trim', $this->request->getQuery($queryString));
+                } else {
+                    $parsedParams[$filter] = trim($this->request->getQuery($queryString));
+                }
                 continue;
             }
             if (($this->request->is('post') || $this->request->is('put')) && $this->request->getData($filter) !== null) {
-                $parsedParams[$filter] = $this->request->getData($filter);
+                $parsedParams[$filter] = trim($this->request->getData($filter));
             }
         }
         return $parsedParams;
@@ -47,7 +48,7 @@ class ParamHandlerComponent extends Component
             return $this->isRest;
         }
         if ($this->request->is('json')) {
-            if (!empty($this->request->input()) && empty($this->request->input('json_decode'))) {
+            if (!empty((string)$this->request->getBody()) && empty($this->request->getParsedBody())) {
                 throw new MethodNotAllowedException('Invalid JSON input. Make sure that the JSON input is a correctly formatted JSON string. This request has been blocked to avoid an unfiltered request.');
             }
             $this->isRest = true;

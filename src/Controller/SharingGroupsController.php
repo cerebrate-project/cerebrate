@@ -16,16 +16,21 @@ class SharingGroupsController extends AppController
 
     public function index()
     {
+        $currentUser = $this->ACL->getUser();
+        $conditions = [];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $conditions['SharingGroups.organisation_id'] = $currentUser['organisation_id'];
+        }
         $this->CRUD->index([
             'contain' => $this->containFields,
             'filters' => $this->filterFields,
-            'quickFilters' => $this->quickFilterFields
+            'quickFilters' => $this->quickFilterFields,
+            'conditions' => $conditions
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function add()
@@ -43,7 +48,6 @@ class SharingGroupsController extends AppController
             return $responsePayload;
         }
         $this->set(compact('dropdownData'));
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function view($id)
@@ -55,12 +59,16 @@ class SharingGroupsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function edit($id = false)
     {
-        $this->CRUD->edit($id);
+        $params = [];
+        $currentUser = $this->ACL->getUser();
+        if (empty($currentUser['role']['perm_admin'])) {
+            $params['conditions'] = ['organisation_id' => $currentUser['organisation_id']];
+        }
+        $this->CRUD->edit($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -69,7 +77,6 @@ class SharingGroupsController extends AppController
             'organisation' => $this->getAvailableOrgForSg($this->ACL->getUser())
         ];
         $this->set(compact('dropdownData'));
-        $this->set('metaGroup', 'Trust Circles');
         $this->render('add');
     }
 
@@ -80,7 +87,6 @@ class SharingGroupsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function addOrg($id)
@@ -206,11 +212,11 @@ class SharingGroupsController extends AppController
         $organisations = [];
         if (!empty($user['role']['perm_admin'])) {
             $organisations = $this->SharingGroups->Organisations->find('list')->order(['name' => 'ASC'])->toArray();
-        } else if (!empty($user['individual']['organisations'])) {
+        } else {
             $organisations = $this->SharingGroups->Organisations->find('list', [
                 'sort' => ['name' => 'asc'],
                 'conditions' => [
-                    'id IN' => array_values(\Cake\Utility\Hash::extract($user, 'individual.organisations.{n}.id'))
+                    'id' => $user['organisation_id']
                 ]
             ]);
         }

@@ -1,8 +1,13 @@
 <?php
     $groups = '';
     $hasGroupSearch = false;
+
     foreach ($data['children'] as $group) {
-        $groups .= $this->element('/genericElements/ListTopBar/group_' . (empty($group['type']) ? 'simple' : h($group['type'])), array('data' => $group, 'tableRandomValue' => $tableRandomValue));
+        $groups .= $this->element('/genericElements/ListTopBar/group_' . (empty($group['type']) ? 'simple' : h($group['type'])), array(
+            'data' => $group,
+            'tableRandomValue' => $tableRandomValue,
+            'table_data' => $table_data,
+        ));
         $hasGroupSearch = $hasGroupSearch || (!empty($group['type']) && $group['type'] == 'search');
     }
     $tempClass = "btn-toolbar";

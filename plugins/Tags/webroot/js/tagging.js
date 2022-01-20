@@ -23,7 +23,7 @@ function createTagPicker(clicked) {
 
     const $clicked = $(clicked)
     const $container = $clicked.closest('.tag-container')
-    const $select = $container.parent().find('select.tag-input').removeClass('d-none')
+    const $select = $container.parent().find('select.select2-input').removeClass('d-none')
     closePicker($select, $container)
     const $pickerContainer = $('<div></div>').addClass(['picker-container', 'd-flex'])
     
@@ -90,7 +90,7 @@ function refreshTagList(apiResult, $container) {
 }
 
 function initSelect2Pickers() {
-    $('select.tag-input').each(function() {
+    $('select.select2-input').each(function() {
         if (!$(this).hasClass("select2-hidden-accessible")) {
             initSelect2Picker($(this))
         }
@@ -119,8 +119,10 @@ function initSelect2Picker($select) {
         }
         return buildTag(state)
     }
+    const $modal = $select.closest('.modal')
 
     $select.select2({
+        dropdownParent: $modal.length != 0 ? $modal.find('.modal-body') : $(document.body),
         placeholder: 'Pick a tag',
         tags: true,
         width: '100%',

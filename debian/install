@@ -7,4 +7,3 @@ webroot /usr/share/php-cerebrate
 config /usr/share/php-cerebrate
 debian/cerebrate.local.conf /etc/apache2/sites-available/
 debian/config.php /etc/cerebrate/
-INSTALL/mysql.sql => /usr/share/dbconfig-common/data/php-cerebrate/install/mysql

@@ -8,20 +8,26 @@ use Cake\Routing\Router;
     </a>
     <div class="dropdown-menu dropdown-menu-end">
         <h6 class="dropdown-header">
-            <div class="fw-light"><?= __('Loggin in as') ?></div>
+            <div class="fw-light"><?= __('Logged in as') ?></div>
             <div>
                 <?= $this->SocialProvider->getIcon($this->request->getAttribute('identity')) ?>
-                <strong><?= h($this->request->getAttribute('identity')['username']) ?></strong>
+                <span class="ms-1 me-3">
+                    [<?= h($loggedUser['organisation']['name']) ?>]
+                    <strong><?= h($this->request->getAttribute('identity')['username']) ?></strong>
+                </span>
             </div>
         </h6>
         <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'view', 'plugin' => null]) ?>">
+        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'view', 'plugin' => null, h($this->request->getAttribute('identity')['id'])]) ?>">
             <i class="me-1 <?= $this->FontAwesome->getClass('user-circle') ?>"></i>
             <?= __('My Account') ?>
         </a>
-        <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'userSettings', 'plugin' => null]) ?>">
+        <a
+            class="dropdown-item"
+            href="<?= Router::url(['controller' => 'users', 'action' => 'settings', 'plugin' => null, h($this->request->getAttribute('identity')['id'])]) ?>"
+        >
             <i class="me-1 <?= $this->FontAwesome->getClass('user-cog') ?>"></i>
-            <?= __('Settings') ?>
+            <?= __('Account Settings') ?>
         </a>
         <div class="dropdown-divider"></div>
         <a class="dropdown-item dropdown-item-outline-danger" href="<?= Router::url(['controller' => 'users', 'action' => 'logout', 'plugin' => null]) ?>">

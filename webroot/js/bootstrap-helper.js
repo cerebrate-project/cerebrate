@@ -185,10 +185,14 @@ class UIFactory {
     submissionReloaderModal(url, reloadUrl, $reloadedElement, $statusNode=null) {
         const successCallback = function ([data, modalObject]) {
             UI.reload(reloadUrl, $reloadedElement, $statusNode)
-            if (data.additionalData !== undefined && data.additionalData.displayOnSuccess !== undefined) {
-                UI.modal({
-                    rawHtml: data.additionalData.displayOnSuccess
-                })
+            if (data.additionalData !== undefined) {
+                if (data.additionalData.displayOnSuccess !== undefined) {
+                    UI.modal({
+                        rawHtml: data.additionalData.displayOnSuccess
+                    })
+                } else if (data.additionalData.redirect !== undefined) {
+                    window.location = data.additionalData.redirect
+                }
             }
         }
         return UI.submissionModal(url, successCallback)
@@ -308,7 +312,6 @@ class Toaster {
                         return $(this).is($toast)
                     });
                     if (hoveredElements.length > 0) {
-                        console.log('Toast hovered. Not hidding')
                         evt.preventDefault()
                         setTimeout(() => {
                             $toast.toast('hide')
@@ -716,11 +719,11 @@ class ModalFactory {
                 })
                 this.ajaxApi.push(tmpApi)
             } else {
-                this.ajaxApi.statusNode = $buttonConfirm[0]
+                this.ajaxApi.options.statusNode = $buttonConfirm[0]
                 this.ajaxApi = [this.ajaxApi];
             }
         } else {
-            this.ajaxApi.statusNode = $buttonConfirm[0]
+            this.ajaxApi.options.statusNode = $buttonConfirm[0]
         }
         return (evt) => {
             let confirmFunction = this.options.confirm
@@ -764,7 +767,7 @@ class ModalFactory {
                             return clickResult
                                 .then((data) => {
                                     if (data.success) {
-                                        selfModal.options.POSTSuccessCallback(data)
+                                        selfModal.options.POSTSuccessCallback([data, this])
                                     } else { // Validation error
                                         selfModal.injectFormValidationFeedback(form, data.errors)
                                         return Promise.reject('Validation error');
@@ -800,7 +803,7 @@ class ModalFactory {
                             return clickResult
                                 .then((data) => {
                                     if (data.success) {
-                                        this.options.POSTSuccessCallback(data)
+                                        this.options.POSTSuccessCallback([data, this])
                                     } else { // Validation error
                                         this.injectFormValidationFeedback(form, data.errors)
                                         return Promise.reject('Validation error');
@@ -899,6 +902,9 @@ class OverlayFactory {
             const boundingRect = this.$node[0].getBoundingClientRect()
             this.$overlayWrapper.css('min-height', Math.max(boundingRect.height, 20))
             this.$overlayWrapper.css('min-width', Math.max(boundingRect.width, 20))
+            if (this.$node.hasClass('row')) {
+                this.$overlayWrapper.addClass('row')
+            }
         }
         this.$overlayContainer = $(OverlayFactory.overlayContainer)
         this.$overlayBg = $(OverlayFactory.overlayBg)

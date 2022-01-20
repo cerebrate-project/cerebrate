@@ -68,7 +68,11 @@ class LocalToolsController extends AppController
             foreach ($connections as $connection) {
                 $actionDetails = $this->LocalTools->getActionDetails($actionName);
                 $params['connection'] = $connection;
-                $tmpResult = $this->LocalTools->action($this->ACL->getUser()['id'], $connection->connector, $actionName, $params, $this->request);
+                try {
+                    $tmpResult = $this->LocalTools->action($this->ACL->getUser()['id'], $connection->connector, $actionName, $params, $this->request);
+                } catch (\Exception $e) {
+                    $tmpResult = ['success' => false, 'message' => $e->getMessage(), 'data' => []];
+                }
                 $tmpResult['connection'] = $connection;
                 $results[$connection->id] = $tmpResult;
                 $successes += $tmpResult['success'] ? 1 : 0;
@@ -280,6 +284,8 @@ class LocalToolsController extends AppController
             return $this->RestResponse->viewData($tools, 'json');
         }
         $this->set('id', $id);
+        $brood = $this->Broods->get($id);
+        $this->set('broodEntity', $brood);
         $this->set('data', $tools);
         $this->set('metaGroup', 'Administration');
     }
@@ -334,6 +340,7 @@ class LocalToolsController extends AppController
         }
     }
 
+/*
     public function connectLocal($local_tool_id)
     {
         $params = [
@@ -349,10 +356,8 @@ class LocalToolsController extends AppController
             $params['target_tool_id'] = $postParams['target_tool_id'];
             $result = $this->LocalTools->encodeLocalConnection($params);
             // Send message to remote inbox
-            debug($result);
         } else {
             $target_tools = $this->LocalTools->findConnectable($local_tool);
-            debug($target_tools);
             if (empty($target_tools)) {
                 throw new NotFoundException(__('No tools found to connect.'));
             }
@@ -363,4 +368,5 @@ class LocalToolsController extends AppController
             ]);
         }
     }
+*/
 }

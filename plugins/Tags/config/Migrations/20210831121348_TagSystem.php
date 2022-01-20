@@ -7,25 +7,25 @@ use Migrations\AbstractMigration;
 class TagSystem extends AbstractMigration
 {
     public function change() {
-        $tags = $this->table('tags_tags')
-            ->addColumn('namespace', 'string', [
+        $tags = $this->table('tags_tags');
+        $tags->addColumn('namespace', 'string', [
                 'default' => null,
-                'limit' => 255,
+                'limit' => 191,
                 'null' => true,
             ])
             ->addColumn('predicate', 'string', [
                 'default' => null,
-                'limit' => 255,
+                'limit' => 191,
                 'null' => true,
             ])
             ->addColumn('value', 'string', [
                 'default' => null,
-                'limit' => 255,
+                'limit' => 191,
                 'null' => true,
             ])
             ->addColumn('name', 'string', [
                 'default' => null,
-                'limit' => 255,
+                'limit' => 191,
                 'null' => false,
             ])
             ->addColumn('colour', 'string', [
@@ -50,8 +50,8 @@ class TagSystem extends AbstractMigration
             ])
             ->create();
 
-        $tagged = $this->table('tags_tagged')
-            ->addColumn('tag_id', 'integer', [
+        $tagged = $this->table('tags_tagged');
+        $tagged->addColumn('tag_id', 'integer', [
                 'default' => null,
                 'null' => false,
                 'signed' => false,
@@ -66,7 +66,7 @@ class TagSystem extends AbstractMigration
             ])
             ->addColumn('fk_model', 'string', [
                 'default' => null,
-                'limit' => 255,
+                'limit' => 191,
                 'null' => false,
                 'comment' => 'The model name of the entity being tagged'
             ])
@@ -83,7 +83,7 @@ class TagSystem extends AbstractMigration
         $tags->addIndex(['name'], ['unique' => true])
             ->update();
 
-        $tagged->addIndex(['tag_id', 'fk_id', 'fk_table'], ['unique' => true])
+        $tagged->addIndex(['tag_id', 'fk_id', 'fk_model'], ['unique' => true])
             ->update();
     }
 }

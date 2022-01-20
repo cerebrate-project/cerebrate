@@ -1,32 +1,24 @@
 <?php
-use Cake\Utility\Inflector;
 
+$backupTemplates = $this->Form->getTemplates();
 $tabData = [];
-foreach($metaTemplatesData as $i => $metaTemplate) {
-    if ($metaTemplate->is_default) {
-        $tabData['navs'][$i] = [
-            'html' => $this->element('/genericElements/MetaTemplates/metaTemplateNav', ['metaTemplate' => $metaTemplate])
-        ];
-    } else {
-        $tabData['navs'][$i] = [
-            'text' => $metaTemplate->name
-        ];
-    }
+foreach ($entity->MetaTemplates as $i => $metaTemplate) {
+    $tabData['navs'][$i] = [
+        'html' => $this->element('/genericElements/MetaTemplates/metaTemplateNav', ['metaTemplate' => $metaTemplate])
+    ];
     $fieldsHtml = '';
-    foreach ($metaTemplate->meta_template_fields as $metaField) {
-        $metaField->label = Inflector::humanize($metaField->field);
-        $metaField->field = sprintf('%s.%s.%s', 'metaFields', $metaField->meta_template_id, $metaField->field);
-        $fieldsHtml .= $this->element(
-            'genericElements/Form/fieldScaffold', [
-                'fieldData' => $metaField->toArray(),
-                'form' => $this->Form
-            ]
-        );
-    }
+    $fieldsHtml .= $this->element(
+        'genericElements/Form/metaTemplateForm',
+        [
+            'metaTemplate' => $metaTemplate,
+        ]
+    );
     $tabData['content'][$i] = $fieldsHtml;
 }
+$this->Form->setTemplates($backupTemplates);
 echo $this->Bootstrap->Tabs([
     'pills' => true,
     'data' => $tabData,
-    'nav-class' => ['pb-1']
+    'nav-class' => ['shadow mb-3 p-2 rounded'],
+    'content-class' => ['pt-2 px-3']
 ]);

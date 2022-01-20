@@ -21,8 +21,14 @@
                 }
 
             }
+            if (!empty($header['element']) && $header['element'] === 'selector') {
+                $columnName = 'row-selector';
+            } else {
+                $columnName = h(\Cake\Utility\Inflector::variable(!empty($header['name']) ? $header['name'] : \Cake\Utility\Inflector::humanize($header['data_path'])));
+            }
             $headersHtml .= sprintf(
-                '<th scope="col">%s</th>',
+                '<th scope="col" data-columnname="%s">%s</th>',
+                $columnName,
                 $header_data
             );
         }

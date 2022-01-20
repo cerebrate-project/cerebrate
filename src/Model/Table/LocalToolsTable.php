@@ -30,6 +30,7 @@ class LocalToolsTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('AuditLog');
         $this->addBehavior('Timestamp');
     }
 
@@ -142,7 +143,8 @@ class LocalToolsTable extends AppTable
                 'connector' => $connector_type,
                 'connector_version' => $connector_class->version,
                 'connector_description' => $connector_class->description,
-                'connector_settings' => $connector_class->settings ?? []
+                'connector_settings' => $connector_class->settings ?? [],
+                'connector_settings_placeholder' => $connector_class->settingsPlaceholder ?? [],
             ];
             if ($includeConnections) {
                 $connector['connections'] = $this->healthCheck($connector_type, $connector_class);
@@ -287,6 +289,7 @@ class LocalToolsTable extends AppTable
         return $jsonReply;
     }
 
+/*
     public function findConnectable($local_tool): array
     {
         $connectors = $this->getInterconnectors($local_tool['connector']);
@@ -296,8 +299,8 @@ class LocalToolsTable extends AppTable
                 $validTargets[$connector['connects'][1]] = 1;
             }
         }
-
     }
+*/
 
     public function fetchConnection($id): object
     {

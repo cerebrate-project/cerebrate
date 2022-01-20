@@ -54,7 +54,6 @@ class AppController extends Controller
     public function initialize(): void
     {
         parent::initialize();
-
         $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
         $this->loadComponent('RestResponse');
@@ -102,7 +101,7 @@ class AppController extends Controller
         $this->ACL->setPublicInterfaces();
         if (!empty($this->request->getAttribute('identity'))) {
             $user = $this->Users->get($this->request->getAttribute('identity')->getIdentifier(), [
-                'contain' => ['Roles', 'Individuals' => 'Organisations']
+                'contain' => ['Roles', 'Individuals' => 'Organisations', 'UserSettings', 'Organisations']
             ]);
             if (!empty($user['disabled'])) {
                 $this->Authentication->logout();
@@ -111,7 +110,13 @@ class AppController extends Controller
             }
             unset($user['password']);
             $this->ACL->setUser($user);
+            $this->request->getSession()->write('authUser', $user);
             $this->isAdmin = $user['role']['perm_admin'];
+            if (!$this->ParamHandler->isRest()) {
+                $this->set('menu', $this->ACL->getMenu());
+                $this->set('loggedUser', $this->ACL->getUser());
+                $this->set('roleAccess', $this->ACL->getRoleAccess(false, false));
+            }
         } else if ($this->ParamHandler->isRest()) {
             throw new MethodNotAllowedException(__('Invalid user credentials.'));
         }
@@ -126,15 +131,27 @@ class AppController extends Controller
         }
 
         $this->ACL->checkAccess();
-        $this->set('menu', $this->ACL->getMenu());
-        $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
-        $this->set('ajax', $this->request->is('ajax'));
-        $this->request->getParam('prefix');
-        $this->set('baseurl', Configure::read('App.fullBaseUrl'));
-        $this->set('bsTheme', Configure::read('Cerebrate')['ui.bsTheme']);
+        if (!$this->ParamHandler->isRest()) {
+            $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
+            $this->set('ajax', $this->request->is('ajax'));
+            $this->request->getParam('prefix');
+            $this->set('baseurl', Configure::read('App.fullBaseUrl'));
+            if (!empty($user) && !empty($user->user_settings_by_name['ui.bsTheme']['value'])) {
+                $this->set('bsTheme', $user->user_settings_by_name['ui.bsTheme']['value']);
+            } else {
+                $this->set('bsTheme', Configure::check('ui.bsTheme') ? Configure::read('ui.bsTheme') : 'default');
+            }
 
-        if ($this->modelClass == 'Tags.Tags') {
-            $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
+            if ($this->modelClass == 'Tags.Tags') {
+                $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
+            }
+        }
+    }
+
+    public function beforeRender(EventInterface $event)
+    {
+        if (!$this->ParamHandler->isRest()) {
+            $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
         }
     }
 
@@ -142,13 +159,30 @@ class AppController extends Controller
     {
         if (!empty($_SERVER['HTTP_AUTHORIZATION']) && strlen($_SERVER['HTTP_AUTHORIZATION'])) {
             $this->loadModel('AuthKeys');
+            $logModel = $this->Users->auditLogs();
             $authKey = $this->AuthKeys->checkKey($_SERVER['HTTP_AUTHORIZATION']);
             if (!empty($authKey)) {
                 $this->loadModel('Users');
                 $user = $this->Users->get($authKey['user_id']);
+                $logModel->insert([
+                    'request_action' => 'login',
+                    'model' => 'Users',
+                    'model_id' => $user['id'],
+                    'model_title' => $user['username'],
+                    'changed' => []
+                ]);
                 if (!empty($user)) {
                     $this->Authentication->setIdentity($user);
                 }
+            } else {
+                $user = $logModel->userInfo();
+                $logModel->insert([
+                    'request_action' => 'login',
+                    'model' => 'Users',
+                    'model_id' => $user['id'],
+                    'model_title' => $user['name'],
+                    'changed' => []
+                ]);
             }
         }
     }
@@ -162,5 +196,10 @@ class AppController extends Controller
     public function queryACL()
     {
         return $this->RestResponse->viewData($this->ACL->findMissingFunctionNames());
+    }
+
+    public function getRoleAccess()
+    {
+        return $this->RestResponse->viewData($this->ACL->getRoleAccess(false, false));
     }
 }

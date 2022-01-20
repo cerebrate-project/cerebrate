@@ -8,7 +8,9 @@
             $fieldTemplate = $fieldData['type'] . 'Field';
         }
         if (empty($fieldData['label'])) {
-            $fieldData['label'] = \Cake\Utility\Inflector::humanize($fieldData['field']);
+            if (!isset($fieldData['label']) || $fieldData['label'] !== false) {
+                $fieldData['label'] = \Cake\Utility\Inflector::humanize($fieldData['field']);
+            }
         }
         if (!empty($fieldDesc[$fieldData['field']])) {
             $fieldData['label'] .= $this->element(
@@ -30,10 +32,9 @@
         } else {
             $params['class'] = '';
         }
-        if (empty($fieldData['type']) || $fieldData['type'] !== 'checkbox' ) {
+        if (empty($fieldData['type']) || ($fieldData['type'] !== 'checkbox' && $fieldData['type'] !== 'radio')) {
             $params['class'] .= ' form-control';
         }
-        //$params['class'] = sprintf('form-control %s', $params['class']);
         foreach ($fieldData as $k => $fd) {
             if (!isset($simpleFieldWhitelist) || in_array($k, $simpleFieldWhitelist) || strpos($k, 'data-') === 0) {
                 $params[$k] = $fd;
@@ -47,7 +48,6 @@
             $temp = '<span class="hidden">' . $temp . '</span>';
         }
         echo $temp;
-        // $fieldsArrayForPersistence []= $modelForForm . \Cake\Utility\Inflector::camelize($fieldData['field']);
     } else {
         echo $fieldData;
     }

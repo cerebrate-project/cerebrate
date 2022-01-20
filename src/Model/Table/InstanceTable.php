@@ -18,6 +18,8 @@ class InstanceTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
+        $this->addBehavior('AuditLog');
+        $this->setDisplayField('name');
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -25,43 +27,12 @@ class InstanceTable extends AppTable
         return $validator;
     }
 
-    public function getStatistics($days=30): array
+    public function getStatistics(int $days=30): array
     {
         $models = ['Individuals', 'Organisations', 'Alignments', 'EncryptionKeys', 'SharingGroups', 'Users', 'Broods', 'Tags.Tags'];
         foreach ($models as $model) {
             $table = TableRegistry::getTableLocator()->get($model);
-            $statistics[$model]['amount'] = $table->find()->all()->count();
-            if ($table->behaviors()->has('Timestamp')) {
-                $query = $table->find();
-                $query->select([
-                        'count' => $query->func()->count('id'),
-                        'date' => 'DATE(modified)',
-                    ])
-                    ->where(['modified >' => new \DateTime("-{$days} days")])
-                    ->group(['date'])
-                    ->order(['date']);
-                $data = $query->toArray();
-                $interval = new \DateInterval('P1D');
-                $period = new \DatePeriod(new \DateTime("-{$days} days"), $interval, new \DateTime());
-                $timeline = [];
-                foreach ($period as $date) {
-                    $timeline[$date->format("Y-m-d")] = [
-                        'time' => $date->format("Y-m-d"),
-                        'count' => 0
-                    ];
-                }
-                foreach ($data as $entry) {
-                    $timeline[$entry->date]['count'] = $entry->count;
-                }
-                $statistics[$model]['timeline'] = array_values($timeline);
-                
-                $startCount = $table->find()->where(['modified <' => new \DateTime("-{$days} days")])->all()->count();
-                $endCount = $statistics[$model]['amount'];
-                $statistics[$model]['variation'] = $endCount - $startCount;
-            } else {
-                $statistics[$model]['timeline'] = [];
-                $statistics[$model]['variation'] = 0;
-            }
+            $statistics[$model] = $this->getActivityStatisticsForModel($table, $days);
         }
         return $statistics;
     }
@@ -69,6 +40,18 @@ class InstanceTable extends AppTable
     public function searchAll($value, $limit=5, $model=null)
     {
         $results = [];
+
+        // search in metafields. FIXME: To be replaced by the meta-template system
+        $metaFieldTable = TableRegistry::get('MetaFields');
+        $query = $metaFieldTable->find()->where([
+            'value LIKE' => '%' . $value . '%'
+        ]);
+        $results['MetaFields']['amount'] = $query->count();
+        $result = $query->limit($limit)->all()->toList();
+        if (!empty($result)) {
+            $results['MetaFields']['entries'] = $result;
+        }
+
         $models = $this->seachAllTables;
         if (!is_null($model)) {
             if (in_array($model, $this->seachAllTables)) {
@@ -81,12 +64,13 @@ class InstanceTable extends AppTable
             $controller = $this->getController($tableName);
             $table = TableRegistry::get($tableName);
             $query = $table->find();
-            $quickFilterOptions = $this->getQuickFiltersFieldsFromController($controller);
+            $quickFilters = $this->getQuickFiltersFieldsFromController($controller);
             $containFields = $this->getContainFieldsFromController($controller);
-            if (empty($quickFilterOptions)) {
+            if (empty($quickFilters)) {
                 continue; // make sure we are filtering on something
             }
             $params = ['quickFilter' => $value];
+            $quickFilterOptions = ['quickFilters' => $quickFilters];
             $query = $controller->CRUD->setQuickFilters($params, $query, $quickFilterOptions);
             if (!empty($containFields)) {
                 $query->contain($containFields);

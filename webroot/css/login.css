@@ -30,7 +30,7 @@ body {
     transform: rotate(100deg);
     -webkit-transform-origin: center;
     transform-origin: center;
-    left: 42%;
+    left: calc(50% - 120px);
     top: 30%;
 }
 

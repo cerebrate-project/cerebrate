@@ -18,14 +18,8 @@ class InboxTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
-        $this->addBehavior('Timestamp', [
-            'events' => [
-                'Model.beforeSave' => [
-                    'created' => 'new'
-                ]
-            ]
-        ]);
-
+        $this->addBehavior('Timestamp');
+        $this->addBehavior('AuditLog');
         $this->belongsTo('Users');
         $this->setDisplayField('title');
     }
@@ -74,7 +68,7 @@ class InboxTable extends AppTable
         if (empty($brood)) {
             $errors[] = __('Unkown brood `{0}`', $entryData['data']['cerebrateURL']);
         }
-        
+
         // $found = false;
         // foreach ($user->individual->organisations as $organisations) {
         //     if ($organisations->id == $brood->organisation_id) {

@@ -122,6 +122,11 @@ class MispConnector extends CommonConnectorTools
             'type' => 'boolean'
         ],
     ];
+    public $settingsPlaceholder = [
+        'url' => 'https://your.misp.intance',
+        'authkey' => '',
+        'skip_ssl' => '0',
+    ];
 
     public function addSettingValidatorRules($validator)
     {
@@ -183,6 +188,7 @@ class MispConnector extends CommonConnectorTools
         $settings = json_decode($connection->settings, true);
         $http = $this->genHTTPClient($connection, $options);
         $url = sprintf('%s%s', $settings['url'], $relativeURL);
+        $this->logDebug(sprintf('%s %s %s', __('Posting data') . PHP_EOL, "POST {$url}" . PHP_EOL, json_encode($data)));
         return $http->post($url, $data, $options);
     }
 
@@ -234,14 +240,18 @@ class MispConnector extends CommonConnectorTools
             if (!empty($params['softError'])) {
                 return $response;
             }
-            throw new NotFoundException(__('Could not retrieve the requested resource.'));
+            $errorMsg = __('Could not post to the requested resource for `{0}`. Remote returned:', $url) . PHP_EOL . $response->getStringBody();
+            $this->logError($errorMsg);
+            throw new NotFoundException($errorMsg);
         }
     }
 
     private function postData(string $url, array $params): Response
     {
         if (empty($params['connection'])) {
-            throw new NotFoundException(__('No connection object received.'));
+            $errorMsg = __('No connection object received.');
+            $this->logError($errorMsg);
+            throw new NotFoundException($errorMsg);
         }
         $url = $this->urlAppendParams($url, $params);
         if (!is_string($params['body'])) {
@@ -251,7 +261,9 @@ class MispConnector extends CommonConnectorTools
         if ($response->isOk()) {
             return $response;
         } else {
-            throw new NotFoundException(__('Could not post to the requested resource. Remote returned:') . PHP_EOL . $response->getStringBody());
+            $errorMsg = __('Could not post to the requested resource for `{0}`. Remote returned:', $url) . PHP_EOL . $response->getStringBody();
+            $this->logError($errorMsg);
+            throw new NotFoundException($errorMsg);
         }
     }
 
@@ -302,61 +314,62 @@ class MispConnector extends CommonConnectorTools
                         'children' => [
                             [
                                 'type' => 'search',
-                                'button' => __('Filter'),
+                                'button' => __('Search'),
                                 'placeholder' => __('Enter value to search'),
                                 'data' => '',
                                 'searchKey' => 'value',
                                 'additionalUrlParams' => $urlParams
                             ]
                         ]
+                    ]
+                ],
+                'fields' => [
+                    [
+                        'name' => 'Setting',
+                        'sort' => 'setting',
+                        'data_path' => 'setting',
                     ],
-                    'fields' => [
-                        [
-                            'name' => 'Setting',
-                            'sort' => 'setting',
-                            'data_path' => 'setting',
+                    [
+                        'name' => 'Criticality',
+                        'sort' => 'level',
+                        'data_path' => 'level',
+                        'arrayData' => [
+                            0 => 'Critical',
+                            1 => 'Recommended',
+                            2 => 'Optional'
                         ],
-                        [
-                            'name' => 'Criticality',
-                            'sort' => 'level',
-                            'data_path' => 'level',
-                            'arrayData' => [
-                                0 => 'Critical',
-                                1 => 'Recommended',
-                                2 => 'Optional'
-                            ],
-                            'element' => 'array_lookup_field'
-                        ],
-                        [
-                            'name' => __('Value'),
-                            'sort' => 'value',
-                            'data_path' => 'value',
-                            'options' => 'options'
-                        ],
-                        [
-                            'name' => __('Type'),
-                            'sort' => 'type',
-                            'data_path' => 'type',
-                        ],
-                        [
-                            'name' => __('Error message'),
-                            'sort' => 'errorMessage',
-                            'data_path' => 'errorMessage',
-                        ]
+                        'element' => 'array_lookup_field'
                     ],
-                    'title' => false,
-                    'description' => false,
-                    'pull' => 'right',
-                    'actions' => [
-                        [
-                            'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/modifySettingAction?setting={{0}}',
-                            'modal_params_data_path' => ['setting'],
-                            'icon' => 'download',
-                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/ServerSettingsAction'
-                        ]
+                    [
+                        'name' => __('Value'),
+                        'sort' => 'value',
+                        'data_path' => 'value',
+                        'options' => 'options'
+                    ],
+                    [
+                        'name' => __('Type'),
+                        'sort' => 'type',
+                        'data_path' => 'type',
+                    ],
+                    [
+                        'name' => __('Error message'),
+                        'sort' => 'errorMessage',
+                        'data_path' => 'errorMessage',
+                    ]
+                ],
+                'title' => false,
+                'description' => false,
+                'pull' => 'right',
+                'actions' => [
+                    [
+                        'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/modifySettingAction?setting={{0}}',
+                        'modal_params_data_path' => ['setting'],
+                        'icon' => 'download',
+                        'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/ServerSettingsAction'
                     ]
                 ]
-            ];
+            ]
+        ];
             if (!empty($params['quickFilter'])) {
                 $needle = strtolower($params['quickFilter']);
                 foreach ($finalSettings['data']['data'] as $k => $v) {
@@ -392,7 +405,7 @@ class MispConnector extends CommonConnectorTools
                         'children' => [
                             [
                                 'type' => 'search',
-                                'button' => __('Filter'),
+                                'button' => __('Search'),
                                 'placeholder' => __('Enter value to search'),
                                 'data' => '',
                                 'searchKey' => 'value',
@@ -482,7 +495,7 @@ class MispConnector extends CommonConnectorTools
                         'children' => [
                             [
                                 'type' => 'search',
-                                'button' => __('Filter'),
+                                'button' => __('Search'),
                                 'placeholder' => __('Enter value to search'),
                                 'data' => '',
                                 'searchKey' => 'value',
@@ -558,7 +571,7 @@ class MispConnector extends CommonConnectorTools
                         'children' => [
                             [
                                 'type' => 'search',
-                                'button' => __('Filter'),
+                                'button' => __('Search'),
                                 'placeholder' => __('Enter value to search'),
                                 'data' => '',
                                 'searchKey' => 'value',
@@ -626,7 +639,7 @@ class MispConnector extends CommonConnectorTools
                         'children' => [
                             [
                                 'type' => 'search',
-                                'button' => __('Filter'),
+                                'button' => __('Search'),
                                 'placeholder' => __('Enter value to search'),
                                 'data' => '',
                                 'searchKey' => 'value',
@@ -819,7 +832,7 @@ class MispConnector extends CommonConnectorTools
                         [
                             'field' => 'connection_ids',
                             'type' => 'hidden',
-                            'value' => $params['connection_ids']
+                            'value' => json_encode($params['connection_ids'])
                         ],
                         [
                             'field' => 'method',

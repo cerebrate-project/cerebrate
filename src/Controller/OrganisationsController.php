@@ -16,6 +16,7 @@ class OrganisationsController extends AppController
     public $quickFilterFields = [['name' => true], 'uuid', 'nationality', 'sector', 'type', 'url'];
     public $filterFields = ['name', 'uuid', 'nationality', 'sector', 'type', 'url', 'Alignments.id', 'MetaFields.field', 'MetaFields.value', 'MetaFields.MetaTemplates.name'];
     public $containFields = ['Alignments' => 'Individuals'];
+    public $statisticsFields = ['nationality', 'sector'];
 
     public function index()
     {
@@ -59,7 +60,8 @@ class OrganisationsController extends AppController
                     ]
                 ],
             ],
-            'contain' => $this->containFields
+            'contain' => $this->containFields,
+            'statisticsFields' => $this->statisticsFields,
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

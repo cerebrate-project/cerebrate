@@ -46,10 +46,10 @@ class TagBehavior extends Behavior
         $config = $this->getConfig();
         $tagsAssoc = $config['tagsAssoc'];
         $taggedAssoc = $config['taggedAssoc'];
-        
+
         $table = $this->_table;
         $tableAlias = $this->_table->getAlias();
-        
+
         $assocConditions = ['Tagged.fk_model' => $tableAlias];
 
         if (!$table->hasAssociation('Tagged')) {
@@ -114,7 +114,6 @@ class TagBehavior extends Behavior
         $property = $this->getConfig('tagsAssoc.propertyName');
         $options['accessibleFields'][$property] = true;
         $options['associated']['Tags']['accessibleFields']['id'] = true;
-
         if (isset($data['tags'])) {
             if (!empty($data['tags'])) {
                 $data[$property] = $this->normalizeTags($data['tags']);
@@ -131,7 +130,6 @@ class TagBehavior extends Behavior
             if (!$tag->isNew()) {
                 continue;
             }
-
             $existingTag = $this->getExistingTag($tag->name);
             if (!$existingTag) {
                 continue;
@@ -176,15 +174,14 @@ class TagBehavior extends Behavior
                 $result[] = array_merge($common, ['id' => $existingTag->id]);
                 continue;
             }
-
             $result[] = array_merge(
                 $common,
                 [
                     'name' => $tagIdentifier,
+                    'colour' => '#924da6'
                 ]
             );
         }
-
         return $result;
     }
 
@@ -312,7 +309,7 @@ class TagBehavior extends Behavior
         $key = 'Tags.' . $finderField;
         $taggedAlias = 'Tagged';
         $foreignKey = $this->getConfig('tagsAssoc.foreignKey');
-        
+
         if (!empty($filterValue['AND'])) {
             $subQuery = $this->buildQuerySnippet($filterValue['AND'], $finderField, $OperatorAND);
             $modelAlias = $this->_table->getAlias();

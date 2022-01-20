@@ -21,7 +21,6 @@ class InstanceController extends AppController
 
     public function home()
     {
-        // $this->set('md', file_get_contents(ROOT . '/README.md'));
         $statistics = $this->Instance->getStatistics();
         $this->set('statistics', $statistics);
     }
@@ -70,6 +69,12 @@ class InstanceController extends AppController
         usort($status, function($a, $b) {
             return strcmp($b['id'], $a['id']);
         });
+        if ($this->ParamHandler->isRest()) {
+            return $this->RestResponse->viewData([
+                'status' => $status,
+                'updateAvailables' => $migrationStatus['updateAvailables'],
+            ], 'json');
+        }
         $this->set('status', $status);
         $this->set('updateAvailables', $migrationStatus['updateAvailables']);
     }
@@ -140,6 +145,14 @@ class InstanceController extends AppController
     {
         $this->Settings = $this->getTableLocator()->get('Settings');
         $all = $this->Settings->getSettings(true);
+        if ($this->ParamHandler->isRest()) {
+            return $this->RestResponse->viewData([
+                'settingsProvider' => $all['settingsProvider'],
+                'settings' => $all['settings'],
+                'settingsFlattened' => $all['settingsFlattened'],
+                'notices' => $all['notices'],
+            ], 'json');
+        }
         $this->set('settingsProvider', $all['settingsProvider']);
         $this->set('settings', $all['settings']);
         $this->set('settingsFlattened', $all['settingsFlattened']);

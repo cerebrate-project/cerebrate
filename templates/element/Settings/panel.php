@@ -1,4 +1,21 @@
 <?php
+if (!function_exists('isLeaf')) {
+    function isLeaf($setting)
+    {
+        return !empty($setting['name']) && !empty($setting['type']);
+    }
+}
+if (!function_exists('getResolvableID')) {
+    function getResolvableID($sectionName, $panelName = false)
+    {
+        $id = sprintf('sp-%s', preg_replace('/(\.|\W)/', '_', h($sectionName)));
+        if (!empty($panelName)) {
+            $id .= '-' . preg_replace('/(\.|\W)/', '_', h($panelName));
+        }
+        return $id;
+    }
+}
+
 $panelHTML = '';
 if (isLeaf($panelSettings)) {
     $singleSetting = $this->element('Settings/fieldGroup', [
