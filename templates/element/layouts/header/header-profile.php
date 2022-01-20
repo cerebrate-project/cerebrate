@@ -8,10 +8,13 @@ use Cake\Routing\Router;
     </a>
     <div class="dropdown-menu dropdown-menu-end">
         <h6 class="dropdown-header">
-            <div class="fw-light"><?= __('Loggin in as') ?></div>
+            <div class="fw-light"><?= __('Logged in as') ?></div>
             <div>
                 <?= $this->SocialProvider->getIcon($this->request->getAttribute('identity')) ?>
-                <strong><?= h($this->request->getAttribute('identity')['username']) ?></strong>
+                <span class="ms-1 me-3">
+                    [<?= h($loggedUser['organisation']['name']) ?>]
+                    <strong><?= h($this->request->getAttribute('identity')['username']) ?></strong>
+                </span>
             </div>
         </h6>
         <div class="dropdown-divider"></div>

@@ -5,6 +5,16 @@
  * Note: It is not recommended to commit files with credentials such as app_local.php
  * into source code version control.
  */
+
+// set the baseurl here if you want to set it manually
+$baseurl = env('CEREBRATE_BASEURL', false);
+
+
+// Do not modify the this block
+$temp = parse_url($baseurl);
+$base = empty($temp['path']) ? false : $temp['path'];
+// end of block
+
 return [
     /*
      * Debug Level:
@@ -89,4 +99,8 @@ return [
             'url' => env('EMAIL_TRANSPORT_DEFAULT_URL', null),
         ],
     ],
+    'Cerebrate' => [
+        'open' => [],
+        'dark' => 0
+    ]
 ];

@@ -12,6 +12,7 @@ class AlignmentsTable extends AppTable
     {
         parent::initialize($config);
         $this->belongsTo('Individuals');
+        $this->addBehavior('AuditLog');
         $this->belongsTo('Organisations');
         $this->addBehavior('Timestamp');
     }

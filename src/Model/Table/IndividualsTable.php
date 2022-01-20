@@ -15,6 +15,7 @@ class IndividualsTable extends AppTable
         $this->addBehavior('Timestamp');
         $this->addBehavior('Tags.Tag');
         $this->addBehavior('MetaFields');
+        $this->addBehavior('AuditLog');
 
         $this->hasMany(
             'Alignments',

@@ -18,6 +18,7 @@ class MetaFieldsTable extends AppTable
             'MetaTemplateFields' => ['counter']
         ]);
 
+        $this->addBehavior('AuditLog');
         $this->belongsTo('MetaTemplates');
         $this->belongsTo('MetaTemplateFields');
 

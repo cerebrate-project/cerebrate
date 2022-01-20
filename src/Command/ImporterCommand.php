@@ -2,7 +2,7 @@
 
 /**
  * Generic importer to feed data to cerebrate from JSON or CSV.
- * 
+ *
  * - JSON configuration file must have the `format` key which can either take the value `json` or `csv`
  *  - If `csv` is provided, the file must contains the header.
  *  - If `json` is provided, a `mapping` key on how to reach each fields using the cakephp4's Hash syntax must be provided.
@@ -10,7 +10,7 @@
  *          - The key is the field name
  *          - The value
  *              - Can either be the string representing the path from which to get the value
- *              - Or a JSON containg the `path`, the optional `override` parameter specifying if the existing data should be overriden 
+ *              - Or a JSON containg the `path`, the optional `override` parameter specifying if the existing data should be overriden
  *                and an optional `massage` function able to alter the data.
  *          - Example
  *              {
@@ -22,7 +22,7 @@
  *              },
  *
  * - The optional primary key argument provides a way to make import replayable. It can typically be used when an ID or UUID is not provided in the source file but can be replaced by something else (e.g. team-name or other type of unique data).
- * 
+ *
  */
 
 namespace App\Command;
@@ -165,7 +165,7 @@ class ImporterCommand extends Command
                     'valueField' => 'id'
                 ])->where(['meta_template_id' => $metaTemplate->id])->toArray();
             } else {
-                $this->io->error("Unkown template for UUID {$config['metaTemplateUUID']}");
+                $this->io->error("Unknown template for UUID {$config['metaTemplateUUID']}");
                 die(1);
             }
         }
@@ -196,7 +196,7 @@ class ImporterCommand extends Command
                                 $metaEntity->meta_template_field_id = $metaTemplateFieldsMapping[$fieldName];
                             } else {
                                 $hasErrors = true;
-                                $this->io->error("Field $fieldName is unkown for template {$metaTemplate->name}");
+                                $this->io->error("Field $fieldName is unknown for template {$metaTemplate->name}");
                                 break;
                             }
                         }

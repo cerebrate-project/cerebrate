@@ -1,24 +1,31 @@
 # cerebrate
 
-The Cerebrate Sync Platform core software.  Cerebrate is an open-source platform meant to act as a trusted contact information provider and interconnection orchestrator for other security tools.
+Cerebrate is an [open-source platform](https://github.com/cerebrate-project) meant to act as a trusted contact information provider and interconnection orchestrator for other security tools (such as [MISP](https://www.misp-project.org/)).
 
-It is currently being built under the MeliCERTes v2 project and is heavily work in progress.
+# Features
 
-# Current features
+- Advanced repository to manage individuals and organisations;
+- Key store for public encryption and signing cryptographic keys (e.g. PGP);
+- Distributed synchronisation model where multiple Cerebrate instances can be interconnected amongst organisations and/or departments;
+- Management of individuals and their affiliations to each organisations;
+- Advanced API and CLI to integrate with existing tools (e.g. importing existing directory information);
+- Dynamic model for creating new organisational structures;
+- Support existing organisational structures such as [FIRST.org](https://www.first.org/) directory, EU [CSIRTs network](https://csirtsnetwork.eu/);
+- Local tooling interconnection to easily connect existing tools with their native protocols;
 
-- Repository of organisations and individuals
-- Maintain signing and encryption keys
-- Maintain affiliations between organisations and individuals
+Cerebrate is developed in the scope of the MeliCERTes v2 project.
 
 ## Screenshots
 
+![Dashboard](https://www.cerebrate-project.org/assets/images/screenshots/Screenshot%20from%202021-10-19%2016-31-56.png)
+
 List of individuals along with their affiliations
 
-![List of individuals](/documentation/images/individuals.png)
+![List of individuals](https://www.cerebrate-project.org/assets/images/screenshots/Screenshot%20from%202021-10-19%2016-32-35.png)
 
 Adding organisations
 
-![Adding an organisation](/documentation/images/add_org.png)
+![Adding an organisation](https://www.cerebrate-project.org/assets/images/screenshots/Screenshot%20from%202021-10-19%2016-33-04.png)
 
 Everything is available via the API, here an example of a search query for all international organisations in the DB.
 
@@ -27,6 +34,10 @@ Everything is available via the API, here an example of a search query for all i
 Managing public keys and assigning them to users both for communication and validating signed information shared in the community
 
 ![Encryption key management](/documentation/images/add_encryption_key.png)
+
+Dynamic model for creating new organisation structre
+
+![Meta Field Templates](https://www.cerebrate-project.org/assets/images/screenshots/Screenshot%20from%202021-10-19%2016-38-21.png)
 
 # Requirements and installation
 
@@ -45,6 +56,7 @@ For installation via docker, refer to the [cerebrate-docker](https://github.com/
 ~~~~
     The software is released under the AGPLv3.
 
-    Copyright (C) 2019, 2020  Andras Iklody
+    Copyright (C) 2019, 2021  Andras Iklody
+    Copyright (C) 2020-2021 Sami Mokaddem
     Copyright (C) CIRCL - Computer Incident Response Center Luxembourg
 ~~~~

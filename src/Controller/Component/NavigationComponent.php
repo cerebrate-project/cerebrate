@@ -35,6 +35,7 @@ class NavigationComponent extends Component
         'LocalTools' => 'tools',
         'Instance' => 'server',
         'Tags' => 'tags',
+        'API' => 'code',
     ];
 
     public function initialize(array $config): void

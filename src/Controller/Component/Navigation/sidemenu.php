@@ -50,7 +50,12 @@ class Sidemenu {
                     'label' => __('Broods'),
                     'icon' => $this->iconTable['Broods'],
                     'url' => '/broods/index',
-                ]
+                ],
+                'API' => [
+                    'label' => __('API'),
+                    'icon' => $this->iconTable['API'],
+                    'url' => '/api/index',
+                ],
             ],
             __('Administration') => [
                 'Roles' => [
@@ -117,6 +122,11 @@ class Sidemenu {
                             'label' => __('Database'),
                             'url' => '/instance/migrationIndex',
                             'icon' => 'database',
+                        ],
+                        'AuditLogs' => [
+                            'label' => __('Audit Logs'),
+                            'url' => '/auditLogs/index',
+                            'icon' => 'history',
                         ],
                     ]
                 ],

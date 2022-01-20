@@ -15,11 +15,18 @@
                     'autocomplete' => 'off'
                 ],
                 [
+                    'field' => 'organisation_id',
+                    'type' => 'dropdown',
+                    'label' => __('Associated organisation'),
+                    'options' => $dropdownData['organisation']
+                ],
+                [
                     'field' => 'password',
                     'label' => __('Password'),
                     'type' => 'password',
                     'required' => $this->request->getParam('action') === 'add' ? 'required' : false,
-                    'autocomplete' => 'new-password'
+                    'autocomplete' => 'new-password',
+                    'value' => ''
                 ],
                 [
                     'field' => 'confirm_password',

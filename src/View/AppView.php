@@ -44,5 +44,6 @@ class AppView extends View
         $this->loadHelper('FormFieldMassage');
         $this->loadHelper('Paginator', ['templates' => 'cerebrate-pagination-templates']);
         $this->loadHelper('Tags.Tag');
+        $this->loadHelper('ACL');
     }
 }

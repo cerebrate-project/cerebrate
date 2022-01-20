@@ -340,6 +340,7 @@ class LocalToolsController extends AppController
         }
     }
 
+/*
     public function connectLocal($local_tool_id)
     {
         $params = [
@@ -355,10 +356,8 @@ class LocalToolsController extends AppController
             $params['target_tool_id'] = $postParams['target_tool_id'];
             $result = $this->LocalTools->encodeLocalConnection($params);
             // Send message to remote inbox
-            debug($result);
         } else {
             $target_tools = $this->LocalTools->findConnectable($local_tool);
-            debug($target_tools);
             if (empty($target_tools)) {
                 throw new NotFoundException(__('No tools found to connect.'));
             }
@@ -369,4 +368,5 @@ class LocalToolsController extends AppController
             ]);
         }
     }
+*/
 }

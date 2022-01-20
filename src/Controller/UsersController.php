@@ -7,20 +7,27 @@ use Cake\Utility\Text;
 use Cake\ORM\TableRegistry;
 use \Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\UnauthorizedException;
+use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Core\Configure;
 
 class UsersController extends AppController
 {
-    public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name'];
+    public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name', 'Organisations.name'];
     public $quickFilterFields = ['Individuals.uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'];
-    public $containFields = ['Individuals', 'Roles', 'UserSettings'];
+    public $containFields = ['Individuals', 'Roles', 'UserSettings', 'Organisations'];
 
     public function index()
     {
+        $currentUser = $this->ACL->getUser();
+        $conditions = [];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $conditions['organisation_id'] = $currentUser['organisation_id'];
+        }
         $this->CRUD->index([
             'contain' => $this->containFields,
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
+            'conditions' => $conditions
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -31,8 +38,12 @@ class UsersController extends AppController
 
     public function add()
     {
+        $currentUser = $this->ACL->getUser();
         $this->CRUD->add([
-            'beforeSave' => function($data) {
+            'beforeSave' => function($data) use ($currentUser) {
+                if (!$currentUser['role']['perm_admin']) {
+                    $data['organisation_id'] = $currentUser['organisation_id'];
+                }
                 $this->Users->enrollUserRouter($data);
                 return $data;
             }
@@ -41,12 +52,28 @@ class UsersController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        /*
+        $alignments = $this->Users->Individuals->Alignments->find('list', [
+            //'keyField' => 'id',
+            'valueField' => 'organisation_id',
+            'groupField' => 'individual_id'
+        ])->toArray();
+        $alignments = array_map(function($value) { return array_values($value); }, $alignments);
+        */
+        $org_conditions = [];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $org_conditions = ['id' => $currentUser['organisation_id']];
+        }
         $dropdownData = [
             'role' => $this->Users->Roles->find('list', [
                 'sort' => ['name' => 'asc']
             ]),
             'individual' => $this->Users->Individuals->find('list', [
                 'sort' => ['email' => 'asc']
+            ]),
+            'organisation' => $this->Users->Organisations->find('list', [
+                'sort' => ['name' => 'asc'],
+                'conditions' => $org_conditions
             ])
         ];
         $this->set(compact('dropdownData'));
@@ -59,7 +86,7 @@ class UsersController extends AppController
             $id = $this->ACL->getUser()['id'];
         }
         $this->CRUD->view($id, [
-            'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles']
+            'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations']
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -70,9 +97,18 @@ class UsersController extends AppController
 
     public function edit($id = false)
     {
-        if (empty($id) || empty($this->ACL->getUser()['role']['perm_admin'])) {
-            $id = $this->ACL->getUser()['id'];
+        $currentUser = $this->ACL->getUser();
+        if (empty($id)) {
+            $id = $currentUser['id'];
+        } else {
+            $id = intval($id);
+            if ((empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
+                if ($id !== $currentUser['id']) {
+                    throw new MethodNotAllowedException(__('You are not authorised to edit that user.'));
+                }
+            }
         }
+
         $params = [
             'get' => [
                 'fields' => [
@@ -83,11 +119,15 @@ class UsersController extends AppController
                 'password'
             ],
             'fields' => [
-                'id', 'individual_id', 'username', 'disabled', 'password', 'confirm_password'
+                'password', 'confirm_password'
             ]
         ];
         if (!empty($this->ACL->getUser()['role']['perm_admin'])) {
+            $params['fields'][] = 'individual_id';
+            $params['fields'][] = 'username';
             $params['fields'][] = 'role_id';
+            $params['fields'][] = 'organisation_id';
+            $params['fields'][] = 'disabled';
         }
         $this->CRUD->edit($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
@@ -100,6 +140,9 @@ class UsersController extends AppController
             ]),
             'individual' => $this->Users->Individuals->find('list', [
                 'sort' => ['email' => 'asc']
+            ]),
+            'organisation' => $this->Users->Organisations->find('list', [
+                'sort' => ['name' => 'asc']
             ])
         ];
         $this->set(compact('dropdownData'));
@@ -130,11 +173,27 @@ class UsersController extends AppController
     {
         $result = $this->Authentication->getResult();
         // If the user is logged in send them away.
+        $logModel = $this->Users->auditLogs();
         if ($result->isValid()) {
+            $user = $logModel->userInfo();
+            $logModel->insert([
+                'request_action' => 'login',
+                'model' => 'Users',
+                'model_id' => $user['id'],
+                'model_title' => $user['name'],
+                'changed' => []
+            ]);
             $target = $this->Authentication->getLoginRedirect() ?? '/instance/home';
             return $this->redirect($target);
         }
         if ($this->request->is('post') && !$result->isValid()) {
+            $logModel->insert([
+                'request_action' => 'login_fail',
+                'model' => 'Users',
+                'model_id' => 0,
+                'model_title' => 'unknown_user',
+                'changed' => []
+            ]);
             $this->Flash->error(__('Invalid username or password'));
         }
         $this->viewBuilder()->setLayout('login');
@@ -144,6 +203,15 @@ class UsersController extends AppController
     {
         $result = $this->Authentication->getResult();
         if ($result->isValid()) {
+            $logModel = $this->Users->auditLogs();
+            $user = $logModel->userInfo();
+            $logModel->insert([
+                'request_action' => 'logout',
+                'model' => 'Users',
+                'model_id' => $user['id'],
+                'model_title' => $user['name'],
+                'changed' => []
+            ]);
             $this->Authentication->logout();
             $this->Flash->success(__('Goodbye.'));
             return $this->redirect(\Cake\Routing\Router::url('/users/login'));
@@ -162,7 +230,7 @@ class UsersController extends AppController
 
     public function register()
     {
-        if (empty(Configure::read('Cerebrate')['security.registration.self-registration'])) {
+        if (empty(Configure::read('security.registration.self-registration'))) {
             throw new UnauthorizedException(__('User self-registration is not open.'));
         }
         if ($this->request->is('post')) {

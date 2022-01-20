@@ -651,13 +651,13 @@ class BoostrapTable extends BootstrapGeneric
             ],
         ]);
         foreach ($this->items as $i => $row) {
-            $body .= $this->genRow($row);
+            $body .= $this->genRow($row, $i);
         }
         $body .= $this->closeNode('tbody');
         return $body;
     }
 
-    private function genRow($row)
+    private function genRow($row, $rowIndex)
     {
         $html = $this->openNode('tr', [
             'class' => [
@@ -672,21 +672,21 @@ class BoostrapTable extends BootstrapGeneric
                     $key = $field;
                 }
                 $cellValue = Hash::get($row, $key);
-                $html .= $this->genCell($cellValue, $field, $row, $i);
+                $html .= $this->genCell($cellValue, $field, $row, $rowIndex);
             }
         } else { // indexed array
-            foreach ($row as $cellValue) {
-                $html .= $this->genCell($cellValue, $field, $row, $i);
+            foreach ($row as $i => $cellValue) {
+                $html .= $this->genCell($cellValue, 'index', $row, $rowIndex);
             }
         }
         $html .= $this->closeNode('tr');
         return $html;
     }
 
-    private function genCell($value, $field = [], $row = [], $i = 0)
+    private function genCell($value, $field=[], $row=[], $rowIndex=0)
     {
         if (isset($field['formatter'])) {
-            $cellContent = $field['formatter']($value, $row, $i);
+            $cellContent = $field['formatter']($value, $row, $rowIndex);
         } else if (isset($field['element'])) {
             $cellContent = $this->btHelper->getView()->element($field['element'], [
                 'data' => [$value],

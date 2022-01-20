@@ -23,7 +23,8 @@
                 ),
                 array(
                     'field' => 'tag_list',
-                    'type' => 'tags'
+                    'type' => 'tags',
+                    'requirements' => $this->request->getParam('action') === 'edit'
                 ),
             ),
             'submit' => array(

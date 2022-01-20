@@ -52,6 +52,13 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'username',
             ],
             [
+                'name' => __('Organisation'),
+                'sort' => 'organisation.name',
+                'data_path' => 'organisation.name',
+                'url' => '/organisations/view/{{0}}',
+                'url_vars' => ['organisation.id']
+            ],
+            [
                 'name' => __('Email'),
                 'sort' => 'individual.email',
                 'data_path' => 'individual.email',

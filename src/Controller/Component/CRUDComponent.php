@@ -56,6 +56,9 @@ class CRUDComponent extends Component
         }
         $query = $this->setFilters($params, $query, $options);
         $query = $this->setQuickFilters($params, $query, $options);
+        if (!empty($options['conditions'])) {
+            $query->where($options['conditions']);
+        }
         if (!empty($options['contain'])) {
             $query->contain($options['contain']);
         }
@@ -67,11 +70,25 @@ class CRUDComponent extends Component
         }
         if ($this->Controller->ParamHandler->isRest()) {
             $data = $query->all();
+            if (isset($options['hidden'])) {
+                $data->each(function($value, $key) use ($options) {
+                    $hidden = is_array($options['hidden']) ? $options['hidden'] : [$options['hidden']];
+                    $value->setHidden($hidden);
+                    return $value;
+                });
+            }
             if (isset($options['afterFind'])) {
+                $function = $options['afterFind'];
                 if (is_callable($options['afterFind'])) {
-                    $data = $options['afterFind']($data);
+                    $function = $options['afterFind'];
+                    $data->each(function($value, $key) use ($function) {
+                        return $function($value);
+                    });
                 } else {
-                    $data = $this->Table->{$options['afterFind']}($data);
+                    $t = $this->Table;
+                    $data->each(function($value, $key) use ($t, $function) {
+                        return $t->$function($value);
+                    });
                 }
             }
             $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
@@ -82,10 +99,17 @@ class CRUDComponent extends Component
             $this->Controller->loadComponent('Paginator');
             $data = $this->Controller->Paginator->paginate($query);
             if (isset($options['afterFind'])) {
+                $function = $options['afterFind'];
                 if (is_callable($options['afterFind'])) {
-                    $data = $options['afterFind']($data);
+                    $function = $options['afterFind'];
+                    $data->each(function($value, $key) use ($function) {
+                        return $function($value);
+                    });
                 } else {
-                    $data = $this->Table->{$options['afterFind']}($data);
+                    $t = $this->Table;
+                    $data->each(function($value, $key) use ($t, $function) {
+                        return $t->$function($value);
+                    });
                 }
             }
             $this->setFilteringContext($options['contextFilters'] ?? [], $params);
@@ -220,6 +244,9 @@ class CRUDComponent extends Component
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
+                if ($data === false) {
+                    throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                }
             }
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
@@ -417,18 +444,25 @@ class CRUDComponent extends Component
             $params['contain'][] = 'Tags';
             $this->setAllTags();
         }
-        $getParam = isset($params['get']) ? $params['get'] : $params;
+        $queryParam = isset($params['get']) ? $params['get'] : $params;
         if ($this->metaFieldsSupported()) {
-            if (empty($getParam['contain'])) {
-                $getParam['contain'] = [];
+            if (empty( $queryParam['contain'])) {
+                 $queryParam['contain'] = [];
             }
-            if (is_array($getParam['contain'])) {
-                $getParam['contain'][] = 'MetaFields';
+            if (is_array( $queryParam['contain'])) {
+                 $queryParam['contain'][] = 'MetaFields';
             } else {
-                $getParam['contain'] = [$getParam['contain'], 'MetaFields'];
+                 $queryParam['contain'] = [ $queryParam['contain'], 'MetaFields'];
             }
         }
-        $data = $this->Table->get($id, $getParam);
+        $query = $this->Table->find()->where(['id' => $id]);
+        if (!empty($params['conditions'])) {
+             $query->where($params['conditions']);
+        }
+        $data =  $query->first();
+        if (empty($data)) {
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+        }
         if ($this->metaFieldsSupported()) {
             $metaTemplates = $this->getMetaTemplates();
             $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
@@ -653,11 +687,27 @@ class CRUDComponent extends Component
         return $data;
     }
 
-    public function delete($id = false): void
+    public function delete($id=false, $params=[]): void
     {
         if ($this->request->is('get')) {
-            if (!empty($id)) {
-                $data = $this->Table->get($id);
+            if(!empty($id)) {
+                $query = $this->Table->find()->where([$this->Table->getAlias() . '.id' => $id]);
+                if (!empty($params['conditions'])) {
+                    $query->where($params['conditions']);
+                }
+                if (!empty($params['contain'])) {
+                    $query->contain($params['contain']);
+                }
+                $data = $query->first();
+                if (empty($data)) {
+                    throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+                }
+                if (isset($params['beforeSave'])) {
+                    $data = $params['beforeSave']($data);
+                    if ($data === false) {
+                        throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                    }
+                }
                 $this->Controller->set('id', $data['id']);
                 $this->Controller->set('data', $data);
                 $this->Controller->set('bulkEnabled', false);
@@ -669,8 +719,26 @@ class CRUDComponent extends Component
             $isBulk = count($ids) > 1;
             $bulkSuccesses = 0;
             foreach ($ids as $id) {
-                $data = $this->Table->get($id);
-                $success = $this->Table->delete($data);
+                $query = $this->Table->find()->where([$this->Table->getAlias() . '.id' => $id]);
+                if (!empty($params['conditions'])) {
+                    $query->where($params['conditions']);
+                }
+                if (!empty($params['contain'])) {
+                    $query->contain($params['contain']);
+                }
+                $data = $query->first();
+                if (isset($params['beforeSave'])) {
+                    $data = $params['beforeSave']($data);
+                    if ($data === false) {
+                        throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                    }
+                }
+                if (!empty($data)) {
+                    $success = $this->Table->delete($data);
+                    $success = true;
+                } else {
+                    $success = false;
+                }
                 if ($success) {
                     $bulkSuccesses++;
                 }

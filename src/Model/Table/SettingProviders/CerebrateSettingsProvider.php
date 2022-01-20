@@ -211,6 +211,13 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             },
                             'dependsOn' => 'keycloak.enabled'
                         ],
+                        'keycloak.screw' => [
+                            'name' => 'Screw',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => 0,
+                            'description' => __('The misalignment allowed when validating JWT tokens between cerebrate and keycloak. Whilst crisp timings are essential for any timing push, perfect timing is only achievable by GSL participants. (given in seconds)')
+                        ],
                         'keycloak.mapping.org_uuid' => [
                             'name' => 'org_uuid mapping',
                             'type' => 'string',

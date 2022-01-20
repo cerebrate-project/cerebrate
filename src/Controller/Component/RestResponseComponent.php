@@ -718,11 +718,11 @@ class RestResponseComponent extends Component
                 'operators' => array('equal'),
                 'help' => __('A valid x509 certificate ')
             ),
-            'change' => array(
+            'changed' => array(
                 'input' => 'text',
                 'type' => 'string',
                 'operators' => array('equal'),
-                'help' => __('The text contained in the change field')
+                'help' => __('The text contained in the changed field')
             ),
             'change_pw' => array(
                 'input' => 'radio',

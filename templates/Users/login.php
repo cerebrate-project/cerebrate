@@ -24,7 +24,7 @@ use Cake\Core\Configure;
     echo $this->Form->control('password', ['type' => 'password', 'label' => 'Password', 'class' => 'form-control mb-3', 'placeholder' => __('Password')]);
     echo $this->Form->control(__('Login'), ['type' => 'submit', 'class' => 'btn btn-primary']);
     echo $this->Form->end();
-    if (!empty(Configure::read('Cerebrate')['security.registration.self-registration'])) {
+    if (!empty(Configure::read('security.registration.self-registration'))) {
         echo '<div class="text-end">';
             echo sprintf('<span class="text-secondary ms-auto" style="font-size: 0.8rem">%s <a href="/users/register" class="text-decoration-none link-primary fw-bold">%s</a></span>', __('Doesn\'t have an account?'), __('Sign up'));
         echo '</div>';
