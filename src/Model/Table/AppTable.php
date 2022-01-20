@@ -107,9 +107,7 @@ class AppTable extends Table
         $statistics['amount'] = $table->find()->all()->count();
         if ($table->behaviors()->has('Timestamp') && $includeTimeline) {
             $statistics['timeline'] = $this->buildTimeline($table, $days, $field);
-            $startCount = $table->find()->where(["{$field} >" => new \DateTime("-{$days} days")])->all()->count();
-            $endCount = $statistics['amount'];
-            $statistics['variation'] = $startCount - $endCount;
+            $statistics['variation'] = $table->find()->where(["{$field} >" => new \DateTime("-{$days} days")])->all()->count();
         } else {
             $statistics['timeline'] = [];
             $statistics['variation'] = 0;
