@@ -11,8 +11,8 @@ use Cake\Core\Configure;
 
 class AuditLogsController extends AppController
 {
-    public $filterFields = ['model_id', 'model', 'request_action', 'user_id', 'title'];
-    public $quickFilterFields = ['model', 'request_action', 'title'];
+    public $filterFields = ['model_id', 'model', 'request_action', 'user_id', 'model_title'];
+    public $quickFilterFields = ['model', 'request_action', 'model_title'];
     public $containFields = ['Users'];
 
     public function index()
