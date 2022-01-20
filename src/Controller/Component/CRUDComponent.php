@@ -159,11 +159,15 @@ class CRUDComponent extends Component
         if ($this->taggingSupported()) {
             $this->Controller->set('taggingEnabled', true);
             $this->setAllTags();
+        } else {
+            $this->Controller->set('taggingEnabled', false);
         }
         if ($this->metaFieldsSupported()) {
             $metaTemplates = $this->getMetaTemplates()->toArray();
             $this->Controller->set('metaFieldsEnabled', true);
             $this->Controller->set('metaTemplates', $metaTemplates);
+        } else {
+            $this->Controller->set('metaFieldsEnabled', false);
         }
         $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
         $this->Controller->set('filters', $filters);
