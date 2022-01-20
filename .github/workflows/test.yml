@@ -1,0 +1,53 @@
+name: test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        php: ["7.4"]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create config files
+        run: |
+          cp ./config/app_local.example.php ./config/app_local.php
+          cp ./config/config.example.json ./config/config.json
+
+      - name: Setup MariaDB
+        uses: getong/mariadb-action@v1.1
+        with:
+          host port: 3306
+          container port: 3306
+          mysql database: "cerebrate_test"
+          mysql user: "cerebrate"
+          mysql password: "cerebrate"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo, pdo_mysql, mysqli, simplexml
+
+      - name: Install dependencies
+        env:
+          php_version: ${{ matrix.php }}
+        run: |
+          sudo apt-get -y update
+          sudo apt-get install -y --no-install-recommends curl git zip unzip libicu-dev libxml2-dev
+
+      - name: Run tests
+        run: |
+          composer install --no-progress --no-interaction
+          composer test
+        env:
+          DEBUG: true
