@@ -51,11 +51,6 @@ class Sidemenu {
                     'icon' => $this->iconTable['Broods'],
                     'url' => '/broods/index',
                 ],
-                'API' => [
-                    'label' => __('API'),
-                    'icon' => $this->iconTable['API'],
-                    'url' => '/api/index',
-                ],
             ],
             __('Administration') => [
                 'Roles' => [
@@ -129,6 +124,11 @@ class Sidemenu {
                             'icon' => 'history',
                         ],
                     ]
+                ],
+                'API' => [
+                    'label' => __('API'),
+                    'icon' => $this->iconTable['API'],
+                    'url' => '/api/index',
                 ],
             ],
             'Open' => [
