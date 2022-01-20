@@ -79,8 +79,7 @@ class CRUDComponent extends Component
             }
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
-                if (is_callable($options['afterFind'])) {
-                    $function = $options['afterFind'];
+                if (is_callable($function)) {
                     $data->each(function($value, $key) use ($function) {
                         return $function($value);
                     });
@@ -100,8 +99,7 @@ class CRUDComponent extends Component
             $data = $this->Controller->Paginator->paginate($query);
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
-                if (is_callable($options['afterFind'])) {
-                    $function = $options['afterFind'];
+                if (is_callable($function)) {
                     $data->each(function($value, $key) use ($function) {
                         return $function($value);
                     });
