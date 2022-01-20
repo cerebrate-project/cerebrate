@@ -43,14 +43,8 @@ class AuditLogsTable extends AppTable
     public function initialize(array $config): void
     {
         parent::initialize($config);
-        $this->addBehavior('UUID');
-        $this->addBehavior('Timestamp', [
-            'Model.beoreSave' => [
-                'created_at' => 'new'
-            ]
-        ]);
+        $this->addBehavior('Timestamp');
         $this->belongsTo('Users');
-        $this->setDisplayField('info');
         $this->compressionEnabled = Configure::read('Cerebrate.log_new_audit_compress') && function_exists('brotli_compress');
     }
 
