@@ -25,11 +25,11 @@
             'number' => '<li class="page-item"><a class="page-link" href="#" ' . $onClick . '>{{text}}</a></li>',
             'current' => '<li class="page-item active"><a href="" class="page-link">{{text}}</a></li>',
             'ellipsis' => '<li class="page-item disabled"><a href="" class="page-link"><span class="ellipsis">&hellip;</span></a></li>',
-            'sort' => '<a href="#" ' . $onClick . '>{{text}}</a>',
-            'sortAsc' => '<a href="#" ' . $onClick . '>{{text}} <i class="fas fa-sort-up"></i></a>',
-            'sortDesc' => '<a href="#" ' . $onClick . '>{{text}} <i class="fas fa-sort-down"></i></a>',
-            'sortAscLocked' => '<a class="asc locked" href="#" ' . $onClick . '>{{text}}</a>',
-            'sortDescLocked' => '<a class="desc locked" href="#" ' . $onClick . ');">{{text}}</a>'
+            'sort' => '<a href="#" ' . $onClick . ' class="d-inline-flex align-items-center">{{text}}</a>',
+            'sortAsc' => '<a href="#" ' . $onClick . ' class="d-inline-flex align-items-center">{{text}} <i class="fas fa-sort-up ms-1"></i></a>',
+            'sortDesc' => '<a href="#" ' . $onClick . ' class="d-inline-flex align-items-center">{{text}} <i class="fas fa-sort-down ms-1"></i></a>',
+            'sortAscLocked' => '<a class="asc locked" href="#" ' . $onClick . ' class="d-inline-flex align-items-center">{{text}}</a>',
+            'sortDescLocked' => '<a class="desc locked" href="#" ' . $onClick . ' class="d-inline-flex align-items-center");">{{text}}</a>'
         ]
     );
     echo $this->Paginator->options($options);
