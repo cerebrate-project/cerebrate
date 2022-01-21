@@ -3,11 +3,27 @@
     foreach ($fields as $k => $header) {
         if (!isset($header['requirement']) || $header['requirement']) {
             $header_data = '';
+            $icon_html = '';
+            if (!empty($header['icon'])) {
+                $icon_html = $this->Bootstrap->icon($header['icon'], ['class' => ['d-inline me-1']]);
+            }
             if (!empty($header['sort'])) {
                 if (!empty($header['name'])) {
-                    $header_data = $paginator->sort($header['sort'], $header['name']);
+                    $header_data = $paginator->sort(
+                        $header['sort'],
+                        sprintf('%s%s', $icon_html, h($header['name'])),
+                        ['escape' => false]
+                    );
                 } else {
-                    $header_data = $paginator->sort($header['sort']);
+                    if (empty($icon_html)) {
+                        $header_data = $paginator->sort($header['sort']);
+                    } else {
+                        $header_data = $paginator->sort(
+                            $header['sort'],
+                            $icon_html,
+                            ['escape' => false]
+                        );
+                    }
                 }
             } else {
                 if (!empty($header['element']) && $header['element'] === 'selector') {

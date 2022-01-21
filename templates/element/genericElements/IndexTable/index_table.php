@@ -42,7 +42,7 @@ if (!empty($data['title'])) {
     echo Text::insert(
         '<h2 class="fw-light">:title :help</h2>',
         [
-            'title' => h($data['title']),
+            'title' => $this->ValueGetter->get($data['title']),
             'help' => $this->Bootstrap->icon('info', [
                 'class' => ['fs-6', 'align-text-top',],
                 'title' => empty($data['description']) ? '' : h($data['description']),
