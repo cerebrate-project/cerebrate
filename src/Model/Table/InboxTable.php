@@ -9,6 +9,8 @@ use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
 use Cake\Http\Exception\NotFoundException;
 
+use App\Utility\UI\Notification;
+
 Type::map('json', 'Cake\Database\Type\JsonType');
 
 class InboxTable extends AppTable
@@ -85,5 +87,28 @@ class InboxTable extends AppTable
     {
         $savedEntry = $this->save($entryData);
         return $savedEntry;
+    }
+
+    public function collectNotifications(): array
+    {
+        $allNotifications = [];
+        $query = $this->find();
+        $inboxNotifications = $query->all()->toArray();
+        foreach ($inboxNotifications as $notification) {
+            $title = __('New message');
+            $details = $notification->title;
+            $router = [
+                'controller' => 'inbox',
+                'action' => 'index',
+                'plugin' => null,
+            ];
+            $allNotifications[] = (new Notification($title, $router, [
+                'icon' => 'envelope',
+                'details' => $details,
+                'datetime' => $notification->created,
+                'variant' => 'warning',
+            ]))->get();
+        }
+        return $allNotifications;
     }
 }

@@ -78,6 +78,9 @@ class AppController extends Controller
         $this->loadComponent('Navigation', [
             'request' => $this->request,
         ]);
+        $this->loadComponent('Notification', [
+            'request' => $this->request,
+        ]);
         if (Configure::read('debug')) {
             Configure::write('DebugKit.panels', ['DebugKit.Packages' => true]);
             Configure::write('DebugKit.forceEnable', true);
@@ -152,6 +155,7 @@ class AppController extends Controller
     {
         if (!$this->ParamHandler->isRest()) {
             $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
+            $this->set('notifications', $this->Notification->getNotifications());
         }
     }
 
