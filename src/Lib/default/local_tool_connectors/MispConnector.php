@@ -368,8 +368,8 @@ class MispConnector extends CommonConnectorTools
                         'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/ServerSettingsAction'
                     ]
                 ]
-            ]
-        ];
+            ];
+
             if (!empty($params['quickFilter'])) {
                 $needle = strtolower($params['quickFilter']);
                 foreach ($finalSettings['data']['data'] as $k => $v) {
