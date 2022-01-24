@@ -126,7 +126,7 @@ class ResendFailedMessageProcessor extends BroodsOutboxProcessor implements Gene
             [],
             $success,
             $success ? $messageSuccess : $messageFail,
-            []
+            $jsonReply['errors'] ?? []
         );
     }
 
