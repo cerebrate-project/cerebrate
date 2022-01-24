@@ -55,8 +55,10 @@ function attachTestConnectionResultHtml(result, $container) {
         $testResultDiv.append(getKVHtml('Internal error', result, ['text-danger fw-bold']))
     } else {
         if (result['error']) {
+            if (result['ping']) {
+                $testResultDiv.append('Status', 'OK', ['text-danger'], `${result['ping']} ms`);
+            }
             $testResultDiv.append(
-                getKVHtml('Status', 'OK', ['text-danger'], `${result['ping']} ms`),
                 getKVHtml('Status', `Error: ${result['error']}`, ['text-danger']),
                 getKVHtml('Reason', result['reason'], ['text-danger'])
             )
