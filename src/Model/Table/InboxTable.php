@@ -64,8 +64,11 @@ class InboxTable extends AppTable
         $this->Broods = \Cake\ORM\TableRegistry::getTableLocator()->get('Broods');
         $this->Individuals = \Cake\ORM\TableRegistry::getTableLocator()->get('Individuals');
         $errors = [];
+        $originUrl = trim($entryData['origin'], '/');
         $brood = $this->Broods->find()
-            ->where(['url' => $entryData['origin']])
+            ->where([
+                'url IN' => [$originUrl, "{$originUrl}/"]
+            ])
             ->first();
         if (empty($brood)) {
             $errors[] = __('Unkown brood `{0}`', $entryData['data']['cerebrateURL']);
