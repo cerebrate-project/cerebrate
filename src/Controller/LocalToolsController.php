@@ -304,7 +304,17 @@ class LocalToolsController extends AppController
                 throw new MethodNotAllowedException(__('No local tool ID supplied.'));
             }
             $params['local_tool_id'] = $postParams['local_tool_id'];
-            $encodingResult = $this->LocalTools->encodeConnection($params);
+            try {
+                $encodingResult = $this->LocalTools->encodeConnection($params);
+            } catch (\Exception $e) {
+                $encodingResult = [
+                    'inboxResult' => [
+                        'success' => false,
+                        'message' => __('Error while trying to encode connection'),
+                        'errors' => [$e->getMessage()],
+                    ],
+                ];
+            }
             $inboxResult = $encodingResult['inboxResult'];
             if ($inboxResult['success']) {
                 if ($this->ParamHandler->isRest()) {
