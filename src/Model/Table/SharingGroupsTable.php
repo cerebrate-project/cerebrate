@@ -66,6 +66,7 @@ class SharingGroupsTable extends AppTable
             $this->patchEntity($existingSG, $input);
             $entityToSave = $existingSG;
         }
+        $entityToSave->setDirty('modified', false);
         $savedEntity = $this->save($entityToSave, ['associated' => false]);
         if (!$savedEntity) {
             return null;
