@@ -88,7 +88,7 @@ class CRUDComponent extends Component
             $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
         } else {
             $this->Controller->loadComponent('Paginator');
-            $data = $this->Controller->Paginator->paginate($query);
+            $data = $this->Controller->Paginator->paginate($query, $this->Controller->paginate ?? []);
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
                 if (is_callable($options['afterFind'])) {

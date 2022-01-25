@@ -52,7 +52,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'name' => __('Changed'),
                 'sort' => 'changed',
                 'data_path' => 'changed',
-                'element' => 'json'
+                'element' => 'json',
+                'class' => 'text-break'
             ],
         ],
         'title' => __('Logs'),
