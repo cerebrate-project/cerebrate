@@ -102,14 +102,16 @@ class InboxTable extends AppTable
             $details = $notification->title;
             $router = [
                 'controller' => 'inbox',
-                'action' => 'index',
+                'action' => 'process',
                 'plugin' => null,
+                $notification->id
             ];
             $allNotifications[] = (new Notification($title, $router, [
                 'icon' => 'envelope',
                 'details' => $details,
                 'datetime' => $notification->created,
                 'variant' => 'warning',
+                '_useModal' => true,
             ]))->get();
         }
         return $allNotifications;

@@ -7,8 +7,12 @@ $datetimeMW = 90;
 $variant = empty($notification['variant']) ? 'primary' : $notification['variant'];
 ?>
 <a
-    class="dropdown-item px-2"
-    href="<?= Router::url($notification['router']) ?>"
+    class="dropdown-item px-2 btn"
+    <?php if (empty($notification['_useModal'])): ?>
+        href="<?= Router::url($notification['router']) ?>"
+    <?php else: ?>
+        onclick="UI.submissionModal('<?= Router::url($notification['router']) ?>', {closeOnSuccess: false})"
+    <?php endif; ?>
     style="max-height: 76px;"
     title="<?= sprintf('%s:&#010; %s', $this->ValueGetter->get($notification['text']), $this->ValueGetter->get($notification['details'])) ?>"
 >
