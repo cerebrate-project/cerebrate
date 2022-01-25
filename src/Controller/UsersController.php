@@ -45,6 +45,8 @@ class UsersController extends AppController
         $currentUser = $this->ACL->getUser();
         $validRoles = [];
         if (!$currentUser['role']['perm_admin']) {
+            $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0])->all()->toArray();
+        } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
 
@@ -111,6 +113,8 @@ class UsersController extends AppController
         $validRoles = [];
         if (!$currentUser['role']['perm_admin']) {
             $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0])->all()->toArray();
+        } else {
+            $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
         if (empty($id)) {
             $id = $currentUser['id'];
