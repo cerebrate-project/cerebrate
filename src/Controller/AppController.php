@@ -153,9 +153,11 @@ class AppController extends Controller
 
     public function beforeRender(EventInterface $event)
     {
-        if (!$this->ParamHandler->isRest()) {
-            $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
-            $this->set('notifications', $this->Notification->getNotifications());
+        if (!empty($this->request->getAttribute('identity'))) {
+            if (!$this->ParamHandler->isRest()) {
+                $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
+                $this->set('notifications', $this->Notification->getNotifications());
+            }
         }
     }
 
