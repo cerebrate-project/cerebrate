@@ -73,12 +73,10 @@ return [
          * The test connection is used during the test suite.
          */
         'test' => [
-            'host' => 'localhost',
-            //'port' => 'non_standard_port_number',
-            'username' => 'my_app',
-            'password' => 'secret',
-            'database' => 'test_myapp',
-            //'schema' => 'myapp',
+            'host' => '127.0.0.1',
+            'username' => 'cerebrate',
+            'password' => 'cerebrate',
+            'database' => 'cerebrate_test',
         ],
     ],
 

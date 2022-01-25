@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 /**
@@ -17,6 +18,11 @@ declare(strict_types=1);
 
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
+use Migrations\TestSuite\Migrator;
+use \League\OpenAPIValidation\PSR7\ValidatorBuilder;
+use \League\OpenAPIValidation\PSR7\RequestValidator;
+use \League\OpenAPIValidation\PSR7\ResponseValidator;
+use \League\OpenAPIValidation\PSR7\OperationAddress;
 
 /**
  * Test runner bootstrap.
@@ -50,3 +56,19 @@ ConnectionManager::alias('test_debug_kit', 'debug_kit');
 // does not allow the sessionid to be set after stdout
 // has been written to.
 session_id('cli');
+
+if (!$_ENV['SKIP_DB_MIGRATIONS']) {
+    echo "[ * ] Running DB migrations, it may take some time ...\n";
+    $migrator = new Migrator();
+    $migrator->runMany([
+        ['connection' => 'test'],
+        ['plugin' => 'Tags', 'connection' => 'test'],
+        ['plugin' => 'ADmad/SocialAuth', 'connection' => 'test']
+    ]);
+} else {
+    echo "[ * ] Skipping DB migrations ...\n";
+}
+
+$specFile = $_ENV['OPENAPI_SPEC'] ?? APP . '../webroot/docs/openapi.yaml';
+// Initialize OpenAPI spec validator
+Configure::write('App.OpenAPIValidator', (new ValidatorBuilder)->fromYamlFile($specFile));

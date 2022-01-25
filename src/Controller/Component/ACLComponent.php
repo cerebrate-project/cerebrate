@@ -194,6 +194,9 @@ class ACLComponent extends Component
             'getBookmarks' => ['*'],
             'saveBookmark' => ['*'],
             'deleteBookmark' => ['*']
+        ],
+        'Api' => [
+            'index' => ['*']
         ]
     );
 

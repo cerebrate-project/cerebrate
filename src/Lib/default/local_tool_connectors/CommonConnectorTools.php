@@ -24,21 +24,24 @@ class CommonConnectorTools
 
     public function __construct()
     {
-        Log::setConfig("LocalToolDebug", [
-            'className' => FileLog::class,
-            'path' => LOGS,
-            'file' => "{$this->connectorName}-debug",
-            'scopes' => [$this->connectorName],
-            'levels' => ['notice', 'info', 'debug'],
-        ]);
-        Log::setConfig("LocalToolError", [
-            'className' => FileLog::class,
-            'path' => LOGS,
-            'file' => "{$this->connectorName}-error",
-            'scopes' => [$this->connectorName],
-            'levels' => ['warning', 'error', 'critical', 'alert', 'emergency'],
-        ]);
-
+        if (empty(Log::getConfig("LocalToolDebug{$this->connectorName}"))) {
+            Log::setConfig("LocalToolDebug{$this->connectorName}", [
+                'className' => FileLog::class,
+                'path' => LOGS,
+                'file' => "{$this->connectorName}-debug",
+                'scopes' => [$this->connectorName],
+                'levels' => ['notice', 'info', 'debug'],
+            ]);
+        }
+        if (empty(Log::getConfig("LocalToolError{$this->connectorName}"))) {
+            Log::setConfig("LocalToolError{$this->connectorName}", [
+                'className' => FileLog::class,
+                'path' => LOGS,
+                'file' => "{$this->connectorName}-error",
+                'scopes' => [$this->connectorName],
+                'levels' => ['warning', 'error', 'critical', 'alert', 'emergency'],
+            ]);
+        }
     }
 
     protected function logDebug($message)

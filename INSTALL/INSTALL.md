@@ -74,12 +74,6 @@ sudo mysql -e "GRANT ALL PRIVILEGES ON cerebrate.* to cerebrate@localhost;"
 sudo mysql -e "FLUSH PRIVILEGES;"
 ```
 
-Load the default table structure into the database
-
-```bash
-sudo mysql -u cerebrate -p cerebrate < /var/www/cerebrate/INSTALL/mysql.sql
-```
-
 create your local configuration and set the db credentials
 
 ```bash

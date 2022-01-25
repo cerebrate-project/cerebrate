@@ -163,8 +163,8 @@ class AuditLogsTable extends AppTable
         if ($this->user !== null) {
             return $this->user;
         }
-
-        $this->user = ['id' => 0, /*'org_id' => 0, */'authkey_id' => 0, 'request_type' => self::REQUEST_TYPE_DEFAULT];
+        
+        $this->user = ['id' => 0, /*'org_id' => 0, */'authkey_id' => 0, 'request_type' => self::REQUEST_TYPE_DEFAULT, 'name' => ''];
 
         $isShell = (php_sapi_name() === 'cli');
         if ($isShell) {
