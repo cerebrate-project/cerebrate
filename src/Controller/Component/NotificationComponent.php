@@ -16,6 +16,7 @@ class NotificationComponent extends Component
     public function initialize(array $config): void
     {
         $this->request = $config['request'];
+        $this->Controller = $this->getController();
     }
 
     public function getNotifications(): array
@@ -40,7 +41,7 @@ class NotificationComponent extends Component
     {
         $notifications = [];
         if (method_exists($table, 'collectNotifications')) {
-            $notifications = $table->collectNotifications();
+            $notifications = $table->collectNotifications($this->Controller->ACL->getUser());
         }
         return $notifications;
     }

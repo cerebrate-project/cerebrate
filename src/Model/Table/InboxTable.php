@@ -92,11 +92,10 @@ class InboxTable extends AppTable
         return $savedEntry;
     }
 
-    public function collectNotifications(): array
+    public function collectNotifications(\App\Model\Entity\User $user): array
     {
         $allNotifications = [];
-        $query = $this->find();
-        $inboxNotifications = $query->all()->toArray();
+        $inboxNotifications = $this->getNotificationsForUser($user);
         foreach ($inboxNotifications as $notification) {
             $title = __('New message');
             $details = $notification->title;
@@ -115,5 +114,20 @@ class InboxTable extends AppTable
             ]))->get();
         }
         return $allNotifications;
+    }
+
+    public function getNotificationsForUser(\App\Model\Entity\User $user): array
+    {
+        $query = $this->find();
+        $conditions = [];
+        if ($user['role']['perm_admin']) {
+            // Admin will not see notifications if it doesn't belong to them. They can see process the message from the inbox
+            $conditions['Inbox.user_id IS'] = null;
+        } else {
+            $conditions['Inbox.user_id'] = $user->id;
+        }
+        $query->where($conditions);
+        $notifications = $query->all()->toArray();
+        return $notifications;
     }
 }
