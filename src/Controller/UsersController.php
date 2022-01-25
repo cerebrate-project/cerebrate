@@ -218,10 +218,18 @@ class UsersController extends AppController
         }
     }
 
-    public function settings()
+    public function settings($user_id=false)
     {
-        $this->set('user', $this->ACL->getUser());
-        $all = $this->Users->UserSettings->getSettingsFromProviderForUser($this->ACL->getUser()['id'], true);
+        $currentUser = $this->ACL->getUser();
+        if (empty($currentUser['role']['perm_admin'])) {
+            $user = $currentUser;
+        } else {
+            $user = $this->Users->get($user_id, [
+                'contain' => ['Roles', 'Individuals' => 'Organisations']
+            ]);
+        }
+        $this->set('user', $user);
+        $all = $this->Users->UserSettings->getSettingsFromProviderForUser($user->id, true);
         $this->set('settingsProvider', $all['settingsProvider']);
         $this->set('settings', $all['settings']);
         $this->set('settingsFlattened', $all['settingsFlattened']);
