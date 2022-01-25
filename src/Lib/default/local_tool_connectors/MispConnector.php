@@ -321,53 +321,53 @@ class MispConnector extends CommonConnectorTools
                                 'additionalUrlParams' => $urlParams
                             ]
                         ]
-                    ]
-                ],
-                'fields' => [
-                    [
-                        'name' => 'Setting',
-                        'sort' => 'setting',
-                        'data_path' => 'setting',
                     ],
-                    [
-                        'name' => 'Criticality',
-                        'sort' => 'level',
-                        'data_path' => 'level',
-                        'arrayData' => [
-                            0 => 'Critical',
-                            1 => 'Recommended',
-                            2 => 'Optional'
+                    'fields' => [
+                        [
+                            'name' => 'Setting',
+                            'sort' => 'setting',
+                            'data_path' => 'setting',
                         ],
-                        'element' => 'array_lookup_field'
+                        [
+                            'name' => 'Criticality',
+                            'sort' => 'level',
+                            'data_path' => 'level',
+                            'arrayData' => [
+                                0 => 'Critical',
+                                1 => 'Recommended',
+                                2 => 'Optional'
+                            ],
+                            'element' => 'array_lookup_field'
+                        ],
+                        [
+                            'name' => __('Value'),
+                            'sort' => 'value',
+                            'data_path' => 'value',
+                            'options' => 'options'
+                        ],
+                        [
+                            'name' => __('Type'),
+                            'sort' => 'type',
+                            'data_path' => 'type',
+                        ],
+                        [
+                            'name' => __('Error message'),
+                            'sort' => 'errorMessage',
+                            'data_path' => 'errorMessage',
+                        ]
                     ],
-                    [
-                        'name' => __('Value'),
-                        'sort' => 'value',
-                        'data_path' => 'value',
-                        'options' => 'options'
-                    ],
-                    [
-                        'name' => __('Type'),
-                        'sort' => 'type',
-                        'data_path' => 'type',
-                    ],
-                    [
-                        'name' => __('Error message'),
-                        'sort' => 'errorMessage',
-                        'data_path' => 'errorMessage',
+                    'title' => false,
+                    'description' => false,
+                    'pull' => 'right',
+                    'actions' => [
+                        [
+                            'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/modifySettingAction?setting={{0}}',
+                            'modal_params_data_path' => ['setting'],
+                            'icon' => 'download',
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/ServerSettingsAction'
+                        ]
                     ]
                 ],
-                'title' => false,
-                'description' => false,
-                'pull' => 'right',
-                'actions' => [
-                    [
-                        'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/modifySettingAction?setting={{0}}',
-                        'modal_params_data_path' => ['setting'],
-                        'icon' => 'download',
-                        'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/ServerSettingsAction'
-                    ]
-                ]
             ];
 
             if (!empty($params['quickFilter'])) {
