@@ -1,12 +1,29 @@
 <?php
 
 use Cake\Routing\Router;
+use Cake\Utility\Hash;
+
+$severity = [
+    'primary' => -1,
+    'info' => 0,
+    'warning' => 1,
+    'danger' => 2,
+];
+$maxSeverity = -1;
+$notificationVariants = Hash::extract($notifications, '{n}.variant');
+foreach ($notificationVariants as $notifVariant) {
+    $maxSeverity = max($maxSeverity, $severity[$notifVariant] ?? 0);
+}
+$variant = array_flip($severity)[$maxSeverity];
 ?>
 <div class="btn-group">
     <a class="nav-link px-2 text-decoration-none profile-button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#" data-bs-offset="10,20">
         <span class="position-relative">
             <i class="<?= $this->FontAwesome->getClass('bell') ?> fa-lg"></i>
-            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-warning border border-light border-2 rounded-circle">
+            <span
+                class="<?= empty($notifications) ? 'd-none' : '' ?> position-absolute top-0 start-100 translate-middle p-1 bg-<?= $variant ?> border border-light border-2 rounded-circle"
+                style="box-shadow: 0 0.125rem 0.25rem #00000050;"
+            >
                 <span class="visually-hidden"><?= __('New notifications') ?></span>
             </span>
         </span>
