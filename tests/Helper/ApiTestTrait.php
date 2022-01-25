@@ -240,7 +240,10 @@ trait ApiTestTrait
     protected function _sendRequest($url, $method, $data = []): void
     {
         // Adding Content-Type: application/json $this->configRequest() prevents this from happening somehow
-        if (in_array($method, ['POST', 'PATCH', 'PUT']) && $this->_request['headers']['Content-Type'] === 'application/json') {
+        if (
+            in_array($method, ['POST', 'PATCH', 'PUT'])
+            && $this->_request['headers']['Content-Type'] === 'application/json'
+        ) {
             $data = json_encode($data);
         }
 

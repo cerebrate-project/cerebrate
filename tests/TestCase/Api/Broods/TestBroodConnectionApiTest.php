@@ -52,17 +52,19 @@ class TestBroodConnectionApiTest extends TestCase
             WireMock::get(WireMock::urlEqualTo('/instance/status.json'))
                 ->willReturn(WireMock::aResponse()
                     ->withHeader('Content-Type', 'application/json')
-                    ->withBody((string)json_encode([
-                        "version" => "0.1",
-                        "application" => "Cerebrate",
-                        "user" => [
-                            "id" => 1,
-                            "username" => "wiremock",
-                            "role" => [
-                                "id" => 1
+                    ->withBody((string)json_encode(
+                        [
+                            "version" => "0.1",
+                            "application" => "Cerebrate",
+                            "user" => [
+                                "id" => 1,
+                                "username" => "wiremock",
+                                "role" => [
+                                    "id" => 1
+                                ]
                             ]
                         ]
-                    ])))
+                    )))
         );
     }
 }
