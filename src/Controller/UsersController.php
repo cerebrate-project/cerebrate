@@ -33,16 +33,28 @@ class UsersController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        $this->set(
+            'validRoles',
+            $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0])->all()->toArray()
+        );
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 
     public function add()
     {
         $currentUser = $this->ACL->getUser();
+        $validRoles = [];
+        if (!$currentUser['role']['perm_admin']) {
+            $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
+        }
+
         $this->CRUD->add([
-            'beforeSave' => function($data) use ($currentUser) {
+            'beforeSave' => function($data) use ($currentUser, $validRoles) {
                 if (!$currentUser['role']['perm_admin']) {
                     $data['organisation_id'] = $currentUser['organisation_id'];
+                    if (!in_array($data['role_id'], array_keys($validRoles))) {
+                        throw new MethodNotAllowedException(__('You do not have permission to assign that role.'));
+                    }
                 }
                 $this->Users->enrollUserRouter($data);
                 return $data;
@@ -65,9 +77,7 @@ class UsersController extends AppController
             $org_conditions = ['id' => $currentUser['organisation_id']];
         }
         $dropdownData = [
-            'role' => $this->Users->Roles->find('list', [
-                'sort' => ['name' => 'asc']
-            ]),
+            'role' => $validRoles,
             'individual' => $this->Users->Individuals->find('list', [
                 'sort' => ['email' => 'asc']
             ]),
@@ -98,6 +108,10 @@ class UsersController extends AppController
     public function edit($id = false)
     {
         $currentUser = $this->ACL->getUser();
+        $validRoles = [];
+        if (!$currentUser['role']['perm_admin']) {
+            $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0])->all()->toArray();
+        }
         if (empty($id)) {
             $id = $currentUser['id'];
         } else {
@@ -128,6 +142,20 @@ class UsersController extends AppController
             $params['fields'][] = 'role_id';
             $params['fields'][] = 'organisation_id';
             $params['fields'][] = 'disabled';
+        } else if (!empty($this->ACL->getUser()['role']['perm_org_admin'])) {
+            $params['fields'][] = 'username';
+            $params['fields'][] = 'role_id';
+            $params['fields'][] = 'disabled';
+            if (!$currentUser['role']['perm_admin']) {
+                $params['afterFind'] = function ($data, &$params) use ($currentUser, $validRoles) {
+                    if (!$currentUser['role']['perm_admin'] && $currentUser['role']['perm_org_admin']) {
+                        if (!in_array($data['role_id'], array_keys($validRoles))) {
+                            throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
+                        }
+                    }
+                    return $data;
+                };
+            }
         }
         $this->CRUD->edit($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
@@ -135,9 +163,7 @@ class UsersController extends AppController
             return $responsePayload;
         }
         $dropdownData = [
-            'role' => $this->Users->Roles->find('list', [
-                'sort' => ['name' => 'asc']
-            ]),
+            'role' => $validRoles,
             'individual' => $this->Users->Individuals->find('list', [
                 'sort' => ['email' => 'asc']
             ]),
@@ -161,6 +187,23 @@ class UsersController extends AppController
 
     public function delete($id)
     {
+        $validRoles = [];
+        if (!$currentUser['role']['perm_admin']) {
+            $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
+        }
+        $params = [
+            'beforeSave' => function($data) use ($currentUser, $validRoles) {
+                if (!$currentUser['role']['perm_admin']) {
+                    if ($data['organisation_id'] !== $currentUser['organisation_id']) {
+                        throw new MethodNotAllowedException(__('You do not have permission to remove the given user.'));
+                    }
+                    if (!in_array($data['role_id'], array_keys($validRoles))) {
+                        throw new MethodNotAllowedException(__('You do not have permission to remove the given user.'));
+                    }
+                }
+                return $data;
+            }
+        ];
         $this->CRUD->delete($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
