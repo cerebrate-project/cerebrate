@@ -8,6 +8,7 @@ use Cake\TestSuite\TestCase;
 use App\Test\Fixture\OrganisationsFixture;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\UsersFixture;
+use App\Test\Fixture\RolesFixture;
 use App\Test\Helper\ApiTestTrait;
 use App\Test\Helper\WireMockTestTrait;
 use \WireMock\Client\WireMock;
@@ -28,18 +29,19 @@ class MispInterConnectionTest extends TestCase
         'app.RemoteToolConnections'
     ];
 
+    /** constants related to the local Cerebrate instance */
     private const LOCAL_CEREBRATE_URL = 'http://127.0.0.1';
+
+    /** constants related to the local MISP instance */
     private const LOCAL_MISP_INSTANCE_URL = 'http://localhost:8080/MISP_LOCAL';
-    private const LOCAL_MISP_SYNC_USER_ID = 999;
-    private const LOCAL_MISP_SYNC_USER_AUTHKEY = '7f59533a2f792b389f18b086d88f6d7af02cba3e';
-    private const LOCAL_MISP_SYNC_USER_EMAIL = 'sync@misp.local';
     private const LOCAL_MISP_ADMIN_USER_AUTHKEY = 'b17ce79ac0f05916f382ab06ea4790665dbc174c';
 
+    /** constants related to the remote Cerebrate instance */
     private const REMOTE_CEREBRATE_URL = 'http://127.0.0.1:8080/CEREBRATE_REMOTE';
     private const REMOTE_CEREBRATE_AUTHKEY = 'a192ba3c749b545f9cec6b6bba0643736f6c3022';
-    private const REMOTE_MISP_INSTANCE_URL = 'http://localhost:8080/MISP_REMOTE';
+
+    /** constants related to the remote MISP instance */
     private const REMOTE_MISP_SYNC_USER_ID = 333;
-    private const REMOTE_MISP_SYNC_USER_AUTHKEY = '429f629abf98f7bf79e5a7f3a8fc694ca19ed357';
     private const REMOTE_MISP_SYNC_USER_EMAIL = 'sync@misp.remote';
 
     public function testInterConnectMispViaCerebrate(): void
@@ -50,7 +52,9 @@ class MispInterConnectionTest extends TestCase
 
         $faker = \Faker\Factory::create();
 
-        // 1. Create LocalTool connection to `MISP LOCAL` (local MISP instance)
+        /**
+         * 1. Create LocalTool connection to `MISP LOCAL` (local MISP instance)
+         */
         $this->post(
             sprintf('%s/localTools/add', self::LOCAL_CEREBRATE_URL),
             [
@@ -67,13 +71,17 @@ class MispInterConnectionTest extends TestCase
         );
         $this->assertResponseOk();
         $this->assertDbRecordExists('LocalTools', ['name' => 'MISP_LOCAL']);
-        $connection = $this->getJsonResponseAsArray();
-        // print_r($connection);
 
-        // 2. Create a new Brood (connect to a remote Cerebrate instance)
+        /**
+         * 2. Create a new Brood (connect to a remote Cerebrate instance)
+         * This step assumes that the remote Cerebrate instance is already 
+         * running and has a user created for the local Cerebrate instance.
+         * 
+         * NOTE: Uses OrganisationsFixture::ORGANISATION_A_ID from the 
+         * fixtures as the local Organisation.
+         */
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
         $LOCAL_BROOD_UUID = $faker->uuid;
-
         $this->post(
             '/broods/add',
             [
@@ -91,9 +99,85 @@ class MispInterConnectionTest extends TestCase
         $this->assertResponseOk();
         $this->assertDbRecordExists('Broods', ['uuid' => $LOCAL_BROOD_UUID]);
         $brood = $this->getJsonResponseAsArray();
-        // print_r($brood);
 
-        // 3. Get remote Cerebrate exposed tools
+        /**
+         * 3. Create a new Cerebrate local user for the remote Cerebrate
+         * These includes:
+         *  - 3.a: Create a new Organisation
+         *  - 3.b: Create a new Individual
+         *  - 3.c: Create a new User
+         *  - 3.d: Create a new Authkey
+         */
+        // Create Organisation
+        $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
+        $remoteOrgUuid = $faker->uuid;
+        $this->post(
+            '/organisations/add',
+            [
+                'name' => 'Remote Organisation',
+                'description' => $faker->text,
+                'uuid' => $remoteOrgUuid,
+                'url' => 'http://cerebrate.remote',
+                'nationality' => 'US',
+                'sector' => 'sector',
+                'type' => 'type',
+            ]
+        );
+        $this->assertResponseOk();
+        $this->assertDbRecordExists('Organisations', ['uuid' => $remoteOrgUuid]);
+        $remoteOrg = $this->getJsonResponseAsArray();
+
+        // Create Individual
+        $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
+        $this->post(
+            '/individuals/add',
+            [
+                'email' => 'sync@cerebrate.remote',
+                'first_name' => 'Remote',
+                'last_name' => 'Cerebrate'
+            ]
+        );
+        $this->assertResponseOk();
+        $this->assertDbRecordExists('Individuals', ['email' => 'sync@cerebrate.remote']);
+        $remoteIndividual = $this->getJsonResponseAsArray();
+
+        // Create User
+        $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
+        $this->post(
+            '/users/add',
+            [
+                'individual_id' => $remoteIndividual['id'],
+                'organisation_id' => $remoteOrg['id'],
+                'role_id' => RolesFixture::ROLE_SYNC_ID,
+                'disabled' => false,
+                'username' => 'remote_cerebrate',
+                'password' => 'Password123456!',
+            ]
+        );
+        $this->assertResponseOk();
+        $this->assertDbRecordExists('Users', ['username' => 'remote_cerebrate']);
+        $user = $this->getJsonResponseAsArray();
+
+        // Create Authkey
+        $remoteCerebrateAuthkey = $faker->sha1;
+        $remoteAuthkeyUuid = $faker->uuid;
+        $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
+        $this->post(
+            '/authKeys/add',
+            [
+                'uuid' => $remoteAuthkeyUuid,
+                'authkey' => $remoteCerebrateAuthkey,
+                'expiration' => 0,
+                'user_id' => $user['id'],
+                'comment' => $faker->text
+            ]
+        );
+        $this->assertResponseOk();
+        $this->assertDbRecordExists('AuthKeys', ['uuid' => $remoteAuthkeyUuid]);
+
+        /**
+         * 4. Get remote Cerebrate exposed tools
+         */
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
         $this->mockCerebrateGetExposedToolsResponse('CEREBRATE_REMOTE', self::REMOTE_CEREBRATE_AUTHKEY);
         $this->get(sprintf('/localTools/broodTools/%s', $brood['id']));
@@ -101,16 +185,22 @@ class MispInterConnectionTest extends TestCase
         $tools = $this->getJsonResponseAsArray();
         // print_r($tools);
 
-        // 4. Issue a connection request to the remote MISP instance
+        /**
+         * 5. Issue a connection request to the remote MISP instance
+         */
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
         $this->mockCerebrateGetExposedToolsResponse('CEREBRATE_REMOTE', self::REMOTE_CEREBRATE_AUTHKEY);
-        $this->mockMispViewOrganisationByUuid('MISP_LOCAL', OrganisationsFixture::ORGANISATION_A_UUID);
+        $this->mockMispViewOrganisationByUuid(
+            'MISP_LOCAL',
+            self::LOCAL_MISP_ADMIN_USER_AUTHKEY,
+            OrganisationsFixture::ORGANISATION_A_UUID,
+            OrganisationsFixture::ORGANISATION_A_ID
+        );
         $this->mockMispCreateSyncUser(
             'MISP_LOCAL',
             self::LOCAL_MISP_ADMIN_USER_AUTHKEY,
             self::REMOTE_MISP_SYNC_USER_ID,
-            self::REMOTE_MISP_SYNC_USER_EMAIL,
-            self::REMOTE_MISP_SYNC_USER_AUTHKEY
+            self::REMOTE_MISP_SYNC_USER_EMAIL
         );
         $this->mockCerebrateCreateMispIncommingConnectionRequest(
             'CEREBRATE_REMOTE',
@@ -126,16 +216,16 @@ class MispInterConnectionTest extends TestCase
             ]
         );
         $this->assertResponseOk();
-        // $connectionRequest = $this->getJsonResponseAsArray();
-        // print_r($connectionRequest);
 
-        // 5. Remote Cerebrate accepts the connection request
-        $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY); // TODO: use the Cerebrate admin authkey
+        /**
+         * 6. Remote Cerebrate accepts the connection request
+         */
+        $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
         $this->post(
             '/inbox/createEntry/LocalTool/AcceptedRequest',
             [
                 'email' => self::REMOTE_MISP_SYNC_USER_EMAIL,
-                'authkey' => self::REMOTE_MISP_SYNC_USER_AUTHKEY,
+                'authkey' => $remoteCerebrateAuthkey,
                 'url' => self::LOCAL_MISP_INSTANCE_URL,
                 'reflected_user_id' => self::REMOTE_MISP_SYNC_USER_ID,
                 'connectorName' => 'MispConnector',
@@ -147,24 +237,23 @@ class MispInterConnectionTest extends TestCase
         );
         $this->assertResponseOk();
         $acceptRequest = $this->getJsonResponseAsArray();
-        // print_r($acceptRequest);
 
-        // 6. Finalize the connection
+        /**
+         * 7. Finalize the connection
+         */
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
         $this->mockEnableMispSyncUser('MISP_LOCAL', self::LOCAL_MISP_ADMIN_USER_AUTHKEY, self::REMOTE_MISP_SYNC_USER_ID);
-        $stub = $this->mockAddMispServer(
+        $this->mockAddMispServer(
             'MISP_LOCAL',
             self::LOCAL_MISP_ADMIN_USER_AUTHKEY,
             [
-                'authkey' => self::REMOTE_MISP_SYNC_USER_AUTHKEY,
+                'authkey' => $remoteCerebrateAuthkey,
                 'url' => self::LOCAL_MISP_INSTANCE_URL,
                 'name' => 'MISP_LOCAL',
                 'remote_org_id' => 1
             ]
         );
         $this->post(sprintf('/inbox/process/%s', $acceptRequest['data']['id']));
-        // $finalizeConnection = $this->getJsonResponseAsArray();
-        // print_r($finalizeConnection);
         $this->assertResponseOk();
         $this->assertResponseContains('"success": true');
     }
@@ -189,17 +278,18 @@ class MispInterConnectionTest extends TestCase
         );
     }
 
-    private function mockMispViewOrganisationByUuid(string $instance, string $orgUuid): \WireMock\Stubbing\StubMapping
+    private function mockMispViewOrganisationByUuid(string $instance, string $mispAuthkey, string $orgUuid, int $orgId): \WireMock\Stubbing\StubMapping
     {
         return $this->getWireMock()->stubFor(
             WireMock::get(WireMock::urlEqualTo("/$instance/organisations/view/$orgUuid/limit:50"))
+                ->withHeader('Authorization', WireMock::equalTo($mispAuthkey))
                 ->willReturn(WireMock::aResponse()
                     ->withHeader('Content-Type', 'application/json')
                     ->withBody((string)json_encode(
                         [
                             "Organisation" => [
-                                "id" => 1,
-                                "name" => "Local Organisation",
+                                "id" => $orgId,
+                                "name" => $instance . ' Organisation',
                                 "uuid" => $orgUuid,
                                 "local" => true
                             ]
@@ -208,7 +298,7 @@ class MispInterConnectionTest extends TestCase
         );
     }
 
-    private function mockMispCreateSyncUser(string $instance, string $mispAuthkey, int $userId, string $email, string $authkey): \WireMock\Stubbing\StubMapping
+    private function mockMispCreateSyncUser(string $instance, string $mispAuthkey, int $userId, string $email): \WireMock\Stubbing\StubMapping
     {
         return $this->getWireMock()->stubFor(
             WireMock::post(WireMock::urlEqualTo("/$instance/admin/users/add"))
@@ -219,7 +309,6 @@ class MispInterConnectionTest extends TestCase
                         [
                             "User" => [
                                 "id" => $userId,
-                                "authkey" => $authkey,
                                 "email" => $email
                             ]
                         ]
