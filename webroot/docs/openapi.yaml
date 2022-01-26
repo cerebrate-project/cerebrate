@@ -27,6 +27,8 @@ tags:
     description: "Assign encryption keys to the user, used to securely communicate or validate messages coming from the user."
   - name: AuthKeys
     description: "Authkeys are used for API access. A user can have more than one authkey, so if you would like to use separate keys per tool that queries Cerebrate, add additional keys. Use the comment field to make identifying your keys easier."
+  - name: LocalTools
+    description: "Cerebrate can connect to local tools via individual connectors, built to expose the various functionalities of the given tool via Cerebrate. Simply view the connectors' details and the accompanying instance list to manage the connections using the given connector."
 
 paths:
   /individuals/index:
@@ -418,7 +420,7 @@ paths:
   /inbox/createEntry/User/Registration:
     post:
       summary: "Create user registration inbox entry"
-      operationId: createInboxEntry
+      operationId: createUserRegistrationInboxEntry
       tags:
         - Inbox
       requestBody:
@@ -426,6 +428,42 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/CreateUserRegistrationInboxEntryResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /inbox/createEntry/LocalTool/AcceptedRequest:
+    post:
+      summary: "Create accepted connection request inbox entry"
+      operationId: createAcceptedRequestInboxEntry
+      tags:
+        - Inbox
+      requestBody:
+        $ref: "#/components/requestBodies/CreateAcceptedRequestInboxEntryRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/AcceptedRequestInboxResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /inbox/process/{inboxId}:
+    post:
+      summary: "Process inbox entry"
+      operationId: processInboxEntry
+      tags:
+        - Inbox
+      parameters:
+        - $ref: "#/components/parameters/inboxId"
+      responses:
+        "200":
+          $ref: "#/components/responses/ProcessInboxResponse"
         "403":
           $ref: "#/components/responses/UnauthorizedApiErrorResponse"
         "405":
@@ -783,6 +821,63 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
+  /localTools/add:
+    post:
+      summary: "Add a local tool connection"
+      operationId: addLocalTool
+      tags:
+        - LocalTools
+      requestBody:
+        $ref: "#/components/requestBodies/CreateLocalToolConnectionRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/LocalToolResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /localTools/broodTools/{broodId}:
+    get:
+      summary: "Get brood exposed tools"
+      operationId: getBroodExposedTools
+      tags:
+        - LocalTools
+      parameters:
+        - $ref: "#/components/parameters/broodId"
+      responses:
+        "200":
+          $ref: "#/components/responses/GetExposedBroodToolsResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /localTools/connectionRequest/{broodId}/{localToolId}:
+    post:
+      summary: "Issue a local tool connection request"
+      operationId: issueLocalToolConnectionRequest
+      tags:
+        - LocalTools
+      parameters:
+        - $ref: "#/components/parameters/broodId"
+        - $ref: "#/components/parameters/localToolId"
+      requestBody:
+        $ref: "#/components/requestBodies/IssueLocalToolConnectionRequest"
+      responses:
+        "200":
+          $ref: "#/components/responses/IncomingConnectionRequestInboxResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
 components:
   schemas:
     # General
@@ -1129,8 +1224,37 @@ components:
             user:
               $ref: "#/components/schemas/User"
             local_tool_connector_name:
-              type: string
-              nullable: true
+              $ref: "#/components/schemas/LocalToolConnector"
+
+    AcceptedRequestInbox:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/Inbox"
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                email:
+                  $ref: "#/components/schemas/Email"
+                authkey:
+                  $ref: "#/components/schemas/AuthKeyRaw"
+                url:
+                  type: string
+                reflected_user_id:
+                  $ref: "#/components/schemas/ID"
+                connectorName:
+                  $ref: "#/components/schemas/LocalToolConnector"
+                cerebrateURL:
+                  type: string
+                local_tool_id:
+                  $ref: "#/components/schemas/ID"
+                remote_tool_id:
+                  $ref: "#/components/schemas/ID"
+                tool_name:
+                  type: string
+            local_tool_connector_name:
+              $ref: "#/components/schemas/LocalToolConnector"
 
     IncomingConnectionRequestInbox:
       type: object
@@ -1142,9 +1266,7 @@ components:
               type: object
               properties:
                 connectorName:
-                  type: string
-                  enum:
-                    - "MispConnector"
+                  $ref: "#/components/schemas/LocalToolConnector"
                 cerebrateURL:
                   type: string
                   example: "http://192.168.0.1"
@@ -1159,6 +1281,7 @@ components:
         anyOf:
           - $ref: "#/components/schemas/UserRegistrationInbox"
           - $ref: "#/components/schemas/IncomingConnectionRequestInbox"
+          - $ref: "#/components/schemas/AcceptedRequestInbox"
 
     # SharingGroups
     SharingGroupName:
@@ -1362,6 +1485,45 @@ components:
       items:
         $ref: "#/components/schemas/AuthKey"
 
+    # LocalTools
+    LocalToolName:
+      type: string
+
+    LocalToolConnector:
+      type: string
+      nullable: true
+      enum:
+        - "MispConnector"
+
+    LocalToolSettings:
+      type: string
+      description: "Stringified JSON representing tool settings"
+
+    LocalToolDescription:
+      type: string
+
+    LocalToolIsExposed:
+      type: boolean
+
+    LocalTool:
+      type: object
+      properties:
+        name:
+          $ref: "#/components/schemas/LocalToolName"
+        connector:
+          $ref: "#/components/schemas/LocalToolConnector"
+        settings:
+          $ref: "#/components/schemas/LocalToolSettings"
+        description:
+          $ref: "#/components/schemas/LocalToolDescription"
+        exposed:
+          $ref: "#/components/schemas/LocalToolIsExposed"
+
+    LocalToolList:
+      type: array
+      items:
+        $ref: "#/components/schemas/LocalTool"
+
     # Errors
     ApiError:
       type: object
@@ -1483,6 +1645,22 @@ components:
       name: authKeyId
       in: path
       description: "Numeric ID of the AuthKey"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
+    localToolId:
+      name: localToolId
+      in: path
+      description: "Numeric ID of the local tool"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
+
+    inboxId:
+      name: inboxId
+      in: path
+      description: "Numeric ID of the local tool"
       required: true
       schema:
         $ref: "#/components/schemas/ID"
@@ -1669,6 +1847,32 @@ components:
               password:
                 type: string
 
+    CreateAcceptedRequestInboxEntryRequest:
+      description: "Create accepted connection request inbox entry request"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                $ref: "#/components/schemas/Email"
+              authkey:
+                $ref: "#/components/schemas/AuthKeyRaw"
+              url:
+                type: string
+              reflected_user_id:
+                $ref: "#/components/schemas/ID"
+              connectorName:
+                $ref: "#/components/schemas/LocalToolConnector"
+              cerebrateURL:
+                type: string
+              local_tool_id:
+                $ref: "#/components/schemas/ID"
+              remote_tool_id:
+                $ref: "#/components/schemas/ID"
+              tool_name:
+                type: string
+
     # SharingGroups
     CreateSharingGroupRequest:
       required: true
@@ -1834,6 +2038,34 @@ components:
               comment:
                 $ref: "#/components/schemas/AuthKeyComment"
 
+    # LocalTools
+    CreateLocalToolConnectionRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                $ref: "#/components/schemas/LocalToolName"
+              connector:
+                $ref: "#/components/schemas/LocalToolConnector"
+              settings:
+                $ref: "#/components/schemas/LocalToolSettings"
+              description:
+                $ref: "#/components/schemas/LocalToolDescription"
+              exposed:
+                $ref: "#/components/schemas/LocalToolIsExposed"
+
+    IssueLocalToolConnectionRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              local_tool_id:
+                type: integer
   responses:
     # Individuals
     IndividualResponse:
@@ -1910,6 +2142,34 @@ components:
           schema:
             $ref: "#/components/schemas/IncomingConnectionRequestInbox"
 
+    AcceptedRequestInboxResponse:
+      description: "Accepted connection request inbox response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/IncomingConnectionRequestInbox"
+
+    ProcessInboxResponse:
+      description: "Process inbox response"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+              success:
+                type: boolean
+              message:
+                type: string
+                example: "Interconnection for `http://cerebrate.remote`'s  finalised"
+              errors:
+                type: string
+                nullable: true
+
     InboxListResponse:
       description: "Inbox list response"
       content:
@@ -1918,7 +2178,7 @@ components:
             $ref: "#/components/schemas/InboxList"
 
     CreateUserRegistrationInboxEntryResponse:
-      description: "Inbox response"
+      description: "Create user registration inbox response"
       content:
         application/json:
           schema:
@@ -1927,6 +2187,31 @@ components:
               data:
                 allOf:
                   - $ref: "#/components/schemas/UserRegistrationInbox"
+                  - properties:
+                      local_tool_connector_name:
+                        type: string
+                        nullable: true
+              success:
+                type: boolean
+              message:
+                type: string
+                example: "User account creation requested. Please wait for an admin to approve your account."
+              errors:
+                type: array
+                items:
+                  type: object
+                  # TODO: describe
+
+    AcceptedRequestInboxEntryResponse:
+      description: "Accepted request inbox response"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                allOf:
+                  - $ref: "#/components/schemas/AcceptedRequestInbox"
                   - properties:
                       local_tool_connector_name:
                         type: string
@@ -2028,6 +2313,21 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/AuthKeyList"
+
+    # LocalTools
+    LocalToolResponse:
+      description: "Local tool response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/LocalTool"
+
+    GetExposedBroodToolsResponse:
+      description: "Local tool response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/LocalToolList"
 
     # Errors
     ApiErrorResponse:

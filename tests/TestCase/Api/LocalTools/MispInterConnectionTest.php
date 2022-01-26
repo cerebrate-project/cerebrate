@@ -26,7 +26,8 @@ class MispInterConnectionTest extends TestCase
         'app.AuthKeys',
         'app.Broods',
         'app.LocalTools',
-        'app.RemoteToolConnections'
+        'app.RemoteToolConnections',
+        'app.Inbox'
     ];
 
     /** constants related to the local Cerebrate instance */
@@ -46,7 +47,6 @@ class MispInterConnectionTest extends TestCase
 
     public function testInterConnectMispViaCerebrate(): void
     {
-        $this->skipOpenApiValidations();
         $this->initializeWireMock();
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
 
@@ -183,7 +183,6 @@ class MispInterConnectionTest extends TestCase
         $this->get(sprintf('/localTools/broodTools/%s', $brood['id']));
         $this->assertResponseOk();
         $tools = $this->getJsonResponseAsArray();
-        // print_r($tools);
 
         /**
          * 5. Issue a connection request to the remote MISP instance
@@ -250,7 +249,7 @@ class MispInterConnectionTest extends TestCase
                 'authkey' => $remoteCerebrateAuthkey,
                 'url' => self::LOCAL_MISP_INSTANCE_URL,
                 'name' => 'MISP_LOCAL',
-                'remote_org_id' => 1
+                'remote_org_id' => OrganisationsFixture::ORGANISATION_A_ID
             ]
         );
         $this->post(sprintf('/inbox/process/%s', $acceptRequest['data']['id']));
@@ -269,9 +268,8 @@ class MispInterConnectionTest extends TestCase
                         [
                             [
                                 "id" => 1,
-                                "name" => "MISP_REMOTE",
+                                "name" => $instance,
                                 "connector" => "MispConnector",
-                                "description" => "Remote MISP instance"
                             ]
                         ]
                     )))
@@ -300,6 +298,7 @@ class MispInterConnectionTest extends TestCase
 
     private function mockMispCreateSyncUser(string $instance, string $mispAuthkey, int $userId, string $email): \WireMock\Stubbing\StubMapping
     {
+        $faker = \Faker\Factory::create();
         return $this->getWireMock()->stubFor(
             WireMock::post(WireMock::urlEqualTo("/$instance/admin/users/add"))
                 ->withHeader('Authorization', WireMock::equalTo($mispAuthkey))
@@ -309,7 +308,8 @@ class MispInterConnectionTest extends TestCase
                         [
                             "User" => [
                                 "id" => $userId,
-                                "email" => $email
+                                "email" => $email,
+                                "authkey" => $faker->sha1
                             ]
                         ]
                     )))
