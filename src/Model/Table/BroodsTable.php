@@ -33,7 +33,11 @@ class BroodsTable extends AppTable
             ->requirePresence(['name', 'url', 'organisation_id'], 'create')
             ->notEmptyString('name')
             ->notEmptyString('url')
-            ->url('url', __('The provided value is not a valid URL'))
+            ->add('url', 'isValidUrl', [
+                'rule' => 'isValidUrl',
+                'message' => __('The provided value is not a valid URL'),
+                'provider' => 'table'
+            ])
             ->naturalNumber('organisation_id', false);
     }
 

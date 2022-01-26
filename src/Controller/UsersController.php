@@ -94,7 +94,8 @@ class UsersController extends AppController
 
     public function view($id = false)
     {
-        if (empty($id) || empty($this->ACL->getUser()['role']['perm_admin'])) {
+        $currentUser = $this->ACL->getUser();
+        if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
             $id = $this->ACL->getUser()['id'];
         }
         $this->CRUD->view($id, [
@@ -152,10 +153,11 @@ class UsersController extends AppController
             $params['fields'][] = 'disabled';
             if (!$currentUser['role']['perm_admin']) {
                 $params['afterFind'] = function ($data, &$params) use ($currentUser, $validRoles) {
-                    if (!$currentUser['role']['perm_admin'] && $currentUser['role']['perm_org_admin']) {
-                        if (!in_array($data['role_id'], array_keys($validRoles))) {
-                            throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
-                        }
+                    if (!in_array($data['role_id'], array_keys($validRoles))) {
+                        throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
+                    }
+                    if ($data['organisation_id'] !== $currentUser['organisation_id']) {
+                        throw new MethodNotAllowedException(__('You cannot edit the given user.'));
                     }
                     return $data;
                 };
