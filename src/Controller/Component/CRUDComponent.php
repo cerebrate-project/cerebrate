@@ -307,6 +307,9 @@ class CRUDComponent extends Component
                 'associated' => []
             ];
             $input = $this->__massageInput($params);
+            if (!empty($params['fields'])) {
+                $patchEntityParams['fields'] = $params['fields'];
+            }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
