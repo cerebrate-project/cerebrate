@@ -967,6 +967,9 @@ class CRUDComponent extends Component
         }
 
         $data = $this->Table->get($id, $params);
+        if (isset($params['afterFind'])) {
+            $data = $params['afterFind']($data, $params);
+        }
         if ($this->request->is(['post', 'put'])) {
             if (isset($params['force_state'])) {
                 $data->{$fieldName} = $params['force_state'];

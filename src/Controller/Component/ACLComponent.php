@@ -291,6 +291,9 @@ class ACLComponent extends Component
             return false;
         }
         if (!$currentUser['role']['perm_admin']) {
+            if ($user['role']['perm_admin']) {
+                return false; // org_admins cannot edit admins
+            }
             if (!$currentUser['role']['perm_org_admin']) {
                 return false;
             } else {
