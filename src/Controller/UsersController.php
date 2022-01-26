@@ -193,6 +193,7 @@ class UsersController extends AppController
 
     public function delete($id)
     {
+        $currentUser = $this->ACL->getUser();
         $validRoles = [];
         if (!$currentUser['role']['perm_admin']) {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
