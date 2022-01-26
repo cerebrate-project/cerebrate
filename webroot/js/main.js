@@ -167,7 +167,7 @@ function saveSetting(statusNode, settingName, settingValue) {
 }
 
 function openSaveBookmarkModal(bookmark_url = '') {
-    const url = '/user-settings/saveBookmark';
+    const url = '/user-settings/saveMyBookmark';
     UI.submissionModal(url).then(([modalFactory, ajaxApi]) => {
         const $input = modalFactory.$modal.find('input[name="bookmark_url"]')
         $input.val(bookmark_url)
@@ -175,7 +175,7 @@ function openSaveBookmarkModal(bookmark_url = '') {
 }
 
 function deleteBookmark(bookmark, forSidebar=false) {
-    const url = '/user-settings/deleteBookmark'
+    const url = '/user-settings/deleteMyBookmark'
     AJAXApi.quickFetchAndPostForm(url, {
         bookmark_name: bookmark.name,
         bookmark_url: bookmark.url,
@@ -183,7 +183,7 @@ function deleteBookmark(bookmark, forSidebar=false) {
         provideFeedback: true,
         statusNode: $('.bookmark-table-container'),
     }).then((apiResult) => {
-        const url = `/userSettings/getBookmarks/${forSidebar ? '1' : '0'}`
+        const url = `/userSettings/getMyBookmarks/${forSidebar ? '1' : '0'}`
         UI.reload(url, $('.bookmark-table-container').parent())
         const theToast = UI.toast({
             variant: 'success',
@@ -191,7 +191,7 @@ function deleteBookmark(bookmark, forSidebar=false) {
             bodyHtml: $('<div/>').append(
                 $('<span/>').text('Cancel deletion operation.'),
                 $('<button/>').addClass(['btn', 'btn-primary', 'btn-sm', 'ms-3']).text('Restore bookmark').click(function () {
-                    const urlRestore = '/user-settings/saveBookmark'
+                    const urlRestore = '/user-settings/saveMyBookmark'
                     AJAXApi.quickFetchAndPostForm(urlRestore, {
                         bookmark_label: bookmark.label,
                         bookmark_name: bookmark.name,
@@ -200,7 +200,7 @@ function deleteBookmark(bookmark, forSidebar=false) {
                         provideFeedback: true,
                         statusNode: $('.bookmark-table-container')
                     }).then(() => {
-                        const url = `/userSettings/getBookmarks/${forSidebar ? '1' : '0'}`
+                        const url = `/userSettings/getMyBookmarks/${forSidebar ? '1' : '0'}`
                         UI.reload(url, $('.bookmark-table-container').parent())
                     })
                 }),
@@ -297,7 +297,7 @@ $(document).ready(() => {
             $sidebar.addClass('expanded')
         }
         const settingName = 'ui.sidebar.expanded';
-        const url = `/user-settings/setSetting/${settingName}`
+        const url = `/user-settings/setMySetting/${settingName}`
         AJAXApi.quickFetchAndPostForm(url, {
             value: expanded ? 0 : 1
         }, { provideFeedback: false})

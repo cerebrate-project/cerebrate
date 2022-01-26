@@ -124,7 +124,13 @@ class UserSettingsController extends AppController
         }
     }
 
-    public function getSettingByName($settingsName)
+    /**
+     * Get a setting by name for the currently logged-in user
+     *
+     * @param [type] $settingsName
+     * @return void
+     */
+    public function getMySettingByName($settingsName)
     {
         $setting = $this->UserSettings->getSettingByName($this->ACL->getUser(), $settingsName);
         if (is_null($setting)) {
@@ -140,7 +146,7 @@ class UserSettingsController extends AppController
         $this->render('view');
     }
 
-    public function setSetting($settingsName = false)
+    public function setMySetting($settingsName = false)
     {
         if (!$this->request->is('get')) {
             $setting = $this->UserSettings->getSettingByName($this->ACL->getUser(), $settingsName);
@@ -160,22 +166,23 @@ class UserSettingsController extends AppController
         $this->set('settingName', $settingsName);
     }
 
-    public function saveSetting()
+    public function saveSetting($user_id = false)
     {
+        $user = $this->getRequestedUserIfAllowed($user_id);
         if ($this->request->is('post')) {
             $data = $this->ParamHandler->harvestParams([
                 'name',
                 'value'
             ]);
-            $setting = $this->UserSettings->getSettingByName($this->ACL->getUser(), $data['name']);
+            $setting = $this->UserSettings->getSettingByName($user, $data['name']);
             if (is_null($setting)) { // setting not found, create it
-                $result = $this->UserSettings->createSetting($this->ACL->getUser(), $data['name'], $data['value']);
+                $result = $this->UserSettings->createSetting($user, $data['name'], $data['value']);
             } else {
-                $result = $this->UserSettings->editSetting($this->ACL->getUser(), $data['name'], $data['value']);
+                $result = $this->UserSettings->editSetting($user, $data['name'], $data['value']);
             }
             $success = !empty($result);
             $message = $success ? __('Setting saved') : __('Could not save setting');
-            $this->CRUD->setResponseForController('setSetting', $success, $message, $result);
+            $this->CRUD->setResponseForController('saveSetting', $success, $message, $result);
             $responsePayload = $this->CRUD->getResponsePayload();
             if (!empty($responsePayload)) {
                 return $responsePayload;
@@ -183,7 +190,7 @@ class UserSettingsController extends AppController
         }
     }
 
-    public function getBookmarks($forSidebar = false)
+    public function getMyBookmarks($forSidebar = false)
     {
         $bookmarks = $this->UserSettings->getSettingByName($this->ACL->getUser(), $this->UserSettings->BOOKMARK_SETTING_NAME);
         $bookmarks = json_decode($bookmarks['value'], true);
@@ -193,7 +200,7 @@ class UserSettingsController extends AppController
         $this->render('/element/UserSettings/saved-bookmarks');
     }
 
-    public function saveBookmark()
+    public function saveMyBookmark()
     {
         if (!$this->request->is('get')) {
             $result = $this->UserSettings->saveBookmark($this->ACL->getUser(), $this->request->getData());
@@ -208,7 +215,7 @@ class UserSettingsController extends AppController
         $this->set('user_id', $this->ACL->getUser()->id);
     }
 
-    public function deleteBookmark()
+    public function deleteMyBookmark()
     {
         if (!$this->request->is('get')) {
             $result = $this->UserSettings->deleteBookmark($this->ACL->getUser(), $this->request->getData());
@@ -247,5 +254,27 @@ class UserSettingsController extends AppController
             $isAllowed = $setting->user_id == $currentUser->id;
         }
         return $isAllowed;
+    }
+
+    /**
+     * Return the requested user if user permissions allow it. Otherwise, return the user currently logged-in
+     *
+     * @param bool|int $user_id
+     * @return void
+     */
+    private function getRequestedUserIfAllowed($user_id = false)
+    {
+        $currentUser = $this->ACL->getUser();
+        if (is_bool($user_id)) {
+            return $currentUser;
+        }
+        if (!empty($currentUser['role']['perm_admin'])) {
+            $user = $this->Users->get($user_id, [
+                'contain' => ['Roles', 'Individuals' => 'Organisations']
+            ]);
+        } else {
+            $user = $currentUser;
+        }
+        return $user;
     }
 }
