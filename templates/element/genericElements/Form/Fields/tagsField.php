@@ -1,6 +1,6 @@
 <?php
     $tagsHtml = $this->Tag->tags($entity['tags'], [
-        'allTags' => [],
+        'allTags' => $allTags ?? [],
         'picker' => true,
         'editable' => true,
     ]);

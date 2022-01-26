@@ -526,6 +526,7 @@ class MispConnector extends CommonConnectorTools
                         ]
                     ],
                     'actions' => [
+                        /*
                         [
                             'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/editUser?id={{0}}',
                             'modal_params_data_path' => ['User.id'],
@@ -538,6 +539,7 @@ class MispConnector extends CommonConnectorTools
                             'icon' => 'trash',
                             'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/serversAction'
                         ]
+                        */
                     ],
                     'title' => false,
                     'description' => false,

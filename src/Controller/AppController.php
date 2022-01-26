@@ -110,6 +110,7 @@ class AppController extends Controller
             }
             unset($user['password']);
             $this->ACL->setUser($user);
+            $this->Navigation->genBreadcrumbs($user);
             $this->request->getSession()->write('authUser', $user);
             $this->isAdmin = $user['role']['perm_admin'];
             if (!$this->ParamHandler->isRest()) {

@@ -9,6 +9,7 @@ use Cake\Core\Configure;
 use Cake\Http\Client;
 use Cake\Http\Client\Response;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Client\Exception\NetworkException;
 use Cake\ORM\TableRegistry;
 use Cake\Error\Debugger;
 
@@ -32,7 +33,11 @@ class BroodsTable extends AppTable
             ->requirePresence(['name', 'url', 'organisation_id'], 'create')
             ->notEmptyString('name')
             ->notEmptyString('url')
-            ->url('url', __('The provided value is not a valid URL'))
+            ->add('url', 'isValidUrl', [
+                'rule' => 'isValidUrl',
+                'message' => __('The provided value is not a valid URL'),
+                'provider' => 'table'
+            ])
             ->naturalNumber('organisation_id', false);
     }
 
@@ -69,7 +74,14 @@ class BroodsTable extends AppTable
     {
         $brood = $this->find()->where(['id' => $id])->first();
         $start = microtime(true);
-        $response = $this->HTTPClientGET('/instance/status.json', $brood);
+        try {
+            $response = $this->HTTPClientGET('/instance/status.json', $brood);
+        } catch (NetworkException $e) {
+            return [
+                'error' => __('Could not query status'),
+                'reason' => $e->getMessage(),
+            ];
+        }
         $ping = ((int)(100 * (microtime(true) - $start)));
         $errors = [
             403 => [

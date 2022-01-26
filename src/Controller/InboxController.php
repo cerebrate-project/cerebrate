@@ -20,6 +20,12 @@ class InboxController extends AppController
     public $quickFilterFields = ['scope', 'action', ['title' => true], ['comment' => true]];
     public $containFields = ['Users'];
 
+    public $paginate = [
+        'order' => [
+            'Inbox.created' => 'desc'
+        ]
+    ];
+
     public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);

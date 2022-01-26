@@ -71,6 +71,7 @@ class SharingGroupsController extends AppController
         if (empty($currentUser['role']['perm_admin'])) {
             $params['conditions'] = ['organisation_id' => $currentUser['organisation_id']];
         }
+        $params['fields'] = ['name', 'releasability', 'description', 'active'];
         $this->CRUD->edit($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

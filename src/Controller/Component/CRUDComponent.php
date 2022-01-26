@@ -88,7 +88,7 @@ class CRUDComponent extends Component
             $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
         } else {
             $this->Controller->loadComponent('Paginator');
-            $data = $this->Controller->Paginator->paginate($query);
+            $data = $this->Controller->Paginator->paginate($query, $this->Controller->paginate ?? []);
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
                 if (is_callable($options['afterFind'])) {
@@ -157,9 +157,6 @@ class CRUDComponent extends Component
     {
         $this->getMetaTemplates();
         $data = $this->Table->newEmptyEntity();
-        if (!empty($params['fields'])) {
-            $this->Controller->set('fields', $params['fields']);
-        }
         if ($this->request->is('post')) {
             $patchEntityParams = [
                 'associated' => [],
@@ -222,6 +219,9 @@ class CRUDComponent extends Component
                     $this->Controller->Flash->error($message);
                 }
             }
+        }
+        if (!empty($params['fields'])) {
+            $this->Controller->set('fields', $params['fields']);
         }
         $this->Controller->entity = $data;
         $this->Controller->set('entity', $data);
@@ -295,13 +295,13 @@ class CRUDComponent extends Component
             $data->where($params['conditions']);
         }
         $data = $data->first();
+        if (isset($params['afterFind'])) {
+            $data = $params['afterFind']($data, $params);
+        }
         if (empty($data)) {
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
         $data = $this->getMetaFields($id, $data);
-        if (!empty($params['fields'])) {
-            $this->Controller->set('fields', $params['fields']);
-        }
         if ($this->request->is(['post', 'put'])) {
             $patchEntityParams = [
                 'associated' => []
@@ -351,6 +351,9 @@ class CRUDComponent extends Component
                     $this->Controller->Flash->error($message);
                 }
             }
+        }
+        if (!empty($params['fields'])) {
+            $this->Controller->set('fields', $params['fields']);
         }
         $this->Controller->entity = $data;
         $this->Controller->set('entity', $data);
@@ -469,7 +472,11 @@ class CRUDComponent extends Component
                 }
                 $data = $data->first();
                 if (isset($params['beforeSave'])) {
-                    $data = $params['beforeSave']($data);
+                    try {
+                        $data = $params['beforeSave']($data);
+                    } catch (Exception $e) {
+                        $data = false;
+                    }
                 }
                 if (!empty($data)) {
                     $success = $this->Table->delete($data);
