@@ -102,12 +102,48 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'open_modal' => '/users/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'edit'
+                'icon' => 'edit',
+                'complex_requirement' => [
+                    'options' => [
+                        'datapath' => [
+                            'role_id' => 'role_id'
+                        ]
+                    ],
+                    'function' => function ($row, $options)  use ($loggedUser, $validRoles) {
+                        if (empty($loggedUser['role']['perm_admin'])) {
+                            if (empty($loggedUser['role']['perm_org_admin'])) {
+                                return false;
+                            }
+                            if (!isset($validRoles[$options['datapath']['role_id']])) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                ]
             ],
             [
                 'open_modal' => '/users/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'trash'
+                'icon' => 'trash',
+                'complex_requirement' => [
+                    'options' => [
+                        'datapath' => [
+                            'role_id' => 'role_id'
+                        ]
+                    ],
+                    'function' => function ($row, $options)  use ($loggedUser, $validRoles) {
+                        if (empty($loggedUser['role']['perm_admin'])) {
+                            if (empty($loggedUser['role']['perm_org_admin'])) {
+                                return false;
+                            }
+                            if (!isset($validRoles[$options['datapath']['role_id']])) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                ]
             ],
         ]
     ]
