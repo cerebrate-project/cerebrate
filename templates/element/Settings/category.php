@@ -57,6 +57,6 @@ $mainPanelHeight = 'calc(100vh - 42px - 1rem - 56px - 38px - 1rem)';
     </div>
 <?php else: ?>
     <div>
-        <?= $contentHtml ?>
+        <?= !empty($contentHtml) ? $contentHtml : sprintf('<p class="text-center mt-3">%s</p>', __('No settings available for this category')) ?>
     </div>
 <?php endif; ?>

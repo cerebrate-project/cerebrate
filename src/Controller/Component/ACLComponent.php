@@ -188,12 +188,12 @@ class ACLComponent extends Component
             'add' => ['*'],
             'edit' => ['*'],
             'delete' => ['*'],
-            'getSettingByName' => ['*'],
-            'setSetting' => ['*'],
+            'getMySettingByName' => ['*'],
+            'setMySetting' => ['*'],
             'saveSetting' => ['*'],
-            'getBookmarks' => ['*'],
-            'saveBookmark' => ['*'],
-            'deleteBookmark' => ['*']
+            'getMyBookmarks' => ['*'],
+            'saveMyBookmark' => ['*'],
+            'deleteMyBookmark' => ['*']
         ],
         'Api' => [
             'index' => ['*']
