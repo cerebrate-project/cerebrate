@@ -188,7 +188,7 @@ class BaseSettingsProvider
      * @param  array $setting
      * @return mixed
      */
-    public function evaluateFunctionForSetting($fun, $setting)
+    public function evaluateFunctionForSetting($fun, &$setting)
     {
         $functionResult = true;
         if (is_callable($fun)) { // Validate with anonymous function
