@@ -49,9 +49,13 @@ class UsersController extends AppController
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
+        $defaultRole = $this->Users->Roles->find()->select(['id'])->first()->toArray();
 
         $this->CRUD->add([
-            'beforeSave' => function($data) use ($currentUser, $validRoles) {
+            'beforeSave' => function($data) use ($currentUser, $validRoles, $defaultRole) {
+                if (!isset($data['role_id']) && !empty($defaultRole)) {
+                    $data['role_id'] = $defaultRole['id'];
+                }
                 if (!$currentUser['role']['perm_admin']) {
                     $data['organisation_id'] = $currentUser['organisation_id'];
                     if (!in_array($data['role_id'], array_keys($validRoles))) {
@@ -89,12 +93,14 @@ class UsersController extends AppController
             ])
         ];
         $this->set(compact('dropdownData'));
+        $this->set('defaultRole', $defaultRole['id'] ?? null);
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 
     public function view($id = false)
     {
-        if (empty($id) || empty($this->ACL->getUser()['role']['perm_admin'])) {
+        $currentUser = $this->ACL->getUser();
+        if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
             $id = $this->ACL->getUser()['id'];
         }
         $this->CRUD->view($id, [
@@ -152,10 +158,11 @@ class UsersController extends AppController
             $params['fields'][] = 'disabled';
             if (!$currentUser['role']['perm_admin']) {
                 $params['afterFind'] = function ($data, &$params) use ($currentUser, $validRoles) {
-                    if (!$currentUser['role']['perm_admin'] && $currentUser['role']['perm_org_admin']) {
-                        if (!in_array($data['role_id'], array_keys($validRoles))) {
-                            throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
-                        }
+                    if (!in_array($data['role_id'], array_keys($validRoles))) {
+                        throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
+                    }
+                    if ($data['organisation_id'] !== $currentUser['organisation_id']) {
+                        throw new MethodNotAllowedException(__('You cannot edit the given user.'));
                     }
                     return $data;
                 };
@@ -182,7 +189,19 @@ class UsersController extends AppController
 
     public function toggle($id, $fieldName = 'disabled')
     {
-        $this->CRUD->toggle($id, $fieldName);
+        $params = [
+            'contain' => 'Roles'
+        ];
+        $currentUser = $this->ACL->getUser();
+        if (!$currentUser['role']['perm_admin']) {
+            $params['afterFind'] = function ($user, &$params) use ($currentUser) {
+                if (!$this->ACL->canEditUser($currentUser, $user)) {
+                    throw new MethodNotAllowedException(__('You cannot edit the given user.'));
+                }
+                return $user;
+            };
+        }
+        $this->CRUD->toggle($id, $fieldName, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -191,6 +210,7 @@ class UsersController extends AppController
 
     public function delete($id)
     {
+        $currentUser = $this->ACL->getUser();
         $validRoles = [];
         if (!$currentUser['role']['perm_admin']) {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
@@ -265,10 +285,21 @@ class UsersController extends AppController
         }
     }
 
-    public function settings()
+    public function settings($user_id=false)
     {
-        $this->set('user', $this->ACL->getUser());
-        $all = $this->Users->UserSettings->getSettingsFromProviderForUser($this->ACL->getUser()['id'], true);
+        $editingAnotherUser = false;
+        $currentUser = $this->ACL->getUser();
+        if (empty($currentUser['role']['perm_admin']) || $user_id == $currentUser->id) {
+            $user = $currentUser;
+        } else {
+            $user = $this->Users->get($user_id, [
+                'contain' => ['Roles', 'Individuals' => 'Organisations', 'Organisations', 'UserSettings']
+            ]);
+            $editingAnotherUser = true;
+        }
+        $this->set('editingAnotherUser', $editingAnotherUser);
+        $this->set('user', $user);
+        $all = $this->Users->UserSettings->getSettingsFromProviderForUser($user->id, true);
         $this->set('settingsProvider', $all['settingsProvider']);
         $this->set('settings', $all['settings']);
         $this->set('settingsFlattened', $all['settingsFlattened']);

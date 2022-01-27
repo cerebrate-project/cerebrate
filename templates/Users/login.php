@@ -30,7 +30,7 @@ use Cake\Core\Configure;
         echo '</div>';
     }
 
-    if (!empty(Configure::read('keycloak'))) {
+    if (!empty(Configure::read('keycloak.enabled'))) {
         echo sprintf('<div class="d-flex align-items-center my-2"><hr class="d-inline-block flex-grow-1"/><span class="mx-3 fw-light">%s</span><hr class="d-inline-block flex-grow-1"/></div>', __('Or'));
         echo $this->Form->create(null, [
             'url' => Cake\Routing\Router::url([

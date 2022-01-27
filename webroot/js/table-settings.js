@@ -1,7 +1,7 @@
 // function saveHiddenColumns(table_setting_id, newTableSettings) {
 function mergeAndSaveSettings(table_setting_id, newTableSettings) {
     const settingName = 'ui.table_setting'
-    const urlGet = `/user-settings/getSettingByName/${settingName}`
+    const urlGet = `/user-settings/getMySettingByName/${settingName}`
     AJAXApi.quickFetchJSON(urlGet).then(tableSettings => {
         tableSettings = JSON.parse(tableSettings.value)
         newTableSettings = mergeNewTableSettingsIntoOld(table_setting_id, tableSettings, newTableSettings)
@@ -19,7 +19,7 @@ function mergeNewTableSettingsIntoOld(table_setting_id, oldTableSettings, newTab
 }
 
 function saveTableSetting(settingName, newTableSettings) {
-    const urlSet = `/user-settings/setSetting/${settingName}`
+    const urlSet = `/user-settings/setMySetting/${settingName}`
     AJAXApi.quickFetchAndPostForm(urlSet, {
         value: JSON.stringify(newTableSettings)
     }, {

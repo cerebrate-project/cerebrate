@@ -1,7 +1,7 @@
 <?php
 namespace BreadcrumbNavigation;
 
-require_once(APP . 'Controller' . DS . 'Component' . DS . 'Navigation' . DS . 'base.php'); 
+require_once(APP . 'Controller' . DS . 'Component' . DS . 'Navigation' . DS . 'base.php');
 
 class UsersNavigation extends BaseNavigation
 {
@@ -24,7 +24,8 @@ class UsersNavigation extends BaseNavigation
         $bcf = $this->bcf;
         $request = $this->request;
         $passedData = $this->request->getParam('pass');
-        $this->bcf->addLink('Users', 'view', 'UserSettings', 'index', function ($config) use ($bcf, $request, $passedData) {
+        $currentUser = $this->currentUser;
+        $this->bcf->addLink('Users', 'view', 'UserSettings', 'index', function ($config) use ($bcf, $request, $passedData, $currentUser) {
             if (!empty($passedData[0])) {
                 $user_id = $passedData[0];
                 $linkData = [

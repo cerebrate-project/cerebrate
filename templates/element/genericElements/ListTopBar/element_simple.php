@@ -1,8 +1,10 @@
 <?php
+    $seed = 'f_' . mt_rand();
     if (!isset($data['requirement']) || $data['requirement']) {
         if (!empty($data['popover_url'])) {
             $onClick = sprintf(
-                'onClick="openModalForButton(this, \'%s\', \'%s\')"',
+                'onClick="openModalForButton%s(this, \'%s\', \'%s\')"',
+                $seed,
                 h($data['popover_url']),
                 h(!empty($data['reload_url']) ? $data['reload_url'] : '')
             );
@@ -70,7 +72,7 @@
 ?>
 
 <script>
-    function openModalForButton(clicked, url, reloadUrl='') {
+    function openModalForButton<?= $seed ?>(clicked, url, reloadUrl='') {
         const fallbackReloadUrl = '<?= $this->Url->build(['action' => 'index']); ?>'
         reloadUrl = reloadUrl != '' ? reloadUrl : fallbackReloadUrl
         UI.overlayUntilResolve(clicked, UI.submissionModalForIndex(url, reloadUrl, '<?= $tableRandomValue ?>'))

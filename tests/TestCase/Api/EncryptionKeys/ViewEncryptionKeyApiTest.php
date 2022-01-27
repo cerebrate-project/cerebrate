@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Test\TestCase\Api\Users;
+namespace App\Test\TestCase\Api\EncryptionKeys;
 
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;

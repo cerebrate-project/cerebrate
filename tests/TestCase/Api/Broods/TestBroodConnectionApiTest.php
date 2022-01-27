@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Test\TestCase\Api\Users;
+namespace App\Test\TestCase\Api\Broods;
 
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
@@ -31,17 +31,12 @@ class TestBroodConnectionApiTest extends TestCase
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
         $this->initializeWireMock();
-        $this->mockCerebrateStatusResponse();
+        $stub = $this->mockCerebrateStatusResponse();
 
         $url = sprintf('%s/%d', self::ENDPOINT, BroodsFixture::BROOD_WIREMOCK_ID);
         $this->get($url);
 
-        $this->getWireMock()->verify(
-            WireMock::getRequestedFor(WireMock::urlEqualTo('/instance/status.json'))
-                ->withHeader('Content-Type', WireMock::equalTo('application/json'))
-                ->withHeader('Authorization', WireMock::equalTo(BroodsFixture::BROOD_WIREMOCK_API_KEY))
-        );
-
+        $this->verifyStubCalled($stub);
         $this->assertResponseOk();
         $this->assertResponseContains('"user": "wiremock"');
     }
@@ -52,17 +47,19 @@ class TestBroodConnectionApiTest extends TestCase
             WireMock::get(WireMock::urlEqualTo('/instance/status.json'))
                 ->willReturn(WireMock::aResponse()
                     ->withHeader('Content-Type', 'application/json')
-                    ->withBody((string)json_encode([
-                        "version" => "0.1",
-                        "application" => "Cerebrate",
-                        "user" => [
-                            "id" => 1,
-                            "username" => "wiremock",
-                            "role" => [
-                                "id" => 1
+                    ->withBody((string)json_encode(
+                        [
+                            "version" => "0.1",
+                            "application" => "Cerebrate",
+                            "user" => [
+                                "id" => 1,
+                                "username" => "wiremock",
+                                "role" => [
+                                    "id" => 1
+                                ]
                             ]
                         ]
-                    ])))
+                    )))
         );
     }
 }

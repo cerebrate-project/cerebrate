@@ -11,7 +11,8 @@
                     'field' => 'organisation_id',
                     'type' => 'dropdown',
                     'label' => __('Owner organisation'),
-                    'options' => $dropdownData['organisation']
+                    'options' => $dropdownData['organisation'],
+                    'default' => $loggedUser['organisation_id']
                 ],
                 array(
                     'field' => 'releasability',

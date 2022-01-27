@@ -188,7 +188,11 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'severity' => 'info',
                             'default' => '',
                             'description' => __('The baseurl of the keycloak authentication endpoint, such as https://foo.bar/baz/auth.'),
-                            'dependsOn' => 'keycloak.enabled'
+                            'dependsOn' => 'keycloak.enabled',
+                            'beforeSave' => function (&$value, $setting, $validator) {
+                                $value = rtrim($value, '/');
+                                return true;
+                            }
                         ],
                         'keycloak.authoritative' => [
                             'name' => 'Authoritative',

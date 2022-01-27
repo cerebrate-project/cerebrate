@@ -9,8 +9,7 @@
                     'type' => 'dropdown',
                     'label' => __('User'),
                     'options' => $dropdownData['user'],
-                    'value' => !empty($user_id) ? $user_id : '',
-                    'disabled' => !empty($user_id),
+                    'value' => !is_null($user_id) ? $user_id : '',
                 ],
                 [
                     'field' => 'name',

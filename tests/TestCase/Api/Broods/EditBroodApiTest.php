@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace App\Test\TestCase\Api\Users;
+namespace App\Test\TestCase\Api\Broods;
 
-use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\BroodsFixture;
