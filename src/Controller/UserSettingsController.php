@@ -57,7 +57,7 @@ class UserSettingsController extends AppController
         }
     }
 
-    public function add($user_id = false)
+    public function add($user_id=null)
     {
         $currentUser = $this->ACL->getUser();
         $this->CRUD->add([
@@ -77,6 +77,8 @@ class UserSettingsController extends AppController
         if (empty($currentUser['role']['perm_admin'])) {
             $allUsers->where(['id' => $currentUser->id]);
             $user_id = $currentUser->id;
+        } else if (!is_null($user_id)) {
+            $allUsers->where(['id' => $user_id]);
         }
         $dropdownData = [
             'user' => $allUsers->all()->toArray(),
