@@ -17,7 +17,6 @@ if [ -e $pidFile ]; then
   rm $pidFile
 else
   echo WireMock is not started 2>&1
-  exit 1
 fi
 
 echo WireMock $instance stopped
