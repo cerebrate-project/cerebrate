@@ -18,7 +18,8 @@
                     'field' => 'organisation_id',
                     'type' => 'dropdown',
                     'label' => __('Associated organisation'),
-                    'options' => $dropdownData['organisation']
+                    'options' => $dropdownData['organisation'],
+                    'default' => $loggedUser['organisation_id']
                 ],
                 [
                     'field' => 'password',
@@ -39,7 +40,8 @@
                     'field' => 'role_id',
                     'type' => 'dropdown',
                     'label' => __('Role'),
-                    'options' => $dropdownData['role']
+                    'options' => $dropdownData['role'],
+                    'default' => $defaultRole ?? null
                 ],
                 [
                     'field' => 'disabled',

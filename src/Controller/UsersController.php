@@ -49,9 +49,13 @@ class UsersController extends AppController
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
+        $defaultRole = $this->Users->Roles->find()->select(['id'])->first()->toArray();
 
         $this->CRUD->add([
-            'beforeSave' => function($data) use ($currentUser, $validRoles) {
+            'beforeSave' => function($data) use ($currentUser, $validRoles, $defaultRole) {
+                if (!isset($data['role_id']) && !empty($defaultRole)) {
+                    $data['role_id'] = $defaultRole['id'];
+                }
                 if (!$currentUser['role']['perm_admin']) {
                     $data['organisation_id'] = $currentUser['organisation_id'];
                     if (!in_array($data['role_id'], array_keys($validRoles))) {
@@ -89,6 +93,7 @@ class UsersController extends AppController
             ])
         ];
         $this->set(compact('dropdownData'));
+        $this->set('defaultRole', $defaultRole['id'] ?? null);
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 
