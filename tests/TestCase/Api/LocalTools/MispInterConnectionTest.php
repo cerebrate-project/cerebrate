@@ -44,6 +44,9 @@ class MispInterConnectionTest extends TestCase
     /** constants related to the remote MISP instance */
     private const REMOTE_MISP_SYNC_USER_ID = 333;
     private const REMOTE_MISP_SYNC_USER_EMAIL = 'sync@misp.remote';
+    private const REMOTE_MISP_INSTANCE_URL = 'http://localhost:8080/MISP_REMOTE';
+    private const REMOTE_MISP_AUTHKEY = '19ca57ecebd2fe34c1c17d729980678eb648d541';
+
 
     public function testInterConnectMispViaCerebrate(): void
     {
@@ -224,14 +227,14 @@ class MispInterConnectionTest extends TestCase
             '/inbox/createEntry/LocalTool/AcceptedRequest',
             [
                 'email' => self::REMOTE_MISP_SYNC_USER_EMAIL,
-                'authkey' => $remoteCerebrateAuthkey,
-                'url' => self::LOCAL_MISP_INSTANCE_URL,
+                'authkey' => self::REMOTE_MISP_AUTHKEY,
+                'url' => self::REMOTE_MISP_INSTANCE_URL,
                 'reflected_user_id' => self::REMOTE_MISP_SYNC_USER_ID,
                 'connectorName' => 'MispConnector',
                 'cerebrateURL' => self::REMOTE_CEREBRATE_URL,
                 'local_tool_id' => 1,
                 'remote_tool_id' => 1,
-                'tool_name' => 'MISP_LOCAL'
+                'tool_name' => 'MISP_REMOTE'
             ]
         );
         $this->assertResponseOk();
@@ -246,9 +249,9 @@ class MispInterConnectionTest extends TestCase
             'MISP_LOCAL',
             self::LOCAL_MISP_ADMIN_USER_AUTHKEY,
             [
-                'authkey' => $remoteCerebrateAuthkey,
-                'url' => self::LOCAL_MISP_INSTANCE_URL,
-                'name' => 'MISP_LOCAL',
+                'authkey' => self::REMOTE_MISP_AUTHKEY,
+                'url' => self::REMOTE_MISP_INSTANCE_URL,
+                'name' => 'MISP_REMOTE',
                 'remote_org_id' => OrganisationsFixture::ORGANISATION_A_ID
             ]
         );
@@ -268,7 +271,7 @@ class MispInterConnectionTest extends TestCase
                         [
                             [
                                 "id" => 1,
-                                "name" => $instance,
+                                "name" => "MISP ($instance)",
                                 "connector" => "MispConnector",
                             ]
                         ]
