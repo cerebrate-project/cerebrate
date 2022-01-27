@@ -5,6 +5,7 @@
         'value' => $fieldData['value'] ?? null,
         'multiple' => $fieldData['multiple'] ?? false,
         'disabled' => $fieldData['disabled'] ?? false,
-        'class' => ($fieldData['class'] ?? '') . ' formDropdown form-select'
+        'class' => ($fieldData['class'] ?? '') . ' formDropdown form-select',
+        'default' => ($fieldData['default'] ?? null)
     ];
     echo $this->FormFieldMassage->prepareFormElement($this->Form, $controlParams, $fieldData);
