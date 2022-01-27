@@ -48,7 +48,7 @@ class ParamHandlerComponent extends Component
             return $this->isRest;
         }
         if ($this->request->is('json')) {
-            if (!empty((string)$this->request->getBody()) && empty($this->request->getParsedBody())) {
+            if (!empty((string)$this->request->getBody()) && !is_array($this->request->getParsedBody())) {
                 throw new MethodNotAllowedException('Invalid JSON input. Make sure that the JSON input is a correctly formatted JSON string. This request has been blocked to avoid an unfiltered request.');
             }
             $this->isRest = true;

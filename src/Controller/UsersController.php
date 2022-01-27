@@ -184,7 +184,19 @@ class UsersController extends AppController
 
     public function toggle($id, $fieldName = 'disabled')
     {
-        $this->CRUD->toggle($id, $fieldName);
+        $params = [
+            'contain' => 'Roles'
+        ];
+        $currentUser = $this->ACL->getUser();
+        if (!$currentUser['role']['perm_admin']) {
+            $params['afterFind'] = function ($user, &$params) use ($currentUser) {
+                if (!$this->ACL->canEditUser($currentUser, $user)) {
+                    throw new MethodNotAllowedException(__('You cannot edit the given user.'));
+                }
+                return $user;
+            };
+        }
+        $this->CRUD->toggle($id, $fieldName, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -193,6 +205,7 @@ class UsersController extends AppController
 
     public function delete($id)
     {
+        $currentUser = $this->ACL->getUser();
         $validRoles = [];
         if (!$currentUser['role']['perm_admin']) {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();

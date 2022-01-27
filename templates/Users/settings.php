@@ -52,7 +52,7 @@ if(!empty($editingAnotherUser)) {
         <?php if (!empty($editingAnotherUser)): ?>
             <?=
                 $this->Bootstrap->alert([
-                    'text' => __('Currently editing the account setting of another user.'),
+                    'text' => __('Currently editing the account settings of another user.'),
                     'variant' => 'warning',
                     'dismissible' => false
                 ])
