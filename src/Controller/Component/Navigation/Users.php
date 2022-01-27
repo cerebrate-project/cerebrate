@@ -25,20 +25,17 @@ class UsersNavigation extends BaseNavigation
         $request = $this->request;
         $passedData = $this->request->getParam('pass');
         $currentUser = $this->currentUser;
-        $ownUser = (!empty($passedData[0]) && $passedData[0] === $currentUser['id']);
-        if ($ownUser) {
-            $this->bcf->addLink('Users', 'view', 'UserSettings', 'index', function ($config) use ($bcf, $request, $passedData, $currentUser) {
-                if (!empty($passedData[0])) {
-                    $user_id = $passedData[0];
-                    $linkData = [
-                        'label' => __('Account settings', h($user_id)),
-                        'url' => sprintf('/users/settings/%s', h($user_id))
-                    ];
-                    return $linkData;
-                }
-                return [];
-            });
-        }
+        $this->bcf->addLink('Users', 'view', 'UserSettings', 'index', function ($config) use ($bcf, $request, $passedData, $currentUser) {
+            if (!empty($passedData[0])) {
+                $user_id = $passedData[0];
+                $linkData = [
+                    'label' => __('Account settings', h($user_id)),
+                    'url' => sprintf('/users/settings/%s', h($user_id))
+                ];
+                return $linkData;
+            }
+            return [];
+        });
         $this->bcf->addLink('Users', 'view', 'UserSettings', 'index', function ($config) use ($bcf, $request, $passedData) {
             if (!empty($passedData[0])) {
                 $user_id = $passedData[0];
