@@ -258,6 +258,7 @@ class MispInterConnectionTest extends TestCase
         $this->post(sprintf('/inbox/process/%s', $acceptRequest['data']['id']));
         $this->assertResponseOk();
         $this->assertResponseContains('"success": true');
+        $this->verifyAllStubsCalled();
     }
 
     private function mockCerebrateGetExposedToolsResponse(string $instance, string $cerebrateAuthkey): \WireMock\Stubbing\StubMapping
