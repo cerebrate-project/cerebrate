@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Test\TestCase\Api\Users;
+namespace App\Test\TestCase\Api\AuthKeys;
 
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
@@ -19,7 +19,7 @@ class DeleteAuthKeyApiTest extends TestCase
         'app.Individuals',
         'app.Roles',
         'app.Users',
-        'app.AuthKeys',
+        'app.AuthKeys'
     ];
 
     public function testDeleteAdminAuthKey(): void
