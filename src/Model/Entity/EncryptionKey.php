@@ -7,5 +7,4 @@ use Cake\ORM\Entity;
 
 class EncryptionKey extends AppModel
 {
-
 }

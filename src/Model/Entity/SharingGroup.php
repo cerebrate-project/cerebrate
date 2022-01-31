@@ -13,11 +13,13 @@ class SharingGroup extends AppModel
         'uuid' => false,
         'organisation_id' => false,
         'user_id' => false,
+        'created' => false
     ];
 
     protected $_accessibleOnNew = [
         'uuid' => true,
         'organisation_id' => true,
         'user_id' => true,
+        'created' => true
     ];
 }
