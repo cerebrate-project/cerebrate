@@ -11,10 +11,12 @@ class Individual extends AppModel
         '*' => true,
         'id' => false,
         'uuid' => false,
+        'created' => false,
     ];
 
     protected $_accessibleOnNew = [
         'uuid' => true,
+        'created' => true,
     ];
 
     protected $_virtual = ['full_name'];
