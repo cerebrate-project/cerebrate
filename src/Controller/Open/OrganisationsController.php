@@ -10,13 +10,17 @@ use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Event\EventInterface;
+use Cake\Core\Configure;
 
 class OrganisationsController extends AppController
 {
     public function beforeFilter(EventInterface $event)
     {
         parent::beforeFilter($event);
-        $this->Authentication->allowUnauthenticated(['index']);
+        $open = Configure::read('Cerebrate.open');
+        if (!empty($open) && in_array('organisations', $open)) {
+            $this->Authentication->allowUnauthenticated(['index']);
+        }
     }
 
     public function index()
