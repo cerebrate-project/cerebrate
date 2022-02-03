@@ -106,7 +106,7 @@
                 '%s%s%s%s%s%s',
                 empty($data['description']) ? '' : sprintf(
                     '<div class="pb-2 fw-light">%s</div>',
-                    $data['description']
+                    h($data['description'])
                 ),
                 $ajaxFlashMessage,
                 $formCreate,
@@ -131,7 +131,7 @@
             '%s%s%s%s%s%s',
             empty($data['description']) ? '' : sprintf(
                 '<div class="pb-2">%s</div>',
-                $data['description']
+                h($data['description'])
             ),
             $ajaxFlashMessage,
             $formCreate,
@@ -157,7 +157,7 @@
             $ajaxFlashMessage,
             empty($data['description']) ? '' : sprintf(
                 '<div class="pb-3 fw-light">%s</div>',
-                $data['description']
+                h($data['description'])
             ),
             sprintf('<div class="panel">%s</div>', $fieldsString),
             empty($metaTemplateString) ? '' : $this->element(
