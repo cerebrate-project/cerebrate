@@ -1,7 +1,9 @@
 ## Requirements
 
 An Ubuntu server (18.04/20.04 should both work fine) - though other linux installations should work too.
+
 - apache2 (or nginx), mysql/mariadb, sqlite need to be installed and running
+- php version 8+ is required
 - php extensions for intl, mysql, sqlite3, mbstring, xml need to be installed and running
 - php extention for curl (not required but makes composer run a little faster)
 - composer
