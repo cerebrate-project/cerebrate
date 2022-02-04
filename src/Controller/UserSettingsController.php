@@ -36,9 +36,16 @@ class UserSettingsController extends AppController
             return $responsePayload;
         }
         if (!empty($this->request->getQuery('Users_id'))) {
-            $settingsForUser = $this->UserSettings->Users->find()->where([
+            $conditions = [
                 'id' => $this->request->getQuery('Users_id')
-            ])->first();
+            ];
+            if (empty($currentUser['role']['perm_admin'])) {
+                $conditions['organisation_id'] = $currentUser['organisation_id'];
+            }
+            $settingsForUser = $this->UserSettings->Users->find()->where($conditions)->first();
+            if (empty($settingsForUser)) {
+                throw new NotFoundException(__('Invalid {0}.', __('user')));
+            }
             $this->set('settingsForUser', $settingsForUser);
         }
     }
@@ -233,7 +240,7 @@ class UserSettingsController extends AppController
     }
 
     /**
-     * isLoggedUserAllowedToEdit 
+     * isLoggedUserAllowedToEdit
      *
      * @param int|\App\Model\Entity\UserSetting $setting
      * @return boolean

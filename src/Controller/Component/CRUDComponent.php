@@ -420,9 +420,15 @@ class CRUDComponent extends Component
         }
 
         $data = $this->Table->get($id, $params);
+        if (empty($data)) {
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+        }
         $data = $this->attachMetaData($id, $data);
         if (isset($params['afterFind'])) {
             $data = $params['afterFind']($data);
+        }
+        if (empty($data)) {
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
         if ($this->Controller->ParamHandler->isRest()) {
             $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
