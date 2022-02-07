@@ -803,7 +803,7 @@ class BoostrapListTable extends BootstrapGeneric {
         return $this->genNode('td', [
             'class' => [
                 'col-sm-10',
-                !empty($row['_cellVariant']) ? "bg-{$row['_cellVariant']}" : ''
+                !empty($field['_cellVariant']) ? "bg-{$field['_cellVariant']}" : ''
             ]
         ], $cellContent);
     }
