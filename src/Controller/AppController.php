@@ -41,6 +41,7 @@ class AppController extends Controller
     public $restResponsePayload = null;
     public $user = null;
     public $breadcrumb = [];
+    public $request_ip = null;
 
     /**
      * Initialization hook method.
@@ -83,6 +84,7 @@ class AppController extends Controller
             Configure::write('DebugKit.forceEnable', true);
         }
         $this->loadComponent('CustomPagination');
+        $this->loadComponent('FloodProtection');
         /*
          * Enable the following component for recommended CakePHP form protection settings.
          * see https://book.cakephp.org/4/en/controllers/components/form-protection.html
@@ -92,6 +94,7 @@ class AppController extends Controller
 
     public function beforeFilter(EventInterface $event)
     {
+        //$this->request_ip = Configure::read('')
         $this->loadModel('Users');
         $this->Users->checkForNewInstance();
         $this->authApiUser();
