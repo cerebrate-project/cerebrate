@@ -41,6 +41,7 @@ class AppController extends Controller
     public $restResponsePayload = null;
     public $user = null;
     public $breadcrumb = [];
+    public $request_ip = null;
 
     /**
      * Initialization hook method.
@@ -83,6 +84,7 @@ class AppController extends Controller
             Configure::write('DebugKit.forceEnable', true);
         }
         $this->loadComponent('CustomPagination');
+        $this->loadComponent('FloodProtection');
         /*
          * Enable the following component for recommended CakePHP form protection settings.
          * see https://book.cakephp.org/4/en/controllers/components/form-protection.html
@@ -146,6 +148,9 @@ class AppController extends Controller
             if ($this->modelClass == 'Tags.Tags') {
                 $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
             }
+        }
+        if (mt_rand(1, 50) === 1) {
+            $this->FloodProtection->cleanup();
         }
     }
 

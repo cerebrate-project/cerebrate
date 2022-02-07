@@ -311,6 +311,9 @@ class UsersController extends AppController
         if (empty(Configure::read('security.registration.self-registration'))) {
             throw new UnauthorizedException(__('User self-registration is not open.'));
         }
+        if (!empty(Configure::read('security.registration.floodProtection'))) {
+            $this->FloodProtection->check('register');
+        }
         if ($this->request->is('post')) {
             $data = $this->request->getData();
             $this->InboxProcessors = TableRegistry::getTableLocator()->get('InboxProcessors');
@@ -327,6 +330,9 @@ class UsersController extends AppController
                 ],
             ];
             $processorResult = $processor->create($data);
+            if (!empty(Configure::read('security.registration.floodProtection'))) {
+                $this->FloodProtection->set('register');
+            }
             return $processor->genHTTPReply($this, $processorResult, ['controller' => 'Inbox', 'action' => 'index']);
         }
         $this->viewBuilder()->setLayout('login');
