@@ -9,6 +9,10 @@ class InitialSchema extends AbstractMigration
 {
     public function change()
     {
+        $exists = $this->hasTable('broods');
+        if ($exists) {
+            return true;
+        }
         $this->execute('SET unique_checks=0; SET foreign_key_checks=0;');
         $this->execute("ALTER DATABASE CHARACTER SET 'utf8mb4';");
         $this->execute("ALTER DATABASE COLLATE='utf8mb4_general_ci';");
