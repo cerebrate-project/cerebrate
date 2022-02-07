@@ -274,12 +274,33 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                 ]
             ],
             'Security' => [
+                'Logging' => [
+                    'Logging' => [
+                        'security.logging.ip_source' => [
+                            'name' => __('Set IP source'),
+                            'type' => 'select',
+                            'description' => __('Select where the harvested IP should come from. This defaults to REMOTE_ADDR, but for instances behind a proxy HTTP_X_FORWARDED_FOR or HTTP_CLIENT_IP might make more sense.'),
+                            'default' => 'REMOTE_ADDR',
+                            'options' => [
+                                'REMOTE_ADDR' => 'REMOTE_ADDR',
+                                'HTTP_X_FORWARDED_FOR' => 'HTTP_X_FORWARDED_FOR',
+                                'HTTP_CLIENT_IP' => __('HTTP_CLIENT_IP'),
+                            ],
+                        ],
+                    ]
+                ],
                 'Registration' => [
                     'Registration' => [
                         'security.registration.self-registration' => [
                             'name' => __('Allow self-registration'),
                             'type' => 'boolean',
                             'description' => __('Enable the self-registration feature where user can request account creation. Admin can view the request and accept it in the application inbox.'),
+                            'default' => false,
+                        ],
+                        'security.registration.floodProtection' => [
+                            'name' => __('Enable registration flood-protection'),
+                            'type' => 'boolean',
+                            'description' => __('Enabling this setting will only allow 5 registrations / IP address every 15 minutes (rolling time-frame).'),
                             'default' => false,
                         ],
                     ]
