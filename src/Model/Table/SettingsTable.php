@@ -74,10 +74,18 @@ class SettingsTable extends AppTable
             }
         }
         $setting['value'] = $value ?? '';
+        if (isset($setting['test'])) {
+            $validationResult = $this->SettingsProvider->evaluateFunctionForSetting($setting['test'], $setting);
+            if ($validationResult !== true) {
+                $errors[] = $validationResult;
+                $setting['errorMessage'] = $validationResult;
+            }
+        }
         if (empty($errors) && !empty($setting['beforeSave'])) {
             $beforeSaveResult = $this->SettingsProvider->evaluateFunctionForSetting($setting['beforeSave'], $setting);
             if ($beforeSaveResult !== true) {
                 $errors[] = $beforeSaveResult;
+                $setting['errorMessage'] = $validationResult;
             }
         }
         if (empty($errors)) {
