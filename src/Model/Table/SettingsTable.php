@@ -3,6 +3,7 @@ namespace App\Model\Table;
 
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
+use Cake\Filesystem\File;
 use Cake\Core\Configure;
 use Cake\Error\Debugger;
 
@@ -85,6 +86,8 @@ class SettingsTable extends AppTable
                 if (!empty($setting['afterSave'])) {
                     $this->SettingsProvider->evaluateFunctionForSetting($setting['afterSave'], $setting);
                 }
+            } else {
+                $errors[] = __('Could not save settings on disk');
             }
         }
         return $errors;
@@ -129,8 +132,16 @@ class SettingsTable extends AppTable
         $settings = $this->readSettings();
         $settings[$name] = $value;
         $settings = json_encode($settings, JSON_PRETTY_PRINT);
-        file_put_contents(CONFIG . 'config.json', $settings);
-        $this->loadSettings();
-        return true;
+        $path = CONFIG . 'config.json';
+        $file = new File($path);
+        if ($file->writable()) {
+            $success = file_put_contents($path, $settings);
+            if ($success) {
+                $this->loadSettings();
+            }
+        } else {
+            $success = false;
+        }
+        return $success;
     }
 }
