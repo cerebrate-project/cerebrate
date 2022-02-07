@@ -53,6 +53,6 @@ class FloodProtectionComponent extends Component
 
     public function cleanup(): void
     {
-        $this->FloodProtection->deleteAll(['expiration' < time()]);
+        $this->FloodProtections->deleteAll(['expiration <' => time()]);
     }
 }

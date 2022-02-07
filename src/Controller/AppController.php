@@ -94,7 +94,6 @@ class AppController extends Controller
 
     public function beforeFilter(EventInterface $event)
     {
-        //$this->request_ip = Configure::read('')
         $this->loadModel('Users');
         $this->Users->checkForNewInstance();
         $this->authApiUser();
@@ -149,6 +148,9 @@ class AppController extends Controller
             if ($this->modelClass == 'Tags.Tags') {
                 $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
             }
+        }
+        if (mt_rand(1, 50) === 1) {
+            $this->FloodProtection->cleanup();
         }
     }
 
