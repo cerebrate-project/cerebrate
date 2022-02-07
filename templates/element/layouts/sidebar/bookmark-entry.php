@@ -1,5 +1,8 @@
 <?php
     use Cake\Routing\Router;
+    use Cake\ORM\TableRegistry;
+
+    $this->userSettingsTable = TableRegistry::getTableLocator()->get('UserSettings');
 
     $seed = 'sb-' . mt_rand();
     $icon = $entry['icon'] ?? '';
@@ -14,6 +17,8 @@
         $active = true;
     }
 
+    $validURI = $this->userSettingsTable->validURI($url);
+
     echo $this->Bootstrap->button([
         'nodeType' => 'a',
         'text' => h($label),
@@ -22,9 +27,9 @@
         'outline' => !$active,
         'size' => 'sm',
         'icon' => h($icon),
-        'class' => ['mb-1'],
+        'class' => ['mb-1', !$validURI ? 'disabled' : ''],
         'params' => [
-            'href' => h($url),
+            'href' => $validURI ? h($url) : '#',
         ]
     ]);
 ?>
