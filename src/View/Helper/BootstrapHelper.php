@@ -147,6 +147,12 @@ class BootstrapHelper extends Helper
         return $bsSwitch->switch();
     }
 
+    public function notificationBubble($options)
+    {
+        $bsNotificationBubble = new BoostrapNotificationBuble($options, $this);
+        return $bsNotificationBubble->notificationBubble();
+    }
+
     public function dropdownMenu($options)
     {
         $bsDropdownMenu = new BoostrapDropdownMenu($options, $this);
@@ -1376,6 +1382,67 @@ class BoostrapSwitch extends BootstrapGeneric
                 'class' => 'form-check-label',
                 'for' => $tmpId,
             ], h($this->options['label']))
+        ]));
+        return $html;
+    }
+}
+
+class BoostrapNotificationBuble extends BootstrapGeneric
+{
+    private $defaultOptions = [
+        'label' => '',
+        'variant' => 'warning',
+        'borderVariant' => 'ligth',
+        'title' => 'Notification',
+        'class' => [],
+        'attrs' => [],
+    ];
+
+    function __construct($options)
+    {
+        $this->allowedOptionValues = [
+            'variant' => BootstrapGeneric::$variants,
+        ];
+        $this->defaultOptions['label'] =  __('New notifications');
+        $this->processOptions($options);
+    }
+
+    private function processOptions($options)
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+        $this->checkOptionValidity();
+        if (!empty($this->options['attrs']['style'])) {
+            $this->options['attrs']['style'] += 'box-shadow: 0 0.125rem 0.25rem #00000050;';
+        } else {
+            $this->options['attrs']['style'] = 'box-shadow: 0 0.125rem 0.25rem #00000050;';
+        }
+    }
+
+    public function notificationBubble()
+    {
+        return $this->genNotificationBubble();
+    }
+
+    private function genNotificationBubble()
+    {
+        $tmpId = 'tmp-' . mt_rand();
+        $html = $this->genNode('span', [
+            'id' => $tmpId,
+            'class' => [
+                'position-absolute',
+                'top-0',
+                'start-100',
+                'translate-middle',
+                'p-1',
+                'border border-2 rounded-circle',
+                "border-{$this->options['borderVariant']}",
+                "bg-{$this->options['variant']}",
+            ],
+            'title' => $this->options['title']
+        ], $this->genNode('span', [
+            'class' => [
+            ],
+            $this->options['label']
         ]));
         return $html;
     }

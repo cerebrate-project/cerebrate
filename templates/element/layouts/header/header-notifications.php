@@ -20,12 +20,12 @@ $variant = array_flip($severity)[$maxSeverity];
     <a class="nav-link px-2 text-decoration-none profile-button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#" data-bs-offset="10,20">
         <span class="position-relative">
             <i class="<?= $this->FontAwesome->getClass('bell') ?> fa-lg"></i>
-            <span
-                class="<?= empty($notifications) ? 'd-none' : '' ?> position-absolute top-0 start-100 translate-middle p-1 bg-<?= $variant ?> border border-light border-2 rounded-circle"
-                style="box-shadow: 0 0.125rem 0.25rem #00000050;"
-            >
-                <span class="visually-hidden"><?= __('New notifications') ?></span>
-            </span>
+            <?=
+            $this->Bootstrap->notificationBubble([
+                'class' => empty($notifications) ? 'd-none' : '',
+                'variant' => $variant,
+            ])
+            ?>
         </span>
     </a>
     <div class="dropdown-menu dropdown-menu-end" style="min-width: 320px; max-width: 25vw">
