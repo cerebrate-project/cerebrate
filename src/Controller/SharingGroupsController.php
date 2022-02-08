@@ -7,6 +7,7 @@ use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
 use Cake\Error\Debugger;
+use Cake\Http\Exception\NotFoundException;
 
 class SharingGroupsController extends AppController
 {
@@ -52,8 +53,25 @@ class SharingGroupsController extends AppController
 
     public function view($id)
     {
+        $currentUser = $this->ACL->getUser();
         $this->CRUD->view($id, [
-            'contain' => ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]]
+            'contain' => ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]],
+            'afterFind' => function($data) use ($currentUser) {
+                if (empty($currentUser['role']['perm_admin'])) {
+                    $orgFround = false;
+                    if (!empty($data['sharing_group_orgs'])) {
+                        foreach ($data['sharing_group_orgs'] as $org) {
+                            if ($org['id'] === $currentUser['organisation_id']) {
+                                $orgFound = true;
+                            }
+                        }
+                    }
+                    if ($data['organisation_id'] !== $currentUser['organisation_id'] && !$orgFround) {
+                        return null;
+                    }
+                }
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -68,6 +86,7 @@ class SharingGroupsController extends AppController
         if (empty($currentUser['role']['perm_admin'])) {
             $params['conditions'] = ['organisation_id' => $currentUser['organisation_id']];
         }
+        $params['fields'] = ['name', 'releasability', 'description', 'active'];
         $this->CRUD->edit($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -82,7 +101,11 @@ class SharingGroupsController extends AppController
 
     public function delete($id)
     {
-        $this->CRUD->delete($id);
+        $currentUser = $this->ACL->getUser();
+        if (empty($currentUser['role']['perm_admin'])) {
+            $params['conditions'] = ['organisation_id' => $currentUser['organisation_id']];
+        }
+        $this->CRUD->delete($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -91,9 +114,18 @@ class SharingGroupsController extends AppController
 
     public function addOrg($id)
     {
+        $currentUser = $this->ACL->getUser();
         $sharingGroup = $this->SharingGroups->get($id, [
             'contain' => 'SharingGroupOrgs'
         ]);
+        if (empty($currentUser['role']['perm_admin'])) {
+            if ($sharingGroup['organisation_id'] !== $currentUser['organisation_id']) {
+                $sharingGroup = null;
+            }
+        }
+        if (empty($sharingGroup)) {
+            throw new NotFoundException(__('Invalid SharingGroup.'));
+        }
         $conditions = [];
         $containedOrgIds = array_values(\Cake\Utility\Hash::extract($sharingGroup, 'sharing_group_orgs.{n}.id'));
         if (!empty($containedOrgIds)) {
@@ -150,9 +182,18 @@ class SharingGroupsController extends AppController
 
     public function removeOrg($id, $org_id)
     {
+        $currentUser = $this->ACL->getUser();
         $sharingGroup = $this->SharingGroups->get($id, [
             'contain' => 'SharingGroupOrgs'
         ]);
+        if (empty($currentUser['role']['perm_admin'])) {
+            if ($sharingGroup['organisation_id'] !== $currentUser['organisation_id']) {
+                $sharingGroup = null;
+            }
+        }
+        if (empty($sharingGroup)) {
+            throw new NotFoundException(__('Invalid SharingGroup.'));
+        }
         if ($this->request->is('post')) {
             $org = $this->SharingGroups->SharingGroupOrgs->get($org_id);
             $result = (bool)$this->SharingGroups->SharingGroupOrgs->unlink($sharingGroup, [$org]);

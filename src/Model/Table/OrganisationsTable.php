@@ -66,6 +66,7 @@ class OrganisationsTable extends AppTable
             $this->patchEntity($existingOrg, $org);
             $entityToSave = $existingOrg;
         }
+        $entityToSave->setDirty('modified', false);
         $savedEntity = $this->save($entityToSave, ['associated' => false]);
         if (!$savedEntity) {
             return null;

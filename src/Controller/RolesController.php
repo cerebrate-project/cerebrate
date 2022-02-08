@@ -31,7 +31,15 @@ class RolesController extends AppController
 
     public function add()
     {
-        $this->CRUD->add();
+        $rolesModel = $this->Roles;
+        $this->CRUD->add([
+            'afterSave' => function ($data) use ($rolesModel) {
+                if ($data['is_default']) {
+                    $rolesModel->query()->update()->set(['is_default' => false])->where(['id !=' => $data->id])->execute();
+                }
+                return true;
+            }
+        ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -51,7 +59,15 @@ class RolesController extends AppController
 
     public function edit($id)
     {
-        $this->CRUD->edit($id);
+        $rolesModel = $this->Roles;
+        $this->CRUD->edit($id, [
+            'afterSave' => function ($data) use ($rolesModel) {
+                if ($data['is_default']) {
+                    $rolesModel->query()->update()->set(['is_default' => false])->where(['id !=' => $data->id])->execute();
+                }
+                return true;
+            }
+        ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;

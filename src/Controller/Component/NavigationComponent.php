@@ -17,8 +17,9 @@ require_once(APP . 'Controller' . DS . 'Component' . DS . 'Navigation' . DS . 's
 
 class NavigationComponent extends Component
 {
-    private $user = null;
+    private $currentUser = null;
     public $breadcrumb = null;
+    public $fullBreadcrumb = null;
     public $iconToTableMapping = [
         'Individuals' => 'address-book',
         'Organisations' => 'building',
@@ -46,7 +47,6 @@ class NavigationComponent extends Component
     public function beforeRender($event)
     {
         $this->fullBreadcrumb = $this->genBreadcrumb();
-        $this->breadcrumb = $this->getBreadcrumb();
     }
 
     public function getSideMenu(): array
@@ -57,7 +57,7 @@ class NavigationComponent extends Component
         return $sidemenu;
     }
 
-    
+
     public function addUserBookmarks($sidemenu): array
     {
         $bookmarks = $this->getUserBookmarks();
@@ -82,7 +82,7 @@ class NavigationComponent extends Component
         }, $bookmarks);
         return $links;
     }
-    
+
     public function getBreadcrumb(): array
     {
         $controller = $this->request->getParam('controller');
@@ -143,6 +143,7 @@ class NavigationComponent extends Component
             $reflection = new \ReflectionClass("BreadcrumbNavigation\\{$navigationClassname}Navigation");
             $viewVars = $this->_registry->getController()->viewBuilder()->getVars();
             $navigationClasses[$navigationClassname] = $reflection->newInstance($bcf, $request, $viewVars);
+            $navigationClasses[$navigationClassname]->setCurrentUser($this->currentUser);
         }
         return $navigationClasses;
     }
@@ -288,7 +289,7 @@ class BreadcrumbFactory
         $this->addLink($controller, 'view', $controller, 'edit');
         $this->addLink($controller, 'edit', $controller, 'view');
         $this->addSelfLink($controller, 'edit');
-        
+
         $this->addAction($controller, 'view', $controller, 'add');
         $this->addAction($controller, 'view', $controller, 'delete');
         $this->addAction($controller, 'edit', $controller, 'add');

@@ -185,4 +185,9 @@ class AppTable extends Table
             }
         }
     }
+
+    public function isValidUrl($value, array $context): bool
+    {
+        return filter_var($value, FILTER_VALIDATE_URL);
+    }
 }

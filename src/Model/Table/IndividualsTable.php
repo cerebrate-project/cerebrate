@@ -70,6 +70,7 @@ class IndividualsTable extends AppTable
             $this->patchEntity($existingIndividual, $individual);
             $entityToSave = $existingIndividual;
         }
+        $entityToSave->setDirty('modified', false);
         $savedEntity = $this->save($entityToSave, ['associated' => false]);
         if (!$savedEntity) {
             return null;

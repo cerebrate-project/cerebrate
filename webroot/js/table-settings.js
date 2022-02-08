@@ -1,6 +1,6 @@
 function mergeAndSaveSettings(table_setting_id, newTableSettings, automaticFeedback=true) {
     const settingName = 'ui.table_setting'
-    const urlGet = `/user-settings/getSettingByName/${settingName}`
+    const urlGet = `/user-settings/getMySettingByName/${settingName}`
     return AJAXApi.quickFetchJSON(urlGet).then(tableSettings => {
         tableSettings = JSON.parse(tableSettings.value)
         newTableSettings = mergeNewTableSettingsIntoOld(table_setting_id, tableSettings, newTableSettings)
@@ -17,8 +17,8 @@ function mergeNewTableSettingsIntoOld(table_setting_id, oldTableSettings, newTab
     return tableSettings
 }
 
-function saveTableSetting(settingName, newTableSettings, automaticFeedback=true) {
-    const urlSet = `/user-settings/setSetting/${settingName}`
+function saveTableSetting(settingName, newTableSettings) {
+    const urlSet = `/user-settings/setMySetting/${settingName}`
     return AJAXApi.quickFetchAndPostForm(urlSet, {
         value: JSON.stringify(newTableSettings)
     }, {

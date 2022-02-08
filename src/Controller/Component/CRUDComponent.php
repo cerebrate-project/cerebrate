@@ -223,9 +223,6 @@ class CRUDComponent extends Component
             $metaTemplates = $this->getMetaTemplates();
             $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
         }
-        if (!empty($params['fields'])) {
-            $this->Controller->set('fields', $params['fields']);
-        }
         if ($this->request->is('post')) {
             $patchEntityParams = [
                 'associated' => [],
@@ -290,6 +287,9 @@ class CRUDComponent extends Component
                     $this->Controller->Flash->error($message);
                 }
             }
+        }
+        if (!empty($params['fields'])) {
+            $this->Controller->set('fields', $params['fields']);
         }
         $this->Controller->entity = $data;
         $this->Controller->set('entity', $data);
@@ -461,16 +461,16 @@ class CRUDComponent extends Component
         if (!empty($params['conditions'])) {
              $query->where($params['conditions']);
         }
-        $data =  $query->first();
+        $data = $data->first();
+        if (isset($params['afterFind'])) {
+            $data = $params['afterFind']($data, $params);
+        }
         if (empty($data)) {
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
         if ($this->metaFieldsSupported()) {
             $metaTemplates = $this->getMetaTemplates();
             $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
-        }
-        if (!empty($params['fields'])) {
-            $this->Controller->set('fields', $params['fields']);
         }
         if ($this->request->is(['post', 'put'])) {
             $patchEntityParams = [
@@ -526,6 +526,9 @@ class CRUDComponent extends Component
                     $this->Controller->Flash->error($message);
                 }
             }
+        }
+        if (!empty($params['fields'])) {
+            $this->Controller->set('fields', $params['fields']);
         }
         $this->Controller->entity = $data;
         $this->Controller->set('entity', $data);
@@ -658,10 +661,15 @@ class CRUDComponent extends Component
         }
 
         $data = $this->Table->get($id, $params);
+        if (empty($data)) {
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
+        }
         $data = $this->attachMetaTemplatesIfNeeded($data);
-        
         if (isset($params['afterFind'])) {
             $data = $params['afterFind']($data);
+        }
+        if (empty($data)) {
+            throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
         if ($this->Controller->ParamHandler->isRest()) {
             $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
@@ -730,9 +738,13 @@ class CRUDComponent extends Component
                 }
                 $data = $query->first();
                 if (isset($params['beforeSave'])) {
-                    $data = $params['beforeSave']($data);
-                    if ($data === false) {
-                        throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                    try {
+                        $data = $params['beforeSave']($data);
+                        if ($data === false) {
+                            throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                        }
+                    } catch (Exception $e) {
+                        $data = false;
                     }
                 }
                 if (!empty($data)) {
@@ -1291,6 +1303,9 @@ class CRUDComponent extends Component
         }
 
         $data = $this->Table->get($id, $params);
+        if (isset($params['afterFind'])) {
+            $data = $params['afterFind']($data, $params);
+        }
         if ($this->request->is(['post', 'put'])) {
             if (isset($params['force_state'])) {
                 $data->{$fieldName} = $params['force_state'];

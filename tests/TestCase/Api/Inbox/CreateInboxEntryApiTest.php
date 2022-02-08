@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Test\TestCase\Api\Users;
+namespace App\Test\TestCase\Api\Inbox;
 
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Helper\ApiTestTrait;
+use Authentication\PasswordHasher\DefaultPasswordHasher;
 
 class CreateInboxEntryApiTest extends TestCase
 {
@@ -31,24 +32,31 @@ class CreateInboxEntryApiTest extends TestCase
         $_SERVER['REMOTE_ADDR'] = '::1';
 
         $url = sprintf("%s/%s/%s", self::ENDPOINT, 'User', 'Registration');
+        $password = 'Password12345!';
+        $email = 'john@example.com';
         $this->post(
             $url,
             [
-                'email' => 'john@example.com',
-                'password' => 'Password12345!'
+                'email' => $email,
+                'password' => $password
+            ]
+        );
+        $this->assertResponseOk();
+
+        $response = $this->getJsonResponseAsArray();
+        $userId = $response['data']['id'];
+
+        $createdInboxMessage = $this->getRecordFromDb(
+            'Inbox',
+            [
+                'id' => $userId,
+                'scope' => 'User',
+                'action' => 'Registration'
             ]
         );
 
-        $this->assertResponseOk();
-        $this->assertResponseContains('"email": "john@example.com"');
-        $this->assertDbRecordExists(
-            'Inbox',
-            [
-                'id' => 3, // hacky, but `data` is json string cannot verify the value because of the hashed password
-                'scope' => 'User',
-                'action' => 'Registration',
-            ]
-        );
+        $this->assertTrue((new DefaultPasswordHasher())->check($password, $createdInboxMessage['data']['password']));
+        $this->assertEquals($email, $createdInboxMessage['data']['email']);
     }
 
     public function testAddUserRegistrationInboxNotAllowedAsRegularUser(): void

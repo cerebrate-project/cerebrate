@@ -188,12 +188,12 @@ class ACLComponent extends Component
             'add' => ['*'],
             'edit' => ['*'],
             'delete' => ['*'],
-            'getSettingByName' => ['*'],
-            'setSetting' => ['*'],
+            'getMySettingByName' => ['*'],
+            'setMySetting' => ['*'],
             'saveSetting' => ['*'],
-            'getBookmarks' => ['*'],
-            'saveBookmark' => ['*'],
-            'deleteBookmark' => ['*']
+            'getMyBookmarks' => ['*'],
+            'saveMyBookmark' => ['*'],
+            'deleteMyBookmark' => ['*']
         ],
         'Api' => [
             'index' => ['*']
@@ -277,9 +277,32 @@ class ACLComponent extends Component
         $this->user = $user;
     }
 
-    public function getUser(): User
+    public function getUser(): ?User
     {
-        return $this->user;
+        if (!empty($this->user)) {
+            return $this->user;
+        }
+        return null;
+    }
+
+    public function canEditUser(User $currentUser, User $user): bool
+    {
+        if (empty($user) || empty($currentUser)) {
+            return false;
+        }
+        if (!$currentUser['role']['perm_admin']) {
+            if ($user['role']['perm_admin']) {
+                return false; // org_admins cannot edit admins
+            }
+            if (!$currentUser['role']['perm_org_admin']) {
+                return false;
+            } else {
+                if ($currentUser['organisation_id'] !== $user['organisation_id']) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /*

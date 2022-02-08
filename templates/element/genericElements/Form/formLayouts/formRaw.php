@@ -1,6 +1,6 @@
 <?php if (!empty($data['description'])) : ?>
     <div class="pb-3 fw-light">
-        <?= $data['description'] ?>
+        <?= h($data['description']) ?>
     </div>
 <?php endif; ?>
 <?= $ajaxFlashMessage ?>

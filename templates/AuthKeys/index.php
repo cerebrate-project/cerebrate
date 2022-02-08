@@ -10,7 +10,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         'data' => [
                             'type' => 'simple',
                             'text' => __('Add authentication key'),
-                            'popover_url' => '/authKeys/add'
+                            'popover_url' => '/authKeys/add',
+                            'reload_url' => $this->request->getRequestTarget()
                         ]
                     ]
                 ],
@@ -65,7 +66,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'open_modal' => '/authKeys/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'trash'
+                'icon' => 'trash',
+                'reload_url' => $this->request->getRequestTarget()
             ]
         ]
     ]
