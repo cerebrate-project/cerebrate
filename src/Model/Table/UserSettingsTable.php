@@ -135,4 +135,18 @@ class UserSettingsTable extends AppTable
         }
         return $result;
     }
+
+    /**
+     * validURI - Ensure the provided URI can be safely put as a link
+     *
+     * @param String $uri
+     * @return bool if the URI is safe to be put as a link
+     */
+    public function validURI(String $uri): bool
+    {
+        $parsed = parse_url($uri);
+        $isLocalPath = empty($parsed['scheme']) && empty($parsed['domain']) && !empty($parsed['path']);
+        $isValidURL = !empty($parsed['scheme']) && in_array($parsed['scheme'], ['http', 'https']) && filter_var($uri, FILTER_SANITIZE_URL);
+        return $isLocalPath || $isValidURL;
+    }
 }

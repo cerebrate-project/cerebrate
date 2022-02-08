@@ -13,11 +13,11 @@
                         (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
                     ],
                     ($setting['type'] == 'textarea' ? '' : 'type') => ($setting['type'] == 'textarea' ? '' : 'text'),
-                    'id' => $settingId,
-                    'data-setting-name' => $settingName,
-                    'value' => isset($setting['value']) ? $setting['value'] : "",
-                    'placeholder' => $setting['default'] ?? '',
-                    'aria-describedby' => "{$settingId}Help"
+                    'id' => h($settingId),
+                    'data-setting-name' => h($settingName),
+                    'value' => isset($setting['value']) ? h($setting['value']) : "",
+                    'placeholder' => empty($setting['default']) ? '' : h($setting['default']),
+                    'aria-describedby' => h("{$settingId}Help")
                 ]
             );
         })($settingName, $setting, $this);
@@ -28,13 +28,13 @@
             return $this->Bootstrap->switch([
                 'label' => h($setting['description']),
                 'checked' => !empty($setting['value']),
-                'id' => $settingId,
+                'id' => h($settingId),
                 'class' => [
                     (!empty($setting['error']) ? 'is-invalid' : ''),
                     (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
                 ],
                 'attrs' => [
-                    'data-setting-name' => $settingName
+                    'data-setting-name' => h($settingName)
                 ]
             ]);
         })($settingName, $setting, $this);
@@ -53,16 +53,16 @@
                 'type' => 'number',
                 'min' => '0',
                 'step' => 1,
-                'id' => $settingId,
-                'data-setting-name' => $settingName,
-                'aria-describedby' => "{$settingId}Help"
+                'id' => h($settingId),
+                'data-setting-name' => h($settingName),
+                'aria-describedby' => h("{$settingId}Help")
             ]);
         })($settingName, $setting, $this);
 
     } elseif ($setting['type'] == 'select' || $setting['type'] == 'multi-select') {
         $input = (function ($settingName, $setting, $appView) {
             $settingId = str_replace('.', '_', $settingName);
-            $setting['value'] = $setting['value'] ?? '';
+            $setting['value'] = empty($setting['value']) ? '' : h($setting['value']);
             if ($setting['type'] == 'multi-select') {
                 if (!is_array($setting['value'])) {
                     $firstChar = substr($setting['value'], 0, 1);
@@ -77,7 +77,7 @@
             foreach ($setting['options'] as $key => $value) {
                 $optionParam = [
                     'class' => [],
-                    'value' => $key,
+                    'value' => h($key),
                 ];
                 if ($setting['type'] == 'multi-select') {
                     if (in_array($key, $setting['value'])) {
@@ -100,10 +100,10 @@
                     (!empty($setting['error']) ? $appView->get('variantFromSeverity')[$setting['severity']] : ''),
                 ],
                 ($setting['type'] == 'multi-select' ? 'multiple' : '') => ($setting['type'] == 'multi-select' ? 'multiple' : ''),
-                'id' => $settingId,
-                'data-setting-name' => $settingName,
-                'placeholder' => $setting['default'] ?? '',
-                'aria-describedby' => "{$settingId}Help"
+                'id' => h($settingId),
+                'data-setting-name' => h($settingName),
+                'placeholder' => empty($setting['default']) ? '' : h($setting['default']),
+                'aria-describedby' => h("{$settingId}Help")
             ], $options);
         })($settingName, $setting, $this);
     }
