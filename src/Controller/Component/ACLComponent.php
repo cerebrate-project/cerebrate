@@ -559,7 +559,6 @@ class ACLComponent extends Component
                             continue;
                         }
                     }
-                    $menu[$group][$subMenuElementName]['children'] = array_values($menu[$group][$subMenuElementName]['children']);
                     if (empty($menu[$group][$subMenuElementName]['children'])) {
                         unset($subMenu[$subMenuElementName]);
                     }

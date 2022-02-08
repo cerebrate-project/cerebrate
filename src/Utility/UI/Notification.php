@@ -14,6 +14,8 @@ class Notification
     public $icon = 'exclamation-circle';
     public $variant = 'primary';
     public $datetime = null;
+    public $_useModal = false;
+    public $_sidebarId = null;
 
 
     public function __construct(string $text, array $router, $options = [])

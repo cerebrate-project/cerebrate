@@ -111,6 +111,7 @@ class InboxTable extends AppTable
                 'datetime' => $notification->created,
                 'variant' => 'warning',
                 '_useModal' => true,
+                '_sidebarId' => 'inbox',
             ]))->get();
         }
         return $allNotifications;

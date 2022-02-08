@@ -354,6 +354,8 @@ ul.sidebar-elements li.parent > a.sidebar-link::before {
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
     font-size: 1rem;
+    order: 6 !important;
+    margin-left: auto;
 }
 
 ul.sidebar-elements li.parent > a.sidebar-link:not(.collapsed)::before {

@@ -78,13 +78,13 @@ class Sidemenu {
                     'icon' => $this->iconTable['Inbox'],
                     'url' => '/inbox/index',
                     'children' => [
-                        'index' => [
+                        'inbox' => [
                             'url' => '/inbox/index',
-                            'label' => __('Inbox')
+                            'label' => __('Inbox'),
                         ],
                         'outbox' => [
                             'url' => '/outbox/index',
-                            'label' => __('Outbox')
+                            'label' => __('Outbox'),
                         ],
                     ]
                 ],
