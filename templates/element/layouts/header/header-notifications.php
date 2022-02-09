@@ -30,7 +30,7 @@ $variant = array_flip($severity)[$maxSeverity];
             ?>
         </span>
     </a>
-    <div class="dropdown-menu dropdown-menu-end" style="min-width: 320px; max-width: 25vw; max-height: 50vh; overflow-y: auto;">
+    <div class="dropdown-menu dropdown-menu-end notification-menu">
         <h6 class="dropdown-header d-flex justify-content-between">
             <span><?= __n('{0} Notification', '{0} Notifications', count($notifications), count($notifications)) ?></span>
         </h6>

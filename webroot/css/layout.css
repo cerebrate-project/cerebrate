@@ -513,6 +513,35 @@ ul.sidebar-elements > li.category > span.category-divider > hr {
     min-width: 25px;
 }
 
+.navbar .right-navbar .notification-menu {
+    min-width: 320px;
+    max-width: 25vw;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.navbar .right-navbar .notification-menu a.notification-item {
+    max-height: 76px;
+}
+.navbar .right-navbar .notification-menu a.notification-item .notification-icon {
+    width: 36px;
+    height: 36px
+}
+.navbar .right-navbar .notification-menu a.notification-item .notification-text-container {
+    max-width: calc(100% - 40px - 0.25rem);
+}
+.navbar .right-navbar .notification-menu a.notification-item .notification-title {
+    max-width: calc(100% - 90px);
+}
+.navbar .right-navbar .notification-menu a.notification-item .notification-date {
+    max-width: 90px;
+}
+.navbar .right-navbar .notification-menu a.notification-item .notification-details {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
 .composed-app-icon-container {
     height: calc(var(--navbar-height) - 10px);
     width: calc(var(--navbar-height) - 10px);
