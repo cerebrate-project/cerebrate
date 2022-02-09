@@ -9,10 +9,6 @@ use Cake\Error\Debugger;
 
 class OrganisationsTable extends AppTable
 {
-    protected $_accessible = [
-        'id' => false
-    ];
-
     public function initialize(array $config): void
     {
         parent::initialize($config);
