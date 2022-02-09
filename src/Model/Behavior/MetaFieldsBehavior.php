@@ -39,7 +39,7 @@ class MetaFieldsBehavior extends Behavior
             'buildMetaFieldQuerySnippetForMatchingParent' => 'buildQuerySnippetForMatchingParent',
         ],
         'implementedFinders' => [
-            'metafieldValue' => 'findMetafieldValue',
+            'metafield' => 'findMetafield',
         ],
     ];
 
@@ -119,12 +119,12 @@ class MetaFieldsBehavior extends Behavior
 
     /**
      * Usage:
-     *     $this->{$model}->find('metaFieldValue', [
+     *     $this->{$model}->find('metaField', [
      *         ['meta_template_id' => 1, 'field' => 'email', 'value' => '%@domain.test'],
      *         ['meta_template_id' => 1, 'field' => 'country_code', 'value' => '!LU'],
      *         ['meta_template_id' => 1, 'field' => 'time_zone', 'value' => 'UTC+2'],
      *     ])
-     *     $this->{$model}->find('metaFieldValue', [
+     *     $this->{$model}->find('metaField', [
      *         'AND' => [
      *             ['meta_template_id' => 1, 'field' => 'email', 'value' => '%@domain.test'],
      *             'OR' => [
@@ -134,7 +134,7 @@ class MetaFieldsBehavior extends Behavior
      *         ],
      *     ])
      */
-    public function findMetafieldValue(Query $query, array $filters)
+    public function findMetafield(Query $query, array $filters)
     {
         $conditions = $this->buildQuerySnippetForMatchingParent($filters);
         $query->where($conditions);
