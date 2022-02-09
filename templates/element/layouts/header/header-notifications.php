@@ -10,6 +10,7 @@ $severity = [
     'danger' => 2,
 ];
 $maxSeverity = -1;
+$hasNotification = !empty($notifications);
 $notificationVariants = Hash::extract($notifications, '{n}.variant');
 foreach ($notificationVariants as $notifVariant) {
     $maxSeverity = max($maxSeverity, $severity[$notifVariant] ?? 0);
@@ -20,21 +21,22 @@ $variant = array_flip($severity)[$maxSeverity];
     <a class="nav-link px-2 text-decoration-none profile-button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#" data-bs-offset="10,20">
         <span class="position-relative">
             <i class="<?= $this->FontAwesome->getClass('bell') ?> fa-lg"></i>
-            <?=
-            $this->Bootstrap->notificationBubble([
-                'class' => empty($notifications) ? 'd-none' : '',
-                'variant' => $variant,
-            ])
+            <?php
+            if ($hasNotification) {
+                echo $this->Bootstrap->notificationBubble([
+                    'variant' => $variant,
+                ]);
+            }
             ?>
         </span>
     </a>
-    <div class="dropdown-menu dropdown-menu-end" style="min-width: 320px; max-width: 25vw">
+    <div class="dropdown-menu dropdown-menu-end" style="min-width: 320px; max-width: 25vw; max-height: 50vh; overflow-y: auto;">
         <h6 class="dropdown-header d-flex justify-content-between">
             <span><?= __n('{0} Notification', '{0} Notifications', count($notifications), count($notifications)) ?></span>
         </h6>
         <?php if (empty($notifications)) : ?>
-            <span class="dropdown-item-text text-nowrap user-select-none text-center">
-                <?= __('- No notification -') ?>
+            <span class="dropdown-item-text text-nowrap user-select-none text-center fs-7">
+                <?= __('You don\'t have notifications at the moment') ?>
             <span>
         <?php else : ?>
             <?php foreach ($notifications as $notification) : ?>
