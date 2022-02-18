@@ -137,6 +137,30 @@ class AuthKeycloakBehavior extends Behavior
                 ]
             ]
         );
+        $logChange = [
+            'username' => $data['username'],
+            'individual_id' => $data['individual_id'],
+            'role_id' => $data['role_id']
+        ];
+        if (!$response->isOk()) {
+            $logChange['error_code'] = $response->getStatusCode();
+            $logChange['error_body'] = $response->getStringBody();
+            $this->_table->auditLogs()->insert([
+                'request_action' => 'enrollUser',
+                'model' => 'User',
+                'model_id' => 0,
+                'model_title' => __('Failed Keycloak enrollment for user {0}', $data['username']),
+                'changed' => $logChange
+            ]);
+        } else {
+            $this->_table->auditLogs()->insert([
+                'request_action' => 'enrollUser',
+                'model' => 'User',
+                'model_id' => 0,
+                'model_title' => __('Successful Keycloak enrollment for user {0}', $data['username']),
+                'changed' => $logChange
+            ]);
+        }
         return true;
     }
 
