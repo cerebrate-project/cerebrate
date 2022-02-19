@@ -166,6 +166,12 @@ class UsersController extends AppController
                     }
                     return $data;
                 };
+                $params['beforeSave'] = function ($data) use ($currentUser, $validRoles) {
+                    if (!in_array($data['role_id'], array_keys($validRoles))) {
+                        throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
+                    }
+                    return $data;
+                };
             }
         }
         $this->CRUD->edit($id, $params);
