@@ -301,7 +301,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'name' => __('Enable registration flood-protection'),
                             'type' => 'boolean',
                             'description' => __('Enabling this setting will only allow 5 registrations / IP address every 15 minutes (rolling time-frame).'),
-                            'default' => false,
+                            'default' => true,
                         ],
                     ]
                 ],

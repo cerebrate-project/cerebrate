@@ -317,7 +317,7 @@ class UsersController extends AppController
         if (empty(Configure::read('security.registration.self-registration'))) {
             throw new UnauthorizedException(__('User self-registration is not open.'));
         }
-        if (!empty(Configure::read('security.registration.floodProtection'))) {
+        if (!Configure::check('security.registration.floodProtection') || Configure::read('security.registration.floodProtection')) {
             $this->FloodProtection->check('register');
         }
         if ($this->request->is('post')) {
