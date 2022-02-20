@@ -25,7 +25,6 @@ class FloodProtectionComponent extends Component
         } else {
             $this->remote_ip = '127.0.0.1';
         }
-        $this->remote_ip = $_SERVER[$ip_source];
         $temp = explode(PHP_EOL, $_SERVER[$ip_source]);
         if (count($temp) > 1) {
             $this->remote_ip = $temp[0];
