@@ -65,8 +65,7 @@ class AddAuthKeyApiTest extends TestCase
             ]
         );
 
-        $this->assertResponseCode(404);
-        $this->addWarning('Should return 405 Method Not Allowed instead of 404 Not Found');
+        $this->assertResponseCode(405);
         $this->assertDbRecordNotExists('AuthKeys', ['uuid' => $uuid]);
     }
 }
