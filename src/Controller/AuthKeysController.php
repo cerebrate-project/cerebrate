@@ -84,7 +84,7 @@ class AuthKeysController extends AppController
             'displayOnSuccess' => 'authkey_display',
             'beforeSave' => function($data) use ($users) {
                 if (!in_array($data['user_id'], array_keys($users))) {
-                    return false;
+                    throw new MethodNotAllowedException(__('You are not authorised to do that.'));
                 }
                 return $data;
             }
