@@ -62,58 +62,6 @@ class MetaTemplatesTable extends AppTable
         return in_array($strategy, $this->ALLOWED_STRATEGIES);
     }
 
-    // /**
-    //  * Load the template stored on the disk for the provided id and update it using the optional strategy.
-    //  *
-    //  * @param int $template_id
-    //  * @param string|null $strategy The strategy to be used when updating templates with conflicts
-    //  * @return array The update result containing potential errors and the successes
-    //  */
-    // public function update($template_id, $strategy = null): array
-    // {
-    //     $files_processed = [];
-    //     $readErrors = [];
-    //     $preUpdateChecks = [];
-    //     $updatesErrors = [];
-    //     $templates = $this->readTemplatesFromDisk($readErrors);
-    //     foreach ($templates as $template) {
-    //         $updateStatus = $this->getUpdateStatusForTemplates($template['uuid']);
-    //         $preUpdateChecks[$template['uuid']] = $updateStatus;
-    //         if (is_null($template_uuid) || $template_uuid == $template['uuid']) {
-    //             $errors = [];
-    //             $success = false;
-    //             if ($updateStatus['up-to-date']) {
-    //                 $errors['message'] = __('Meta-template already up-to-date');
-    //                 $success = true;
-    //             } else if ($this->isStrategyAllowed(MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW) && $updateStatus['new']) {
-    //                 $success = $this->saveNewMetaTemplate($template, $errors);
-    //             } else if ($this->isStrategyAllowed(MetaTemplatesTable::UPDATE_STRATEGY_UPDATE_EXISTING) && $updateStatus['automatically-updateable']) {
-    //                 $success = $this->updateMetaTemplate($template, $errors);
-    //             } else if (!$updateStatus['up-to-date'] && (is_null($strategy) || !$this->isStrategyAllowed($strategy))) {
-    //                 $errors['message'] = __('Cannot update meta-template, update strategy not provided or not allowed');
-    //             } else if (!$updateStatus['up-to-date'] && !is_null($strategy)) {
-    //                 $success = $this->updateMetaTemplateWithStrategyRouter($template, $strategy, $errors);
-    //             } else {
-    //                 $errors['message'] = __('Could not update. Something went wrong.');
-    //             }
-    //             if ($success) {
-    //                 $files_processed[] = $template['uuid'];
-    //             }
-    //             if (!empty($errors)) {
-    //                 $updatesErrors[] = $errors;
-    //             }
-    //         }
-    //     }
-    //     $results = [
-    //         'read_errors' => $readErrors,
-    //         'pre_update_errors' => $preUpdateChecks,
-    //         'update_errors' => $updatesErrors,
-    //         'files_processed' => $files_processed,
-    //         'success' => !empty($files_processed),
-    //     ];
-    //     return $results;
-    // }
-
     /**
      * Load the templates stored on the disk update and create them in the database without touching at the existing ones
      *
