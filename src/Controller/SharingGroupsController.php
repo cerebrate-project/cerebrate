@@ -36,10 +36,17 @@ class SharingGroupsController extends AppController
 
     public function add()
     {
+        $currentUser = $this->ACL->getUser();
         $this->CRUD->add([
             'override' => [
                 'user_id' => $this->ACL->getUser()['id']
-            ]
+            ],
+            'beforeSave' => function($data) use ($currentUser) {
+                if (!$currentUser['role']['perm_admin']) {
+                    $data['organisation_id'] = $currentUser['organisation_id'];
+                }
+                return $data;
+            }
         ]);
         $dropdownData = [
             'organisation' => $this->getAvailableOrgForSg($this->ACL->getUser())

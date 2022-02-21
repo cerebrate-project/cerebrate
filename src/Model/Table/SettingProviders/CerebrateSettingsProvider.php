@@ -8,6 +8,7 @@ require_once(APP . 'Model' . DS . 'Table' . DS . 'SettingProviders' . DS . 'Base
 
 use App\Settings\SettingsProvider\BaseSettingsProvider;
 use App\Settings\SettingsProvider\SettingValidator;
+use Cake\Core\Configure;
 
 class CerebrateSettingsProvider extends BaseSettingsProvider
 {
@@ -300,8 +301,10 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                         'security.registration.floodProtection' => [
                             'name' => __('Enable registration flood-protection'),
                             'type' => 'boolean',
-                            'description' => __('Enabling this setting will only allow 5 registrations / IP address every 15 minutes (rolling time-frame).'),
-                            'default' => false,
+                            'description' => (Configure::check('security.logging.ip_source') && Configure::read('security.logging.ip_source') !== 'REMOTE_ADDR') ?
+                                __('Enabling this setting will only allow 5 registrations / IP address every 15 minutes (rolling time-frame). WARNING: Be aware that you are not using REMOTE_ADDR (as configured via security.logging.ip_source) - this could lead to an attacker being able to spoof their IP and circumvent the flood protection. Only rely on the client IP if your reverse proxy in front of Cerebrate is properly setting this header.'):
+                                __('Enabling this setting will only allow 5 registrations / IP address every 15 minutes (rolling time-frame).'),
+                            'default' => true,
                         ],
                     ]
                 ],

@@ -166,6 +166,12 @@ class UsersController extends AppController
                     }
                     return $data;
                 };
+                $params['beforeSave'] = function ($data) use ($currentUser, $validRoles) {
+                    if (!in_array($data['role_id'], array_keys($validRoles))) {
+                        throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
+                    }
+                    return $data;
+                };
             }
         }
         $this->CRUD->edit($id, $params);
@@ -311,7 +317,7 @@ class UsersController extends AppController
         if (empty(Configure::read('security.registration.self-registration'))) {
             throw new UnauthorizedException(__('User self-registration is not open.'));
         }
-        if (!empty(Configure::read('security.registration.floodProtection'))) {
+        if (!Configure::check('security.registration.floodProtection') || Configure::read('security.registration.floodProtection')) {
             $this->FloodProtection->check('register');
         }
         if ($this->request->is('post')) {
