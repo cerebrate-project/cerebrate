@@ -1077,7 +1077,7 @@ class CRUDComponent extends Component
         $filteringTags = !empty($params['filteringTags']) && $this->taggingSupported() ? $params['filteringTags'] : '';
         unset($params['filteringTags']);
         $customFilteringFunction = '';
-        $chosenFilter = '';
+        $chosenFilter = [];
         if (!empty($options['contextFilters']['custom'])) {
             foreach ($options['contextFilters']['custom'] as $filter) {
                 if ($filter['label'] == $filteringLabel) {
@@ -1112,7 +1112,6 @@ class CRUDComponent extends Component
                 }
             }
             if (!empty($params['relatedFilters'])) {
-                // $query->group("{$this->TableAlias}.id");
                 foreach ($params['relatedFilters'] as $filter => $filterValue) {
                     $activeFilters[$filter] = $filterValue;
                     $filterParts = explode('.', $filter);
