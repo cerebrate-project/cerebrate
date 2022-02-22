@@ -2,7 +2,6 @@
 echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $individuals,
-        // 'skip_pagination' => 1,
         'top_bar' => [
             'children' => [
                 [

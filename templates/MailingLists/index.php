@@ -75,14 +75,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'sort' => 'deleted',
                 'element' => 'boolean',
             ],
-
-            // [
-            //     'name' => __('Members'),
-            //     'data_path' => 'alignments',
-            //     'element' =>  'count_summary',
-            //     'url' => '/sharingGroups/view/{{id}}',
-            //     'url_data_path' => 'id'
-            // ]
         ],
         'title' => __('Mailing Lists Index'),
         'description' => __('Mailing list are email distribution lists containing individuals.'),
