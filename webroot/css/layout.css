@@ -328,6 +328,10 @@ ul.sidebar-elements > li > a.sidebar-link > * {
     vertical-align: middle;
 }
 
+ul.sidebar-elements li.parent .sub-menu > li > a.sidebar-link > i.sidebar-icon {
+    margin-right: 8px;
+}
+
 ul.sidebar-elements > li > a.sidebar-link > i.sidebar-icon {
     margin-right: 10px;
     font-size: 19px;

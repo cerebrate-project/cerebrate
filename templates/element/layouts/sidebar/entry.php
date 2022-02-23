@@ -8,7 +8,7 @@
     if (!empty($children)) {
         $url = "#{$seed}";
     } else {
-        $url = $parent['url'] ?? '#';
+        $url = $parent['url'] ?? false;
     }
 
     $controller = \Cake\Utility\Inflector::variable($this->request->getParam('controller'));
@@ -59,38 +59,40 @@
 ?>
 
 <li class="<?= !empty($children) ? 'parent collapsed' : '' ?>">
-    <a
-        class="d-flex align-items-center sidebar-link <?= !empty($children) ? 'collapsed' : '' ?> <?= $active ? 'active' : '' ?> <?= $hasActiveChild ? 'have-active-child' : '' ?>"
-        href="<?= h($url) ?>"
-        <?= !empty($children) ? 'data-bs-toggle="collapse"' : '' ?>
-        <?= $hasActiveChild ? 'aria-expanded="true"' : '' ?>
-    >
-        <i class="position-relative sidebar-icon <?= $this->FontAwesome->getClass($icon) ?>">
-            <?php
-            if ($childHasNotification || ($hasNotification && !empty($children))) {
-                echo $this->Bootstrap->notificationBubble([
-                    'variant' => $childHasNotification ? $childNotificationVariant : $notificationVariant,
+    <?php if (!empty($children) || !empty($url)): ?>
+        <a
+            class="d-flex align-items-center sidebar-link <?= !empty($children) ? 'collapsed' : '' ?> <?= $active ? 'active' : '' ?> <?= $hasActiveChild ? 'have-active-child' : '' ?>"
+            href="<?= h($url) ?>"
+            <?= !empty($children) ? 'data-bs-toggle="collapse"' : '' ?>
+            <?= $hasActiveChild ? 'aria-expanded="true"' : '' ?>
+        >
+            <i class="position-relative sidebar-icon <?= $this->FontAwesome->getClass($icon) ?>">
+                <?php
+                if ($childHasNotification || ($hasNotification && !empty($children))) {
+                    echo $this->Bootstrap->notificationBubble([
+                        'variant' => $childHasNotification ? $childNotificationVariant : $notificationVariant,
+                    ]);
+                }
+                ?>
+            </i>
+            <span class="text"><?= h($label) ?></span>
+                <?php
+                if (empty($children) && $hasNotification) {
+                    echo $this->Bootstrap->badge([
+                        'text' => $notificationAmount,
+                        'class' => 'ms-auto',
+                        'variant' => $notificationVariant,
+                    ]);
+                }
+                ?>
+        </a>
+        <?php if (!empty($children)): ?>
+            <?= $this->element('layouts/sidebar/sub-menu', [
+                    'seed' => $seed,
+                    'children' => $children,
+                    'open' => $hasActiveChild,
                 ]);
-            }
             ?>
-        </i>
-        <span class="text"><?= h($label) ?></span>
-            <?php
-            if (empty($children) && $hasNotification) {
-                echo $this->Bootstrap->badge([
-                    'text' => $notificationAmount,
-                    'class' => 'ms-auto',
-                    'variant' => $notificationVariant,
-                ]);
-            }
-            ?>
-    </a>
-    <?php if (!empty($children)): ?>
-        <?= $this->element('layouts/sidebar/sub-menu', [
-                'seed' => $seed,
-                'children' => $children,
-                'open' => $hasActiveChild,
-            ]);
-        ?>
+        <?php endif; ?>
     <?php endif; ?>
 </li>
