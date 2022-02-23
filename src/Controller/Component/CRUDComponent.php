@@ -80,13 +80,17 @@ class CRUDComponent extends Component
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
                 if (is_callable($function)) {
-                    $data->each(function($value, $key) use ($function) {
+                    $data = $data->map(function($value, $key) use ($function) {
                         return $function($value);
+                    })->filter(function ($value) {
+                        return $value !== false;
                     });
                 } else {
                     $t = $this->Table;
-                    $data->each(function($value, $key) use ($t, $function) {
+                    $data = $data->map(function($value, $key) use ($t, $function) {
                         return $t->$function($value);
+                    })->filter(function ($value) {
+                        return $value !== false;
                     });
                 }
             }
@@ -100,13 +104,17 @@ class CRUDComponent extends Component
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
                 if (is_callable($function)) {
-                    $data->each(function($value, $key) use ($function) {
+                    $data = $data->map(function($value, $key) use ($function) {
                         return $function($value);
+                    })->filter(function($value) {
+                        return $value !== false;
                     });
                 } else {
                     $t = $this->Table;
-                    $data->each(function($value, $key) use ($t, $function) {
+                    $data = $data->map(function($value, $key) use ($t, $function) {
                         return $t->$function($value);
+                    })->filter(function ($value) {
+                        return $value !== false;
                     });
                 }
             }
