@@ -120,6 +120,16 @@ class ACLComponent extends Component
             'view' => ['perm_admin'],
             'viewConnector' => ['perm_admin']
         ],
+        'MailingLists' => [
+            "add" => ['perm_org_admin'],
+            "addIndividual" => ['perm_org_admin'],
+            "delete" => ['perm_org_admin'],
+            "edit" => ['perm_org_admin'],
+            "index" => ['*'],
+            "listIndividuals" => ['perm_org_admin'],
+            "removeIndividual" => ['perm_org_admin'],
+            "view" => ['*'],
+        ],
         'MetaTemplateFields' => [
             'index' => ['perm_admin']
         ],
