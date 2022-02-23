@@ -39,4 +39,22 @@ class MailingListsTable extends AppTable
     {
         return $rules;
     }
+
+    public function isIndividualListed($individual, \App\Model\Entity\MailingList $mailinglist): bool
+    {
+        $found = false;
+        if (empty($mailinglist['individuals'])) {
+            return false;
+        }
+        $individual_id_to_find = $individual;
+        if (is_object($individual)) {
+            $individual_id_to_find = $individual['id'];
+        }
+        foreach ($mailinglist['individuals'] as $individual) {
+            if ($individual['id'] == $individual_id_to_find) {
+                return true;
+            }
+        }
+        return $found;
+    }
 }

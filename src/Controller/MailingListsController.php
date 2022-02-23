@@ -7,6 +7,8 @@ use Cake\Utility\Inflector;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
+use Cake\Http\Exception\UnauthorizedException;
+use Cake\Http\Exception\NotFoundException;
 use Cake\ORM\Query;
 use Cake\ORM\Entity;
 use Exception;
@@ -17,14 +19,23 @@ class MailingListsController extends AppController
     public $quickFilterFields = ['MailingLists.uuid', ['MailingLists.name' => true], ['description' => true], ['releasability' => true]];
     public $containFields = ['Users', 'Individuals', 'MetaFields'];
     public $statisticsFields = ['active'];
-    
+
     public function index()
     {
+        $currentUser = $this->ACL->getUser();
         $this->CRUD->index([
             'contain' => $this->containFields,
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'statisticsFields' => $this->statisticsFields,
+            'afterFind' => function ($row) use ($currentUser) {
+                if (empty($currentUser['role']['perm_admin']) || $row['user_id'] != $currentUser['id']) {
+                    if (!$this->MailingLists->isIndividualListed($currentUser['individual_id'], $row)) {
+                        $row = false;
+                    }
+                }
+                return $row;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -34,10 +45,14 @@ class MailingListsController extends AppController
 
     public function add()
     {
+        $currentUser = $this->ACL->getUser();
         $this->CRUD->add([
             'override' => [
-                'user_id' => $this->ACL->getUser()['id']
-            ]
+                'user_id' => $currentUser['id']
+            ],
+            'beforeSave' => function ($data) use ($currentUser) {
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -47,8 +62,17 @@ class MailingListsController extends AppController
 
     public function view($id)
     {
+        $currentUser = $this->ACL->getUser();
         $this->CRUD->view($id, [
-            'contain' => $this->containFields
+            'contain' => $this->containFields,
+            'afterFind' => function($data) use ($currentUser) {
+                if (empty($currentUser['role']['perm_admin']) || $data['user_id'] != $currentUser['id']) {
+                    if (!$this->MailingLists->isIndividualListed($currentUser['individual_id'], $data)) {
+                        $data = [];
+                    }
+                }
+                return $data;
+            },
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -58,7 +82,12 @@ class MailingListsController extends AppController
 
     public function edit($id = false)
     {
-        $this->CRUD->edit($id);
+        $currentUser = $this->ACL->getUser();
+        $params = [];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $params['conditions'] = ['user_id' => $currentUser['id']];
+        }
+        $this->CRUD->edit($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -68,7 +97,11 @@ class MailingListsController extends AppController
 
     public function delete($id)
     {
-        $this->CRUD->delete($id);
+        $currentUser = $this->ACL->getUser();
+        if (empty($currentUser['role']['perm_admin'])) {
+            $params['conditions'] = ['user_id' => $currentUser['id']];
+        }
+        $this->CRUD->delete($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -77,6 +110,7 @@ class MailingListsController extends AppController
 
     public function listIndividuals($mailinglist_id)
     {
+        $currentUser = $this->ACL->getUser();
         $quickFilter = [
             'uuid',
             ['first_name' => true],
@@ -89,10 +123,19 @@ class MailingListsController extends AppController
         $queryParams = $this->ParamHandler->harvestParams($filters);
         $activeFilters = $queryParams['quickFilter'] ?? [];
 
-         $mailingList = $this->MailingLists->find()
+        $mailingList = $this->MailingLists->find()
             ->where(['MailingLists.id' => $mailinglist_id])
-            ->contain('MetaFields')
+            ->contain(['MetaFields', 'Individuals'])
             ->first();
+
+        if (is_null($mailingList)) {
+            throw new NotFoundException(__('Invalid {0}.', Inflector::singularize($this->MailingLists->getAlias())));
+        }
+        if (empty($currentUser['role']['perm_admin']) || $mailingList['user_id'] != $currentUser['id']) {
+            if (!$this->MailingLists->isIndividualListed($currentUser['individual_id'], $mailingList)) {
+                throw new NotFoundException(__('Invalid {0}.', Inflector::singularize($this->MailingLists->getAlias())));
+            }
+        }
 
         $filteringActive = !empty($queryParams['quickFilter']);
         $matchingMetaFieldParentIDs = [];
@@ -111,6 +154,8 @@ class MailingListsController extends AppController
             }
         }
         $matchingMetaFieldParentIDs = array_keys($matchingMetaFieldParentIDs);
+        unset($mailingList['individuals']); // reset loaded individuals for the filtering to take effect
+        // Perform filtering based on the searched values (supports emails from metafield or individual)
         $mailingList = $this->MailingLists->loadInto($mailingList, [
             'Individuals' => function (Query $q) use ($queryParams, $quickFilter, $filteringActive, $matchingMetaFieldParentIDs) {
                 $conditions = [];
@@ -148,13 +193,21 @@ class MailingListsController extends AppController
 
     public function addIndividual($mailinglist_id)
     {
-        $mailingList = $this->MailingLists->get($mailinglist_id, [
+        $currentUser = $this->ACL->getUser();
+        $params = [
             'contain' => ['Individuals', 'MetaFields']
-        ]);
-        $linkedIndividualsIDs = Hash::extract($mailingList, 'individuals.{n}.id');
-        $conditions = [
-            'id NOT IN' => $linkedIndividualsIDs
         ];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $params['conditions'] = ['user_id' => $currentUser['id']];
+        }
+        $mailingList = $this->MailingLists->get($mailinglist_id, $params);
+        $linkedIndividualsIDs = Hash::extract($mailingList, 'individuals.{n}.id');
+        $conditions = [];
+        if (!empty($linkedIndividualsIDs)) {
+            $conditions = [
+                'id NOT IN' => $linkedIndividualsIDs
+            ];
+        }
         $dropdownData = [
             'individuals' => $this->MailingLists->Individuals->getTarget()->find()
                 ->order(['first_name' => 'asc'])
@@ -217,9 +270,14 @@ class MailingListsController extends AppController
 
     public function removeIndividual($mailinglist_id, $individual_id=null)
     {
-        $mailingList = $this->MailingLists->get($mailinglist_id, [
+        $currentUser = $this->ACL->getUser();
+        $params = [
             'contain' => ['Individuals', 'MetaFields']
-        ]);
+        ];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $params['conditions'] = ['user_id' => $currentUser['id']];
+        }
+        $mailingList = $this->MailingLists->get($mailinglist_id, $params);
         $individual = [];
         if (!is_null($individual_id)) {
             $individual = $this->MailingLists->Individuals->get($individual_id);
@@ -297,5 +355,4 @@ class MailingListsController extends AppController
         $this->viewBuilder()->setLayout('ajax');
         $this->render('/genericTemplates/delete');
     }
-
 }
