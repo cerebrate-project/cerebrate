@@ -461,7 +461,7 @@ class CRUDComponent extends Component
         if (!empty($params['conditions'])) {
              $query->where($params['conditions']);
         }
-        $data = $data->first();
+        $data = $query->first();
         if (isset($params['afterFind'])) {
             $data = $params['afterFind']($data, $params);
         }
