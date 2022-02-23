@@ -47,7 +47,8 @@ class ACLComponent extends Component
             'view' => ['*']
         ],
         'AuditLogs' => [
-            'index' => ['perm_admin']
+            'filtering' => ['perm_admin'],
+            'index' => ['perm_admin'],
         ],
         'AuthKeys' => [
             'add' => ['*'],
