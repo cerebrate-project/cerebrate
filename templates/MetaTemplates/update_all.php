@@ -64,7 +64,6 @@ foreach ($templatesUpdateStatus as $uuid => $status) {
     } else {
         // Depends on the strategy used by the update_all function. Right now, every update create a brand new template
         // leaving existing data untouched. So regardless of the conflict, the new template will be created
-        // if (!empty($status['new']) || !empty($status['automatically-updateable'])) {
         if (!empty($status['new']) || empty($status['up-to-date'])) {
             $numberOfUpdates += 1;
             $tableHtml .= sprintf('<td>%s</td>', $this->Bootstrap->icon('check', ['class' => 'text-success']));

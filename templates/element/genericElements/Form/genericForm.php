@@ -12,7 +12,6 @@
            - use these to define dynamic form fields, or anything that will feed into the regular fields via JS population
      * - submit: The submit button itself. By default it will simply submit to the form as defined via the 'model' field
      */
-    // debug(\Cake\Utility\Hash::extract($entity, 'MetaTemplates.{n}.meta_template_fields.{n}.metaFields.{n}.value'));
     $this->Form->setConfig('errorClass', 'is-invalid');
     $modelForForm = empty($data['model']) ?
         h(\Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::classify($this->request->getParam('controller')))) :
