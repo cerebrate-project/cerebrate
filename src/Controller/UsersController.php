@@ -44,15 +44,23 @@ class UsersController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $validRoles = [];
+        $individuals_params = [
+            'sort' => ['email' => 'asc']
+        ];
         if (!$currentUser['role']['perm_admin']) {
             $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0])->all()->toArray();
+            $individual_ids = $this->Users->Individuals->find('aligned', ['organisation_id' => $currentUser['organisation_id']])->all()->extract('id')->toArray();
+            if (empty($individual_ids)) {
+                $individual_ids = [-1];
+            }
+            $individuals_params['conditions'] = ['id IN' => $individual_ids];
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
         $defaultRole = $this->Users->Roles->find()->select(['id'])->first()->toArray();
-
+        $individuals = $this->Users->Individuals->find('list', $individuals_params)->toArray();
         $this->CRUD->add([
-            'beforeSave' => function($data) use ($currentUser, $validRoles, $defaultRole) {
+            'beforeSave' => function($data) use ($currentUser, $validRoles, $defaultRole, $individual_ids) {
                 if (!isset($data['role_id']) && !empty($defaultRole)) {
                     $data['role_id'] = $defaultRole['id'];
                 }
@@ -61,6 +69,21 @@ class UsersController extends AppController
                     if (!in_array($data['role_id'], array_keys($validRoles))) {
                         throw new MethodNotAllowedException(__('You do not have permission to assign that role.'));
                     }
+                }
+                if ((!isset($data['individual_id']) || $data['individual_id'] === 'new') && !empty($data['individual'])) {
+                    $existingOrg = $this->Users->Organisations->find('all')->where(['id' => $data['organisation_id']])->select(['uuid'])->first();
+                    if (empty($existingOrg)) {
+                        throw new MethodNotAllowedException(__('No valid organisation found. Either encode the organisation separately or select a valid one.'));
+                    }
+                    $data['individual']['alignments'][] = ['type' => 'Member', 'organisation' => ['uuid' => $existingOrg['uuid']]];
+                    $data['individual_id'] = $this->Users->Individuals->captureIndividual($data['individual']);
+                } else if (!$currentUser['role']['perm_admin'] && isset($data['individual_id'])) {
+                    if (!in_array($data['individual_id'], $individual_ids)) {
+                        throw new MethodNotAllowedException(__('The selected individual is not aligned with your organisation. Creating a user for them is not permitted.'));
+                    }
+                }
+                if (empty($data['individual_id'])) {
+                    throw new MethodNotAllowedException(__('No valid individual found. Either supply it in the request or set the individual_id to a valid value.'));
                 }
                 $this->Users->enrollUserRouter($data);
                 return $data;
@@ -84,9 +107,7 @@ class UsersController extends AppController
         }
         $dropdownData = [
             'role' => $validRoles,
-            'individual' => $this->Users->Individuals->find('list', [
-                'sort' => ['email' => 'asc']
-            ]),
+            'individual' => $individuals,
             'organisation' => $this->Users->Organisations->find('list', [
                 'sort' => ['name' => 'asc'],
                 'conditions' => $org_conditions
@@ -136,7 +157,7 @@ class UsersController extends AppController
         $params = [
             'get' => [
                 'fields' => [
-                    'id', 'individual_id', 'role_id', 'username', 'disabled'
+                    'id', 'individual_id', 'role_id', 'disabled', 'username'
                 ]
             ],
             'removeEmpty' => [
@@ -148,12 +169,10 @@ class UsersController extends AppController
         ];
         if (!empty($this->ACL->getUser()['role']['perm_admin'])) {
             $params['fields'][] = 'individual_id';
-            $params['fields'][] = 'username';
             $params['fields'][] = 'role_id';
             $params['fields'][] = 'organisation_id';
             $params['fields'][] = 'disabled';
         } else if (!empty($this->ACL->getUser()['role']['perm_org_admin'])) {
-            $params['fields'][] = 'username';
             $params['fields'][] = 'role_id';
             $params['fields'][] = 'disabled';
             if (!$currentUser['role']['perm_admin']) {
