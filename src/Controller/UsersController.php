@@ -9,6 +9,7 @@ use \Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\UnauthorizedException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Core\Configure;
+use Cake\Utility\Security;
 
 class UsersController extends AppController
 {
@@ -47,6 +48,7 @@ class UsersController extends AppController
         $individuals_params = [
             'sort' => ['email' => 'asc']
         ];
+        $individual_ids = [];
         if (!$currentUser['role']['perm_admin']) {
             $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0])->all()->toArray();
             $individual_ids = $this->Users->Individuals->find('aligned', ['organisation_id' => $currentUser['organisation_id']])->all()->extract('id')->toArray();
@@ -60,6 +62,12 @@ class UsersController extends AppController
         $defaultRole = $this->Users->Roles->find()->select(['id'])->first()->toArray();
         $individuals = $this->Users->Individuals->find('list', $individuals_params)->toArray();
         $this->CRUD->add([
+            'beforeMarshal' => function($data) {
+                if (empty($data['password'])) {
+                    $data['password'] = Security::randomString(20);
+                }
+                return $data;
+            },
             'beforeSave' => function($data) use ($currentUser, $validRoles, $defaultRole, $individual_ids) {
                 if (!isset($data['role_id']) && !empty($defaultRole)) {
                     $data['role_id'] = $defaultRole['id'];
