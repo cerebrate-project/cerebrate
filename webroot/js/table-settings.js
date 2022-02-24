@@ -17,7 +17,7 @@ function mergeNewTableSettingsIntoOld(table_setting_id, oldTableSettings, newTab
     return tableSettings
 }
 
-function saveTableSetting(settingName, newTableSettings) {
+function saveTableSetting(settingName, newTableSettings, automaticFeedback=true) {
     const urlSet = `/user-settings/setMySetting/${settingName}`
     return AJAXApi.quickFetchAndPostForm(urlSet, {
         value: JSON.stringify(newTableSettings)
