@@ -454,18 +454,24 @@ class CRUDComponent extends Component
             $params['contain'][] = 'Tags';
             $this->setAllTags();
         }
-        $queryParam = isset($params['get']) ? $params['get'] : $params;
+        $params = isset($params['get']) ? $params['get'] : $params;
         if ($this->metaFieldsSupported()) {
-            if (empty( $queryParam['contain'])) {
-                 $queryParam['contain'] = [];
+            if (empty($params['contain'])) {
+                $params['contain'] = [];
             }
-            if (is_array( $queryParam['contain'])) {
-                 $queryParam['contain'][] = 'MetaFields';
+            if (is_array($params['contain'])) {
+                $params['contain'][] = 'MetaFields';
             } else {
-                 $queryParam['contain'] = [ $queryParam['contain'], 'MetaFields'];
+                $params['contain'] = [$params['contain'], 'MetaFields'];
             }
         }
         $query = $this->Table->find()->where(['id' => $id]);
+        if (!empty($params['get'])) {
+            $query->select($params['get']);
+        }
+        if (!empty($params['contain'])) {
+            $query->contain($params['contain']);
+        }
         if (!empty($params['conditions'])) {
              $query->where($params['conditions']);
         }
