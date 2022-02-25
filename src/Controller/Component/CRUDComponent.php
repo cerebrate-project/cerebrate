@@ -178,6 +178,12 @@ class CRUDComponent extends Component
             $this->Controller->set('metaFieldsEnabled', false);
         }
         $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
+        $typeHandlers = $this->Table->getBehavior('MetaFields')->getTypeHandlers();
+        $typeHandlersOperators = [];
+        foreach ($typeHandlers as $type => $handler) {
+            $typeHandlersOperators[$type] = $handler::OPERATORS;
+        }
+        $this->Controller->set('typeHandlersOperators', $typeHandlersOperators);
         $this->Controller->set('filters', $filters);
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/filters');

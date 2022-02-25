@@ -2,7 +2,12 @@
 $filteringItems = [];
 foreach ($metaTemplates as $template_id => $metaTemplate) {
     foreach ($metaTemplate['meta_template_fields'] as $metaTemplateField) {
-        $filteringItems[h($metaTemplate->name)][] = ['id' => $metaTemplateField->id, 'name' => h($metaTemplateField->field), 'template_id' => $template_id];
+        $filteringItems[h($metaTemplate->name)][] = [
+            'id' => h($metaTemplateField->id),
+            'name' => h($metaTemplateField->field),
+            'template_id' => h($template_id),
+            'type' => h($metaTemplateField->type),
+        ];
     }
 }
 
@@ -35,6 +40,7 @@ $filteringForm = $this->Bootstrap->table(
 <script>
     (function() {
         const availableFilters = <?= json_encode($filteringItems) ?>;
+        const typeHandlersOperators = <?= json_encode($typeHandlersOperators) ?>;
 
         $(document).ready(() => {
             const $filteringTable = $('table.indexMetaFieldsFilteringTable')
@@ -84,7 +90,6 @@ $filteringForm = $this->Bootstrap->table(
                 placeholder: '<?= __('Pick a meta field') ?>',
                 allowClear: true,
                 templateSelection: select2FormatState,
-
             })
         }
 
@@ -156,12 +161,35 @@ $filteringForm = $this->Bootstrap->table(
                             template_field_id: metaTemplateField['id'],
                             template_name: metaTemplateName,
                             template_field_name: metaTemplateField['name'],
+                            template_field_type: metaTemplateField['type'],
                         })
                     )
                 });
             }
+            $selectField.change(function() {
+                if ($(this).data('select2') !== undefined) {
+                    const pickedType = $($(this).select2('data')[0].element).data('meta_template_data')['template_field_type']
+                    let operators = typeHandlersOperators[pickedType]
+                    if (operators === undefined || operators.length == 0) {
+                        operators = ['=', '!=']
+                    }
+                    // setMetaFieldsSelectOperators($(this), operators)
+                }
+            })
             return $selectField
         }
+
+        // /* Unused - Might be useful in the future if wee need to change the operators. Right now = and != are enough */
+        // function setMetaFieldsSelectOperators($fieldSelect, operators) {
+        //     const $table = $fieldSelect.closest('table.indexMetaFieldsFilteringTable')
+        //     const $controlRow = $table.find('#controlRow')
+        //     const $operatorSelect = $controlRow.find('select.fieldOperator')
+        //     $operatorSelect.empty()
+        //     operators.forEach((operator) => {
+        //         $operatorSelect.append($('<option/>').text(operator).val(operator), )
+        //     })
+        //     $operatorSelect.val(operators[0])
+        // }
 
         function getFilters() {
             const $table = $(this)

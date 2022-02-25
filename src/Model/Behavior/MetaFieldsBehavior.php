@@ -69,6 +69,11 @@ class MetaFieldsBehavior extends Behavior
         }
     }
 
+    public function getTypeHandlers(): array
+    {
+        return $this->typeHandlers;
+    }
+
     public function getScope()
     {
         if (is_null($this->aliasScope)) {
