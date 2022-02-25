@@ -1,0 +1,46 @@
+{
+    "name": "CSIRT Constituency",
+    "namespace": "cerebrate",
+    "description": "Template meant to collect data about the constituency of a CSIRT",
+    "version": 1,
+    "scope": "organisation",
+    "uuid": "faca6acc-23e0-4585-8fd8-4379e3a6250d",
+    "source": "Cerebrate",
+    "metaFields": [
+        {
+            "field": "IPv4 address",
+            "type": "ipv4",
+            "multiple": true
+        },
+        {
+            "field": "IPv6 address",
+            "type": "ipv6",
+            "multiple": true
+        },
+        {
+            "field": "AS Number",
+            "type": "text",
+            "multiple": true
+        },
+        {
+            "field": "Domain",
+            "type": "text",
+            "multiple": true
+        },
+        {
+            "field": "Country",
+            "type": "text",
+            "multiple": true
+        },
+        {
+            "field": "Country Code",
+            "type": "text",
+            "multiple": true
+        },
+        {
+            "field": "Sector",
+            "type": "text",
+            "multiple": true
+        }
+    ]
+}
