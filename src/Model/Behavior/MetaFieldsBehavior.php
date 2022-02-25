@@ -6,10 +6,14 @@ use Cake\ORM\Behavior;
 use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
+use Cake\ORM\TableRegistry;
 use Cake\Utility\Inflector;
 use Cake\Database\Expression\QueryExpression;
 
-use function PHPSTORM_META\type;
+use MetaFieldsTypes\TextType;
+use MetaFieldsTypes\IPv4Type;
+require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'TextType.php');
+require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'IPv4Type.php');
 
 class MetaFieldsBehavior extends Behavior
 {
@@ -44,12 +48,25 @@ class MetaFieldsBehavior extends Behavior
     ];
 
     private $aliasScope = null;
+    private $typeHandlers = [];
 
     public function initialize(array $config): void
     {
         $this->bindAssociations();
         $this->_metaTemplateFieldTable = $this->_table;
         $this->_metaTemplateTable = $this->_table;
+        $this->loadTypeHandlers();
+    }
+
+    private function loadTypeHandlers()
+    {
+        $typeHandlers = [
+            new TextType(),
+            new IPv4Type(),
+        ];
+        foreach ($typeHandlers as $handler) {
+            $this->typeHandlers[$handler::TYPE] = $handler;
+        }
     }
 
     public function getScope()
@@ -198,7 +215,7 @@ class MetaFieldsBehavior extends Behavior
     }
 
 
-    protected function getQueryExpressionForField(QueryExpression $exp, string $field, string $value): QueryExpression
+    protected function setQueryExpressionForTextField(QueryExpression $exp, string $field, string $value): QueryExpression
     {
         if (substr($value, 0, 1) == '!') {
             $value = substr($value, 1);
@@ -213,10 +230,16 @@ class MetaFieldsBehavior extends Behavior
 
     protected function buildQuerySnippet(array $filter): Query
     {
-        $whereClosure = function (QueryExpression $exp) use ($filter) {
+        $this->MetaTemplateFields = TableRegistry::getTableLocator()->get('MetaTemplateFields');
+        $metaTemplateField = $this->MetaTemplateFields->get($filter['meta_template_field_id']);
+        $whereClosure = function (QueryExpression $exp) use ($filter, $metaTemplateField) {
             foreach ($filter as $column => $value) {
                 $keyedColumn = 'MetaFields.' . $column;
-                $this->getQueryExpressionForField($exp, $keyedColumn, $value);
+                if ($column == 'value') {
+                    $this->setQueryExpressionForField($exp, $keyedColumn, $value, $metaTemplateField);
+                } else {
+                    $this->setQueryExpressionForTextField($exp, $keyedColumn, $value);
+                }
             }
             return $exp;
         };
@@ -228,4 +251,13 @@ class MetaFieldsBehavior extends Behavior
         return $query;
     }
 
+    protected function setQueryExpressionForField(QueryExpression $exp, string $field, string $value, \App\Model\Entity\MetaTemplateField $metaTemplateField): QueryExpression
+    {
+        if (isset($this->typeHandlers[$metaTemplateField->type])) {
+            $exp = $this->typeHandlers[$metaTemplateField->type]->setQueryExpression($exp, $value, $metaTemplateField);
+        } else {
+            $exp = $this->setQueryExpressionForTextField($exp, $field, $value);
+        }
+        return $exp;
+    }
 }
