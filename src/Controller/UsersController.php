@@ -50,7 +50,7 @@ class UsersController extends AppController
         ];
         $individual_ids = [];
         if (!$currentUser['role']['perm_admin']) {
-            $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0])->all()->toArray();
+            $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->toArray();
             $individual_ids = $this->Users->Individuals->find('aligned', ['organisation_id' => $currentUser['organisation_id']])->all()->extract('id')->toArray();
             if (empty($individual_ids)) {
                 $individual_ids = [-1];
@@ -147,7 +147,7 @@ class UsersController extends AppController
         $currentUser = $this->ACL->getUser();
         $validRoles = [];
         if (!$currentUser['role']['perm_admin']) {
-            $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0])->all()->toArray();
+            $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->toArray();
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
