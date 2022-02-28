@@ -2,10 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
-use Cake\Utility\Hash;
-use Cake\Utility\Text;
 use Cake\ORM\TableRegistry;
-use \Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\UnauthorizedException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Core\Configure;
