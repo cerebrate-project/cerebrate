@@ -134,8 +134,7 @@ class AuthKeycloakBehavior extends Behavior
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'Authorization' => 'Bearer ' . $token
-                ],
-                'ssl_verify_peer' => false
+                ]
             ]
         );
         $logChange = [
