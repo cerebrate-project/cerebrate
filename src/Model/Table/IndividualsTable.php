@@ -5,6 +5,8 @@ namespace App\Model\Table;
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\ORM\Query;
+
 
 class IndividualsTable extends AppTable
 {
@@ -59,7 +61,9 @@ class IndividualsTable extends AppTable
                 'uuid' => $individual['uuid']
             ])->first();
         } else {
-            return null;
+            $existingIndividual = $this->find()->where([
+                'email' => $individual['email']
+            ])->first();
         }
         if (empty($existingIndividual)) {
             $entityToSave = $this->newEmptyEntity();
@@ -93,5 +97,17 @@ class IndividualsTable extends AppTable
                 }
             }
         }
+    }
+
+    public function findAligned(Query $query, array $options)
+    {
+        $query = $query->select(['Individuals.id']);
+        if (empty($options['organisation_id'])) {
+            $query->leftJoinWith('Alignments')->where(['Alignments.organisation_id IS' => null]);
+        } else {
+            $query->innerJoinWith('Alignments')
+                ->where(['Alignments.organisation_id IN' => $options['organisation_id']]);
+        }
+        return $query->group(['Individuals.id', 'Individuals.uuid']);
     }
 }

@@ -12,26 +12,29 @@ use Cake\Core\Configure;
             'style' => ['filter: drop-shadow(4px 4px 4px #924da666);']
         ])
     );
-    echo sprintf('<h4 class="text-uppercase fw-light mb-3">%s</h4>', __('Sign In'));
     $template = [
         'inputContainer' => '<div class="form-floating input {{type}}{{required}}">{{content}}</div>',
         'formGroup' => '{{input}}{{label}}',
         'submitContainer' => '<div class="submit d-grid">{{content}}</div>',
     ];
     $this->Form->setTemplates($template);
-    echo $this->Form->create(null, ['url' => ['controller' => 'users', 'action' => 'login']]);
-    echo $this->Form->control('username', ['label' => 'Username', 'class' => 'form-control mb-2', 'placeholder' => __('Username')]);
-    echo $this->Form->control('password', ['type' => 'password', 'label' => 'Password', 'class' => 'form-control mb-3', 'placeholder' => __('Password')]);
-    echo $this->Form->control(__('Login'), ['type' => 'submit', 'class' => 'btn btn-primary']);
-    echo $this->Form->end();
-    if (!empty(Configure::read('security.registration.self-registration'))) {
-        echo '<div class="text-end">';
-            echo sprintf('<span class="text-secondary ms-auto" style="font-size: 0.8rem">%s <a href="/users/register" class="text-decoration-none link-primary fw-bold">%s</a></span>', __('Doesn\'t have an account?'), __('Sign up'));
-        echo '</div>';
+    if (!Configure::check('password_auth.enabled') || Configure::read('password_auth.enabled')) {
+        echo sprintf('<h4 class="text-uppercase fw-light mb-3">%s</h4>', __('Sign In'));
+        echo $this->Form->create(null, ['url' => ['controller' => 'users', 'action' => 'login']]);
+        echo $this->Form->control('username', ['label' => 'Username', 'class' => 'form-control mb-2', 'placeholder' => __('Username')]);
+        echo $this->Form->control('password', ['type' => 'password', 'label' => 'Password', 'class' => 'form-control mb-3', 'placeholder' => __('Password')]);
+        echo $this->Form->control(__('Login'), ['type' => 'submit', 'class' => 'btn btn-primary']);
+        echo $this->Form->end();
+        if (!empty(Configure::read('security.registration.self-registration'))) {
+            echo '<div class="text-end">';
+                echo sprintf('<span class="text-secondary ms-auto" style="font-size: 0.8rem">%s <a href="/users/register" class="text-decoration-none link-primary fw-bold">%s</a></span>', __('Don\'t have an account?'), __('Sign up'));
+            echo '</div>';
+        }
+        if (!empty(Configure::read('keycloak.enabled'))) {
+            echo sprintf('<div class="d-flex align-items-center my-2"><hr class="d-inline-block flex-grow-1"/><span class="mx-3 fw-light">%s</span><hr class="d-inline-block flex-grow-1"/></div>', __('Or'));
+        }
     }
-
     if (!empty(Configure::read('keycloak.enabled'))) {
-        echo sprintf('<div class="d-flex align-items-center my-2"><hr class="d-inline-block flex-grow-1"/><span class="mx-3 fw-light">%s</span><hr class="d-inline-block flex-grow-1"/></div>', __('Or'));
         echo $this->Form->create(null, [
             'url' => Cake\Routing\Router::url([
                 'prefix' => false,

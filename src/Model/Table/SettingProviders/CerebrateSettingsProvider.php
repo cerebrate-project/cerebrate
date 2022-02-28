@@ -151,6 +151,17 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
             ],
             'Authentication' => [
                 'Providers' => [
+                    'PasswordAuth' => [
+                        'password_auth.enabled' => [
+                            'name' => 'Disable password authentication',
+                            'type' => 'boolean',
+                            'severity' => 'warning',
+                            'description' => __('Enable username/password authentication.'),
+                            'default' => true,
+                            'test' => 'testEnabledAuth',
+                            'authentication_type' => 'password_auth'
+                        ],
+                    ],
                     'KeyCloak' => [
                         'keycloak.enabled' => [
                             'name' => 'Enabled',
@@ -158,6 +169,8 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'severity' => 'warning',
                             'description' => __('Enable keycloak authentication'),
                             'default' => false,
+                            'test' => 'testEnabledAuth',
+                            'authentication_type' => 'keycloak'
                         ],
                         'keycloak.provider.applicationId' => [
                             'name' => 'Client ID',
@@ -371,6 +384,26 @@ class CerebrateSettingValidator extends SettingValidator
         }
         if (!empty($value) && !preg_match('/^http(s)?:\/\//i', $value)) {
             return __('Invalid URL, please make sure that the protocol is set.');
+        }
+        return true;
+    }
+
+    public function testEnabledAuth($value, &$setting)
+    {
+        $providers = [
+            'password_auth',
+            'keycloak'
+        ];
+        if (!$value) {
+            $foundEnabledAuth = __('Cannot make change - this would disable every possible authentication method.');
+            foreach ($providers as $provider) {
+                if ($provider !== $setting['authentication_type']) {
+                    if (Configure::read($provider . '.enable')) {
+                        $foundEnabledAuth = true;
+                    }
+                }
+            }
+            return $foundEnabledAuth;
         }
         return true;
     }
