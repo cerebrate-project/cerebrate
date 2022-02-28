@@ -239,7 +239,7 @@ class MetaFieldsBehavior extends Behavior
     protected function buildQuerySnippet(array $filter): Query
     {
         $this->MetaTemplateFields = TableRegistry::getTableLocator()->get('MetaTemplateFields');
-        $metaTemplateField = $this->MetaTemplateFields->get($filter['meta_template_field_id']);
+        $metaTemplateField = !empty($filter['meta_template_field_id']) ? $this->MetaTemplateFields->get($filter['meta_template_field_id']) : null;
         $whereClosure = function (QueryExpression $exp) use ($filter, $metaTemplateField) {
             foreach ($filter as $column => $value) {
                 $keyedColumn = 'MetaFields.' . $column;
@@ -259,9 +259,9 @@ class MetaFieldsBehavior extends Behavior
         return $query;
     }
 
-    protected function setQueryExpressionForField(QueryExpression $exp, string $field, string $value, \App\Model\Entity\MetaTemplateField $metaTemplateField): QueryExpression
+    protected function setQueryExpressionForField(QueryExpression $exp, string $field, string $value, \App\Model\Entity\MetaTemplateField $metaTemplateField=null): QueryExpression
     {
-        if (isset($this->typeHandlers[$metaTemplateField->type])) {
+        if (!is_null($metaTemplateField) && isset($this->typeHandlers[$metaTemplateField->type])) {
             $exp = $this->typeHandlers[$metaTemplateField->type]->setQueryExpression($exp, $value, $metaTemplateField);
         } else {
             $exp = $this->setQueryExpressionForTextField($exp, $field, $value);
