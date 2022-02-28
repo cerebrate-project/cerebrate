@@ -124,13 +124,16 @@ class InstanceTable extends AppTable
             if (!empty($tableConfig['contain'])) {
                 $query->contain($tableConfig['contain']);
             }
-            $results[$tableName]['amount'] = $query->count();
+            if (empty($tableConfig['afterFind'])) {
+                $results[$tableName]['amount'] = $query->count();
+            }
             $result = $query->limit($limit)->all()->toList();
             if (!empty($result)) {
                 if (!empty($tableConfig['afterFind'])) {
                     $result = $tableConfig['afterFind']($result, $user);
                 }
                 $results[$tableName]['entries'] = $result;
+                $results[$tableName]['amount'] = count($result);
             }
         }
         return $results;
