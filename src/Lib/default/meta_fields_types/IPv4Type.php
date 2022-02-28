@@ -27,8 +27,7 @@ class IPv4Type extends TextType
      */
     public function validate(string $value): bool
     {
-        return filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ||
-            filter_var(explode('/', $value)[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+        return $this->_isValidIP($value) || $this->_isValidIP(explode('/', $value)[0]);
     }
 
     public function setQueryExpression(QueryExpression $exp, string $searchValue, \App\Model\Entity\MetaTemplateField $metaTemplateField): QueryExpression
@@ -62,13 +61,13 @@ class IPv4Type extends TextType
         return $exp;
     }
 
-    private function fetchAllMetatemplateFieldsIdForThisType(\App\Model\Entity\MetaTemplateField $metaTemplateField = null): Query
+    protected function fetchAllMetatemplateFieldsIdForThisType(\App\Model\Entity\MetaTemplateField $metaTemplateField = null): Query
     {
         $conditions =[];
         if (!is_null($metaTemplateField)) {
             $conditions['id'] = $metaTemplateField->id;
         } else {
-            $conditions['type'] = IPv4Type::TYPE;
+            $conditions['type'] = $this::TYPE;
         }
         $query = $this->MetaTemplateFields->find()->select(['id'])
             ->distinct()
@@ -76,7 +75,7 @@ class IPv4Type extends TextType
         return $query;
     }
 
-    private function fetchAllValuesForThisType(array $conditions=[], \App\Model\Entity\MetaTemplateField $metaTemplateField=null): array
+    protected function fetchAllValuesForThisType(array $conditions=[], \App\Model\Entity\MetaTemplateField $metaTemplateField=null): array
     {
         $metaTemplateFieldsIDs = $this->fetchAllMetatemplateFieldsIdForThisType($metaTemplateField);
         if (empty($metaTemplateFieldsIDs)) {
@@ -100,6 +99,9 @@ class IPv4Type extends TextType
     {
         $range = array();
         $cidr = explode('/', $cidr);
+        if (count($cidr) == 1) { // No mask passed
+            $cidr[1] = '32';
+        }
         $range[0] = long2ip((ip2long($cidr[0])) & ((-1 << (32 - (int)$cidr[1]))));
         $range[1] = long2ip((ip2long($range[0])) + pow(2, (32 - (int)$cidr[1])) - 1);
         return $range;
@@ -112,7 +114,7 @@ class IPv4Type extends TextType
      * @param string $cidr an CIDR block with the form x.x.x.x/yy
      * @return boolean
      */
-    private function _IPInCidrBlock(string $ip, string $cidr): bool
+    protected function _IPInCidrBlock(string $ip, string $cidr): bool
     {
         $range = $this->cidrToRange($cidr);
         return ip2long($range[0]) <= ip2long($ip) && ip2long($ip) <= ip2long($range[1]);
@@ -125,24 +127,24 @@ class IPv4Type extends TextType
      * @param string $cidr2 an CIDR block with the form x.x.x.x/yy
      * @return boolean
      */
-    private function _cidrInCidrBlock(string $cidr1, string $cidr2): bool
+    protected function _cidrInCidrBlock(string $cidr1, string $cidr2): bool
     {
         $range = $this->cidrToRange($cidr1);
         return $this->_IPInCidrBlock($range[0], $cidr2) && $this->_IPInCidrBlock($range[1], $cidr2);
     }
 
-    private function _isValidIP(string $value): bool
+    protected function _isValidIP(string $value): bool
     {
         return filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
     }
 
-    private function _isValidCidrBlock(string $value): bool
+    protected function _isValidCidrBlock(string $value): bool
     {
         $explodedValue = explode('/', $value);
         return $this->_isValidIP($explodedValue[0]);
     }
 
-    private function _isValidIPOrCidrBlock(string $value): bool
+    protected function _isValidIPOrCidrBlock(string $value): bool
     {
         $explodedValue = explode('/', $value);
         if (count($explodedValue) == 1) {
