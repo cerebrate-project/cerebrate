@@ -169,6 +169,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'severity' => 'warning',
                             'description' => __('Enable keycloak authentication'),
                             'default' => false,
+                            'test' => 'testEnabledAuth',
                             'authentication_type' => 'keycloak'
                         ],
                         'keycloak.provider.applicationId' => [
