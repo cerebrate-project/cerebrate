@@ -19,14 +19,27 @@ class SharingGroupsController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $conditions = [];
-        if (empty($currentUser['role']['perm_admin'])) {
-            $conditions['SharingGroups.organisation_id'] = $currentUser['organisation_id'];
-        }
         $this->CRUD->index([
             'contain' => $this->containFields,
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
-            'conditions' => $conditions
+            'conditions' => $conditions,
+            'afterFind' => function ($row) use ($currentUser) {
+                if (empty($currentUser['role']['perm_admin'])) {
+                    $orgFound = false;
+                    if (!empty($row['sharing_group_orgs'])) {
+                        foreach ($row['sharing_group_orgs'] as $org) {
+                            if ($org['id'] === $currentUser['organisation_id']) {
+                                $orgFound = true;
+                            }
+                        }
+                    }
+                    if ($row['organisation_id'] !== $currentUser['organisation_id'] && !$orgFound) {
+                        return false;
+                    }
+                }
+                return $row;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
