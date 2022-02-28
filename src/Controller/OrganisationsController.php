@@ -23,6 +23,7 @@ class OrganisationsController extends AppController
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
+            'quickFilterForMetaField' => ['enabled' => true, 'wildcard_search' => true],
             'contextFilters' => [
                 'custom' => [
                     [
