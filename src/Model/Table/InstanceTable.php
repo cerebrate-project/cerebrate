@@ -13,18 +13,53 @@ use Cake\Http\Exception\MethodNotAllowedException;
 class InstanceTable extends AppTable
 {
     protected $activePlugins = ['Tags', 'ADmad/SocialAuth'];
-    public $seachAllTables = ['Broods', 'Individuals', 'Organisations', 'SharingGroups', 'Users', 'EncryptionKeys', ];
+    public $seachAllTables = [];
 
     public function initialize(array $config): void
     {
         parent::initialize($config);
         $this->addBehavior('AuditLog');
         $this->setDisplayField('name');
+        $this->setSearchAllTables();
     }
 
     public function validationDefault(Validator $validator): Validator
     {
         return $validator;
+    }
+
+    public function setSearchAllTables(): void
+    {
+        $this->seachAllTables = [
+            'Broods' => ['conditions' => false, 'afterFind' => false],
+            'Individuals' => ['conditions' => false, 'afterFind' => false],
+            'Organisations' => ['conditions' => false, 'afterFind' => false],
+            'SharingGroups' => [
+                'conditions' => function($user) {
+                    $conditions = [];
+                    if (empty($user['role']['perm_admin'])) {
+                        $conditions['SharingGroups.organisation_id'] = $user['organisation_id'];
+                    }
+                    return $conditions;
+                },
+                'afterFind' => function($result, $user) {
+                    return $result;
+                },
+            ],
+            'Users' => [
+                'conditions' => function($user) {
+                    $conditions = [];
+                    if (empty($user['role']['perm_admin'])) {
+                        $conditions['Users.organisation_id'] = $user['organisation_id'];
+                    }
+                    return $conditions;
+                },
+                'afterFind' => function ($result, $user) {
+                    return $result;
+                },
+            ],
+            'EncryptionKeys' => ['conditions' => false, 'afterFind' => false],
+        ];
     }
 
     public function getStatistics(int $days=30): array
@@ -37,30 +72,32 @@ class InstanceTable extends AppTable
         return $statistics;
     }
 
-    public function searchAll($value, $limit=5, $model=null)
+    public function searchAll($value, $user, $limit=5, $model=null)
     {
         $results = [];
-
-        // search in metafields. FIXME: To be replaced by the meta-template system
-        $metaFieldTable = TableRegistry::get('MetaFields');
-        $query = $metaFieldTable->find()->where([
-            'value LIKE' => '%' . $value . '%'
-        ]);
-        $results['MetaFields']['amount'] = $query->count();
-        $result = $query->limit($limit)->all()->toList();
-        if (!empty($result)) {
-            $results['MetaFields']['entries'] = $result;
-        }
-
         $models = $this->seachAllTables;
         if (!is_null($model)) {
-            if (in_array($model, $this->seachAllTables)) {
-                $models = [$model];
+            if (in_array($model, array_keys($this->seachAllTables))) {
+                $models = [$model => $this->seachAllTables[$model]];
             } else {
                 return $results; // Cannot search in this model
             }
         }
-        foreach ($models as $tableName) {
+
+        // search in metafields. FIXME?: Use meta-fields type handler to search for meta-field values
+        if (is_null($model)) {
+            $metaFieldTable = TableRegistry::get('MetaFields');
+            $query = $metaFieldTable->find()->where([
+                'value LIKE' => '%' . $value . '%'
+            ]);
+            $results['MetaFields']['amount'] = $query->count();
+            $result = $query->limit($limit)->all()->toList();
+            if (!empty($result)) {
+                $results['MetaFields']['entries'] = $result;
+            }
+        }
+
+        foreach ($models as $tableName => $tableConfig) {
             $controller = $this->getController($tableName);
             $table = TableRegistry::get($tableName);
             $query = $table->find();
@@ -72,12 +109,27 @@ class InstanceTable extends AppTable
             $params = ['quickFilter' => $value];
             $quickFilterOptions = ['quickFilters' => $quickFilters];
             $query = $controller->CRUD->setQuickFilters($params, $query, $quickFilterOptions);
+            if (!empty($tableConfig['conditions'])) {
+                $whereClause = [];
+                if (is_callable($tableConfig['conditions'])) {
+                    $whereClause = $tableConfig['conditions']($user);
+                } else {
+                    $whereClause = $tableConfig['conditions'];
+                }
+                $query->where($whereClause);
+            }
             if (!empty($containFields)) {
                 $query->contain($containFields);
+            }
+            if (!empty($tableConfig['contain'])) {
+                $query->contain($tableConfig['contain']);
             }
             $results[$tableName]['amount'] = $query->count();
             $result = $query->limit($limit)->all()->toList();
             if (!empty($result)) {
+                if (!empty($tableConfig['afterFind'])) {
+                    $result = $tableConfig['afterFind']($result, $user);
+                }
                 $results[$tableName]['entries'] = $result;
             }
         }
@@ -88,7 +140,7 @@ class InstanceTable extends AppTable
     {
         $controllerName = "\\App\\Controller\\{$name}Controller";
         if (!class_exists($controllerName)) {
-            throw new MethodNotAllowedException(__('Model `{0}` does not exists', $model));
+            throw new MethodNotAllowedException(__('Model `{0}` does not exists', $name));
         }
         $controller = new $controllerName;
         return $controller;
