@@ -17,7 +17,14 @@ class FloodProtectionComponent extends Component
     public function initialize(array $config): void
     {
         $ip_source = Configure::check('security.logging.ip_source') ? Configure::read('security.logging.ip_source') : 'REMOTE_ADDR';
-        $this->remote_ip = $_SERVER[$ip_source];
+        if (!isset($_SERVER[$ip_source])) {
+            $ip_source = 'REMOTE_ADDR';
+        }
+        if (isset($_SERVER[$ip_source])) {
+            $this->remote_ip = $_SERVER[$ip_source];
+        } else {
+            $this->remote_ip = '127.0.0.1';
+        }
         $temp = explode(PHP_EOL, $_SERVER[$ip_source]);
         if (count($temp) > 1) {
             $this->remote_ip = $temp[0];

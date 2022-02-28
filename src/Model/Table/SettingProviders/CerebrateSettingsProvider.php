@@ -8,6 +8,7 @@ require_once(APP . 'Model' . DS . 'Table' . DS . 'SettingProviders' . DS . 'Base
 
 use App\Settings\SettingsProvider\BaseSettingsProvider;
 use App\Settings\SettingsProvider\SettingValidator;
+use Cake\Core\Configure;
 
 class CerebrateSettingsProvider extends BaseSettingsProvider
 {
@@ -150,6 +151,17 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
             ],
             'Authentication' => [
                 'Providers' => [
+                    'PasswordAuth' => [
+                        'password_auth.enabled' => [
+                            'name' => 'Disable password authentication',
+                            'type' => 'boolean',
+                            'severity' => 'warning',
+                            'description' => __('Enable username/password authentication.'),
+                            'default' => true,
+                            'test' => 'testEnabledAuth',
+                            'authentication_type' => 'password_auth'
+                        ],
+                    ],
                     'KeyCloak' => [
                         'keycloak.enabled' => [
                             'name' => 'Enabled',
@@ -157,6 +169,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'severity' => 'warning',
                             'description' => __('Enable keycloak authentication'),
                             'default' => false,
+                            'authentication_type' => 'keycloak'
                         ],
                         'keycloak.provider.applicationId' => [
                             'name' => 'Client ID',
@@ -300,8 +313,10 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                         'security.registration.floodProtection' => [
                             'name' => __('Enable registration flood-protection'),
                             'type' => 'boolean',
-                            'description' => __('Enabling this setting will only allow 5 registrations / IP address every 15 minutes (rolling time-frame).'),
-                            'default' => false,
+                            'description' => (Configure::check('security.logging.ip_source') && Configure::read('security.logging.ip_source') !== 'REMOTE_ADDR') ?
+                                __('Enabling this setting will only allow 5 registrations / IP address every 15 minutes (rolling time-frame). WARNING: Be aware that you are not using REMOTE_ADDR (as configured via security.logging.ip_source) - this could lead to an attacker being able to spoof their IP and circumvent the flood protection. Only rely on the client IP if your reverse proxy in front of Cerebrate is properly setting this header.'):
+                                __('Enabling this setting will only allow 5 registrations / IP address every 15 minutes (rolling time-frame).'),
+                            'default' => true,
                         ],
                     ]
                 ],
@@ -368,6 +383,26 @@ class CerebrateSettingValidator extends SettingValidator
         }
         if (!empty($value) && !preg_match('/^http(s)?:\/\//i', $value)) {
             return __('Invalid URL, please make sure that the protocol is set.');
+        }
+        return true;
+    }
+
+    public function testEnabledAuth($value, &$setting)
+    {
+        $providers = [
+            'password_auth',
+            'keycloak'
+        ];
+        if (!$value) {
+            $foundEnabledAuth = __('Cannot make change - this would disable every possible authentication method.');
+            foreach ($providers as $provider) {
+                if ($provider !== $setting['authentication_type']) {
+                    if (Configure::read($provider . '.enable')) {
+                        $foundEnabledAuth = true;
+                    }
+                }
+            }
+            return $foundEnabledAuth;
         }
         return true;
     }

@@ -42,6 +42,7 @@ class AlignmentsTable extends AppTable
                 'type' => $type
             ];
             $this->patchEntity($alignment, $data);
+            $this->save($alignment);
         }
     }
 }
