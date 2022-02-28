@@ -12,8 +12,10 @@ use Cake\Database\Expression\QueryExpression;
 
 use MetaFieldsTypes\TextType;
 use MetaFieldsTypes\IPv4Type;
+use MetaFieldsTypes\IPv6Type;
 require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'TextType.php');
 require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'IPv4Type.php');
+require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'IPv6Type.php');
 
 class MetaFieldsBehavior extends Behavior
 {
@@ -63,6 +65,7 @@ class MetaFieldsBehavior extends Behavior
         $typeHandlers = [
             new TextType(),
             new IPv4Type(),
+            new IPv6Type(),
         ];
         foreach ($typeHandlers as $handler) {
             $this->typeHandlers[$handler::TYPE] = $handler;
