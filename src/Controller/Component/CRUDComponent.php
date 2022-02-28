@@ -400,7 +400,7 @@ class CRUDComponent extends Component
                     } else {
                         $new_value = $meta_field['value'];
                         if (!empty($new_value)) { // update meta_field and attach validation errors
-                            if (!empty($metaFieldsIndex[$meta_field_id])) {
+                            if (isset($metaFieldsIndex[$meta_field_id])) {
                                 $index = $metaFieldsIndex[$meta_field_id];
                                 $metaFieldsTable->patchEntity($entity->meta_fields[$index], [
                                     'value' => $new_value, 'meta_template_field_id' => $rawMetaTemplateField->id
