@@ -65,7 +65,7 @@ class SharingGroupsController extends AppController
             'contain' => ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]],
             'afterFind' => function($data) use ($currentUser) {
                 if (empty($currentUser['role']['perm_admin'])) {
-                    $orgFround = false;
+                    $orgFound = false;
                     if (!empty($data['sharing_group_orgs'])) {
                         foreach ($data['sharing_group_orgs'] as $org) {
                             if ($org['id'] === $currentUser['organisation_id']) {
@@ -73,7 +73,7 @@ class SharingGroupsController extends AppController
                             }
                         }
                     }
-                    if ($data['organisation_id'] !== $currentUser['organisation_id'] && !$orgFround) {
+                    if ($data['organisation_id'] !== $currentUser['organisation_id'] && !$orgFound) {
                         return null;
                     }
                 }
