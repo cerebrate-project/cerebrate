@@ -992,7 +992,7 @@ class MetaTemplatesTable extends AppTable
      * @param array $templateField
      * @return array
      */
-    public function computeExistingMetaTemplateFieldConflictForMetaTemplateField(\App\Model\Entity\MetaTemplateField $metaTemplateField, array $templateField): array
+    public function computeExistingMetaTemplateFieldConflictForMetaTemplateField(\App\Model\Entity\MetaTemplateField $metaTemplateField, array $templateField, string $scope): array
     {
         $result = [
             'automatically-updateable' => true,
@@ -1021,49 +1021,44 @@ class MetaTemplatesTable extends AppTable
             }
         }
         if (!empty($templateField['regex']) && $templateField['regex'] != $metaTemplateField->regex) {
-            $query = $this->MetaTemplateFields->MetaFields->find();
-            $query
+            $entitiesWithMetaFieldQuery = $this->MetaTemplateFields->MetaFields->find();
+            $entitiesWithMetaFieldQuery
                 ->enableHydration(false)
                 ->select([
                     'parent_id',
-                    'scope',
-                    'meta_template_field_id',
                 ])
                 ->where([
                     'meta_template_field_id' => $metaTemplateField->id,
                 ]);
-            $entitiesWithMetaField = $query->all()->toList();
-            if (!empty($entitiesWithMetaField)) {
-                $entitiesTable = $this->getTableForMetaTemplateScope($entitiesWithMetaField[0]['scope']);
-                $entities = $entitiesTable->find()
-                    ->where(['id IN' => Hash::extract($entitiesWithMetaField, '{n}.parent_id')])
-                    ->contain([
-                        'MetaFields' => [
-                            'conditions' => [
-                                'MetaFields.meta_template_field_id' => $metaTemplateField->id
-                            ]
+            $entitiesTable = $this->getTableForMetaTemplateScope($scope);
+            $entities = $entitiesTable->find()
+                ->where(['id IN' => $entitiesWithMetaFieldQuery])
+                ->contain([
+                    'MetaFields' => [
+                        'conditions' => [
+                            'MetaFields.meta_template_field_id' => $metaTemplateField->id
                         ]
-                    ])
-                    ->all()->toList();
-                $conflictingEntities = [];
-                foreach ($entities as $entity) {
-                    foreach ($entity['meta_fields'] as $metaField) {
-                        $isValid = $this->MetaTemplateFields->MetaFields->isValidMetaFieldForMetaTemplateField(
-                            $metaField->value,
-                            $templateField
-                        );
-                        if ($isValid !== true) {
-                            $conflictingEntities[] = $entity->id;
-                            break;
-                        }
+                    ]
+                ])
+                ->all()->toList();
+            $conflictingEntities = [];
+            foreach ($entities as $entity) {
+                foreach ($entity['meta_fields'] as $metaField) {
+                    $isValid = $this->MetaTemplateFields->MetaFields->isValidMetaFieldForMetaTemplateField(
+                        $metaField->value,
+                        $templateField
+                    );
+                    if ($isValid !== true) {
+                        $conflictingEntities[] = $entity->id;
+                        break;
                     }
                 }
+            }
 
-                if (!empty($conflictingEntities)) {
-                    $result['automatically-updateable'] = $result['automatically-updateable'] && false;
-                    $result['conflicts'][] = __('This field is instantiated with values not passing the validation anymore');
-                    $result['conflictingEntities'] = $conflictingEntities;
-                }
+            if (!empty($conflictingEntities)) {
+                $result['automatically-updateable'] = $result['automatically-updateable'] && false;
+                $result['conflicts'][] = __('This field is instantiated with values not passing the validation anymore');
+                $result['conflictingEntities'] = array_merge($result['conflictingEntities'], $conflictingEntities);
             }
         }
         return $result;
@@ -1091,7 +1086,7 @@ class MetaTemplatesTable extends AppTable
                 if ($newMetaField['field'] == $metaField->field) {
                     unset($existingMetaTemplateFields[$metaField->field]);
                     $metaFieldArray = !is_array($newMetaField) && get_class($newMetaField) == 'App\Model\Entity\MetaTemplateField' ? $newMetaField->toArray() : $newMetaField;
-                    $templateConflictsForMetaField = $this->computeExistingMetaTemplateFieldConflictForMetaTemplateField($metaField, $metaFieldArray);
+                    $templateConflictsForMetaField = $this->computeExistingMetaTemplateFieldConflictForMetaTemplateField($metaField, $metaFieldArray, $metaTemplate->scope);
                     if (!$templateConflictsForMetaField['automatically-updateable']) {
                         $conflicts[$metaField->field] = $templateConflictsForMetaField;
                         $conflicts[$metaField->field]['existing_meta_template_field'] = $metaField;
