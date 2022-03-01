@@ -55,20 +55,15 @@ class MetaFieldsBehavior extends Behavior
     public function initialize(array $config): void
     {
         $this->bindAssociations();
-        $this->_metaTemplateFieldTable = $this->_table;
-        $this->_metaTemplateTable = $this->_table;
+        $this->_metaTemplateFieldTable = $this->_table->MetaFields->MetaTemplateFields;
+        $this->_metaTemplateTable = $this->_table->MetaFields->MetaTemplates;
         $this->loadTypeHandlers();
     }
 
     private function loadTypeHandlers()
     {
-        $typeHandlers = [
-            new TextType(),
-            new IPv4Type(),
-            new IPv6Type(),
-        ];
-        foreach ($typeHandlers as $handler) {
-            $this->typeHandlers[$handler::TYPE] = $handler;
+        if (empty($this->typeHandlers)) {
+            $this->typeHandlers = $this->_metaTemplateFieldTable->getTypeHandlers();
         }
     }
 
@@ -238,8 +233,7 @@ class MetaFieldsBehavior extends Behavior
 
     protected function buildQuerySnippet(array $filter): Query
     {
-        $this->MetaTemplateFields = TableRegistry::getTableLocator()->get('MetaTemplateFields');
-        $metaTemplateField = !empty($filter['meta_template_field_id']) ? $this->MetaTemplateFields->get($filter['meta_template_field_id']) : null;
+        $metaTemplateField = !empty($filter['meta_template_field_id']) ? $this->_metaTemplateFieldTable->get($filter['meta_template_field_id']) : null;
         $whereClosure = function (QueryExpression $exp) use ($filter, $metaTemplateField) {
             foreach ($filter as $column => $value) {
                 $keyedColumn = 'MetaFields.' . $column;

@@ -65,7 +65,8 @@ class IPv4Type extends TextType
 
     protected function fetchAllMetatemplateFieldsIdForThisType(\App\Model\Entity\MetaTemplateField $metaTemplateField = null): Query
     {
-        $conditions =[];
+        $this->MetaTemplateFields = TableRegistry::getTableLocator()->get('MetaTemplateFields');
+        $conditions = [];
         if (!is_null($metaTemplateField)) {
             $conditions['id'] = $metaTemplateField->id;
         } else {

@@ -12,7 +12,6 @@ class TextType
     public function __construct()
     {
         $this->MetaFields = TableRegistry::getTableLocator()->get('MetaFields');
-        $this->MetaTemplateFields = TableRegistry::getTableLocator()->get('MetaTemplateFields');
     }
 
     public function validate(string $value): bool
