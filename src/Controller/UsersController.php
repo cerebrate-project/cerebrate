@@ -160,11 +160,6 @@ class UsersController extends AppController
         }
 
         $params = [
-            'get' => [
-                'fields' => [
-                    'id', 'individual_id', 'role_id', 'disabled', 'username'
-                ]
-            ],
             'removeEmpty' => [
                 'password'
             ],
@@ -172,12 +167,15 @@ class UsersController extends AppController
                 'password', 'confirm_password'
             ]
         ];
-        if (!empty($this->ACL->getUser()['role']['perm_admin'])) {
+        if ($this->request->is(['get'])) {
+            $params['fields'] = array_merge($params['fields'], ['individual_id', 'role_id', 'disabled', 'username']);
+        }
+        if ($this->request->is(['post', 'put']) && !empty($this->ACL->getUser()['role']['perm_admin'])) {
             $params['fields'][] = 'individual_id';
             $params['fields'][] = 'role_id';
             $params['fields'][] = 'organisation_id';
             $params['fields'][] = 'disabled';
-        } else if (!empty($this->ACL->getUser()['role']['perm_org_admin'])) {
+        } else if ($this->request->is(['post', 'put']) && !empty($this->ACL->getUser()['role']['perm_org_admin'])) {
             $params['fields'][] = 'role_id';
             $params['fields'][] = 'disabled';
             if (!$currentUser['role']['perm_admin']) {
