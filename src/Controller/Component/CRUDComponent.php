@@ -204,7 +204,7 @@ class CRUDComponent extends Component
         return false;
     }
 
-    private function getMetaTemplates()
+    private function getMetaTemplates(array $metaTemplateConditions=[])
     {
         $metaTemplates = [];
         if (!$this->metaFieldsSupported()) {
@@ -214,9 +214,10 @@ class CRUDComponent extends Component
         $metaQuery = $this->MetaTemplates->find();
         $metaQuery
             ->order(['is_default' => 'DESC'])
-            ->where([
-                'scope' => $metaFieldsBehavior->getScope(),
-            ])
+            ->where(array_merge(
+                $metaTemplateConditions,
+                ['scope' => $metaFieldsBehavior->getScope(), ]
+            ))
             ->contain('MetaTemplateFields')
             ->formatResults(function (\Cake\Collection\CollectionInterface $metaTemplates) { // Set meta-template && meta-template-fields indexed by their ID
                 return $metaTemplates
@@ -702,7 +703,12 @@ class CRUDComponent extends Component
         if (empty($data)) {
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
-        $data = $this->attachMetaTemplatesIfNeeded($data);
+        if ($this->metaFieldsSupported()) {
+            $usedMetaTemplateIDs = array_values(array_unique(Hash::extract($data['meta_fields'], '{n}.meta_template_id')));
+            $data = $this->attachMetaTemplatesIfNeeded($data, null, [
+                'id IN' => $usedMetaTemplateIDs
+            ]);
+        }
         if (isset($params['afterFind'])) {
             $data = $params['afterFind']($data);
         }
@@ -715,7 +721,7 @@ class CRUDComponent extends Component
         $this->Controller->set('entity', $data);
     }
 
-    public function attachMetaTemplatesIfNeeded($data, array $metaTemplates = null)
+    public function attachMetaTemplatesIfNeeded($data, array $metaTemplates = null, array $metaTemplateConditions=[])
     {
         if (!$this->metaFieldsSupported()) {
             return $data;
@@ -729,7 +735,7 @@ class CRUDComponent extends Component
                 return $tmpEntity;
             }, $metaTemplates);
         } else {
-            $metaTemplates = $this->getMetaTemplates()->toArray();
+            $metaTemplates = $this->getMetaTemplates($metaTemplateConditions)->toArray();
         }
         $data = $this->attachMetaTemplates($data, $metaTemplates);
         return $data;
