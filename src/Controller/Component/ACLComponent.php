@@ -134,12 +134,17 @@ class ACLComponent extends Component
             'index' => ['perm_admin']
         ],
         'MetaTemplates' => [
+            'createNewTemplate' => ['perm_admin'],
+            'delete' => ['perm_admin'],
             'disable' => ['perm_admin'],
             'enable' => ['perm_admin'],
+            'getMetaFieldsToUpdate' => ['perm_admin'],
             'index' => ['perm_admin'],
+            'migrateOldMetaTemplateToNewestVersionForEntity' => ['perm_admin'],
             'update' => ['perm_admin'],
+            'updateAllTemplates' => ['perm_admin'],
             'toggle' => ['perm_admin'],
-            'view' => ['perm_admin']
+            'view' => ['perm_admin'],
         ],
         'Organisations' => [
             'add' => ['perm_admin'],
