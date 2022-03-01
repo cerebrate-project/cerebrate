@@ -153,7 +153,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                 'Providers' => [
                     'PasswordAuth' => [
                         'password_auth.enabled' => [
-                            'name' => 'Disable password authentication',
+                            'name' => 'Enable password authentication',
                             'type' => 'boolean',
                             'severity' => 'warning',
                             'description' => __('Enable username/password authentication.'),
