@@ -297,7 +297,7 @@ class CRUDComponent extends Component
                 $message = __(
                     '{0} could not be added.{1}',
                     $this->ObjectAlias,
-                    empty($validationMessage) ? '' : PHP_EOL . __('Reason:{0}', $validationMessage)
+                    empty($validationMessage) ? '' : PHP_EOL . __('Reason: {0}', $validationMessage)
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                     $this->Controller->restResponsePayload = $this->RestResponse->viewData($message, 'json');
@@ -338,12 +338,19 @@ class CRUDComponent extends Component
                 $errorMessages = [];
                 foreach ($errorData as $key => $value) {
                     if (is_array($value)) {
-                        $errorMessages[] = implode('& ', Hash::extract($value, "{s}.{s}"));
+                        $extracted = Hash::extract($value, "{s}.{s}");
+                        if (!empty($extracted)) {
+                            $errorMessages[] = implode('& ', $extracted);
+                        }
                     } else {
-                        $errorMessages[] = $value;
+                        if (!empty($value)) {
+                            $errorMessages[] = $value;
+                        }
                     }
                 }
-                $validationMessage .= __('{0}: {1}', $field, implode(',', $errorMessages));
+                if (!empty($errorMessages)) {
+                    $validationMessage .= __('{0}: {1}', $field, implode(',', $errorMessages));
+                }
             }
         }
         return $validationMessage;
@@ -552,7 +559,7 @@ class CRUDComponent extends Component
                 $message = __(
                     '{0} could not be modified.{1}',
                     $this->ObjectAlias,
-                    empty($validationMessage) ? '' : PHP_EOL . __('Reason:{0}', $validationMessage)
+                    empty($validationMessage) ? '' : PHP_EOL . __('Reason: {0}', $validationMessage)
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
@@ -1373,7 +1380,7 @@ class CRUDComponent extends Component
                 $message = __(
                     '{0} could not be modified.{1}',
                     $this->ObjectAlias,
-                    empty($validationMessage) ? '' : ' ' . __('Reason:{0}', $validationMessage)
+                    empty($validationMessage) ? '' : ' ' . __('Reason: {0}', $validationMessage)
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
