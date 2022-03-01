@@ -2,6 +2,7 @@
 
 namespace App\Model\Table;
 
+use App\Model\Entity\MetaTemplateField;
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -38,7 +39,7 @@ class MetaFieldsTable extends AppTable
 
         $validator->add('value', 'validMetaField', [
             'rule' => 'isValidMetaField',
-            'message' => __('The provided value doesn\'t satisfy the validation defined by the meta-fields\'s meta-template'),
+            'message' => __('The provided value doesn\'t pass the validation check for its meta-template.'),
             'provider' => 'table',
         ]);
 
@@ -55,7 +56,7 @@ class MetaFieldsTable extends AppTable
 
     public function isValidMetaFieldForMetaTemplateField($value, $metaTemplateField)
     {
-        $typeValid = $this->isValidType($value, $metaTemplateField['type']);
+        $typeValid = $this->isValidType($value, $metaTemplateField);
         if ($typeValid !== true) {
             return $typeValid;
         }
@@ -65,20 +66,29 @@ class MetaFieldsTable extends AppTable
         return true;
     }
 
-    public function isValidType($value, string $type)
+    public function isValidType($value, MetaTemplateField $metaTemplateField)
     {
         if (empty($value)) {
             return __('Metafield value cannot be empty.');
         }
+        $typeHandler = $this->MetaTemplateFields->getTypeHandler($metaTemplateField->type);
+        if (!empty($typeHandler)) {
+            $success = $typeHandler->validate($value);
+            return $success ? true : __('Metafields value `{0}` for `{1}` doesn\'t pass type validation.', $value, $metaTemplateField->field);
+        }
+        /*
+            We should not end-up in this case. But if someone creates a new type without his handler,
+            we consider its type to be a valid text.
+        */
         return true;
     }
 
     public function isValidRegex($value, $metaTemplateField)
     {
 
-        $re = $metaTemplateField['regex'];
+        $re = $metaTemplateField->regex;
         if (!preg_match("/^$re$/m", $value)) {
-            return __('Metafield value `{0}` for `{1}` doesn\'t pass regex validation', $value, $metaTemplateField['field']);
+            return __('Metafield value `{0}` for `{1}` doesn\'t pass regex validation.', $value, $metaTemplateField->field);
         }
         return true;
     }
