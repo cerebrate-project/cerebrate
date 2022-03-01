@@ -364,7 +364,7 @@ class CRUDComponent extends Component
     // prune empty values and marshall fields
     public function massageMetaFields($entity, $input, $allMetaTemplates=[])
     {
-        if (empty($input['MetaTemplates'] || !$this->metaFieldsSupported())) {
+        if (empty($input['MetaTemplates']) || !$this->metaFieldsSupported()) {
             return ['entity' => $entity, 'metafields_to_delete' => []];
         }
 
