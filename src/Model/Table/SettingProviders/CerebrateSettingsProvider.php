@@ -398,7 +398,7 @@ class CerebrateSettingValidator extends SettingValidator
             $foundEnabledAuth = __('Cannot make change - this would disable every possible authentication method.');
             foreach ($providers as $provider) {
                 if ($provider !== $setting['authentication_type']) {
-                    if (Configure::read($provider . '.enable')) {
+                    if (Configure::read($provider . '.enabled')) {
                         $foundEnabledAuth = true;
                     }
                 }
