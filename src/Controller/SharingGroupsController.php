@@ -113,6 +113,7 @@ class SharingGroupsController extends AppController
     public function delete($id)
     {
         $currentUser = $this->ACL->getUser();
+        $params = [];
         if (empty($currentUser['role']['perm_admin'])) {
             $params['conditions'] = ['organisation_id' => $currentUser['organisation_id']];
         }
