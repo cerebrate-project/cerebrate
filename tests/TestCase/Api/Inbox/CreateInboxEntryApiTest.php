@@ -72,6 +72,9 @@ class CreateInboxEntryApiTest extends TestCase
             ]
         );
 
+        $this->skipOpenApiValidations();
+        var_dump($this->getJsonResponseAsArray());
+
         $this->assertResponseCode(405);
         $this->assertDbRecordNotExists('Inbox', ['id' => 3]);
     }
