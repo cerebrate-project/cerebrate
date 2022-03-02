@@ -19,9 +19,10 @@
         "cakephp/bake": "^2.0.3",
         "cakephp/cakephp-codesniffer": "~4.0.0",
         "cakephp/debug_kit": "^4.0",
+        "cebe/php-openapi": "^1.6",
         "fzaninotto/faker": "^1.9",
         "josegonzalez/dotenv": "^3.2",
-        "league/openapi-psr7-validator": "^0.16.4",
+        "league/openapi-psr7-validator": "^0.17",
         "phpunit/phpunit": "^8.5",
         "psy/psysh": "@stable",
         "wiremock-php/wiremock-php": "^2.32"
