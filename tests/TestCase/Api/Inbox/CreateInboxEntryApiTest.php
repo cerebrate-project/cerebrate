@@ -27,13 +27,14 @@ class CreateInboxEntryApiTest extends TestCase
     public function testAddUserRegistrationInbox(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
-
+        
         // to avoid $this->request->clientIp() to return null
         $_SERVER['REMOTE_ADDR'] = '::1';
-
+        
         $url = sprintf("%s/%s/%s", self::ENDPOINT, 'User', 'Registration');
         $password = 'Password12345!';
         $email = 'john@example.com';
+        $this->skipOpenApiValidations();
         $this->post(
             $url,
             [
@@ -42,6 +43,7 @@ class CreateInboxEntryApiTest extends TestCase
             ]
         );
         $this->assertResponseOk();
+        var_dump($this->getJsonResponseAsArray());
 
         $response = $this->getJsonResponseAsArray();
         $userId = $response['data']['id'];
@@ -71,9 +73,6 @@ class CreateInboxEntryApiTest extends TestCase
                 'password' => 'Password12345!'
             ]
         );
-
-        $this->skipOpenApiValidations();
-        var_dump($this->getJsonResponseAsArray());
 
         $this->assertResponseCode(405);
         $this->assertDbRecordNotExists('Inbox', ['id' => 3]);
