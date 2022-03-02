@@ -159,9 +159,9 @@ class LocalToolInboxProcessor extends GenericInboxProcessor
     {
         return $validator
             ->requirePresence('connectorName')
-            ->notEmpty('connectorName', 'The connector name must be provided')
+            ->notEmptyString('connectorName', 'The connector name must be provided')
             ->requirePresence('cerebrateURL')
-            ->notEmpty('cerebrateURL', 'A url must be provided')
+            ->notEmptyString('cerebrateURL', 'A url must be provided')
             ->requirePresence('local_tool_id')
             ->numeric('local_tool_id', 'A local_tool_id must be provided')
             ->requirePresence('remote_tool_id')
