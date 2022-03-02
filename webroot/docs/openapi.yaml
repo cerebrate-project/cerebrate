@@ -982,6 +982,7 @@ components:
           $ref: "#/components/schemas/ID"
         disabled:
           type: boolean
+          nullable: true
         created:
           $ref: "#/components/schemas/DateTime"
         modified:
@@ -2193,6 +2194,7 @@ components:
                         nullable: true
               success:
                 type: boolean
+                nullable: true
               message:
                 type: string
                 example: "User account creation requested. Please wait for an admin to approve your account."
