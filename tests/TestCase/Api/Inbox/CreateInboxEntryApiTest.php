@@ -27,10 +27,10 @@ class CreateInboxEntryApiTest extends TestCase
     public function testAddUserRegistrationInbox(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
-        
+
         // to avoid $this->request->clientIp() to return null
         $_SERVER['REMOTE_ADDR'] = '::1';
-        
+
         $url = sprintf("%s/%s/%s", self::ENDPOINT, 'User', 'Registration');
         $password = 'Password12345!';
         $email = 'john@example.com';
