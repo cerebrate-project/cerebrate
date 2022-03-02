@@ -34,7 +34,6 @@ class CreateInboxEntryApiTest extends TestCase
         $url = sprintf("%s/%s/%s", self::ENDPOINT, 'User', 'Registration');
         $password = 'Password12345!';
         $email = 'john@example.com';
-        $this->skipOpenApiValidations();
         $this->post(
             $url,
             [
@@ -43,7 +42,6 @@ class CreateInboxEntryApiTest extends TestCase
             ]
         );
         $this->assertResponseOk();
-        var_dump($this->getJsonResponseAsArray());
 
         $response = $this->getJsonResponseAsArray();
         $userId = $response['data']['id'];

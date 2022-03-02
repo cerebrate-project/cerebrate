@@ -27,10 +27,7 @@ class IndexInboxApiTest extends TestCase
     public function testIndexInbox(): void
     {
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
-        $this->skipOpenApiValidations();
         $this->get(self::ENDPOINT);
-
-        var_dump($this->getJsonResponseAsArray());
 
         $this->assertResponseOk();
         $this->assertResponseContains(sprintf('"id": %d', InboxFixture::INBOX_USER_REGISTRATION_ID));
