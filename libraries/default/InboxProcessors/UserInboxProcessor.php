@@ -37,13 +37,13 @@ class RegistrationProcessor extends UserInboxProcessor implements GenericInboxPr
     protected function addValidatorRules($validator)
     {
         return $validator
-            ->notEmpty('username', 'A username must be provided.')
+            ->notEmptyString('username', 'A username must be provided.')
             ->add('email', 'validFormat', [
                 'rule' => 'email',
                 'message' => 'E-mail must be valid'
             ])
-            ->notEmpty('first_name', 'A first name must be provided')
-            ->notEmpty('last_name', 'A last name must be provided')
+            ->notEmptyString('first_name', 'A first name must be provided')
+            ->notEmptyString('last_name', 'A last name must be provided')
             ->add('password', 'password_complexity', [
                 'rule' => function($value, $context) {
                     if (!preg_match('/^((?=.*\d)|(?=.*\W+))(?![\n])(?=.*[A-Z])(?=.*[a-z]).*$|.{16,}/s', $value) || strlen($value) < 12) {
