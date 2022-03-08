@@ -60,7 +60,6 @@ class MetaTemplatesController extends AppController
             if (!is_numeric($template_id)) {
                 throw new NotFoundException(__('Invalid {0} for provided ID.', $this->MetaTemplates->getAlias(), $template_id));
             }
-            // $metaTemplate = $this->MetaTemplates->get($template_id);
             $metaTemplate = $this->MetaTemplates->find()->where([
                 'id' => $template_id,
                 'enabled' => 1
