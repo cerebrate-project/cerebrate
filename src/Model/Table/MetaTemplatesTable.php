@@ -114,7 +114,7 @@ class MetaTemplatesTable extends AppTable
         if ($updateStatus['up-to-date']) {
             $errors['message'] = __('Meta-template already up-to-date');
             $success = true;
-        } else if ($this->isStrategyAllowed(MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW) && $updateStatus['new']) {
+        } else if ($this->isStrategyAllowed(MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW) && $updateStatus['is-new']) {
             $success = $this->saveNewMetaTemplate($templateOnDisk, $errors);
         } else if ($this->isStrategyAllowed(MetaTemplatesTable::UPDATE_STRATEGY_UPDATE_EXISTING) && $updateStatus['automatically-updateable']) {
             $success = $this->updateMetaTemplate($metaTemplate, $templateOnDisk, $errors);

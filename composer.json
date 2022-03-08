@@ -59,6 +59,11 @@
             "nohup sh ./tests/Helper/wiremock/start.sh >/dev/null 2>&1 &",
             "phpunit",
             "sh ./tests/Helper/wiremock/stop.sh"
+        ],
+        "migrate": [
+            "./bin/cake migrations migrate",
+            "./bin/cake migrations migrate -p tags",
+            "./bin/cake migrations migrate -p ADmad/SocialAuth"
         ]
     },
     "prefer-stable": true,
