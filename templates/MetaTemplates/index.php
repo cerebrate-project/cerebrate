@@ -5,7 +5,7 @@ if (!empty($updateableTemplates['new'])) {
     $alertHtml = sprintf(
         '<strong>%s</strong> %s',
         __('New meta-templates available!'),
-        __n('There is one new template on disk that can be loaded in the database', 'There are {0} new templates on disk that can be loaded in the database:', count($updateableTemplates['new']))
+        __n('There is one new template on disk that can be loaded in the database', 'There are {0} new templates on disk that can be loaded in the database:', count($updateableTemplates['new']), count($updateableTemplates['new']))
     );
     $alertList = [];
     $alertList = Hash::extract($updateableTemplates['new'], '{s}.template');
