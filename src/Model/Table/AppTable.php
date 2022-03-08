@@ -10,6 +10,7 @@ use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use Cake\Database\Expression\QueryExpression;
 use Cake\ORM\Query;
+use Cake\I18n\FrozenTime;
 
 class AppTable extends Table
 {
@@ -111,7 +112,7 @@ class AppTable extends Table
         $statistics['amount'] = $table->find()->all()->count();
         if ($table->behaviors()->has('Timestamp') && $includeTimeline) {
             $statistics['timeline'] = $this->buildTimeline($table, $days, $field);
-            $statistics['variation'] = $table->find()->where(["{$field} >" => new \DateTime("-{$days} days")])->all()->count();
+            $statistics['variation'] = $table->find()->where(["{$field} >" => FrozenTime::now()->subDays($days)])->all()->count();
         } else {
             $statistics['timeline'] = [];
             $statistics['variation'] = 0;
@@ -133,12 +134,12 @@ class AppTable extends Table
                 'count' => $query->func()->count('id'),
                 'date' => "DATE({$field})",
             ])
-                ->where(["{$field} >" => new \DateTime("-{$days} days")])
+                ->where(["{$field} >" => FrozenTime::now()->subDays($days)])
                 ->group(['date'])
                 ->order(['date']);
             $data = $query->all()->toArray();
             $interval = new \DateInterval('P1D');
-            $period = new \DatePeriod(new \DateTime("-{$days} days"), $interval, (new \DateTime())->modify( '+1 day' ));
+            $period = new \DatePeriod(FrozenTime::now()->subDays($days), $interval, FrozenTime::now()->addDays(1));
             foreach ($period as $date) {
                 $timeline[$date->format("Y-m-d")] = [
                     'time' => $date->format("Y-m-d"),
