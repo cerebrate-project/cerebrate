@@ -9,6 +9,9 @@ use Cake\Validation\Validator;
 use MetaFieldsTypes\TextType;
 use MetaFieldsTypes\IPv4Type;
 use MetaFieldsTypes\IPv6Type;
+require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'TextType.php');
+require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'IPv4Type.php');
+require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'IPv6Type.php');
 
 class MetaTemplateFieldsTable extends AppTable
 {
