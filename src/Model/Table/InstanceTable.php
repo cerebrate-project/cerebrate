@@ -9,6 +9,7 @@ use Cake\Validation\Validator;
 use Migrations\Migrations;
 use Cake\Filesystem\Folder;
 use Cake\Http\Exception\MethodNotAllowedException;
+use Cake\I18n\FrozenTime;
 
 class InstanceTable extends AppTable
 {
@@ -39,12 +40,12 @@ class InstanceTable extends AppTable
                         'count' => $query->func()->count('id'),
                         'date' => 'DATE(modified)',
                     ])
-                    ->where(['modified >' => new \DateTime("-{$days} days")])
+                    ->where(['modified >' => FrozenTime::now()->subDays($days)])
                     ->group(['date'])
                     ->order(['date']);
                 $data = $query->toArray();
                 $interval = new \DateInterval('P1D');
-                $period = new \DatePeriod(new \DateTime("-{$days} days"), $interval, new \DateTime());
+                $period = new \DatePeriod(FrozenTime::now()->subDays($days), $interval, FrozenTime::now());
                 $timeline = [];
                 foreach ($period as $date) {
                     $timeline[$date->format("Y-m-d")] = [
@@ -57,7 +58,7 @@ class InstanceTable extends AppTable
                 }
                 $statistics[$model]['timeline'] = array_values($timeline);
 
-                $startCount = $table->find()->where(['modified <' => new \DateTime("-{$days} days")])->all()->count();
+                $startCount = $table->find()->where(['modified <' => FrozenTime::now()->subDays($days)])->all()->count();
                 $endCount = $statistics[$model]['amount'];
                 $statistics[$model]['variation'] = $endCount - $startCount;
             } else {
