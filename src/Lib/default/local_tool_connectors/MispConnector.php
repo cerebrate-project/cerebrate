@@ -132,9 +132,9 @@ class MispConnector extends CommonConnectorTools
     {
         return $validator
             ->requirePresence('url')
-            ->notEmpty('url', __('An URL must be provided'))
+            ->notEmptyString('url', __('An URL must be provided'))
             ->requirePresence('authkey')
-            ->notEmpty('authkey', __('An Authkey must be provided'))
+            ->notEmptyString('authkey', __('An Authkey must be provided'))
             ->lengthBetween('authkey', [40, 40], __('The authkey must be 40 character long'))
             ->boolean('skip_ssl');
     }

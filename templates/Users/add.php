@@ -1,4 +1,12 @@
 <?php
+    use Cake\Core\Configure;
+    $passwordRequired = false;
+    if ($this->request->getParam('action') === 'add') {
+        $dropdownData['individual'] = ['new' => __('New individual')] + $dropdownData['individual'];
+        if (!Configure::check('password_auth.enabled') || Configure::read('password_auth.enabled')) {
+            $passwordRequired = 'required';
+        }
+    }
     echo $this->element('genericElements/Form/genericForm', [
         'data' => [
             'description' => __('Roles define global rules for a set of users, including first and foremost access controls to certain functionalities.'),
@@ -9,6 +17,32 @@
                     'type' => 'dropdown',
                     'label' => __('Associated individual'),
                     'options' => $dropdownData['individual']
+                ],
+                [
+                    'field' => 'individual.email',
+                    'stateDependence' => [
+                        'source' => '#individual_id-field',
+                        'option' => 'new'
+                    ],
+                    'required' => false
+                ],
+                [
+                    'field' => 'individual.first_name',
+                    'label' => 'First name',
+                    'stateDependence' => [
+                        'source' => '#individual_id-field',
+                        'option' => 'new'
+                    ],
+                    'required' => false
+                ],
+                [
+                    'field' => 'individual.last_name',
+                    'label' => 'Last name',
+                    'stateDependence' => [
+                        'source' => '#individual_id-field',
+                        'option' => 'new'
+                    ],
+                    'required' => false
                 ],
                 [
                     'field' => 'username',
@@ -25,16 +59,18 @@
                     'field' => 'password',
                     'label' => __('Password'),
                     'type' => 'password',
-                    'required' => $this->request->getParam('action') === 'add' ? 'required' : false,
+                    'required' => $passwordRequired,
                     'autocomplete' => 'new-password',
-                    'value' => ''
+                    'value' => '',
+                    'requirements' => (bool)$passwordRequired
                 ],
                 [
                     'field' => 'confirm_password',
                     'label' => __('Confirm Password'),
                     'type' => 'password',
-                    'required' => $this->request->getParam('action') === 'add' ? 'required' : false,
-                    'autocomplete' => 'off'
+                    'required' => $passwordRequired,
+                    'autocomplete' => 'off',
+                    'requirements' => (bool)$passwordRequired
                 ],
                 [
                     'field' => 'role_id',

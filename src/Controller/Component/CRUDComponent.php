@@ -169,6 +169,12 @@ class CRUDComponent extends Component
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
             }
+            if (isset($params['beforeMarshal'])) {
+                $input = $params['beforeMarshal']($input);
+                if ($input === false) {
+                    throw new NotFoundException(__('Could not save {0} due to the marshaling failing. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                }
+            }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
@@ -310,9 +316,18 @@ class CRUDComponent extends Component
             if (!empty($params['fields'])) {
                 $patchEntityParams['fields'] = $params['fields'];
             }
+            if (isset($params['beforeMarshal'])) {
+                $input = $params['beforeMarshal']($input);
+                if ($input === false) {
+                    throw new NotFoundException(__('Could not save {0} due to the marshaling failing. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                }
+            }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if (isset($params['beforeSave'])) {
                 $data = $params['beforeSave']($data);
+                if ($data === false) {
+                    throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                }
             }
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
