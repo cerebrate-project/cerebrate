@@ -61,8 +61,7 @@ class MetaTemplatesController extends AppController
                 throw new NotFoundException(__('Invalid {0} for provided ID.', $this->MetaTemplates->getAlias(), $template_id));
             }
             $metaTemplate = $this->MetaTemplates->find()->where([
-                'id' => $template_id,
-                'enabled' => 1
+                'id' => $template_id
             ])->contain(['MetaTemplateFields'])->first();
 
             if (empty($metaTemplate)) {
