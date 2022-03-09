@@ -411,14 +411,16 @@ class CRUDComponent extends Component
                         if (!empty($new_value)) { // update meta_field and attach validation errors
                             if (isset($metaFieldsIndex[$meta_field_id])) {
                                 $index = $metaFieldsIndex[$meta_field_id];
-                                $metaFieldsTable->patchEntity($entity->meta_fields[$index], [
-                                    'value' => $new_value, 'meta_template_field_id' => $rawMetaTemplateField->id
-                                ], ['value']);
-                                $metaFieldsTable->patchEntity(
-                                    $entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields[$meta_field_id],
-                                    ['value' => $new_value, 'meta_template_field_id' => $rawMetaTemplateField->id],
-                                    ['value']
-                                );
+                                if ($entity->meta_fields[$index]->value != $new_value) { // nothing to do, value hasn't changed
+                                    $metaFieldsTable->patchEntity($entity->meta_fields[$index], [
+                                        'value' => $new_value, 'meta_template_field_id' => $rawMetaTemplateField->id
+                                    ], ['value']);
+                                    $metaFieldsTable->patchEntity(
+                                        $entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields[$meta_field_id],
+                                        ['value' => $new_value, 'meta_template_field_id' => $rawMetaTemplateField->id],
+                                        ['value']
+                                    );
+                                }
                             } else { // metafield comes from a second post where the temporary entity has already been created
                                 $metaField = $metaFieldsTable->newEmptyEntity();
                                 $metaFieldsTable->patchEntity($metaField, [
