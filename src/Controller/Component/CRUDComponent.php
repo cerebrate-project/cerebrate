@@ -50,6 +50,7 @@ class CRUDComponent extends Component
             $optionFilters[] = "{$filter} !=";
         }
         $params = $this->Controller->ParamHandler->harvestParams($optionFilters);
+        $params = $this->fakeContextFilter($options, $params);
         $query = $this->Table->find();
         if (!empty($options['filterFunction'])) {
             $query = $options['filterFunction']($query);
@@ -1269,6 +1270,28 @@ class CRUDComponent extends Component
             $filteringContexts = array_merge($filteringContexts, $contextFilters['custom']);
         }
         $this->Controller->set('filteringContexts', $filteringContexts);
+    }
+
+    /**
+     * Create a fake filtering label set to the filter to be used by default if the request does not supply one
+     * This fake filtering label will then be used to set approriate filters on the query
+     *
+     * @param array $options CRUD options
+     * @param array $params Collected params from the request
+     * @return array
+     */
+    protected function fakeContextFilter($options, $params): array
+    {
+        if (empty($params['filteringLabel']) && !empty($options['contextFilters']['custom'])) {
+            foreach ($options['contextFilters']['custom'] as $contextFilter) {
+                if (!empty($contextFilter['default'])) {
+                    $params['filteringLabel'] = $contextFilter['label'];
+                    $this->Controller->set('fakeFilteringLabel', $contextFilter['label']);
+                    break;
+                }
+            }
+        }
+        return $params;
     }
 
     public function setParentConditionsForMetaFields($query, array $metaConditions)

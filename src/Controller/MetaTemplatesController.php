@@ -254,7 +254,7 @@ class MetaTemplatesController extends AppController
                 'custom' => [
                     [
                         'default' => true,
-                        'label' => __('Newest Templates'),
+                        'label' => __('Latest Templates'),
                         'filterConditionFunction' => function ($query) {
                             return $query->where([
                                 'id IN' => $this->MetaTemplates->genQueryForAllNewestVersionIDs()
