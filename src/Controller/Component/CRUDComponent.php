@@ -704,7 +704,7 @@ class CRUDComponent extends Component
         if (empty($data)) {
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
         }
-        if ($this->metaFieldsSupported()) {
+        if ($this->metaFieldsSupported() && !empty($data['meta_fields'])) {
             $usedMetaTemplateIDs = array_values(array_unique(Hash::extract($data['meta_fields'], '{n}.meta_template_id')));
             $data = $this->attachMetaTemplatesIfNeeded($data, null, [
                 'id IN' => $usedMetaTemplateIDs
