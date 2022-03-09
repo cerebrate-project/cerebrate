@@ -1,4 +1,5 @@
 <?php
+use App\Model\Table\MetaTemplatesTable;
 
 $bodyHtml = '';
 $modalType = 'confirm';
@@ -27,7 +28,7 @@ if ($updateStatus['up-to-date']) {
                     [
                         'field' => 'update_strategy',
                         'type' => 'checkbox',
-                        'value' => 'update',
+                        'value' => MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW,
                         'checked' => true,
                     ]
                 ],

@@ -24,7 +24,8 @@ class MetaTemplatesTable extends AppTable
     public const UPDATE_STRATEGY_KEEP_BOTH = 'keep_both';
     public const UPDATE_STRATEGY_DELETE = 'delete_all';
 
-    public $ALLOWED_STRATEGIES = [MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW];
+    public const DEFAULT_STRATEGY = MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW;
+    public const ALLOWED_STRATEGIES = [MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW];
 
     private $templatesOnDisk = null;
 
@@ -59,7 +60,7 @@ class MetaTemplatesTable extends AppTable
 
     public function isStrategyAllowed(string $strategy): bool
     {
-        return in_array($strategy, $this->ALLOWED_STRATEGIES);
+        return in_array($strategy, MetaTemplatesTable::ALLOWED_STRATEGIES);
     }
 
     /**
@@ -118,9 +119,10 @@ class MetaTemplatesTable extends AppTable
             $success = $this->saveNewMetaTemplate($templateOnDisk, $errors);
         } else if ($this->isStrategyAllowed(MetaTemplatesTable::UPDATE_STRATEGY_UPDATE_EXISTING) && $updateStatus['automatically-updateable']) {
             $success = $this->updateMetaTemplate($metaTemplate, $templateOnDisk, $errors);
-        } else if (!$updateStatus['up-to-date'] && (is_null($strategy) || !$this->isStrategyAllowed($strategy))) {
-            $errors['message'] = __('Cannot update meta-template, update strategy not provided or not allowed');
-        } else if (!$updateStatus['up-to-date'] && !is_null($strategy)) {
+        } else if (!$updateStatus['up-to-date'] && (!is_null($strategy) && !$this->isStrategyAllowed($strategy))) {
+            $errors['message'] = __('Cannot update meta-template, update strategy not allowed');
+        } else if (!$updateStatus['up-to-date']) {
+            $strategy = is_null($strategy) ? MetaTemplatesTable::DEFAULT_STRATEGY : $strategy;
             $success = $this->updateMetaTemplateWithStrategyRouter($metaTemplate, $templateOnDisk, $strategy, $errors);
         } else {
             $errors['message'] = __('Could not update. Something went wrong.');
