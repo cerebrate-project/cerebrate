@@ -19,6 +19,7 @@ class MetaFieldsTable extends AppTable
         ]);
 
         $this->addBehavior('AuditLog');
+        $this->addBehavior('Timestamp');
         $this->belongsTo('MetaTemplates');
         $this->belongsTo('MetaTemplateFields');
 
