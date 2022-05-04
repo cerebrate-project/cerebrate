@@ -16,25 +16,22 @@ class IndividualsController extends AppController
     public $quickFilterFields = ['uuid', ['email' => true], ['first_name' => true], ['last_name' => true], 'position'];
     public $filterFields = ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'];
     public $containFields = ['Alignments' => 'Organisations'];
+    public $statisticsFields = ['position'];
 
     public function index()
     {
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
-            'contextFilters' => [
-                'fields' => [
-                    'Alignments.type'
-                ]
-            ],
-            'contain' => $this->containFields
+            'quickFilterForMetaField' => ['enabled' => true, 'wildcard_search' => true],
+            'contain' => $this->containFields,
+            'statisticsFields' => $this->statisticsFields,
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
         $this->set('alignmentScope', 'individuals');
-        $this->set('metaGroup', 'ContactDB');
     }
 
     public function filtering()
@@ -49,7 +46,6 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
     }
 
     public function view($id)
@@ -59,7 +55,6 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
     }
 
     public function edit($id)
@@ -69,7 +64,6 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
         $this->render('add');
     }
 
@@ -80,7 +74,6 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
     }
 
     public function tag($id)

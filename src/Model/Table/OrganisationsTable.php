@@ -9,8 +9,6 @@ use Cake\Error\Debugger;
 
 class OrganisationsTable extends AppTable
 {
-    public $metaFields = 'organisation';
-
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -33,14 +31,7 @@ class OrganisationsTable extends AppTable
                 'conditions' => ['owner_model' => 'organisation']
             ]
         );
-        $this->hasMany(
-            'MetaFields',
-            [
-                'dependent' => true,
-                'foreignKey' => 'parent_id',
-                'conditions' => ['MetaFields.scope' => 'organisation']
-            ]
-        );
+        $this->addBehavior('MetaFields');
         $this->setDisplayField('name');
     }
 

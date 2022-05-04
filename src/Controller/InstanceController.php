@@ -21,7 +21,6 @@ class InstanceController extends AppController
 
     public function home()
     {
-        // $this->set('md', file_get_contents(ROOT . '/README.md'));
         $statistics = $this->Instance->getStatistics();
         $this->set('statistics', $statistics);
     }
@@ -44,7 +43,7 @@ class InstanceController extends AppController
         }
         $data = [];
         if (!empty($searchValue)) {
-            $data = $this->Instance->searchAll($searchValue, $limit, $model);
+            $data = $this->Instance->searchAll($searchValue, $this->ACL->getUser(), $limit, $model);
         }
         if ($this->ParamHandler->isRest()) {
             return $this->RestResponse->viewData($data, 'json');

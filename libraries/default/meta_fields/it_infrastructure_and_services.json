@@ -1,0 +1,36 @@
+{
+    "name": "IT infrastructure and services",
+    "namespace": "cerebrate",
+    "description": "Offers the possiblity to register the IP of part of the infrastructure or services.",
+    "version": 2,
+    "scope": "organisation",
+    "uuid": "a7674718-57c8-40e7-969e-d26ca911cb4a",
+    "source": "Cerebrate",
+    "metaFields": [
+        {
+            "field": "Microsoft Exchange Server IP",
+            "type": "text",
+            "multiple": true
+        },
+        {
+            "field": "Microsfot Office 365 IP",
+            "type": "text",
+            "multiple": true
+        },
+        {
+            "field": "Microsoft SharePoint IP",
+            "type": "text",
+            "multiple": true
+        },
+        {
+            "field": "Microsoft Active Directory IP",
+            "type": "text",
+            "multiple": true
+        },
+        {
+            "field": "Proxy IP",
+            "type": "text",
+            "multiple": true
+        }
+    ]
+}

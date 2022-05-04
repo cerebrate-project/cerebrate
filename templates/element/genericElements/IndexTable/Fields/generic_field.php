@@ -2,14 +2,16 @@
     $data = $this->Hash->extract($row, $field['data_path']);
     if (is_array($data)) {
         if (count($data) > 1) {
-            $data = implode(', ', $data);
+            $data = implode('</br> ', array_map('h', $data));
         } else {
             if (count($data) > 0) {
-                $data = $data[0];
+                $data = h($data[0]);
             } else {
                 $data = '';
             }
         }
+    } else {
+        $data = h($data);
     }
     if (is_bool($data)) {
         $data = sprintf(
@@ -17,7 +19,6 @@
             $data ? 'check' : 'times'
         );
     } else {
-        $data = h($data);
         if (!empty($field['options'])) {
             $options = $this->Hash->extract($row, $field['options']);
             if (!empty($options)) {

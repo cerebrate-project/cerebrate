@@ -1,0 +1,21 @@
+{
+    "name": "Cerebrate Individuals extended",
+    "namespace": "cerebrate",
+    "description": "Template to extend fields of individuals",
+    "version": 2,
+    "scope": "individual",
+    "uuid": "3bc374c8-3cdd-4900-823e-cc9100ad5179",
+    "source": "Cerebrate",
+    "metaFields": [
+        {
+            "field": "alternate_email",
+            "type": "text",
+            "multiple": true
+        },
+        {
+            "field": "mobile_phone",
+            "type": "text",
+            "multiple": true
+        }
+    ]
+}

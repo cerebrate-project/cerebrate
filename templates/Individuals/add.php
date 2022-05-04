@@ -27,7 +27,6 @@
                     'requirements' => $this->request->getParam('action') === 'edit'
                 ),
             ),
-            'metaTemplates' => empty($metaTemplates) ? [] : $metaTemplates,
             'submit' => array(
                 'action' => $this->request->getParam('action')
             )

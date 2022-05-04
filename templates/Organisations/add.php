@@ -25,7 +25,6 @@
                     'field' => 'type'
                 )
             ),
-            'metaTemplates' => empty($metaTemplates) ? [] : $metaTemplates,
             'submit' => array(
                 'action' => $this->request->getParam('action')
             )

@@ -47,7 +47,8 @@ class ACLComponent extends Component
             'view' => ['*']
         ],
         'AuditLogs' => [
-            'index' => ['perm_admin']
+            'filtering' => ['perm_admin'],
+            'index' => ['perm_admin'],
         ],
         'AuthKeys' => [
             'add' => ['*'],
@@ -119,16 +120,31 @@ class ACLComponent extends Component
             'view' => ['perm_admin'],
             'viewConnector' => ['perm_admin']
         ],
+        'MailingLists' => [
+            "add" => ['perm_org_admin'],
+            "addIndividual" => ['perm_org_admin'],
+            "delete" => ['perm_org_admin'],
+            "edit" => ['perm_org_admin'],
+            "index" => ['*'],
+            "listIndividuals" => ['perm_org_admin'],
+            "removeIndividual" => ['perm_org_admin'],
+            "view" => ['*'],
+        ],
         'MetaTemplateFields' => [
             'index' => ['perm_admin']
         ],
         'MetaTemplates' => [
+            'createNewTemplate' => ['perm_admin'],
+            'delete' => ['perm_admin'],
             'disable' => ['perm_admin'],
             'enable' => ['perm_admin'],
+            'getMetaFieldsToUpdate' => ['perm_admin'],
             'index' => ['perm_admin'],
+            'migrateOldMetaTemplateToNewestVersionForEntity' => ['perm_admin'],
             'update' => ['perm_admin'],
+            'updateAllTemplates' => ['perm_admin'],
             'toggle' => ['perm_admin'],
-            'view' => ['perm_admin']
+            'view' => ['perm_admin'],
         ],
         'Organisations' => [
             'add' => ['perm_admin'],
@@ -559,7 +575,6 @@ class ACLComponent extends Component
                             continue;
                         }
                     }
-                    $menu[$group][$subMenuElementName]['children'] = array_values($menu[$group][$subMenuElementName]['children']);
                     if (empty($menu[$group][$subMenuElementName]['children'])) {
                         unset($subMenu[$subMenuElementName]);
                     }

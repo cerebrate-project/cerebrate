@@ -79,6 +79,9 @@ class AppController extends Controller
         $this->loadComponent('Navigation', [
             'request' => $this->request,
         ]);
+        $this->loadComponent('Notification', [
+            'request' => $this->request,
+        ]);
         if (Configure::read('debug')) {
             Configure::write('DebugKit.panels', ['DebugKit.Packages' => true]);
             Configure::write('DebugKit.forceEnable', true);
@@ -112,7 +115,6 @@ class AppController extends Controller
             }
             unset($user['password']);
             $this->ACL->setUser($user);
-            $this->Navigation->genBreadcrumbs($user);
             $this->request->getSession()->write('authUser', $user);
             $this->isAdmin = $user['role']['perm_admin'];
             if (!$this->ParamHandler->isRest()) {
@@ -135,7 +137,6 @@ class AppController extends Controller
 
         $this->ACL->checkAccess();
         if (!$this->ParamHandler->isRest()) {
-            $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
             $this->set('ajax', $this->request->is('ajax'));
             $this->request->getParam('prefix');
             $this->set('baseurl', Configure::read('App.fullBaseUrl'));
@@ -151,6 +152,16 @@ class AppController extends Controller
         }
         if (mt_rand(1, 50) === 1) {
             $this->FloodProtection->cleanup();
+        }
+    }
+
+    public function beforeRender(EventInterface $event)
+    {
+        if (!empty($this->request->getAttribute('identity'))) {
+            if (!$this->ParamHandler->isRest()) {
+                $this->set('breadcrumb', $this->Navigation->getBreadcrumb());
+                $this->set('notifications', $this->Notification->getNotifications());
+            }
         }
     }
 

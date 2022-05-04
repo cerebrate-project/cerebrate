@@ -56,6 +56,7 @@ trait ApiTestTrait
 
         // somehow this is not set automatically in test environment
         $_SERVER['HTTP_AUTHORIZATION'] = $authToken;
+        $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
         $this->configRequest([
             'headers' => [

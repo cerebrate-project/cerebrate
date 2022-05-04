@@ -10,15 +10,15 @@ use Cake\ORM\Query;
 
 class IndividualsTable extends AppTable
 {
-    public $metaFields = 'individual';
-
     public function initialize(array $config): void
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
         $this->addBehavior('Timestamp');
         $this->addBehavior('Tags.Tag');
+        $this->addBehavior('MetaFields');
         $this->addBehavior('AuditLog');
+
         $this->hasMany(
             'Alignments',
             [
@@ -39,6 +39,10 @@ class IndividualsTable extends AppTable
         $this->belongsToMany('Organisations', [
             'through' => 'Alignments',
         ]);
+        $this->belongsToMany('MailingLists', [
+            'through' => 'mailing_lists_individuals',
+        ]);
+
         $this->setDisplayField('email');
     }
 

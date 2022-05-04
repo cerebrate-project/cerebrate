@@ -29,6 +29,8 @@ tags:
     description: "Authkeys are used for API access. A user can have more than one authkey, so if you would like to use separate keys per tool that queries Cerebrate, add additional keys. Use the comment field to make identifying your keys easier."
   - name: LocalTools
     description: "Cerebrate can connect to local tools via individual connectors, built to expose the various functionalities of the given tool via Cerebrate. Simply view the connectors' details and the accompanying instance list to manage the connections using the given connector."
+  - name: MetaTemplates
+    description: ""
 
 paths:
   /individuals/index:
@@ -878,6 +880,77 @@ paths:
         default:
           $ref: "#/components/responses/ApiErrorResponse"
 
+  # MetaTemplates
+  /metaTemplates/createNewTemplate/{metaTemplateUuid}:
+    post:
+      summary: "Load a MetaTemplate"
+      operationId: loadMetaTemplate
+      tags:
+        - MetaTemplates
+      parameters:
+        - $ref: "#/components/parameters/metaTemplateUuid"
+      responses:
+        "200":
+          $ref: "#/components/responses/LoadMetaTemplateResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /metaTemplates/toggle/{metaTemplateId}/enabled:
+    post:
+      summary: "Toggle MetaTemplate enabled/disabled"
+      operationId: toggleEnableMetaTemplate
+      tags:
+        - MetaTemplates
+      parameters:
+        - $ref: "#/components/parameters/metaTemplateId"
+      responses:
+        "200":
+          $ref: "#/components/responses/MetaTemplateResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /metaTemplates/update/{metaTemplateId}:
+    post:
+      summary: "Update MetaTemplate by ID"
+      operationId: updateMetaTemplateById
+      tags:
+        - MetaTemplates
+      parameters:
+        - $ref: "#/components/parameters/metaTemplateId"
+      responses:
+        "200":
+          $ref: "#/components/responses/UpdateMetaTemplateResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
+  /metaTemplates/updateAllTemplates:
+    post:
+      summary: "Update all MetaTemplates"
+      operationId: updateAllMetaTemplates
+      tags:
+        - MetaTemplates
+      responses:
+        "200":
+          $ref: "#/components/responses/UpdateMetaTemplateResponse"
+        "403":
+          $ref: "#/components/responses/UnauthorizedApiErrorResponse"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowedApiErrorResponse"
+        default:
+          $ref: "#/components/responses/ApiErrorResponse"
+
 components:
   schemas:
     # General
@@ -1524,6 +1597,65 @@ components:
       items:
         $ref: "#/components/schemas/LocalTool"
 
+    # MetaTemplates
+
+    MetaTemplateScope:
+      type: string
+      enum:
+        - "organisation"
+
+    MetaTemplateName:
+      type: string
+
+    MetaTemplateNamespace:
+      type: string
+      example: "cerebrate"
+
+    MetaTemplateDescription:
+      type: string
+
+    MetaTemplateVersion:
+      type: string
+      example: "1.0"
+
+    MetaTemplateSource:
+      type: string
+      example: "Cerebrate"
+
+    MetaTemplateIsEnabled:
+      type: boolean
+
+    MetaTemplateIsDefault:
+      type: boolean
+
+    MetaTemplate:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/ID"
+        scope:
+          $ref: "#/components/schemas/MetaTemplateScope"
+        name:
+          $ref: "#/components/schemas/MetaTemplateName"
+        namespace:
+          $ref: "#/components/schemas/MetaTemplateNamespace"
+        description:
+          $ref: "#/components/schemas/MetaTemplateDescription"
+        version:
+          $ref: "#/components/schemas/MetaTemplateVersion"
+        uuid:
+          $ref: "#/components/schemas/UUID"
+        source:
+          $ref: "#/components/schemas/MetaTemplateSource"
+        enabled:
+          $ref: "#/components/schemas/MetaTemplateIsEnabled"
+        is_default:
+          $ref: "#/components/schemas/MetaTemplateIsDefault"
+        created:
+          $ref: "#/components/schemas/DateTime"
+        modified:
+          $ref: "#/components/schemas/DateTime"
+
     # Errors
     ApiError:
       type: object
@@ -1672,6 +1804,22 @@ components:
       schema:
         type: string
         example: "user@example.com"
+
+    metaTemplateUuid:
+      name: metaTemplateUuid
+      in: path
+      description: "UUID of the MetaTemplate"
+      required: true
+      schema:
+        $ref: "#/components/schemas/UUID"
+
+    metaTemplateId:
+      name: metaTemplateId
+      in: path
+      description: "Numeric ID of the MetaTemplate"
+      required: true
+      schema:
+        $ref: "#/components/schemas/ID"
 
   securitySchemes:
     ApiKeyAuth:
@@ -2329,6 +2477,57 @@ components:
           schema:
             $ref: "#/components/schemas/LocalToolList"
 
+    # MetaTemplates
+    MetaTemplateResponse:
+      description: "MetaTemplate response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/MetaTemplate"
+
+    LoadMetaTemplateResponse:
+      description: "Load MetaTemplate response"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              update_errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Cannot update meta-template, update strategy not provided or not allowed"
+              files_processed:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UUID"
+              success:
+                type: boolean
+
+    UpdateMetaTemplateResponse:
+      description: "Update MetaTemplate response"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              update_errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "Cannot update meta-template, update strategy not provided or not allowed"
+              files_processed:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UUID"
+              success:
+                type: boolean
     # Errors
     ApiErrorResponse:
       description: "Unexpected API error"

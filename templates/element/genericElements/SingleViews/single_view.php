@@ -36,7 +36,7 @@
         'tableClass' => 'col-sm-8',
         'elementsRootPath' => '/genericElements/SingleViews/Fields/'
     ];
-    if (!empty($data['metaTemplates']) && (empty($skip_meta_templates)) && !empty($combinedFieldsView)) {
+    if (!empty($data['MetaTemplates']) && (empty($skip_meta_templates)) && !empty($combinedFieldsView)) {
         $listTableOptions['tableClass'] = '';
     }
     $listTable = $this->Bootstrap->listTable($listTableOptions,[
@@ -45,7 +45,7 @@
     ]);
 
     $metafieldsPanel = '';
-    if (!empty($data['metaTemplates']) && (empty($skip_meta_templates))) {
+    if (!empty($data['MetaTemplates']) && (empty($skip_meta_templates))) {
         $metaFieldsData = [
             'data' => $data,
         ];
@@ -78,11 +78,11 @@
         __('{0} view', \Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::humanize($this->request->getParam('controller')))) :
         $title;
     echo sprintf(
-        "<div id=\"single-view-table-container-%s\">
+    "<div id=\"single-view-table-container-%s\">
             <h2 class=\"fw-light\">%s</h2>
             %s%s
-            <div>%s</div>
-            <div id=\"metafieldsPanel\" class=\"col-lg-8 px-0\">%s</div>
+            <div class=\"col-xl-10 col-xxl-8 px-0\">%s</div>
+            <div id=\"metafieldsPanel\" class=\"col-xl-12 col-xxl-10 px-0\">%s</div>
             <div id=\"accordion\">%s</div>
         </div>",
         $tableRandomValue,

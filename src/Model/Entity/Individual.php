@@ -19,7 +19,7 @@ class Individual extends AppModel
         'created' => true,
     ];
 
-    protected $_virtual = ['full_name'];
+    protected $_virtual = ['full_name', 'alternate_emails'];
 
     protected function _getFullName()
     {
@@ -27,5 +27,18 @@ class Individual extends AppModel
             return $this->username;
         }
         return sprintf("%s %s", $this->first_name, $this->last_name);
+    }
+
+    protected function _getAlternateEmails()
+    {
+        $emails = [];
+        if (!empty($this->meta_fields)) {
+           foreach ($this->meta_fields as $metaField) {
+               if (str_contains($metaField->field, 'email')) {
+                   $emails[] = $metaField;
+               }
+           }
+        }
+        return $emails;
     }
 }

@@ -42,8 +42,8 @@ $this->userSettingsTable = TableRegistry::getTableLocator()->get('UserSettings')
     <?= __('Activity') ?>
 </h3>
 <div class="row">
-    <?php foreach ($statistics as $modelName => $statistics) : ?>
-        <div class="col-sm-6 col-md-5 col-l-4 col-xl-3 mb-3">
+    <?php foreach ($statistics as $modelName => $statisticForModel) : ?>
+        <div class="col-sm-6 col-md-5 col-lg-4 col-xl-3 mb-3">
             <?php
             $exploded = explode('.', $modelName);
             $modelForDisplay = $exploded[count($exploded) - 1];
@@ -57,9 +57,9 @@ $this->userSettingsTable = TableRegistry::getTableLocator()->get('UserSettings')
             );
             echo $this->element('widgets/highlight-panel', [
                 'titleHtml' => $panelTitle,
-                'number' => $statistics['amount'],
-                'variation' => $statistics['variation'] ?? '',
-                'chartData' => $statistics['timeline'] ?? []
+                'number' => $statisticForModel['created']['amount'],
+                'variation' => $statisticForModel['created']['variation'] ?? null,
+                'timeline' => $statisticForModel ?? []
             ]);
             ?>
         </div>

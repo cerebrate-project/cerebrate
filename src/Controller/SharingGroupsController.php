@@ -19,20 +19,32 @@ class SharingGroupsController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $conditions = [];
-        if (empty($currentUser['role']['perm_admin'])) {
-            $conditions['SharingGroups.organisation_id'] = $currentUser['organisation_id'];
-        }
         $this->CRUD->index([
             'contain' => $this->containFields,
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
-            'conditions' => $conditions
+            'conditions' => $conditions,
+            'afterFind' => function ($row) use ($currentUser) {
+                if (empty($currentUser['role']['perm_admin'])) {
+                    $orgFound = false;
+                    if (!empty($row['sharing_group_orgs'])) {
+                        foreach ($row['sharing_group_orgs'] as $org) {
+                            if ($org['id'] === $currentUser['organisation_id']) {
+                                $orgFound = true;
+                            }
+                        }
+                    }
+                    if ($row['organisation_id'] !== $currentUser['organisation_id'] && !$orgFound) {
+                        return false;
+                    }
+                }
+                return $row;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function add()
@@ -57,7 +69,6 @@ class SharingGroupsController extends AppController
             return $responsePayload;
         }
         $this->set(compact('dropdownData'));
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function view($id)
@@ -67,7 +78,7 @@ class SharingGroupsController extends AppController
             'contain' => ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]],
             'afterFind' => function($data) use ($currentUser) {
                 if (empty($currentUser['role']['perm_admin'])) {
-                    $orgFround = false;
+                    $orgFound = false;
                     if (!empty($data['sharing_group_orgs'])) {
                         foreach ($data['sharing_group_orgs'] as $org) {
                             if ($org['id'] === $currentUser['organisation_id']) {
@@ -75,7 +86,7 @@ class SharingGroupsController extends AppController
                             }
                         }
                     }
-                    if ($data['organisation_id'] !== $currentUser['organisation_id'] && !$orgFround) {
+                    if ($data['organisation_id'] !== $currentUser['organisation_id'] && !$orgFound) {
                         return null;
                     }
                 }
@@ -86,7 +97,6 @@ class SharingGroupsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function edit($id = false)
@@ -106,13 +116,13 @@ class SharingGroupsController extends AppController
             'organisation' => $this->getAvailableOrgForSg($this->ACL->getUser())
         ];
         $this->set(compact('dropdownData'));
-        $this->set('metaGroup', 'Trust Circles');
         $this->render('add');
     }
 
     public function delete($id)
     {
         $currentUser = $this->ACL->getUser();
+        $params = [];
         if (empty($currentUser['role']['perm_admin'])) {
             $params['conditions'] = ['organisation_id' => $currentUser['organisation_id']];
         }
@@ -121,7 +131,6 @@ class SharingGroupsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'Trust Circles');
     }
 
     public function addOrg($id)

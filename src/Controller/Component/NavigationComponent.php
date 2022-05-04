@@ -25,6 +25,7 @@ class NavigationComponent extends Component
         'Organisations' => 'building',
         'EncryptionKeys' => 'key',
         'SharingGroups' => 'user-friends',
+        'MailingLists' => 'mail-bulk',
         'Broods' => 'network-wired',
         'Roles' => 'id-badge',
         'Users' => 'users',
@@ -43,10 +44,9 @@ class NavigationComponent extends Component
         $this->request = $config['request'];
     }
 
-    public function genBreadcrumbs(\App\Model\Entity\User $user)
+    public function beforeRender($event)
     {
-        $this->currentUser = $user;
-        $this->breadcrumb = $this->fullBreadcrumb = $this->genBreadcrumb();
+        $this->fullBreadcrumb = $this->genBreadcrumb();
     }
 
     public function getSideMenu(): array
@@ -141,7 +141,8 @@ class NavigationComponent extends Component
             $navigationClassname = str_replace('.php', '', $navigationFile);
             require_once(APP . 'Controller' . DS . 'Component' . DS . 'Navigation' . DS . $navigationFile);
             $reflection = new \ReflectionClass("BreadcrumbNavigation\\{$navigationClassname}Navigation");
-            $navigationClasses[$navigationClassname] = $reflection->newInstance($bcf, $request);
+            $viewVars = $this->_registry->getController()->viewBuilder()->getVars();
+            $navigationClasses[$navigationClassname] = $reflection->newInstance($bcf, $request, $viewVars);
             $navigationClasses[$navigationClassname]->setCurrentUser($this->currentUser);
         }
         return $navigationClasses;
@@ -161,6 +162,7 @@ class NavigationComponent extends Component
             'Tags',
             'LocalTools',
             'UserSettings',
+            'MailingLists',
         ];
         foreach ($CRUDControllers as $controller) {
             $bcf->setDefaultCRUDForModel($controller);
@@ -250,6 +252,7 @@ class BreadcrumbFactory
         $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'icon');
         $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'label');
         $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'textGetter');
+        $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'badge');
         return $routeConfig;
     }
 

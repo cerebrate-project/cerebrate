@@ -18,6 +18,7 @@
                         <?= $this->element('layouts/sidebar/category', ['label' => $category]) ?>
                         <?php foreach ($categorized as $parentName => $parent) : ?>
                             <?= $this->element('layouts/sidebar/entry', [
+                                'parentName' => $parentName,
                                 'parent' => $parent,
                             ])
                             ?>

@@ -5,12 +5,14 @@ class BaseNavigation
 {
     protected $bcf;
     protected $request;
+    protected $viewVars;
     public $currentUser;
 
-    public function __construct($bcf, $request)
+    public function __construct($bcf, $request, $viewVars)
     {
         $this->bcf = $bcf;
         $this->request = $request;
+        $this->viewVars = $viewVars;
     }
 
     public function setCurrentUser($currentUser)

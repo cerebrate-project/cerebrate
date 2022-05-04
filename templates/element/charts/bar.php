@@ -1,14 +1,22 @@
 <?php
 
 $chartOptions = $chartOptions ?? [];
-$chartData = $chartData ?? [];
 $seed = mt_rand();
 $chartId = "chart-{$seed}";
 
-// Transform the chart data into the expected format
-$data = [];
-foreach ($chartData as $i => $entry) {
-    $data[] = $entry['count'];
+$chartData = $chartData ?? [];
+$chartSeries = [];
+if (!empty($series)) {
+    $chartSeries = $series;
+} else {
+    // Transform the chart data into the expected format
+    $data = [];
+    foreach ($chartData as $i => $entry) {
+        $data[] = $entry['count'];
+    }
+    $chartSeries = [
+        ['data' => $data]
+    ];
 }
 ?>
 
@@ -20,7 +28,7 @@ foreach ($chartData as $i => $entry) {
         const defaultOptions = {
             chart: {
                 id: '<?= $chartId ?>',
-                type: 'bar',
+                type: 'line',
                 sparkline: {
                     enabled: true
                 },
@@ -35,31 +43,18 @@ foreach ($chartData as $i => $entry) {
                     enabled: false
                 },
             },
-            series: [{
-                data: <?= json_encode($data) ?>,
-            }],
-            colors: ['var(--bs-light)'],
+            series: <?= json_encode($chartSeries) ?>,
             tooltip: {
-                x: {
-                    show: false
-                },
-                y: {
-                    title: {
-                        formatter: function formatter(val) {
-                        return '';
-                        }
-                    }
-                },
-                theme: '<?= !empty($darkMode) ? 'dark' : 'light' ?>'
+                theme: 'dark'
             },
         }
-        const chartOptions = Object.assign({}, defaultOptions, passedOptions)
+        const chartOptions = mergeDeep({}, defaultOptions, passedOptions)
         new ApexCharts(document.querySelector('#<?= $chartId ?>'), chartOptions).render();
     })
 </script>
 
 <style>
-    .apexcharts-tooltip.apexcharts-theme-light {
-        color: black !important
+    #<?= $chartId ?> .apexcharts-tooltip-y-group {
+        padding: 1px;
     }
 </style>

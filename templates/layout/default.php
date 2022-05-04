@@ -60,6 +60,7 @@ $sidebarOpen = $loggedUser->user_settings_by_name_with_fallback['ui.sidebar.expa
     <?= $this->Html->css('select2.min') ?>
     <?= $this->Html->css('select2-bootstrap5') ?>
     <?= $this->Html->script('apexcharts.min') ?>
+    <?= $this->Html->script('moment-with-locales.min') ?>
     <?= $this->Html->css('apexcharts') ?>
 
     <?= $this->fetch('meta') ?>

@@ -13,13 +13,14 @@ use Cake\Http\Exception\MethodNotAllowedException;
 class InstanceTable extends AppTable
 {
     protected $activePlugins = ['Tags', 'ADmad/SocialAuth'];
-    public $seachAllTables = ['Broods', 'Individuals', 'Organisations', 'SharingGroups', 'Users', 'EncryptionKeys', ];
+    public $seachAllTables = [];
 
     public function initialize(array $config): void
     {
         parent::initialize($config);
         $this->addBehavior('AuditLog');
         $this->setDisplayField('name');
+        $this->setSearchAllTables();
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -27,88 +28,121 @@ class InstanceTable extends AppTable
         return $validator;
     }
 
-    public function getStatistics($days=30): array
+    public function setSearchAllTables(): void
+    {
+        $this->seachAllTables = [
+            'Broods' => ['conditions' => false, 'afterFind' => false],
+            'Individuals' => ['conditions' => false, 'afterFind' => false],
+            'Organisations' => ['conditions' => false, 'afterFind' => false],
+            'SharingGroups' => [
+                'conditions' => false,
+                'afterFind' => function($result, $user) {
+                    foreach ($result as $i => $row) {
+                        if (empty($user['role']['perm_admin'])) {
+                            $orgFound = false;
+                            if (!empty($row['sharing_group_orgs'])) {
+                                foreach ($row['sharing_group_orgs'] as $org) {
+                                    if ($org['id'] === $user['organisation_id']) {
+                                        $orgFound = true;
+                                    }
+                                }
+                            }
+                            if ($row['organisation_id'] !== $user['organisation_id'] && !$orgFound) {
+                                unset($result[$i]);
+                            }
+                        }
+                    }
+                    return $result;
+                },
+            ],
+            'Users' => [
+                'conditions' => function($user) {
+                    $conditions = [];
+                    if (empty($user['role']['perm_admin'])) {
+                        $conditions['Users.organisation_id'] = $user['organisation_id'];
+                    }
+                    return $conditions;
+                },
+                'afterFind' => function ($result, $user) {
+                    return $result;
+                },
+            ],
+            'EncryptionKeys' => ['conditions' => false, 'afterFind' => false],
+        ];
+    }
+
+    public function getStatistics(int $days=30): array
     {
         $models = ['Individuals', 'Organisations', 'Alignments', 'EncryptionKeys', 'SharingGroups', 'Users', 'Broods', 'Tags.Tags'];
         foreach ($models as $model) {
             $table = TableRegistry::getTableLocator()->get($model);
-            $statistics[$model]['amount'] = $table->find()->all()->count();
-            if ($table->behaviors()->has('Timestamp')) {
-                $query = $table->find();
-                $query->select([
-                        'count' => $query->func()->count('id'),
-                        'date' => 'DATE(modified)',
-                    ])
-                    ->where(['modified >' => new \DateTime("-{$days} days")])
-                    ->group(['date'])
-                    ->order(['date']);
-                $data = $query->toArray();
-                $interval = new \DateInterval('P1D');
-                $period = new \DatePeriod(new \DateTime("-{$days} days"), $interval, new \DateTime());
-                $timeline = [];
-                foreach ($period as $date) {
-                    $timeline[$date->format("Y-m-d")] = [
-                        'time' => $date->format("Y-m-d"),
-                        'count' => 0
-                    ];
-                }
-                foreach ($data as $entry) {
-                    $timeline[$entry->date]['count'] = $entry->count;
-                }
-                $statistics[$model]['timeline'] = array_values($timeline);
-
-                $startCount = $table->find()->where(['modified <' => new \DateTime("-{$days} days")])->all()->count();
-                $endCount = $statistics[$model]['amount'];
-                $statistics[$model]['variation'] = $endCount - $startCount;
-            } else {
-                $statistics[$model]['timeline'] = [];
-                $statistics[$model]['variation'] = 0;
-            }
+            $statistics[$model] = $this->getActivityStatisticsForModel($table, $days);
         }
         return $statistics;
     }
 
-    public function searchAll($value, $limit=5, $model=null)
+    public function searchAll($value, $user, $limit=5, $model=null)
     {
         $results = [];
-
-        // search in metafields. FIXME: To be replaced by the meta-template system
-        $metaFieldTable = TableRegistry::get('MetaFields');
-        $query = $metaFieldTable->find()->where([
-            'value LIKE' => '%' . $value . '%'
-        ]);
-        $results['MetaFields']['amount'] = $query->count();
-        $result = $query->limit($limit)->all()->toList();
-        if (!empty($result)) {
-            $results['MetaFields']['entries'] = $result;
-        }
-
         $models = $this->seachAllTables;
         if (!is_null($model)) {
-            if (in_array($model, $this->seachAllTables)) {
-                $models = [$model];
+            if (in_array($model, array_keys($this->seachAllTables))) {
+                $models = [$model => $this->seachAllTables[$model]];
             } else {
                 return $results; // Cannot search in this model
             }
         }
-        foreach ($models as $tableName) {
+
+        // search in metafields. FIXME?: Use meta-fields type handler to search for meta-field values
+        if (is_null($model)) {
+            $metaFieldTable = TableRegistry::get('MetaFields');
+            $query = $metaFieldTable->find()->where([
+                'value LIKE' => '%' . $value . '%'
+            ]);
+            $results['MetaFields']['amount'] = $query->count();
+            $result = $query->limit($limit)->all()->toList();
+            if (!empty($result)) {
+                $results['MetaFields']['entries'] = $result;
+            }
+        }
+
+        foreach ($models as $tableName => $tableConfig) {
             $controller = $this->getController($tableName);
             $table = TableRegistry::get($tableName);
             $query = $table->find();
-            $quickFilterOptions = $this->getQuickFiltersFieldsFromController($controller);
+            $quickFilters = $this->getQuickFiltersFieldsFromController($controller);
             $containFields = $this->getContainFieldsFromController($controller);
-            if (empty($quickFilterOptions)) {
+            if (empty($quickFilters)) {
                 continue; // make sure we are filtering on something
             }
             $params = ['quickFilter' => $value];
+            $quickFilterOptions = ['quickFilters' => $quickFilters];
             $query = $controller->CRUD->setQuickFilters($params, $query, $quickFilterOptions);
+            if (!empty($tableConfig['conditions'])) {
+                $whereClause = [];
+                if (is_callable($tableConfig['conditions'])) {
+                    $whereClause = $tableConfig['conditions']($user);
+                } else {
+                    $whereClause = $tableConfig['conditions'];
+                }
+                $query->where($whereClause);
+            }
             if (!empty($containFields)) {
                 $query->contain($containFields);
             }
-            $results[$tableName]['amount'] = $query->count();
+            if (!empty($tableConfig['contain'])) {
+                $query->contain($tableConfig['contain']);
+            }
+            if (empty($tableConfig['afterFind'])) {
+                $results[$tableName]['amount'] = $query->count();
+            }
             $result = $query->limit($limit)->all()->toList();
             if (!empty($result)) {
+                if (!empty($tableConfig['afterFind'])) {
+                    $result = $tableConfig['afterFind']($result, $user);
+                }
                 $results[$tableName]['entries'] = $result;
+                $results[$tableName]['amount'] = count($result);
             }
         }
         return $results;
@@ -118,7 +152,7 @@ class InstanceTable extends AppTable
     {
         $controllerName = "\\App\\Controller\\{$name}Controller";
         if (!class_exists($controllerName)) {
-            throw new MethodNotAllowedException(__('Model `{0}` does not exists', $model));
+            throw new MethodNotAllowedException(__('Model `{0}` does not exists', $name));
         }
         $controller = new $controllerName;
         return $controller;

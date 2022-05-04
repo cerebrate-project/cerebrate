@@ -20,7 +20,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 ],
                 [
                     'type' => 'search',
-                    'button' => __('Filter'),
+                    'button' => __('Search'),
                     'placeholder' => __('Enter value to search'),
                     'data' => '',
                     'searchKey' => 'value',
@@ -28,7 +28,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 ],
                 [
                     'type' => 'table_action',
-                    'table_setting_id' => 'individual_index',
                 ]
             ]
         ],
@@ -73,7 +72,6 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('ContactDB Individuals Index'),
         'description' => __('A list of individuals known by your Cerebrate instance. This list can get populated either directly, by adding new individuals or by fetching them from trusted remote sources. Additionally, users created for the platform will always have an individual identity.'),
-        'pull' => 'right',
         'actions' => [
             [
                 'url' => '/individuals/view',
