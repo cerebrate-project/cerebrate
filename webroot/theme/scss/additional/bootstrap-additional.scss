@@ -50,6 +50,11 @@ $toast-color-level:                 70% !default;
             color: color-contrast($value);
             text-decoration: none;
             background-color: $value;
+
+            &:hover {
+                color: color-contrast($value);
+                background-color: if(color-contrast($value) == $color-contrast-light, shade-color($value, $btn-hover-bg-shade-amount), tint-color($value, $btn-hover-bg-tint-amount))
+            }
         }
 
         &.dropdown-item-outline-#{$color} {
@@ -135,9 +140,15 @@ $toast-color-level:                 70% !default;
 // );
 .mw-75 {
     max-width: 75% !important;
-  }
+}
+.mw-66 {
+    max-width: 66% !important;
+}
 .mw-50 {
     max-width: 50% !important;
+}
+.mw-33 {
+    max-width: 33% !important;
 }
 .mw-25 {
     max-width: 25% !important;
@@ -145,8 +156,14 @@ $toast-color-level:                 70% !default;
 .mh-75 {
     max-height: 75% !important;
 }
+.mh-66 {
+    max-height: 66% !important;
+}
 .mh-50 {
     max-height: 50% !important;
+}
+.mh-33 {
+    max-height: 33% !important;
 }
 .mh-25 {
     max-height: 25% !important;
@@ -165,3 +182,23 @@ $toast-color-level:                 70% !default;
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
 }
+
+.fs-7 {
+    font-size: .875rem !important;
+}
+.fs-8 {
+    font-size: .7rem !important;
+}
+
+.btn-xs, .btn-group-xs > .btn {
+    padding: 0.1rem;
+    font-size: 0.7rem;
+    border-radius: 0.15rem;
+    line-height: 1.15;
+}
+
+.btn-check:focus + .btn.btn-xs, .btn.btn-xs:focus {
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+@import '../../../scss/custom.scss';

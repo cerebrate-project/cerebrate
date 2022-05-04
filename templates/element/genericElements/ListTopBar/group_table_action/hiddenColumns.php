@@ -4,7 +4,10 @@ $tableSettings['hidden_column'] = $tableSettings['hidden_column'] ?? [];
 $availableColumnsHtml = '';
 $availableColumns = [];
 foreach ($table_data['fields'] as $field) {
-    if (!empty($field['element']) && $field['element'] === 'selector') {
+    if (
+        (!empty($field['element']) && $field['element'] === 'selector') ||
+        !empty($field['_automatic_field'])
+    ) {
         continue;
     }
     $fieldName = !empty($field['name']) ? $field['name'] : \Cake\Utility\Inflector::humanize($field['data_path']);
@@ -13,7 +16,7 @@ foreach ($table_data['fields'] as $field) {
     $availableColumnsHtml .= sprintf(
         '<div class="form-check">
             <input class="form-check-input" type="checkbox" value="" id="columnCheck-%s" data-columnname="%s" %s>
-            <label class="form-check-label w-100 cursor-pointer" for="columnCheck-%s">
+            <label class="form-check-label w-100 cursor-pointer font-monospace user-select-none" for="columnCheck-%s">
                 %s
             </label>
         </div>',
@@ -34,17 +37,41 @@ echo $availableColumnsHtml;
 <script>
     (function() {
         const debouncedHiddenColumnSaver = debounce(mergeAndSaveSettings, 2000)
-        $('form.visible-column-form').find('input').change(function() {
-            const $dropdownMenu = $(this).closest(`[data-table-random-value]`)
-            const tableRandomValue = $dropdownMenu.attr('data-table-random-value')
-            const $container = $dropdownMenu.closest('div[id^="table-container-"]')
-            const $table = $container.find(`table[data-table-random-value="${tableRandomValue}"]`)
-            const table_setting_id = $dropdownMenu.data('table_setting_id');
-            toggleColumn(this.getAttribute('data-columnname'), this.checked, $table)
-            let tableSettings = {}
-            tableSettings[table_setting_id] = genTableSettings($container)
-            debouncedHiddenColumnSaver(table_setting_id, tableSettings)
-        })
+        const debouncedHiddenColumnSaverWithReload = debounce(mergeAndSaveSettingsWithReload, 2000)
+
+        function attachListeners() {
+            let debouncedFunctionWithReload = false, debouncedFunction = false // used to flush debounce function if dropdown menu gets closed
+            $('form.visible-column-form, form.visible-meta-column-form').find('input').change(function() {
+                const $dropdownMenu = $(this).closest(`[data-table-random-value]`)
+                const tableRandomValue = $dropdownMenu.attr('data-table-random-value')
+                const $container = $dropdownMenu.closest('div[id^="table-container-"]')
+                const $table = $container.find(`table[data-table-random-value="${tableRandomValue}"]`)
+                const table_setting_id = $dropdownMenu.data('table_setting_id');
+                toggleColumn(this.getAttribute('data-columnname'), this.checked, $table)
+                let tableSettings = {}
+                tableSettings[table_setting_id] = genTableSettings($container)
+                if ($(this).closest('form').hasClass('visible-meta-column-form')) {
+                    debouncedFunctionWithReload = true
+                    debouncedHiddenColumnSaverWithReload(table_setting_id, tableSettings, $table)
+                } else {
+                    debouncedFunction = true
+                    debouncedHiddenColumnSaver(table_setting_id, tableSettings)
+                }
+            })
+
+            const $dropdownMenu = $('form.visible-column-form, form.visible-meta-column-form').closest(`[data-table-random-value]`)
+            const $rootDropdown = $dropdownMenu.find('[data-bs-toggle="dropdown"]:first')
+            $rootDropdown[0].addEventListener('hidden.bs.dropdown', function() {
+                if (debouncedFunctionWithReload) {
+                    debouncedHiddenColumnSaver.cancel()
+                    debouncedHiddenColumnSaverWithReload.flush()
+                } else if (debouncedFunction) {
+                    debouncedHiddenColumnSaver.flush()
+                }
+                debouncedFunction = false
+                debouncedFunctionWithReload = false
+            })
+        }
 
         function toggleColumn(columnName, isVisible, $table) {
             if (isVisible) {
@@ -61,12 +88,47 @@ echo $availableColumnsHtml;
                 return $(this).data('columnname')
             }))
             tableSetting['hidden_column'] = hiddenColumns
+
+            const $visibleMetaColumns = $container.find('form.visible-meta-column-form').find('input:checked')
+            const visibleMetaColumns = Array.from($visibleMetaColumns.map(function() {
+                const columnName = $(this).data('columnname')
+                const split = columnName.split('-')
+                return [
+                    [split[1], split[2]]
+                ]
+            })).reduce((store, composedValue) => {
+                let [templateId, fieldId] = composedValue
+                if (store[templateId] === undefined) {
+                    store[templateId] = [];
+                }
+                store[templateId].push(fieldId)
+                return store
+            }, {})
+            tableSetting['visible_meta_column'] = visibleMetaColumns
             return tableSetting
+        }
+
+        function mergeAndSaveSettingsWithReload(table_setting_id, tableSettings, $table) {
+            mergeAndSaveSettings(table_setting_id, tableSettings, false).then((apiResult) => {
+                const theToast = UI.toast({
+                    variant: 'success',
+                    title: apiResult.message,
+                    bodyHtml: $('<div/>').append(
+                        $('<span/>').text('<?= __('The table needs to be reloaded for the new fields to be included.') ?>'),
+                        $('<button/>').addClass(['btn', 'btn-primary', 'btn-sm', 'ms-3']).text('<?= __('Reload table') ?>').click(function() {
+                            const reloadUrl = $table.data('reload-url');
+                            UI.reload(reloadUrl, $table.closest('div[id^="table-container-"]'), $(this)).then(() => {
+                                theToast.removeToast()
+                            })
+                        }),
+                    ),
+                })
+            })
         }
 
         $(document).ready(function() {
             addSupportOfNestedDropdown();
-            const $form = $('form.visible-column-form')
+            const $form = $('form.visible-column-form, form.visible-meta-column-form')
             const $checkboxes = $form.find('input').not(':checked')
             const $dropdownMenu = $form.closest('.dropdown')
             const tableRandomValue = $dropdownMenu.attr('data-table-random-value')
@@ -75,6 +137,7 @@ echo $availableColumnsHtml;
             $checkboxes.each(function() {
                 toggleColumn(this.getAttribute('data-columnname'), this.checked, $table)
             })
+            attachListeners()
         })
     })()
 </script>

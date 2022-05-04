@@ -9,6 +9,7 @@
         ];
         $currentQuery = $this->request->getQuery();
         $filteringLabel = !empty($currentQuery['filteringLabel']) ? $currentQuery['filteringLabel'] : '';
+        $fakeFilteringLabel = !empty($fakeFilteringLabel) ? $fakeFilteringLabel : false;
         unset($currentQuery['page'], $currentQuery['limit'], $currentQuery['sort'], $currentQuery['filteringLabel']);
         if (!empty($filteringContext['filterCondition'])) { // PHP replaces `.` by `_` when fetching the request parameter
             $currentFilteringContext = [];
@@ -25,9 +26,11 @@
                 (
                     $currentQuery == $currentFilteringContext &&                // query conditions match
                     !isset($filteringContext['filterConditionFunction']) &&     // not a custom filtering
-                    empty($filteringLabel)                                // do not check `All` by default
+                    empty($filteringLabel) &&                                   // do not check `All` by default
+                    empty($fakeFilteringLabel)                                  // no custom filter is a default filter
                 ) ||
-                $filteringContext['label'] == $filteringLabel             // labels should not be duplicated
+                $filteringContext['label'] == $filteringLabel ||                // labels should not be duplicated
+                $filteringContext['label'] == $fakeFilteringLabel               // use the default filter
             ),
             'isFilter' => true,
             'onClick' => 'changeIndexContext',

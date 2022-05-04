@@ -43,7 +43,8 @@ echo $this->element(
             [
                 'url' => '/MetaTemplateFields/index?meta_template_id={{0}}',
                 'url_params' => ['id'],
-                'title' => __('Fields')
+                'title' => __('Fields'),
+                'collapsed' => 'show',
             ]
         ]
     ]

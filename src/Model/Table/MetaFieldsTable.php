@@ -5,6 +5,7 @@ namespace App\Model\Table;
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\ORM\RulesChecker;
 
 class MetaFieldsTable extends AppTable
 {
@@ -12,11 +13,17 @@ class MetaFieldsTable extends AppTable
     {
         parent::initialize($config);
         $this->addBehavior('UUID');
+        $this->addBehavior('Timestamp');
+        $this->addBehavior('CounterCache', [
+            'MetaTemplateFields' => ['counter']
+        ]);
+
         $this->addBehavior('AuditLog');
         $this->addBehavior('Timestamp');
-        $this->setDisplayField('field');
         $this->belongsTo('MetaTemplates');
         $this->belongsTo('MetaTemplateFields');
+
+        $this->setDisplayField('field');
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -30,7 +37,59 @@ class MetaFieldsTable extends AppTable
             ->notEmptyString('meta_template_field_id')
             ->requirePresence(['scope', 'field', 'value', 'uuid', 'meta_template_id', 'meta_template_field_id'], 'create');
 
-        // add validation regex
+        $validator->add('value', 'validMetaField', [
+            'rule' => 'isValidMetaField',
+            'message' => __('The provided value doesn\'t pass the validation check for its meta-template.'),
+            'provider' => 'table',
+        ]);
+
         return $validator;
+    }
+
+    public function isValidMetaField($value, array $context)
+    {
+        $metaFieldsTable = $context['providers']['table'];
+        $entityData = $context['data'];
+        $metaTemplateField = $metaFieldsTable->MetaTemplateFields->get($entityData['meta_template_field_id']);
+        return $this->isValidMetaFieldForMetaTemplateField($value, $metaTemplateField);
+    }
+
+    public function isValidMetaFieldForMetaTemplateField($value, $metaTemplateField)
+    {
+        $typeValid = $this->isValidType($value, $metaTemplateField);
+        if ($typeValid !== true) {
+            return $typeValid;
+        }
+        if (!empty($metaTemplateField['regex'])) {
+            return $this->isValidRegex($value, $metaTemplateField);
+        }
+        return true;
+    }
+
+    public function isValidType($value, $metaTemplateField)
+    {
+        if (empty($value)) {
+            return __('Metafield value cannot be empty.');
+        }
+        $typeHandler = $this->MetaTemplateFields->getTypeHandler($metaTemplateField['type']);
+        if (!empty($typeHandler)) {
+            $success = $typeHandler->validate($value);
+            return $success ? true : __('Metafields value `{0}` for `{1}` doesn\'t pass type validation.', $value, $metaTemplateField['field']);
+        }
+        /*
+            We should not end-up in this case. But if someone creates a new type without his handler,
+            we consider its type to be a valid text.
+        */
+        return true;
+    }
+
+    public function isValidRegex($value, $metaTemplateField)
+    {
+
+        $re = $metaTemplateField['regex'];
+        if (!preg_match("/^$re$/m", $value)) {
+            return __('Metafield value `{0}` for `{1}` doesn\'t pass regex validation.', $value, $metaTemplateField['field']);
+        }
+        return true;
     }
 }

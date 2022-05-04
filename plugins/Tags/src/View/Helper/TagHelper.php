@@ -33,7 +33,7 @@ class TagHelper extends Helper
                 'data-text-colour' => h($tag['text_colour']),
             ];
         }, $options['allTags']) : [];
-        $classes = ['tag-input', 'flex-grow-1'];
+        $classes = ['select2-input', 'flex-grow-1'];
         $url = '';
         if (!empty($this->getConfig('editable'))) {
             $url = $this->Url->build([

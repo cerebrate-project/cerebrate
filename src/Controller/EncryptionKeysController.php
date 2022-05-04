@@ -17,6 +17,7 @@ class EncryptionKeysController extends AppController
     public $filterFields = ['owner_model', 'owner_id', 'encryption_key'];
     public $quickFilterFields = ['encryption_key'];
     public $containFields = ['Individuals', 'Organisations'];
+    public $statisticsFields = ['type'];
 
     public function index()
     {
@@ -28,7 +29,8 @@ class EncryptionKeysController extends AppController
                     'type'
                 ]
             ],
-            'contain' => $this->containFields
+            'contain' => $this->containFields,
+            'statisticsFields' => $this->statisticsFields,
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

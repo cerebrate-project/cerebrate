@@ -305,70 +305,71 @@ class MispConnector extends CommonConnectorTools
         $response = $this->getData('/servers/serverSettings', $params);
         $data = $response->getJson();
         if (!empty($data['finalSettings'])) {
-        $finalSettings = [
-            'type' => 'index',
-            'data' => [
-                'data' => $data['finalSettings'],
-                'skip_pagination' => 1,
-                'top_bar' => [
-                    'children' => [
+            $finalSettings = [
+                'type' => 'index',
+                'data' => [
+                    'data' => $data['finalSettings'],
+                    'skip_pagination' => 1,
+                    'top_bar' => [
+                        'children' => [
+                            [
+                                'type' => 'search',
+                                'button' => __('Search'),
+                                'placeholder' => __('Enter value to search'),
+                                'data' => '',
+                                'searchKey' => 'value',
+                                'additionalUrlParams' => $urlParams
+                            ]
+                        ]
+                    ],
+                    'fields' => [
                         [
-                            'type' => 'search',
-                            'button' => __('Filter'),
-                            'placeholder' => __('Enter value to search'),
-                            'data' => '',
-                            'searchKey' => 'value',
-                            'additionalUrlParams' => $urlParams
+                            'name' => 'Setting',
+                            'sort' => 'setting',
+                            'data_path' => 'setting',
+                        ],
+                        [
+                            'name' => 'Criticality',
+                            'sort' => 'level',
+                            'data_path' => 'level',
+                            'arrayData' => [
+                                0 => 'Critical',
+                                1 => 'Recommended',
+                                2 => 'Optional'
+                            ],
+                            'element' => 'array_lookup_field'
+                        ],
+                        [
+                            'name' => __('Value'),
+                            'sort' => 'value',
+                            'data_path' => 'value',
+                            'options' => 'options'
+                        ],
+                        [
+                            'name' => __('Type'),
+                            'sort' => 'type',
+                            'data_path' => 'type',
+                        ],
+                        [
+                            'name' => __('Error message'),
+                            'sort' => 'errorMessage',
+                            'data_path' => 'errorMessage',
+                        ]
+                    ],
+                    'title' => false,
+                    'description' => false,
+                    'pull' => 'right',
+                    'actions' => [
+                        [
+                            'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/modifySettingAction?setting={{0}}',
+                            'modal_params_data_path' => ['setting'],
+                            'icon' => 'download',
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/ServerSettingsAction'
                         ]
                     ]
                 ],
-                'fields' => [
-                    [
-                        'name' => 'Setting',
-                        'sort' => 'setting',
-                        'data_path' => 'setting',
-                    ],
-                    [
-                        'name' => 'Criticality',
-                        'sort' => 'level',
-                        'data_path' => 'level',
-                        'arrayData' => [
-                            0 => 'Critical',
-                            1 => 'Recommended',
-                            2 => 'Optional'
-                        ],
-                        'element' => 'array_lookup_field'
-                    ],
-                    [
-                        'name' => __('Value'),
-                        'sort' => 'value',
-                        'data_path' => 'value',
-                        'options' => 'options'
-                    ],
-                    [
-                        'name' => __('Type'),
-                        'sort' => 'type',
-                        'data_path' => 'type',
-                    ],
-                    [
-                        'name' => __('Error message'),
-                        'sort' => 'errorMessage',
-                        'data_path' => 'errorMessage',
-                    ]
-                ],
-                'title' => false,
-                'description' => false,
-                'pull' => 'right',
-                'actions' => [
-                    [
-                        'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/modifySettingAction?setting={{0}}',
-                        'modal_params_data_path' => ['setting'],
-                        'icon' => 'download',
-                        'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/ServerSettingsAction'
-                    ]
-                ]
-            ]
-        ];
+            ];
+
             if (!empty($params['quickFilter'])) {
                 $needle = strtolower($params['quickFilter']);
                 foreach ($finalSettings['data']['data'] as $k => $v) {
@@ -404,7 +405,7 @@ class MispConnector extends CommonConnectorTools
                         'children' => [
                             [
                                 'type' => 'search',
-                                'button' => __('Filter'),
+                                'button' => __('Search'),
                                 'placeholder' => __('Enter value to search'),
                                 'data' => '',
                                 'searchKey' => 'value',
@@ -494,7 +495,7 @@ class MispConnector extends CommonConnectorTools
                         'children' => [
                             [
                                 'type' => 'search',
-                                'button' => __('Filter'),
+                                'button' => __('Search'),
                                 'placeholder' => __('Enter value to search'),
                                 'data' => '',
                                 'searchKey' => 'value',
@@ -572,7 +573,7 @@ class MispConnector extends CommonConnectorTools
                         'children' => [
                             [
                                 'type' => 'search',
-                                'button' => __('Filter'),
+                                'button' => __('Search'),
                                 'placeholder' => __('Enter value to search'),
                                 'data' => '',
                                 'searchKey' => 'value',
@@ -640,7 +641,7 @@ class MispConnector extends CommonConnectorTools
                         'children' => [
                             [
                                 'type' => 'search',
-                                'button' => __('Filter'),
+                                'button' => __('Search'),
                                 'placeholder' => __('Enter value to search'),
                                 'data' => '',
                                 'searchKey' => 'value',

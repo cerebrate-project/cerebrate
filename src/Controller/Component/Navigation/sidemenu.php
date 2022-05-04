@@ -38,6 +38,11 @@ class Sidemenu {
                     'label' => __('Sharing Groups'),
                     'icon' => $this->iconTable['SharingGroups'],
                     'url' => '/sharingGroups/index',
+                ],
+                'MailingLists' => [
+                    'label' => __('Mailing Lists'),
+                    'icon' => $this->iconTable['MailingLists'],
+                    'url' => '/mailingLists/index',
                 ]
             ],
             __('Synchronisation') => [
@@ -45,11 +50,6 @@ class Sidemenu {
                     'label' => __('Broods'),
                     'icon' => $this->iconTable['Broods'],
                     'url' => '/broods/index',
-                ],
-                'API' => [
-                    'label' => __('API'),
-                    'icon' => $this->iconTable['API'],
-                    'url' => '/api/index',
                 ],
             ],
             __('Administration') => [
@@ -78,13 +78,13 @@ class Sidemenu {
                     'icon' => $this->iconTable['Inbox'],
                     'url' => '/inbox/index',
                     'children' => [
-                        'index' => [
+                        'inbox' => [
                             'url' => '/inbox/index',
-                            'label' => __('Inbox')
+                            'label' => __('Inbox'),
                         ],
                         'outbox' => [
                             'url' => '/outbox/index',
-                            'label' => __('Outbox')
+                            'label' => __('Outbox'),
                         ],
                     ]
                 ],
@@ -124,6 +124,11 @@ class Sidemenu {
                             'icon' => 'history',
                         ],
                     ]
+                ],
+                'API' => [
+                    'label' => __('API'),
+                    'icon' => $this->iconTable['API'],
+                    'url' => '/api/index',
                 ],
             ],
             'Open' => [

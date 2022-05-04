@@ -47,26 +47,39 @@ $filteringForm = $this->Bootstrap->table(
     ]
 );
 
+$filteringMetafields = '';
+if ($metaFieldsEnabled) {
+    $helpText = $this->Bootstrap->genNode('sup', [
+        'class' => ['ms-1 fa fa-info'],
+        'title' => __('Include help'),
+        'data-bs-toggle' => 'tooltip',
+    ]);
+    $filteringMetafields = $this->Bootstrap->genNode('h5', [], __('Meta Fields') . $helpText);
+    $filteringMetafields .= $this->element('genericElements/IndexTable/metafield_filtering', $metaTemplates);
+}
+
+$filteringTags = '';
 if ($taggingEnabled) {
     $helpText = $this->Bootstrap->genNode('sup', [
         'class' => ['ms-1 fa fa-info'],
         'title' => __('Supports negation matches (with the `!` character) and LIKE matches (with the `%` character).&#10;Example: `!exportable`, `%able`'),
         'data-bs-toggle' => 'tooltip',
     ]);
-    $filteringTags = $this->Bootstrap->genNode('h5', [], __('Tags') . $helpText);
+    $filteringTags = $this->Bootstrap->genNode('h5', [
+        'class' => 'mt-2'
+    ], __('Tags') . $helpText);
     $filteringTags .= $this->Tag->tags([], [
         'allTags' => $allTags,
         'picker' => true,
         'editable' => false,
     ]);
-} else {
-    $filteringTags = '';
 }
-$modalBody = sprintf('%s%s', $filteringForm, $filteringTags);
+
+$modalBody = implode('', [$filteringForm, $filteringMetafields, $filteringTags]);
 
 echo $this->Bootstrap->modal([
     'title' => __('Filtering options for {0}', Inflector::singularize($this->request->getParam('controller'))),
-    'size' => 'lg',
+    'size' => !empty($metaFieldsEnabled) ? 'xl' : 'lg',
     'type' => 'confirm',
     'bodyHtml' => $modalBody,
     'confirmText' => __('Filter'),
@@ -84,7 +97,7 @@ echo $this->Bootstrap->modal([
         const controller = '<?= $this->request->getParam('controller') ?>';
         const action = 'index';
         const $tbody = modalObject.$modal.find('table.indexFilteringTable tbody')
-        const $rows = $tbody.find('tr:not(#controlRow)')
+        const $rows = $tbody.find('tr')
         const activeFilters = {}
         $rows.each(function() {
             const rowData = getDataFromRow($(this))
@@ -96,8 +109,16 @@ echo $this->Bootstrap->modal([
                 activeFilters[fullFilter] = rowData['value']
             }
         })
-        $select = modalObject.$modal.find('select.tag-input')
-        activeFilters['filteringTags'] = $select.select2('data').map(tag => tag.text)
+        if (modalObject.$modal.find('table.indexMetaFieldsFilteringTable').length > 0) {
+            let metaFieldFilters = modalObject.$modal.find('table.indexMetaFieldsFilteringTable')[0].getFiltersFunction()
+            // activeFilters['filteringMetaFields'] = metaFieldFilters !== undefined ? metaFieldFilters : [];
+            metaFieldFilters = metaFieldFilters !== undefined ? metaFieldFilters : []
+            for (let [metaFieldPath, metaFieldValue] of Object.entries(metaFieldFilters)) {
+                activeFilters[metaFieldPath] = metaFieldValue
+            }
+        }
+        $selectTag = modalObject.$modal.find('.tag-container select.select2-input')
+        activeFilters['filteringTags'] = $selectTag.select2('data').map(tag => tag.text)
         const searchParam = jQuery.param(activeFilters);
         const url = `/${controller}/${action}?${searchParam}`
 
@@ -125,7 +146,7 @@ echo $this->Bootstrap->modal([
             }
             setFilteringValues($filteringTable, field, value, operator)
         }
-        $select = $filteringTable.closest('.modal-body').find('select.tag-input')
+        $select = $filteringTable.closest('.modal-body').find('select.select2-input')
         let passedTags = []
         tags.forEach(tagname => {
             const existingOption = $select.find('option').filter(function() {

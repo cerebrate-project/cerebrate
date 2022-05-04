@@ -1,5 +1,34 @@
 <?php
+use Cake\Utility\Hash;
+
+if (!empty($updateableTemplates['new'])) {
+    $alertHtml = sprintf(
+        '<strong>%s</strong> %s',
+        __('New meta-templates available!'),
+        __n('There is one new template on disk that can be loaded in the database', 'There are {0} new templates on disk that can be loaded in the database:', count($updateableTemplates['new']), count($updateableTemplates['new']))
+    );
+    $alertList = [];
+    $alertList = Hash::extract($updateableTemplates['new'], '{s}.template');
+    $alertList = array_map(function($entry) {
+        return sprintf('%s:%s %s',
+            h($entry['namespace']),
+            h($entry['name']),
+            $this->Bootstrap->button([
+                'variant' => 'link',
+                'size' => 'sm',
+                'icon' => 'download',
+                'title' => __('Create this template'),
+                'params' => [
+                    'onclick' => "UI.submissionModalForIndex('/metaTemplates/createNewTemplate/{$entry['uuid']}', '/meta-templates')"
+                ]
+            ])
+        );
+    }, $alertList);
+    $alertHtml .= $this->Html->nestedList($alertList); 
+}
+
 echo $this->element('genericElements/IndexTable/index_table', [
+    'notice' => !empty($alertHtml) ? ['html' => $alertHtml, 'variant' => 'warning',] : false,
     'data' => [
         'data' => $data,
         'top_bar' => [
@@ -10,7 +39,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 ],
                 [
                     'type' => 'search',
-                    'button' => __('Filter'),
+                    'button' => __('Search'),
                     'placeholder' => __('Enter value to search'),
                     'data' => '',
                     'searchKey' => 'value'
@@ -130,19 +159,58 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'namespace',
             ],
             [
+                'name' => __('Version'),
+                'sort' => 'version',
+                'data_path' => 'version',
+            ],
+            [
                 'name' => __('UUID'),
                 'sort' => 'uuid',
                 'data_path' => 'uuid'
-            ]
+            ],
         ],
         'title' => __('Meta Field Templates'),
         'description' => __('The various templates used to enrich certain objects by a set of standardised fields.'),
-        'pull' => 'right',
         'actions' => [
             [
                 'url' => '/metaTemplates/view',
                 'url_params_data_paths' => ['id'],
                 'icon' => 'eye'
+            ],
+            [
+                'open_modal' => '/metaTemplates/update/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'title' => __('Update Meta-Template'),
+                'icon' => 'download',
+                'complex_requirement' => [
+                    'function' => function ($row, $options) {
+                        return empty($row['updateStatus']['up-to-date']) && empty($row['updateStatus']['to-existing']);
+                    }
+                ]
+            ],
+            [
+                'open_modal' => '/metaTemplates/getMetaFieldsToUpdate/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'title' => __('Get meta-fields that should be moved to the newest version of this meta-template'),
+                'icon' => 'exclamation-triangle',
+                'variant' => 'warning',
+                'complex_requirement' => [
+                    'function' => function ($row, $options) {
+                        return !empty($row['updateStatus']['to-existing']) && empty($row['updateStatus']['can-be-removed']);
+                    }
+                ]
+            ],
+            [
+                'open_modal' => '/metaTemplates/delete/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'title' => __('Get meta-fields that should be moved to the newest version of this meta-template'),
+                'icon' => 'trash',
+                'variant' => 'success',
+                'complex_requirement' => [
+                    'function' => function ($row, $options) {
+                        return !empty($row['updateStatus']['to-existing']) && !empty($row['updateStatus']['can-be-removed']);
+                    }
+                ]
             ],
         ]
     ]

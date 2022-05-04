@@ -3,8 +3,9 @@
 ?>
 
 <ul id="<?= $seed ?>" class="sub-menu collapse <?= !empty($open) ? 'show' : '' ?>">
-    <?php foreach ($children as $child): ?>
+    <?php foreach ($children as $childName => $child): ?>
         <?= $this->element('layouts/sidebar/entry', [
+                'parentName' => $childName,
                 'parent' => $child,
             ])
         ?>

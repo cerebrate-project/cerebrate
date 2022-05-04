@@ -1,11 +1,15 @@
 <?php
     use Cake\Core\Configure;
     $passwordRequired = false;
+    $showPasswordField = false;
     if ($this->request->getParam('action') === 'add') {
         $dropdownData['individual'] = ['new' => __('New individual')] + $dropdownData['individual'];
         if (!Configure::check('password_auth.enabled') || Configure::read('password_auth.enabled')) {
             $passwordRequired = 'required';
         }
+    }
+    if (!Configure::check('password_auth.enabled') || Configure::read('password_auth.enabled')) {
+        $showPasswordField = true;
     }
     echo $this->element('genericElements/Form/genericForm', [
         'data' => [
@@ -62,7 +66,7 @@
                     'required' => $passwordRequired,
                     'autocomplete' => 'new-password',
                     'value' => '',
-                    'requirements' => (bool)$passwordRequired
+                    'requirements' => $showPasswordField,
                 ],
                 [
                     'field' => 'confirm_password',
@@ -70,7 +74,7 @@
                     'type' => 'password',
                     'required' => $passwordRequired,
                     'autocomplete' => 'off',
-                    'requirements' => (bool)$passwordRequired
+                    'requirements' => $showPasswordField,
                 ],
                 [
                     'field' => 'role_id',
