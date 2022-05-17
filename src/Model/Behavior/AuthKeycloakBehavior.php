@@ -66,9 +66,10 @@ class AuthKeycloakBehavior extends Behavior
                 'name' => $profile_payload[$fields['role_name']],
             ]
         ];
-        $user['user']['individual_id'] = $this->_table->captureIndividual($user);
-        $user['user']['role_id'] = $this->_table->captureRole($user);
+        //$user['user']['individual_id'] = $this->_table->captureIndividual($user);
+        //$user['user']['role_id'] = $this->_table->captureRole($user);
         $existingUser = $this->_table->find()->where(['username' => $user['user']['username']])->first();
+        /*
         if (empty($existingUser)) {
             $user['user']['password'] = Security::randomString(16);
             $existingUser = $this->_table->newEntity($user['user']);
@@ -92,6 +93,7 @@ class AuthKeycloakBehavior extends Behavior
                 }
             }
         }
+        */
         return $existingUser;
     }
 
