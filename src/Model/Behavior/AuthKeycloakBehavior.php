@@ -9,10 +9,12 @@ use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\Utility\Text;
 use Cake\Utility\Security;
+use Cake\Utility\Hash;
 use \Cake\Http\Session;
 use Cake\Core\Configure;
 use Cake\Http\Client;
 use Cake\Http\Client\FormData;
+use Cake\Http\Exception\NotFoundException;
 
 class AuthKeycloakBehavior extends Behavior
 {
@@ -94,6 +96,32 @@ class AuthKeycloakBehavior extends Behavior
         return $existingUser;
     }
 
+    /*
+     * Run a rest query against keycloak
+     * Auto sets the headers and uses a sprintf string to build the URL, injecting the baseurl + realm into the $pathString
+     */
+    private function restApiRequest(string $pathString, array $payload, string $postRequestType = 'post'): Object
+    {
+        $token = $this->getAdminAccessToken();
+        $keycloakConfig = Configure::read('keycloak');
+        $http = new Client();
+        $url = sprintf(
+            $pathString,
+            $keycloakConfig['provider']['baseUrl'],
+            $keycloakConfig['provider']['realm']
+        );
+        return $http->$postRequestType(
+            $url,
+            json_encode($payload),
+            [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $token
+                ]
+            ]
+        );
+    }
+
     public function enrollUser($data): bool
     {
         $individual = $this->_table->Individuals->find()->where(
@@ -109,34 +137,19 @@ class AuthKeycloakBehavior extends Behavior
         $org = $this->_table->Organisations->find()->where([
             ['id' => $data['organisation_id']]
         ])->first();
-        $token = $this->getAdminAccessToken();
         $keyCloakUser = [
             'firstName' => $individual['first_name'],
             'lastName' => $individual['last_name'],
             'username' => $data['username'],
             'email' =>  $individual['email'],
+            'enabled' => true,
             'attributes' => [
                 'role_name' => empty($role['name']) ? Configure::read('keycloak.default_role_name') : $role['name'],
                 'org_uuid' => $org['uuid']
             ]
         ];
-        $keycloakConfig = Configure::read('keycloak');
-        $http = new Client();
-        $url = sprintf(
-            '%s/admin/realms/%s/users',
-            $keycloakConfig['provider']['baseUrl'],
-            $keycloakConfig['provider']['realm']
-        );
-        $response = $http->post(
-            $url,
-            json_encode($keyCloakUser),
-            [
-                'headers' => [
-                    'Content-Type' => 'application/json',
-                    'Authorization' => 'Bearer ' . $token
-                ]
-            ]
-        );
+        $path = '%s/admin/realms/%s/users';
+        $response = $this->restApiRequest($path, $keyCloakUser, 'post');
         $logChange = [
             'username' => $data['username'],
             'individual_id' => $data['individual_id'],
@@ -188,5 +201,216 @@ class AuthKeycloakBehavior extends Behavior
         );
         $parsedResponse = json_decode($response->getStringBody(), true);
         return $parsedResponse['access_token'];
+    }
+
+    private function getClientId(): string
+    {
+        $response = $this->restApiRequest('%s/admin/realms/%s/clients?clientId=' . Configure::read('keycloak.provider.applicationId'), [], 'get');
+        $clientId = json_decode($response->getStringBody(), true);
+        if (!empty($clientId[0]['id'])) {
+            return $clientId[0]['id'];
+        } else {
+            throw new NotFoundException(__('Keycloak client ID not found or service account doesn\'t have the "view-clients" privilege.'));
+        }
+    }
+
+    public function syncWithKeycloak(): array
+    {
+        $results = [];
+        $data['Roles'] = $this->_table->Roles->find()->disableHydration()->toArray();
+        $data['Organisations'] = $this->_table->Organisations->find()->disableHydration()->toArray();
+        $data['Users'] = $this->_table->find()->contain(['Individuals', 'Organisations', 'Roles'])->select(
+            [
+                'id',
+                'uuid',
+                'username',
+                'disabled',
+                'Individuals.email',
+                'Individuals.first_name',
+                'Individuals.last_name',
+                'Individuals.uuid',
+                'Roles.name',
+                'Roles.uuid',
+                'Organisations.name',
+                'Organisations.uuid'
+            ]
+        )->disableHydration()->toArray();
+        $clientId = $this->getClientId();
+        $modified = 0;
+        $modified += $this->syncRoles(Hash::extract($data['Roles'], '{n}.name'), $clientId, 'Role');
+        $modified += $this->syncRoles(Hash::extract($data['Organisations'], '{n}.name'), $clientId, 'Organisation');
+        $modified += $this->syncUsers($data['Users'], $clientId);
+        return $results;
+    }
+
+    private function syncRoles(array $roles, string $clientId, string $scope = 'Role'): int
+    {
+        $keycloakRoles = $this->getAllRoles($clientId);
+        $keycloakRolesParsed = Hash::extract($keycloakRoles, '{n}.name');
+        $rolesToAdd = [];
+        $scopeString = $scope . ':';
+        $modified = 0;
+        foreach ($roles as $role) {
+            if (!in_array($scopeString . $role, $keycloakRolesParsed)) {
+                $roleToPush = [
+                    'name' => $scopeString . $role,
+                    'clientRole' => true
+                ];
+                $url = '%s/admin/realms/%s/clients/' . $clientId . '/roles';
+                $this->restApiRequest($url, $roleToPush, 'post');
+                $modified += 1;
+            }
+            $keycloakRolesParsed = array_diff($keycloakRolesParsed, [$scopeString . $role]);
+        }
+        foreach ($keycloakRolesParsed as $roleToRemove) {
+            if (substr($roleToRemove, 0, strlen($scopeString)) === $scopeString) {
+                $url = '%s/admin/realms/%s/clients/' . $clientId . '/roles/' . $roleToRemove;
+                $this->restApiRequest($url, [], 'delete');
+                $modified += 1;
+            }
+        }
+        return $modified;
+    }
+
+    private function getAllRoles(string $clientId): array
+    {
+        $response = $this->restApiRequest('%s/admin/realms/%s/clients/' . $clientId . '/roles', [], 'get');
+        return json_decode($response->getStringBody(), true);
+    }
+
+    private function syncUsers(array $users, $clientId, $roles = null): bool
+    {
+        if ($roles === null) {
+            $roles = $this->getAllRoles($clientId);
+        }
+        $rolesParsed = [];
+        foreach ($roles as $role) {
+            $rolesParsed[$role['name']] = $role['id'];
+        }
+        $response = $this->restApiRequest('%s/admin/realms/%s/users', [], 'get');
+        $keycloakUsers = json_decode($response->getStringBody(), true);
+        $keycloakUsersParsed = [];
+        foreach ($keycloakUsers as $u) {
+            $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $u['id'] . '/role-mappings/clients/' . $clientId, [], 'get');
+            $roleMappings = json_decode($response->getStringBody(), true);
+            $keycloakUsersParsed[$u['username']] = [
+                'id' => $u['id'],
+                'username' => $u['username'],
+                'enabled' => $u['enabled'],
+                'firstName' => $u['firstName'],
+                'lastName' => $u['lastName'],
+                'email' => $u['email'],
+                'roles' => $roleMappings
+            ];
+        }
+        foreach ($users as &$user) {
+            if (empty($keycloakUsersParsed[$user['username']])) {
+                $this->createUser($user, $clientId, $rolesParsed);
+            } else {
+                $this->checkAndUpdateUser($keycloakUsersParsed[$user['username']], $user);
+                $this->checkAndUpdateUserRoles($keycloakUsersParsed[$user['username']], $user, $clientId, $rolesParsed);
+            }
+        }
+        return true;
+    }
+
+    private function checkAndUpdateUser(array $keycloakUser, array $user): bool
+    {
+        if (
+            $keycloakUser['enabled'] == $user['disabled'] ||
+            $keycloakUser['firstName'] !== $user['individual']['first_name'] ||
+            $keycloakUser['lastName'] !== $user['individual']['last_name'] ||
+            $keycloakUser['email'] !== $user['individual']['email']
+        ) {
+            $change = [
+                'enabled' => !$user['disabled'],
+                'firstName' => !$user['individual']['first_name'],
+                'lastName' => !$user['individual']['last_name'],
+                'email' => !$user['individual']['email'],
+            ];
+            $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'], $change, 'put');
+        }
+        return true;
+    }
+
+    private function createUser(array $user, string $clientId, array $rolesParsed): bool
+    {
+        $newUser = [
+            'username' => $user['username'],
+            'enabled' => !$user['disabled'],
+            'firstName' => $user['individual']['first_name'],
+            'lastName' => $user['individual']['last_name'],
+            'email' => $user['individual']['email']
+        ];
+        $response = $this->restApiRequest('%s/admin/realms/%s/users', $newUser, 'post');
+        $newUser = $this->restApiRequest('%s/admin/realms/%s/users?username=' . urlencode($user['username']), [], 'get');
+        $user['id'] = json_decode($newUser->getStringBody(), true);
+        $this->assignRolesToUser($user, $rolesParsed, $clientId);
+        return true;
+    }
+
+    private function assignRolesToUser(array $user, array $rolesParsed, string $clientId): bool
+    {
+        $roles = [
+            [
+                'id' => $rolesParsed['Role:' . $user['role']['name']],
+                'name' => 'Role:' . $user['role']['name'],
+                'clientRole' => true,
+                'containerId' => $clientId
+            ],
+            [
+                'id' => $rolesParsed['Organisation:' . $user['organisation']['name']],
+                'name' => 'Organisation:' . $user['organisation']['name'],
+                'clientRole' => true,
+                'containerId' => $clientId
+            ]
+        ];
+        $this->restApiRequest('%s/admin/realms/%s/users/' . $user['id'] . '/role-mappings/clients/' . $clientId, $roles, 'post');
+        return true;
+    }
+
+    private function checkAndUpdateUserRoles(array $keycloakUser, array $user, string $clientId, array $rolesParsed): bool
+    {
+        $assignedRoles = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'] . '/role-mappings/clients/' . $clientId, [], 'get');
+        $assignedRoles = json_decode($assignedRoles->getStringBody(), true);
+        $keycloakUserRoles = Hash::extract($assignedRoles, '{n}.name');
+        $assignedRolesParsed = [];
+        foreach ($assignedRoles as $k => $v) {
+            $assignedRolesParsed[$v['name']] = $v;
+        }
+        $userRoles = [
+            'Organisation:' . $user['organisation']['name'] => [
+                'id' => $rolesParsed['Organisation:' . $user['organisation']['name']],
+                'name' => 'Organisation:' . $user['organisation']['name'],
+                'clientRole' => true,
+                'containerId' => $clientId
+            ],
+            'Role:' . $user['role']['name'] => [
+                'id' => $rolesParsed['Role:' . $user['role']['name']],
+                'name' => 'Role:' . $user['role']['name'],
+                'clientRole' => true,
+                'containerId' => $clientId
+            ]
+        ];
+        $toAdd = array_diff(array_keys($userRoles), $keycloakUserRoles);
+        $toRemove = array_diff($keycloakUserRoles, array_keys($userRoles));
+        foreach ($toRemove as $k => $role) {
+            if (substr($role, 0, strlen('Organisation:')) !== 'Organisation:' && substr($role, 0, strlen('Role:') !== 'Role:')) {
+                unset($toRemove[$k]);
+            } else {
+                $toRemove[$k] = $assignedRolesParsed[$role];
+            }
+        }
+        if (!empty($toRemove)) {
+            $toRemove = array_values($toRemove);
+            $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'] . '/role-mappings/clients/' . $clientId, $toRemove, 'delete');
+        }
+        foreach ($toAdd as $k => $name) {
+            $toAdd[$k] = $userRoles[$name];
+        }
+        if (!empty($toAdd)) {
+            $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'] . '/role-mappings/clients/' . $clientId, $toAdd, 'post');
+        }
+        return true;
     }
 }
