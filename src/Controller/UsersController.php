@@ -143,8 +143,17 @@ class UsersController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $validRoles = [];
+        $individuals_params = [
+            'sort' => ['email' => 'asc']
+        ];
+        $individual_ids = [];
         if (!$currentUser['role']['perm_admin']) {
             $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->toArray();
+            $individual_ids = $this->Users->Individuals->find('aligned', ['organisation_id' => $currentUser['organisation_id']])->all()->extract('id')->toArray();
+            if (empty($individual_ids)) {
+                $individual_ids = [-1];
+            }
+            $individuals_params['conditions'] = ['id IN' => $individual_ids];
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
@@ -168,7 +177,10 @@ class UsersController extends AppController
             ]
         ];
         if ($this->request->is(['get'])) {
-            $params['fields'] = array_merge($params['fields'], ['individual_id', 'role_id', 'disabled', 'username']);
+            $params['fields'] = array_merge($params['fields'], ['individual_id', 'role_id', 'disabled']);
+            if (!empty($this->ACL->getUser()['role']['perm_admin'])) {
+                $params['fields'][] = 'organisation_id';
+            }
         }
         if ($this->request->is(['post', 'put']) && !empty($this->ACL->getUser()['role']['perm_admin'])) {
             $params['fields'][] = 'individual_id';
@@ -208,6 +220,18 @@ class UsersController extends AppController
             ]),
             'organisation' => $this->Users->Organisations->find('list', [
                 'sort' => ['name' => 'asc']
+            ])
+        ];
+        $org_conditions = [];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $org_conditions = ['id' => $currentUser['organisation_id']];
+        }
+        $dropdownData = [
+            'role' => $validRoles,
+            'individual' => $this->Users->Individuals->find('list', $individuals_params)->toArray(),
+            'organisation' => $this->Users->Organisations->find('list', [
+                'sort' => ['name' => 'asc'],
+                'conditions' => $org_conditions
             ])
         ];
         $this->set(compact('dropdownData'));
