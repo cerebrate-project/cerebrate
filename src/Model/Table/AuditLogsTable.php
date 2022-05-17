@@ -58,7 +58,12 @@ class AuditLogsTable extends AppTable
                 $data['request_ip'] = '127.0.0.1';
             }
         }
-        foreach (['user_id', 'request_type', 'authkey_id'] as $field) {
+        $defaults = [
+            'user_id' => 0,
+            'request_type' => 'CLI',
+            'authkey_id' => 0
+        ];
+        foreach (array_keys($defaults) as $field) {
             if (!isset($data[$field])) {
                 if (!isset($userInfo)) {
                     $userInfo = $this->userInfo();
@@ -91,6 +96,11 @@ class AuditLogsTable extends AppTable
                 $changed = self::BROTLI_HEADER . brotli_compress($changed, 4, BROTLI_TEXT);
             }
             $data['changed'] = $changed;
+        }
+        foreach ($defaults as $field => $default_value) {
+            if (!isset($data[$field])) {
+                $data[$field] = $default_value;
+            }
         }
     }
 
@@ -157,7 +167,7 @@ class AuditLogsTable extends AppTable
         if ($this->user !== null) {
             return $this->user;
         }
-        
+
         $this->user = ['id' => 0, /*'org_id' => 0, */'authkey_id' => 0, 'request_type' => self::REQUEST_TYPE_DEFAULT, 'name' => ''];
 
         $isShell = (php_sapi_name() === 'cli');
