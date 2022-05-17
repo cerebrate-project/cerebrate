@@ -194,15 +194,6 @@ class AuditLogsTable extends AppTable
                 if (isset($authUser['authkey_id'])) {
                     $this->user['authkey_id'] = $authUser['authkey_id'];
                 }
-            } else {
-                $this->user['request_type'] = self::REQUEST_TYPE_CLI;
-                $currentUserId = Configure::read('CurrentUserId');
-                if (!empty($currentUserId)) {
-                    $this->user['id'] = $currentUserId;
-                    $userFromDb = $this->Users->find()->where(['id' => $currentUserId])->first();
-                    $this->user['name'] = $userFromDb['name'];
-                    $this->user['org_id'] = $userFromDb['org_id'];
-                }
             }
         }
         return $this->user;
