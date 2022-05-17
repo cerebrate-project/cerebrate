@@ -22,6 +22,7 @@ class AuthKeycloakBehavior extends Behavior
     public function getUser(EntityInterface $profile, Session $session)
     {
         $userId = $session->read('Auth.User.id');
+        $userId = null;
         if ($userId) {
             return $this->_table->get($userId);
         }
@@ -39,8 +40,6 @@ class AuthKeycloakBehavior extends Behavior
     {
         $mapping = Configure::read('keycloak.mapping');
         $fields = [
-            'org_uuid' => 'org_uuid',
-            'role_name' => 'role_name',
             'username' => 'preferred_username',
             'email' => 'email',
             'first_name' => 'given_name',
@@ -124,45 +123,47 @@ class AuthKeycloakBehavior extends Behavior
 
     public function enrollUser($data): bool
     {
-        $individual = $this->_table->Individuals->find()->where(
-            ['id' => $data['individual_id']]
-        )->first();
         $roleConditions = [
             'id' => $data['role_id']
         ];
         if (!empty(Configure::read('keycloak.user_management.actions'))) {
             $roleConditions['name'] = Configure::read('keycloak.default_role_name');
         }
-        $role = $this->_table->Roles->find()->where($roleConditions)->first();
-        $org = $this->_table->Organisations->find()->where([
-            ['id' => $data['organisation_id']]
-        ])->first();
-        $keyCloakUser = [
-            'firstName' => $individual['first_name'],
-            'lastName' => $individual['last_name'],
+        $user = [
             'username' => $data['username'],
-            'email' =>  $individual['email'],
-            'enabled' => true,
-            'attributes' => [
-                'role_name' => empty($role['name']) ? Configure::read('keycloak.default_role_name') : $role['name'],
-                'org_uuid' => $org['uuid']
-            ]
+            'disabled' => false,
+            'individual' => $this->_table->Individuals->find()->where(
+                [
+                    'id' => $data['individual_id']
+                ]
+            )->first(),
+            'role' => $this->_table->Roles->find()->where($roleConditions)->first(),
+            'organisation' => $this->_table->Organisations->find()->where(
+                [
+                    'id' => $data['organisation_id']
+                ]
+            )->first()
         ];
-        $path = '%s/admin/realms/%s/users';
-        $response = $this->restApiRequest($path, $keyCloakUser, 'post');
+        $clientId = $this->getClientId();
+        $roles = $this->getAllRoles($clientId);
+        $rolesParsed = [];
+        foreach ($roles as $role) {
+            $rolesParsed[$role['name']] = $role['id'];
+        }
+        $this->createUser($user, $clientId, $rolesParsed);
         $logChange = [
-            'username' => $data['username'],
-            'individual_id' => $data['individual_id'],
-            'role_id' => $data['role_id']
+            'username' => $user['username'],
+            'individual_id' => $user['individual']['id'],
+            'role_id' => $user['role']['id']
         ];
         if (!$response->isOk()) {
-            $logChange['error_code'] = $response->getStatusCode();
+            $logChange['code'] = $response->getStatusCode();
             $logChange['error_body'] = $response->getStringBody();
             $this->_table->auditLogs()->insert([
                 'request_action' => 'enrollUser',
                 'model' => 'User',
                 'model_id' => 0,
-                'model_title' => __('Failed Keycloak enrollment for user {0}', $data['username']),
+                'model_title' => __('Failed Keycloak enrollment for user {0}', $user['username']),
                 'changed' => $logChange
             ]);
         } else {
@@ -170,7 +171,7 @@ class AuthKeycloakBehavior extends Behavior
                 'request_action' => 'enrollUser',
                 'model' => 'User',
                 'model_id' => 0,
-                'model_title' => __('Successful Keycloak enrollment for user {0}', $data['username']),
+                'model_title' => __('Successful Keycloak enrollment for user {0}', $user['username']),
                 'changed' => $logChange
             ]);
         }
@@ -236,10 +237,10 @@ class AuthKeycloakBehavior extends Behavior
             ]
         )->disableHydration()->toArray();
         $clientId = $this->getClientId();
-        $modified = 0;
-        $modified += $this->syncRoles(Hash::extract($data['Roles'], '{n}.name'), $clientId, 'Role');
-        $modified += $this->syncRoles(Hash::extract($data['Organisations'], '{n}.name'), $clientId, 'Organisation');
-        $modified += $this->syncUsers($data['Users'], $clientId);
+        $results = [];
+        $results['roles'] = $this->syncRoles(Hash::extract($data['Roles'], '{n}.name'), $clientId, 'Role');
+        $results['organisations'] = $this->syncRoles(Hash::extract($data['Organisations'], '{n}.name'), $clientId, 'Organisation');
+        $results['users'] = $this->syncUsers($data['Users'], $clientId);
         return $results;
     }
 
@@ -257,7 +258,19 @@ class AuthKeycloakBehavior extends Behavior
                     'clientRole' => true
                 ];
                 $url = '%s/admin/realms/%s/clients/' . $clientId . '/roles';
-                $this->restApiRequest($url, $roleToPush, 'post');
+                $response = $this->restApiRequest($url, $roleToPush, 'post');
+                if (!$response->isOk()) {
+                    $this->_table->auditLogs()->insert([
+                        'request_action' => 'keycloakCreateRole',
+                        'model' => 'User',
+                        'model_id' => 0,
+                        'model_title' => __('Failed to create role ({0}) in keycloak', $scopeString . $role),
+                        'changed' => [
+                            'code' => $response->getStatusCode(),
+                            'error_body' => $response->getStringBody()
+                        ]
+                    ]);
+                }
                 $modified += 1;
             }
             $keycloakRolesParsed = array_diff($keycloakRolesParsed, [$scopeString . $role]);
@@ -265,7 +278,19 @@ class AuthKeycloakBehavior extends Behavior
         foreach ($keycloakRolesParsed as $roleToRemove) {
             if (substr($roleToRemove, 0, strlen($scopeString)) === $scopeString) {
                 $url = '%s/admin/realms/%s/clients/' . $clientId . '/roles/' . $roleToRemove;
-                $this->restApiRequest($url, [], 'delete');
+                $response = $this->restApiRequest($url, [], 'delete');
+                if (!$response->isOk()) {
+                    $this->_table->auditLogs()->insert([
+                        'request_action' => 'keycloakRemoveRole',
+                        'model' => 'User',
+                        'model_id' => 0,
+                        'model_title' => __('Failed to remove role ({0}) in keycloak', $roleToRemove),
+                        'changed' => [
+                            'code' => $response->getStatusCode(),
+                            'error_body' => $response->getStringBody()
+                        ]
+                    ]);
+                }
                 $modified += 1;
             }
         }
@@ -278,7 +303,7 @@ class AuthKeycloakBehavior extends Behavior
         return json_decode($response->getStringBody(), true);
     }
 
-    private function syncUsers(array $users, $clientId, $roles = null): bool
+    private function syncUsers(array $users, $clientId, $roles = null): int
     {
         if ($roles === null) {
             $roles = $this->getAllRoles($clientId);
@@ -303,15 +328,26 @@ class AuthKeycloakBehavior extends Behavior
                 'roles' => $roleMappings
             ];
         }
+        $changes = 0;
         foreach ($users as &$user) {
+            $changed = false;
             if (empty($keycloakUsersParsed[$user['username']])) {
-                $this->createUser($user, $clientId, $rolesParsed);
+                if ($this->createUser($user, $clientId, $rolesParsed)) {
+                    $changes = true;
+                }
             } else {
-                $this->checkAndUpdateUser($keycloakUsersParsed[$user['username']], $user);
-                $this->checkAndUpdateUserRoles($keycloakUsersParsed[$user['username']], $user, $clientId, $rolesParsed);
+                if ($this->checkAndUpdateUser($keycloakUsersParsed[$user['username']], $user)) {
+                    $changes = true;
+                }
+                if ($this->checkAndUpdateUserRoles($keycloakUsersParsed[$user['username']], $user, $clientId, $rolesParsed)) {
+                    $changes = true;
+                }
+            }
+            if ($changed) {
+                $changes += 1;
             }
         }
-        return true;
+        return $changes;
     }
 
     private function checkAndUpdateUser(array $keycloakUser, array $user): bool
@@ -324,13 +360,27 @@ class AuthKeycloakBehavior extends Behavior
         ) {
             $change = [
                 'enabled' => !$user['disabled'],
-                'firstName' => !$user['individual']['first_name'],
-                'lastName' => !$user['individual']['last_name'],
-                'email' => !$user['individual']['email'],
+                'firstName' => $user['individual']['first_name'],
+                'lastName' => $user['individual']['last_name'],
+                'email' => $user['individual']['email'],
             ];
             $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'], $change, 'put');
+            if (!$response->isOk()) {
+                $this->_table->auditLogs()->insert([
+                    'request_action' => 'keycloakUpdateUser',
+                    'model' => 'User',
+                    'model_id' => 0,
+                    'model_title' => __('Failed to update user ({0}) in keycloak', $user['username']),
+                    'changed' => [
+                        'code' => $response->getStatusCode(),
+                        'error_body' => $response->getStringBody()
+                    ]
+                ]);
+            } else {
+                return true;
+            }
         }
-        return true;
+        return false;
     }
 
     private function createUser(array $user, string $clientId, array $rolesParsed): bool
@@ -343,8 +393,23 @@ class AuthKeycloakBehavior extends Behavior
             'email' => $user['individual']['email']
         ];
         $response = $this->restApiRequest('%s/admin/realms/%s/users', $newUser, 'post');
+        if (!$response->isOk()) {
+            $this->_table->auditLogs()->insert([
+                'request_action' => 'createUser',
+                'model' => 'User',
+                'model_id' => 0,
+                'model_title' => __('Failed to create user ({0}) in keycloak {0}', $user['username']),
+                'changed' => [
+                    'code' => $response->getStatusCode(),
+                    'error_body' => $response->getStringBody()
+                ]
+            ]);
+        }
         $newUser = $this->restApiRequest('%s/admin/realms/%s/users?username=' . urlencode($user['username']), [], 'get');
         $user['id'] = json_decode($newUser->getStringBody(), true);
+        if (empty($user['id'])) {
+            return false;
+        }
         $this->assignRolesToUser($user, $rolesParsed, $clientId);
         return true;
     }
@@ -365,7 +430,19 @@ class AuthKeycloakBehavior extends Behavior
                 'containerId' => $clientId
             ]
         ];
-        $this->restApiRequest('%s/admin/realms/%s/users/' . $user['id'] . '/role-mappings/clients/' . $clientId, $roles, 'post');
+        $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $user['id'] . '/role-mappings/clients/' . $clientId, $roles, 'post');
+        if (!$response->isOk()) {
+            $this->_table->auditLogs()->insert([
+                'request_action' => 'keycloakAssignRoles',
+                'model' => 'User',
+                'model_id' => 0,
+                'model_title' => __('Failed to create assign role ({0}) in keycloak to user {1}', $user['role']['name'], $user['username']),
+                'changed' => [
+                    'code' => $response->getStatusCode(),
+                    'error_body' => $response->getStringBody()
+                ]
+            ]);
+        }
         return true;
     }
 
@@ -394,6 +471,7 @@ class AuthKeycloakBehavior extends Behavior
         ];
         $toAdd = array_diff(array_keys($userRoles), $keycloakUserRoles);
         $toRemove = array_diff($keycloakUserRoles, array_keys($userRoles));
+        $changed = false;
         foreach ($toRemove as $k => $role) {
             if (substr($role, 0, strlen('Organisation:')) !== 'Organisation:' && substr($role, 0, strlen('Role:') !== 'Role:')) {
                 unset($toRemove[$k]);
@@ -403,14 +481,42 @@ class AuthKeycloakBehavior extends Behavior
         }
         if (!empty($toRemove)) {
             $toRemove = array_values($toRemove);
-            $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'] . '/role-mappings/clients/' . $clientId, $toRemove, 'delete');
+            $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'] . '/role-mappings/clients/' . $clientId, $toRemove, 'delete');
+            if (!$response->isOk()) {
+                $this->_table->auditLogs()->insert([
+                    'request_action' => 'keycloakDetachRole',
+                    'model' => 'User',
+                    'model_id' => 0,
+                    'model_title' => __('Failed to detach role ({0}) in keycloak from user {1}', $user['role']['name'], $user['username']),
+                    'changed' => [
+                        'code' => $response->getStatusCode(),
+                        'error_body' => $response->getStringBody()
+                    ]
+                ]);
+            } else {
+                $changed = true;
+            }
         }
         foreach ($toAdd as $k => $name) {
             $toAdd[$k] = $userRoles[$name];
         }
         if (!empty($toAdd)) {
             $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'] . '/role-mappings/clients/' . $clientId, $toAdd, 'post');
+            if (!$response->isOk()) {
+                $this->_table->auditLogs()->insert([
+                    'request_action' => 'keycloakAttachRoles',
+                    'model' => 'User',
+                    'model_id' => 0,
+                    'model_title' => __('Failed to attach role ({0}) in keycloak to user {1}', $user['role']['name'], $user['username']),
+                    'changed' => [
+                        'code' => $response->getStatusCode(),
+                        'error_body' => $response->getStringBody()
+                    ]
+                ]);
+            } else {
+                $changed = true;
+            }
         }
-        return true;
+        return $changed;
     }
 }
