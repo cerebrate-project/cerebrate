@@ -25,7 +25,7 @@
         "league/openapi-psr7-validator": "^0.17",
         "phpunit/phpunit": "^8.5",
         "psy/psysh": "@stable",
-        "wiremock-php/wiremock-php": "^2.32"
+        "wiremock-php/wiremock-php": "^2.33"
     },
     "suggest": {
         "markstory/asset_compress": "An asset compression plugin which provides file concatenation and a flexible filter system for preprocessing and minification.",
