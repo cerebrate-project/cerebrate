@@ -136,6 +136,7 @@ class UsersController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        $this->set('keycloakConfig', Configure::read('keycloak'));
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 

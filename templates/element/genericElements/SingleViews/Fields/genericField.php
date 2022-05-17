@@ -15,6 +15,9 @@ if (!empty($field['url'])) {
             $field['url'] = str_replace('{{' . $k . '}}', $this->Hash->extract($data, $path)[0], $field['url']);
         }
     }
+    if (substr($field['url'], 0, 4) === 'http') {
+        $baseurl = '';
+    }
     $string = sprintf(
         '<a href="%s%s">%s</a>',
         $baseurl,
