@@ -104,6 +104,17 @@ class AuditLogsTable extends AppTable
         }
     }
 
+    public function afterMarshal(
+        EventInterface $event,
+        EntityInterface $entity,
+        ArrayObject $data,
+        ArrayObject $options
+    ) {
+        if ($entity->request_type === null) {
+            $entity->request_type = self::REQUEST_TYPE_CLI;
+        }
+    }
+
     public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options)
     {
         $entity->request_ip = inet_pton($entity->request_ip);
