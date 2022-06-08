@@ -66,9 +66,10 @@ class AuthKeycloakBehavior extends Behavior
                 'name' => $profile_payload[$fields['role_name']],
             ]
         ];
-        $user['user']['individual_id'] = $this->_table->captureIndividual($user);
-        $user['user']['role_id'] = $this->_table->captureRole($user);
+        //$user['user']['individual_id'] = $this->_table->captureIndividual($user);
+        //$user['user']['role_id'] = $this->_table->captureRole($user);
         $existingUser = $this->_table->find()->where(['username' => $user['user']['username']])->first();
+        /*
         if (empty($existingUser)) {
             $user['user']['password'] = Security::randomString(16);
             $existingUser = $this->_table->newEntity($user['user']);
@@ -92,6 +93,7 @@ class AuthKeycloakBehavior extends Behavior
                 }
             }
         }
+        */
         return $existingUser;
     }
 
@@ -150,15 +152,12 @@ class AuthKeycloakBehavior extends Behavior
         foreach ($roles as $role) {
             $rolesParsed[$role['name']] = $role['id'];
         }
-        $this->createUser($user, $clientId, $rolesParsed);
-        $logChange = [
-            'username' => $user['username'],
-            'individual_id' => $user['individual']['id'],
-            'role_id' => $user['role']['id']
-        ];
-        if (!$response->isOk()) {
-            $logChange['code'] = $response->getStatusCode();
-            $logChange['error_body'] = $response->getStringBody();
+        if ($this->createUser($user, $clientId, $rolesParsed)) {
+            $logChange = [
+                'username' => $user['username'],
+                'individual_id' => $user['individual']['id'],
+                'role_id' => $user['role']['id']
+            ];
             $this->_table->auditLogs()->insert([
                 'request_action' => 'enrollUser',
                 'model' => 'User',
@@ -167,6 +166,11 @@ class AuthKeycloakBehavior extends Behavior
                 'changed' => $logChange
             ]);
         } else {
+            $logChange = [
+                'username' => $user['username'],
+                'individual_id' => $user['individual']['id'],
+                'role_id' => $user['role']['id']
+            ];
             $this->_table->auditLogs()->insert([
                 'request_action' => 'enrollUser',
                 'model' => 'User',
@@ -406,10 +410,14 @@ class AuthKeycloakBehavior extends Behavior
             ]);
         }
         $newUser = $this->restApiRequest('%s/admin/realms/%s/users?username=' . urlencode($user['username']), [], 'get');
-        $user['id'] = json_decode($newUser->getStringBody(), true);
-        if (empty($user['id'])) {
+        $users = json_decode($newUser->getStringBody(), true);
+        if (empty($users[0]['id'])) {
             return false;
         }
+        if (is_array($users[0]['id'])) {
+            $users[0]['id'] = $users[0]['id'][0];
+        }
+        $user['id'] = $users[0]['id'];
         $this->assignRolesToUser($user, $rolesParsed, $clientId);
         return true;
     }
