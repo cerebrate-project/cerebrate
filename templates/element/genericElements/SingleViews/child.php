@@ -39,24 +39,22 @@
         var url = $('#view-child-body-<?= h($randomId) ?>').data('content-url');
         var loadon  = $('#view-child-body-<?= h($randomId) ?>').data('load-on');
         if (loadon === 'ready') {
-            $.ajax({
-                success:function (data, textStatus) {
-                    $('#view-child-body-<?= h($randomId) ?>').html(data);
-                },
-                type: "get",
-                cache: false,
-                url: url,
-            });
+            AJAXApi.quickFetchURL(url, {})
+                .then((html) => {
+                    $('#view-child-body-<?= h($randomId) ?>').html(html);
+                })
+                .catch((err) => {
+                    $('#view-child-body-<?= h($randomId) ?>').text(err.message);
+                })
         } else {
             $('#view-child-<?= h($randomId) ?>').on('hidden.bs.collapse', function () {
-                $.ajax({
-                    success:function (data, textStatus) {
-                        $('#view-child-body-<?= h($randomId) ?>').html(data);
-                    },
-                    type: "get",
-                    cache: false,
-                    url: url,
-                });
+                AJAXApi.quickFetchURL(url, {})
+                .then((html) => {
+                    $('#view-child-body-<?= h($randomId) ?>').html(html);
+                })
+                .catch((err) => {
+                    $('#view-child-body-<?= h($randomId) ?>').text(err.message);
+                })
             })
         }
     });
