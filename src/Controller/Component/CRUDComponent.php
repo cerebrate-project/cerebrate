@@ -1480,6 +1480,7 @@ class CRUDComponent extends Component
         }
         return $query->select([$field])
             ->distinct()
+            ->all()
             ->extract($fieldToExtract)
             ->toList();
     }
