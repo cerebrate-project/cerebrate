@@ -37,6 +37,7 @@ use Cake\Core\Configure\Engine\PhpConfig;
 use Cake\Datasource\ConnectionManager;
 use Cake\Error\ConsoleErrorHandler;
 use Cake\Error\ErrorHandler;
+use Cake\Filesystem\File;
 use Cake\Http\ServerRequest;
 use Cake\Log\Log;
 use Cake\Mailer\Mailer;
@@ -88,10 +89,13 @@ try {
 if (file_exists(CONFIG . 'app_local.php')) {
     Configure::load('app_local', 'default');
     //Configure::load('cerebrate', 'default', true);
-    $settings = file_get_contents(CONFIG . 'config.json');
-    $settings = json_decode($settings, true);
-    foreach ($settings as $path => $setting) {
-        Configure::write($path, $setting);
+    $settingsFile = new File(CONFIG . 'config.json');
+    if ($settingsFile->exists()) {
+        $settings = file_get_contents(CONFIG . 'config.json');
+        $settings = json_decode($settings, true);
+        foreach ($settings as $path => $setting) {
+            Configure::write($path, $setting);
+        }
     }
 }
 

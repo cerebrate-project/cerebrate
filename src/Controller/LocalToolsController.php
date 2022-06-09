@@ -6,6 +6,8 @@ use App\Controller\AppController;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
+use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Exception\MethodNotAllowedException;
 
 class LocalToolsController extends AppController
 {
@@ -110,6 +112,9 @@ class LocalToolsController extends AppController
         $actionDetails = $this->LocalTools->getActionDetails($actionName);
         $params['connection'] = $connection;
         $results = $this->LocalTools->action($this->ACL->getUser()['id'], $connection->connector, $actionName, $params, $this->request);
+        if (empty($results)) {
+            throw new MethodNotAllowedException(__('Could not execute the requested action.'));
+        }
         if (!empty($results['redirect'])) {
             $this->redirect($results['redirect']);
         }

@@ -209,7 +209,7 @@ class BootstrapGeneric
     {
         $html = '';
         foreach ($params as $k => $v) {
-            if (!empty($k) && !empty($v)) {
+            if (!empty($k) && (isset($v) && $v !== '')) {
                 $html .= BootstrapGeneric::genHTMLParam($k, $v) . ' ';
             }
         }

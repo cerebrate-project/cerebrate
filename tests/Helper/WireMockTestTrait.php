@@ -76,7 +76,7 @@ trait WireMockTestTrait
         $headers = $stub->getRequest()->getHeaders();
         if (is_array($headers)) {
             foreach ($headers as $header => $rule) {
-                $validator = $validator->withHeader($header, ValueMatchingStrategy::fromArray($rule));
+                $validator = $validator->withHeader($header, $rule);
             }
         }
 
