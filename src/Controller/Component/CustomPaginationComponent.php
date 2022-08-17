@@ -7,6 +7,7 @@ use Cake\Controller\ComponentRegistry;
 use Cake\Http\Exception\NotFoundException;
 use InvalidArgumentException;
 use Cake\Controller\Component\PaginatorComponent;
+use Cake\Datasource\Pagination\NumericPaginator;
 use Cake\Utility\Hash;
 
 class CustomPaginationComponent extends Component

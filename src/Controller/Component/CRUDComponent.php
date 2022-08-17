@@ -100,8 +100,7 @@ class CRUDComponent extends Component
             if ($this->metaFieldsSupported()) {
                 $query = $this->includeRequestedMetaFields($query);
             }
-            $this->Controller->loadComponent('Paginator');
-            $data = $this->Controller->Paginator->paginate($query, $this->Controller->paginate ?? []);
+            $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
                 if (is_callable($function)) {
