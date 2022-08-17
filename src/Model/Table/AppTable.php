@@ -73,7 +73,7 @@ class AppTable extends Table
                         }
                     })
                     ->enableHydration(false);
-                $othersUsage = $queryOthersUsage->toList();
+                $othersUsage = $queryOthersUsage->all()->toList();
                 if (!empty($othersUsage)) {
                     $stats[$scope][] = [
                         $scope => __('Others'),
