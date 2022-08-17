@@ -47,7 +47,7 @@ class AppTable extends Table
                 ->limit($options['limit'])
                 ->page(1)
                 ->enableHydration(false);
-            $topUsage = $queryTopUsage->toList();
+            $topUsage = $queryTopUsage->all()->toList();
             $stats[$scope] = $topUsage;
             if (
                 !empty($options['includeOthers']) && !empty($topUsage) &&

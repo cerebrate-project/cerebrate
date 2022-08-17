@@ -34,7 +34,7 @@ class FloodProtectionComponent extends Component
 
     public function check(string $action, int $limit = 5, int $expiration_time = 300): bool
     {
-        $results = $this->FloodProtections->find('all')->where(['request_action' => $action, 'remote_ip' => $this->remote_ip, 'expiration' > time()])->toList();
+        $results = $this->FloodProtections->find()->where(['request_action' => $action, 'remote_ip' => $this->remote_ip, 'expiration' > time()])->all()->toList();
         if (count($results) >= $limit) {
             throw new TooManyRequestsException(__('Too many {0} requests have been issued ({1} requests allowed ever {2} seconds)', [$action, $limit, $expiration_time]));
         }
