@@ -111,7 +111,6 @@ class MetaFieldsBehavior extends Behavior
         $property = $this->getConfig('metaFieldsAssoc.propertyName');
         $options['accessibleFields'][$property] = true;
         $options['associated']['MetaFields']['accessibleFields']['id'] = true;
-
         if (isset($data[$property])) {
             if (!empty($data[$property])) {
                 $data[$property] = $this->normalizeMetafields($data[$property]);

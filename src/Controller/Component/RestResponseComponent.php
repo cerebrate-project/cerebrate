@@ -8,7 +8,7 @@ use Cake\Utility\Inflector;
 
 class RestResponseComponent extends Component
 {
-    public $components = ['ACL'];
+    public $components = ['ACL', 'APIRearrange'];
 
     public $headers = [];
 
@@ -557,6 +557,9 @@ class RestResponseComponent extends Component
     {
         if (!empty($errors)) {
             $data['errors'] = $errors;
+        }
+        if (!$raw) {
+            $data = $this->APIRearrange->rearrange($data);
         }
         return $this->__sendResponse($data, 200, $format, $raw, $download, $headers);
     }
