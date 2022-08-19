@@ -381,7 +381,6 @@ class CRUDComponent extends Component
         } else {
             $entity->meta_fields = [];
         }
-
         $metaFieldsToDelete = [];
         foreach ($input['MetaTemplates'] as $template_id => $template) {
             foreach ($template['meta_template_fields'] as $meta_template_field_id => $meta_template_field) {
@@ -622,7 +621,7 @@ class CRUDComponent extends Component
             if (empty($data[$metaField->meta_template_id][$metaField->meta_template_field_id])) {
                 $data[$metaField->meta_template_id][$metaField->meta_template_field_id] = [];
             }
-            $data[$metaField->meta_template_id][$metaField->meta_template_field_id][$metaField->id] = $metaField;
+            $data[$metaField->meta_template_id][$metaField->meta_template_field_id][] = $metaField;
         }
         return $data;
     }
@@ -643,6 +642,9 @@ class CRUDComponent extends Component
                         $metaTemplates[$metaTemplate->id]->meta_template_fields[$j]['metaFields'] = [];
                     }
                 }
+                if (!empty($metaTemplates[$metaTemplate->id]->meta_template_fields)) {
+                    $metaTemplates[$metaTemplate->id]->meta_template_fields = array_values($metaTemplates[$metaTemplate->id]->meta_template_fields);
+                }
             } else {
                 if (!empty($pruneEmptyDisabled) && !$metaTemplate->enabled) {
                     unset($metaTemplates[$i]);
@@ -653,7 +655,7 @@ class CRUDComponent extends Component
                 $metaTemplates[$i]['hasNewerVersion'] = $newestTemplate;
             }
         }
-        $data['MetaTemplates'] = $metaTemplates;
+        $data['MetaTemplates'] = array_values($metaTemplates);
         return $data;
     }
 
