@@ -559,7 +559,7 @@ class RestResponseComponent extends Component
             $data['errors'] = $errors;
         }
         if (!$raw) {
-            $data = $this->APIRearrange->rearrange($data);
+            $data = $this->APIRearrange->rearrangeForAPI($data);
         }
         return $this->__sendResponse($data, 200, $format, $raw, $download, $headers);
     }
