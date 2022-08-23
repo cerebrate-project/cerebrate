@@ -413,6 +413,7 @@ class CRUDComponent extends Component
                                     $metaFieldsTable->patchEntity($entity->meta_fields[$index], [
                                         'value' => $new_value, 'meta_template_field_id' => $rawMetaTemplateField->id
                                     ], ['value']);
+                                    debug($entity);
                                     $metaFieldsTable->patchEntity(
                                         $entity->MetaTemplates[$template_id]->meta_template_fields[$meta_template_field_id]->metaFields[$meta_field_id],
                                         ['value' => $new_value, 'meta_template_field_id' => $rawMetaTemplateField->id],
@@ -621,7 +622,7 @@ class CRUDComponent extends Component
             if (empty($data[$metaField->meta_template_id][$metaField->meta_template_field_id])) {
                 $data[$metaField->meta_template_id][$metaField->meta_template_field_id] = [];
             }
-            $data[$metaField->meta_template_id][$metaField->meta_template_field_id][] = $metaField;
+            $data[$metaField->meta_template_id][$metaField->meta_template_field_id][$metaField->id] = $metaField;
         }
         return $data;
     }
@@ -655,7 +656,7 @@ class CRUDComponent extends Component
                 $metaTemplates[$i]['hasNewerVersion'] = $newestTemplate;
             }
         }
-        $data['MetaTemplates'] = array_values($metaTemplates);
+        $data['MetaTemplates'] = $metaTemplates;
         return $data;
     }
 
