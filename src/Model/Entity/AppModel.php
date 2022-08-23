@@ -45,7 +45,7 @@ class AppModel extends Entity
                 if ($field['counter'] > 0) {
                     foreach ($field['metaFields'] as $metaField) {
                         if (!empty($this->meta_fields[$template['name']][$field['field']])) {
-                            if (!is_array($this->meta_fields[$template['name']])) {
+                            if (!is_array($this->meta_fields[$template['name']][$field['field']])) {
                                 $this->meta_fields[$template['name']][$field['field']] = [$this->meta_fields[$template['name']][$field['field']]];
                             }
                             $this->meta_fields[$template['name']][$field['field']][] = $metaField['value'];
