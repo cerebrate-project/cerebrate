@@ -409,7 +409,11 @@ class AuthKeycloakBehavior extends Behavior
                 ]
             ]);
         }
-        $newUser = $this->restApiRequest('%s/admin/realms/%s/users?username=' . urlencode($user['username']), [], 'get');
+        $newUser = $this->restApiRequest(
+            '%s/admin/realms/%s/users?username=' . $this->urlencodeEscapeForSprintf(urlencode($user['username'])),
+            [],
+            'get'
+        );
         $users = json_decode($newUser->getStringBody(), true);
         if (empty($users[0]['id'])) {
             return false;
@@ -526,5 +530,10 @@ class AuthKeycloakBehavior extends Behavior
             }
         }
         return $changed;
+    }
+
+    private function urlencodeEscapeForSprintf(string $input): string
+    {
+        return str_replace('%', '%%', $input);
     }
 }
