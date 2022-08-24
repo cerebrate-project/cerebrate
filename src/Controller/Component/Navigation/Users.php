@@ -25,7 +25,7 @@ class UsersNavigation extends BaseNavigation
         $bcf = $this->bcf;
         $request = $this->request;
         $passedData = $this->request->getParam('pass');
-        $currentUserId = $this->currentUserId;
+        $currentUserId = empty($this->currentUserId) ? null : $this->currentUserId;
         $currentUser = $this->currentUser;
         $this->bcf->addLink('Users', 'view', 'UserSettings', 'index', function ($config) use ($bcf, $request, $passedData, $currentUser) {
             if (!empty($passedData[0])) {
@@ -75,6 +75,7 @@ class UsersNavigation extends BaseNavigation
             !empty(Configure::read('keycloak.enabled')) &&
             !empty(Configure::read('keycloak.provider.baseUrl')) &&
             !empty(Configure::read('keycloak.provider.realm')) &&
+            !empty($passedData[0]) &&
             $currentUserId == $passedData[0]
         ) {
             $url = sprintf(
