@@ -12,7 +12,7 @@ class BaseNavigation
     {
         $this->bcf = $bcf;
         $this->request = $request;
-        if (!empty($this->request->getAttribute('identity')->getIdentifier())) {
+        if (!empty($this->request->getAttribute('identity'))) {
             $this->currentUserId = $this->request->getAttribute('identity')->getIdentifier();
         }
         $this->viewVars = $viewVars;
