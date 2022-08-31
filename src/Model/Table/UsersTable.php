@@ -57,7 +57,9 @@ class UsersTable extends AppTable
     private function initAuthBehaviors()
     {
         if (!empty(Configure::read('keycloak'))) {
-            $this->addBehavior('AuthKeycloak');
+            if (Configure::read('keycloak.enabled')) {
+                $this->addBehavior('AuthKeycloak');
+            }
         }
     }
 
@@ -188,7 +190,9 @@ class UsersTable extends AppTable
     public function enrollUserRouter($data): void
     {
         if (!empty(Configure::read('keycloak'))) {
-            $this->enrollUser($data);
+            if (Configure::read('keycloak.enabled')) {
+                $this->enrollUser($data);
+            }
         }
     }
 }
