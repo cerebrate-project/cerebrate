@@ -144,8 +144,17 @@ class CRUDComponent extends Component
                     if (is_string($statIgnoreNull)) {
                         $statIgnoreNull = $statIgnoreNull == 'true' ? true : false;
                     }
+                    $statistics_entry_amount = $this->request->getQuery('statistics_entry_amount');
+                    if (
+                        !is_numeric($statistics_entry_amount) ||
+                        intval($statistics_entry_amount) <= 0
+                    ) {
+                        $statistics_entry_amount = 5;
+                    } else {
+                        $statistics_entry_amount = intval($statistics_entry_amount);
+                    }
                     $statsOptions = [
-                        'limit' => !is_numeric($this->request->getQuery('statistics_entry_amount')) ? 5 : $this->request->getQuery('statistics_entry_amount'),
+                        'limit' => $statistics_entry_amount,
                         'includeOthers' => $statIncludeRemaining,
                         'ignoreNull' => $statIgnoreNull,
                     ];
