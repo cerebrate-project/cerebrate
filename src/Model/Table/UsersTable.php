@@ -7,12 +7,14 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\TableRegistry;
-use \Cake\Datasource\EntityInterface;
-use \Cake\Http\Session;
+use Cake\Event\EventInterface;
+use Cake\Datasource\EntityInterface;
+use Cake\Http\Session;
 use Cake\Http\Client;
 use Cake\Utility\Security;
 use Cake\Core\Configure;
 use Cake\Utility\Text;
+use ArrayObject;
 
 class UsersTable extends AppTable
 {
@@ -52,6 +54,11 @@ class UsersTable extends AppTable
             ]
         );
         $this->setDisplayField('username');
+    }
+
+    public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options)
+    {
+        $data['username'] = trim(mb_strtolower($data['username']));
     }
 
     private function initAuthBehaviors()
