@@ -90,6 +90,12 @@ class UsersController extends AppController
                 if (empty($data['individual_id'])) {
                     throw new MethodNotAllowedException(__('No valid individual found. Either supply it in the request or set the individual_id to a valid value.'));
                 }
+                if (Configure::read('keycloak.enabled')) {
+                    $existingUserForIndividual = $this->Users->find()->where(['individual_id' => $data['individual_id']])->first();
+                    if (!empty($existingUserForIndividual)) {
+                        throw new MethodNotAllowedException(__('Invalid individual selected - when KeyCloak is enabled, only one user account may be assigned to an individual.'));
+                    }
+                }
                 $this->Users->enrollUserRouter($data);
                 return $data;
             }
