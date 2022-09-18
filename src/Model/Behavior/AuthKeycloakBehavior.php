@@ -30,7 +30,7 @@ class AuthKeycloakBehavior extends Behavior
         $raw_profile_payload = $profile->access_token->getJwt()->getPayload();
         $user = $this->extractProfileData($raw_profile_payload);
         if (!$user) {
-            throw new \RuntimeException('Unable to save new user');
+            throw new \RuntimeException('Unable to authenticate user. The KeyCloak and Cerebrate states of the user differ. This could be due to a missing synchronisation of the data.');
         }
 
         return $user;
@@ -50,50 +50,10 @@ class AuthKeycloakBehavior extends Behavior
                 $fields[$field] = $mapping[$field];
             }
         }
-        $user = [
-            'individual' => [
-                'email' => $profile_payload[$fields['email']],
-                'first_name' => $profile_payload[$fields['first_name']],
-                'last_name' => $profile_payload[$fields['last_name']]
-            ],
-            'user' => [
-                'username' => $profile_payload[$fields['username']],
-            ],
-            'organisation' => [
-                'uuid' => $profile_payload[$fields['org_uuid']],
-            ],
-            'role' => [
-                'name' => $profile_payload[$fields['role_name']],
-            ]
-        ];
-        //$user['user']['individual_id'] = $this->_table->captureIndividual($user);
-        //$user['user']['role_id'] = $this->_table->captureRole($user);
-        $existingUser = $this->_table->find()->where(['username' => $user['user']['username']])->first();
-        /*
-        if (empty($existingUser)) {
-            $user['user']['password'] = Security::randomString(16);
-            $existingUser = $this->_table->newEntity($user['user']);
-            if (!$this->_table->save($existingUser)) {
-                return false;
-            }
-        } else {
-            $dirty = false;
-            if ($user['user']['individual_id'] != $existingUser['individual_id']) {
-                $existingUser['individual_id'] = $user['user']['individual_id'];
-                $dirty = true;
-            }
-            if ($user['user']['role_id'] != $existingUser['role_id']) {
-                $existingUser['role_id'] = $user['user']['role_id'];
-                $dirty = true;
-            }
-            $existingUser;
-            if ($dirty) {
-                if (!$this->_table->save($existingUser)) {
-                    return false;
-                }
-            }
+        $existingUser = $this->_table->find()->where(['username' => $profile_payload[$fields['username']]])->first();
+        if ($existingUser['individual']['email'] !== $profile_payload[$fields['email']]) {
+            return false;
         }
-        */
         return $existingUser;
     }
 
