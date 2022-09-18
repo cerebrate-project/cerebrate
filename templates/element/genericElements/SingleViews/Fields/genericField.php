@@ -22,7 +22,9 @@ if (!empty($field['url'])) {
         '<a href="%s%s">%s</a>',
         $baseurl,
         h($field['url']),
-        $string
+        h($string)
     );
+} else {
+    $string = h($string);
 }
 echo $string;
