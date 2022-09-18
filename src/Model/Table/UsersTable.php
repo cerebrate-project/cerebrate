@@ -94,6 +94,16 @@ class UsersTable extends AppTable
                     'message' => __('Password confirmation missing or not matching the password.')
                 ]
             ])
+            ->add('username', [
+                'username_policy' => [
+                    'rule' => function($value, $context) {
+                        if (mb_strlen(trim($value)) < 5 || mb_strlen(trim($value)) > 50) {
+                            return __('Invalid username length. Make sure that you provide a username of at least 5 and up to 50 characters in length.');
+                        }
+                        return true;
+                    }
+                ]
+            ])
             ->requirePresence(['username'], 'create')
             ->notEmptyString('username', 'Please fill this field');
         return $validator;
