@@ -212,7 +212,6 @@ class AuthKeycloakBehavior extends Behavior
     {
         $keycloakRoles = $this->getAllRoles($clientId);
         $keycloakRolesParsed = Hash::extract($keycloakRoles, '{n}.name');
-        $rolesToAdd = [];
         $scopeString = $scope . ':';
         $modified = 0;
         foreach ($roles as $role) {
