@@ -24,7 +24,7 @@ if (!empty($field['url'])) {
         h($field['url']),
         h($string)
     );
-} else {
+} else if (empty($field['raw'])) {
     $string = h($string);
 }
 echo $string;
