@@ -297,30 +297,44 @@ class UsersController extends AppController
 
     public function login()
     {
-        $result = $this->Authentication->getResult();
-        // If the user is logged in send them away.
-        $logModel = $this->Users->auditLogs();
-        if ($result->isValid()) {
-            $user = $logModel->userInfo();
-            $logModel->insert([
-                'request_action' => 'login',
-                'model' => 'Users',
-                'model_id' => $user['id'],
-                'model_title' => $user['name'],
-                'changed' => []
-            ]);
-            $target = $this->Authentication->getLoginRedirect() ?? '/instance/home';
-            return $this->redirect($target);
+        $blocked = false;
+        if ($this->request->is('post')) {
+            $BruteforceTable = TableRegistry::getTableLocator()->get('Bruteforces');
+            $input = $this->request->getData();
+            $blocked = $BruteforceTable->isBlocklisted($_SERVER['REMOTE_ADDR'], $input['username']);
+            if ($blocked) {
+                $this->Authentication->logout();
+                $this->Flash->error(__('Too many attempts, brute force protection triggered. Wait 5 minutes before trying again.'));
+                $this->redirect(['controller' => 'users', 'action' => 'login']);
+            }
         }
-        if ($this->request->is('post') && !$result->isValid()) {
-            $logModel->insert([
-                'request_action' => 'login_fail',
-                'model' => 'Users',
-                'model_id' => 0,
-                'model_title' => 'unknown_user',
-                'changed' => []
-            ]);
-            $this->Flash->error(__('Invalid username or password'));
+        if (!$blocked) {
+            $result = $this->Authentication->getResult();
+            // If the user is logged in send them away.
+            $logModel = $this->Users->auditLogs();
+            if ($result->isValid()) {
+                $user = $logModel->userInfo();
+                $logModel->insert([
+                    'request_action' => 'login',
+                    'model' => 'Users',
+                    'model_id' => $user['id'],
+                    'model_title' => $user['name'],
+                    'changed' => []
+                ]);
+                $target = $this->Authentication->getLoginRedirect() ?? '/instance/home';
+                return $this->redirect($target);
+            }
+            if ($this->request->is('post') && !$result->isValid()) {
+                $BruteforceTable->insert($_SERVER['REMOTE_ADDR'], $input['username']);
+                $logModel->insert([
+                    'request_action' => 'login_fail',
+                    'model' => 'Users',
+                    'model_id' => 0,
+                    'model_title' => 'unknown_user',
+                    'changed' => []
+                ]);
+                $this->Flash->error(__('Invalid username or password'));
+            }
         }
         $this->viewBuilder()->setLayout('login');
     }
