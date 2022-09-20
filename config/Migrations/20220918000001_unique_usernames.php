@@ -20,7 +20,7 @@ final class UniqueUserNames extends AbstractMigration
     {
         $table = $this->table('users');
         $exists = $table->hasIndexByName('users', 'username');
-        $this->execute('DELETE FROM users WHERE id NOT IN (SELECT MIN(id) FROM users GROUP BY LOWER(username));');
+        $this->execute('DELETE FROM users WHERE id NOT IN (SELECT MIN(id) FROM (select * from users) AS u2 GROUP BY LOWER(u2.username));');
         if (!$exists) {
             $table->addIndex(
                 [
