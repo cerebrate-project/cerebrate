@@ -20,6 +20,7 @@ class AuditLogsController extends AppController
     {
         $this->CRUD->index([
             'contain' => $this->containFields,
+            'order' => ['AuditLogs.id' => 'DESC'],
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'afterFind' => function($data) {

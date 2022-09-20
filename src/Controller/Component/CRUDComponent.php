@@ -69,6 +69,9 @@ class CRUDComponent extends Component
         if (!empty($options['fields'])) {
             $query->select($options['fields']);
         }
+        if (!empty($options['order'])) {
+            $query->order($options['order']);
+        }
         if ($this->Controller->ParamHandler->isRest()) {
             $data = $query->all();
             if (isset($options['hidden'])) {
