@@ -145,6 +145,30 @@ class AuthKeycloakBehavior extends Behavior
         return true;
     }
 
+    /**
+     * handleUserUpdate
+     *
+     * @param \App\Model\Entity\User $user
+     * @return boolean If the update was a success
+     */
+    public function handleUserUpdate(\App\Model\Entity\User $user): bool
+    {
+        $user['individual'] = $this->_table->Individuals->find()->where([
+            'id' => $user['individual_id']
+        ])->first();
+        $user['role'] = $this->_table->Roles->find()->where([
+             'id' => $user['role_id']
+        ])->first();
+        $user['organisation'] = $this->_table->Organisations->find()->where([
+            'id' => $user['organisation_id']
+        ])->first();
+
+        $users = [$user->toArray()];
+        $clientId = $this->getClientId();
+        $changes = $this->syncUsers($users, $clientId);
+        return !empty($changes);
+    }
+
     private function getAdminAccessToken()
     {
         $keycloakConfig = Configure::read('keycloak');

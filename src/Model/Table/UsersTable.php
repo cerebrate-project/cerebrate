@@ -61,6 +61,12 @@ class UsersTable extends AppTable
         $data['username'] = trim(mb_strtolower($data['username']));
     }
 
+    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options)
+    {
+        $success = $this->handleUserUpdateRouter($entity);
+        return $success;
+    }
+
     private function initAuthBehaviors()
     {
         if (!empty(Configure::read('keycloak'))) {
@@ -207,5 +213,14 @@ class UsersTable extends AppTable
         if (!empty(Configure::read('keycloak'))) {
             $this->enrollUser($data);
         }
+    }
+
+    public function handleUserUpdateRouter(\App\Model\Entity\User $user): bool
+    {
+        if (!empty(Configure::read('keycloak'))) {
+            $success = $this->handleUserUpdate($user);
+            return $success;
+        }
+        return true;
     }
 }
