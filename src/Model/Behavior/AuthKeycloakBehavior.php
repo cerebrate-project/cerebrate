@@ -472,6 +472,7 @@ class AuthKeycloakBehavior extends Behavior
             $toAdd[$k] = $userRoles[$name];
         }
         if (!empty($toAdd)) {
+            $toAdd = array_values($toAdd);
             $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'] . '/role-mappings/clients/' . $clientId, $toAdd, 'post');
             if (!$response->isOk()) {
                 $this->_table->auditLogs()->insert([
