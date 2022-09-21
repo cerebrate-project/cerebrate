@@ -13,6 +13,7 @@ class KeycloakSyncCommand extends Command
     public function execute(Arguments $args, ConsoleIo $io)
     {
         if (!empty(Configure::read('keycloak'))) {
+            $this->loadModel('Users');
             $results = $this->fetchTable()->syncWithKeycloak();
             $tableData = [
                 ['Changes to', 'Count']
