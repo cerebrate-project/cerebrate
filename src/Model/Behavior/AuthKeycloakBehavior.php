@@ -50,7 +50,10 @@ class AuthKeycloakBehavior extends Behavior
                 $fields[$field] = $mapping[$field];
             }
         }
-        $existingUser = $this->_table->find()->where(['username' => $profile_payload[$fields['username']]])->first();
+        $existingUser = $this->_table->find()
+            ->where(['username' => $profile_payload[$fields['username']]])
+            ->contain('Individuals')
+            ->first();
         if ($existingUser['individual']['email'] !== $profile_payload[$fields['email']]) {
             return false;
         }
