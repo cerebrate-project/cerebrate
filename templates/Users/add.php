@@ -87,7 +87,7 @@
                     'field' => 'disabled',
                     'type' => 'checkbox',
                     'label' => 'Disable'
-                ]
+                ],
             ],
             'submit' => [
                 'action' => $this->request->getParam('action')
