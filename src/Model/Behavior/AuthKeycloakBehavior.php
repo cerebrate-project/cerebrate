@@ -444,7 +444,7 @@ class AuthKeycloakBehavior extends Behavior
         $toRemove = array_diff($keycloakUserRoles, array_keys($userRoles));
         $changed = false;
         foreach ($toRemove as $k => $role) {
-            if (substr($role, 0, strlen('Organisation:')) !== 'Organisation:' && substr($role, 0, strlen('Role:') !== 'Role:')) {
+            if (substr($role, 0, strlen('Organisation:')) !== 'Organisation:' && substr($role, 0, strlen('Role:')) !== 'Role:') {
                 unset($toRemove[$k]);
             } else {
                 $toRemove[$k] = $assignedRolesParsed[$role];
