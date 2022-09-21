@@ -105,7 +105,7 @@ class UsersTable extends AppTable
                 ]
             ])
             ->requirePresence(['username'], 'create')
-            ->notEmptyString('username', 'Please fill this field');
+            ->notEmptyString('username', __('Please fill this field'), 'create');
         return $validator;
     }
 
