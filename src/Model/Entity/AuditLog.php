@@ -65,4 +65,14 @@ class AuditLog extends AppModel
         }
         return $title;
     }
+
+    public function rearrangeForAPI(): void
+    {
+        if (!empty($this->user)) {
+            $this->user = $this->user->toArray();
+        }
+        if (!empty($this->user['user_settings_by_name_with_fallback'])) {
+            unset($this->user['user_settings_by_name_with_fallback']);
+        }
+    }
 }
