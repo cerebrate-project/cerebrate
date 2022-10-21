@@ -25,7 +25,7 @@ class AuditLogsController extends AppController
             'quickFilters' => $this->quickFilterFields,
             'afterFind' => function($data) {
                 $request_ip = is_resource($data['request_ip']) ? stream_get_contents($data['request_ip']) : $data['request_ip'];
-                $change = is_resource($data['change']) ? stream_get_contents($data['change']) : $data['change'];
+                $change = is_resource($data['changed']) ? stream_get_contents($data['changed']) : $data['changed'];
                 $data['request_ip'] = inet_ntop($request_ip);
                 $data['changed'] = $change;
                 return $data;
