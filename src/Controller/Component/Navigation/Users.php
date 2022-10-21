@@ -72,6 +72,7 @@ class UsersNavigation extends BaseNavigation
             return [];
         });
         if (
+            !empty($this->loggedUser['social_profile']) &&
             !empty(Configure::read('keycloak.enabled')) &&
             !empty(Configure::read('keycloak.provider.baseUrl')) &&
             !empty(Configure::read('keycloak.provider.realm')) &&
