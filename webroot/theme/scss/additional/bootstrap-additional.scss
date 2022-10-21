@@ -66,6 +66,10 @@ $toast-color-level:                 70% !default;
     }
 }
 
+.btn-outline-text {
+    @include button-outline-variant($body-color);
+}
+
 /* Progress Timeline */
 .progress-timeline {
     padding: 0.2em 0.2em 0.5em 0.2em;
