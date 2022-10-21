@@ -115,7 +115,7 @@ class AuthKeycloakBehavior extends Behavior
         foreach ($roles as $role) {
             $rolesParsed[$role['name']] = $role['id'];
         }
-        if ($this->createUser($user, $clientId, $rolesParsed)) {
+        if (!$this->createUser($user, $clientId, $rolesParsed)) {
             $logChange = [
                 'username' => $user['username'],
                 'individual_id' => $user['individual']['id'],
