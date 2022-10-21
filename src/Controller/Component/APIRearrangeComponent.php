@@ -17,7 +17,7 @@ class APIRearrangeComponent extends Component
 {
     public function rearrangeForAPI(object $data): object
     {
-        if (get_class($data) === 'Cake\ORM\ResultSet') {
+        if (is_subclass_of($data, 'Iterator')) {
             $data->each(function ($value, $key) {
                 $value->rearrangeForAPI();
             });
