@@ -21,6 +21,8 @@ class EncryptionKeysController extends AppController
 
     public function index()
     {
+        $this->EncryptionKeys->initializeGpg();
+        $Model = $this->EncryptionKeys;
         $this->CRUD->index([
             'quickFilters' => $this->quickFilterFields,
             'filters' => $this->filterFields,
@@ -31,6 +33,20 @@ class EncryptionKeysController extends AppController
             ],
             'contain' => $this->containFields,
             'statisticsFields' => $this->statisticsFields,
+            'afterFind' => function($data) use ($Model) {
+                if ($data['type'] === 'pgp') {
+                    $keyInfo = $Model->verifySingleGPG($data);
+                    $data['status'] = __('OK');
+                    $data['fingerprint'] = __('N/A');
+                    if (!$keyInfo[0]) {
+                        $data['status'] = $keyInfo[2];
+                    }
+                    if (!empty($keyInfo[4])) {
+                        $data['fingerprint'] = $keyInfo[4];
+                    }
+                }
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -155,8 +171,22 @@ class EncryptionKeysController extends AppController
 
     public function view($id = false)
     {
+        $this->EncryptionKeys->initializeGpg();
+        $Model = $this->EncryptionKeys;
         $this->CRUD->view($id, [
-            'contain' => ['Individuals', 'Organisations']
+            'contain' => ['Individuals', 'Organisations'],
+            'afterFind' => function($data) use ($Model) {
+                if ($data['type'] === 'pgp') {
+                    $keyInfo = $Model->verifySingleGPG($data);
+                    if (!$keyInfo[0]) {
+                        $data['pgp_error'] = $keyInfo[2];
+                    }
+                    if (!empty($keyInfo[4])) {
+                        $data['pgp_fingerprint'] = $keyInfo[4];
+                    }
+                }
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

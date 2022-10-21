@@ -50,13 +50,22 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ],
             [
                 'name' => __('Revoked'),
+                'data_path' => 'fingerprint'
+            ],
+            [
+                'name' => __('Status'),
+                'data_path' => 'status'
+            ],
+            [
+                'name' => __('Revoked'),
                 'sort' => 'revoked',
                 'data_path' => 'revoked',
                 'element' => 'boolean'
             ],
             [
                 'name' => __('Key'),
-                'data_path' => 'encryption_key'
+                'data_path' => 'encryption_key',
+                'element' => 'pgp_key'
             ],
         ],
         'title' => __('Encryption key Index'),
