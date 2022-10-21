@@ -68,7 +68,7 @@ class MetaTemplatesNavigation extends BaseNavigation
     public function addActions()
     {
         $totalUpdateCount = 0;
-        if (!empty($this->viewVars['updateableTemplates']['not-up-to-date']) && !empty($this->viewVars['updateableTemplates']['new'])) {
+        if (!empty($this->viewVars['updateableTemplates']['not-up-to-date']) || !empty($this->viewVars['updateableTemplates']['new'])) {
             $udpateCount = count($this->viewVars['updateableTemplates']['not-up-to-date']) ?? 0;
             $newCount = count($this->viewVars['updateableTemplates']['new']) ?? 0;
             $totalUpdateCount = $udpateCount + $newCount;
