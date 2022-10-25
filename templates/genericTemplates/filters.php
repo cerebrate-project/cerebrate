@@ -118,7 +118,7 @@ echo $this->Bootstrap->modal([
             }
         }
         $selectTag = modalObject.$modal.find('.tag-container select.select2-input')
-        activeFilters['filteringTags'] = $selectTag.select2('data').map(tag => tag.text)
+        activeFilters['filteringTags'] = $selectTag.length > 0 ? $selectTag.select2('data').map(tag => tag.text) : []
         const searchParam = jQuery.param(activeFilters);
         const url = `/${controller}/${action}?${searchParam}`
 
