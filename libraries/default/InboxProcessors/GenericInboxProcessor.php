@@ -76,8 +76,9 @@ class GenericInboxProcessor
         $builder = new ViewBuilder();
         $builder->disableAutoLayout()
             ->setClassName('Monad')
-            ->setTemplate($processingTemplate);
-        $view = $builder->build($viewVariables);
+            ->setTemplate($processingTemplate)
+            ->setVars($viewVariables);
+        $view = $builder->build();
         $view->setRequest($serverRequest);
         return $view->render();
     }
