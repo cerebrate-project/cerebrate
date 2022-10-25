@@ -221,7 +221,7 @@ class UsersTable extends AppTable
     {
         if (!empty(Configure::read('keycloak'))) {
             $success = $this->handleUserUpdate($user);
-            return $success;
+            //return $success !== false;
         }
         return true;
     }

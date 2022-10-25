@@ -115,7 +115,8 @@ class AuthKeycloakBehavior extends Behavior
         foreach ($roles as $role) {
             $rolesParsed[$role['name']] = $role['id'];
         }
-        if (!$this->createUser($user, $clientId, $rolesParsed)) {
+        $newUserId = $this->createUser($user, $clientId, $rolesParsed);
+        if (!$newUserId) {
             $logChange = [
                 'username' => $user['username'],
                 'individual_id' => $user['individual']['id'],
@@ -141,6 +142,21 @@ class AuthKeycloakBehavior extends Behavior
                 'model_title' => __('Successful Keycloak enrollment for user {0}', $user['username']),
                 'changed' => $logChange
             ]);
+            $response = $this->restApiRequest(
+                '%s/admin/realms/%s/users/' . urlencode($newUserId) . '/execute-actions-email',
+                ['UPDATE_PASSWORD'],
+                'put'
+            );
+            if (!$response->isOk()) {
+                $responseBody = json_decode($response->getStringBody(), true);
+                $this->_table->auditLogs()->insert([
+                    'request_action' => 'keycloakWelcomeEmail',
+                    'model' => 'User',
+                    'model_id' => 0,
+                    'model_title' => __('Failed to send welcome mail to user ({0}) in keycloak', $user['username']),
+                    'changed' => ['error' => empty($responseBody['errorMessage']) ? 'Unknown error.' : $responseBody['errorMessage']]
+                ]);
+            }
         }
         return true;
     }
@@ -373,7 +389,7 @@ class AuthKeycloakBehavior extends Behavior
         return false;
     }
 
-    private function createUser(array $user, string $clientId, array $rolesParsed): bool
+    private function createUser(array $user, string $clientId, array $rolesParsed): string|bool
     {
         $newUser = [
             'username' => $user['username'],
@@ -409,7 +425,7 @@ class AuthKeycloakBehavior extends Behavior
         }
         $user['id'] = $users[0]['id'];
         $this->assignRolesToUser($user, $rolesParsed, $clientId);
-        return true;
+        return $user['id'];
     }
 
     private function assignRolesToUser(array $user, array $rolesParsed, string $clientId): bool
