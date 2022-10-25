@@ -185,6 +185,18 @@ class AuthKeycloakBehavior extends Behavior
         return !empty($changes);
     }
 
+    public function keyCloaklogout(): string
+    {
+        $keycloakConfig = Configure::read('keycloak');
+        $logoutUrl = sprintf(
+            '%s/realms/%s/protocol/openid-connect/logout?redirect_uri=%s',
+            $keycloakConfig['provider']['baseUrl'],
+            $keycloakConfig['provider']['realm'],
+            urlencode(Configure::read('App.fullBaseUrl'))
+        );
+        return $logoutUrl;
+    }
+
     private function getAdminAccessToken()
     {
         $keycloakConfig = Configure::read('keycloak');

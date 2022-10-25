@@ -354,6 +354,9 @@ class UsersController extends AppController
             ]);
             $this->Authentication->logout();
             $this->Flash->success(__('Goodbye.'));
+            if (Configure::read('keycloak.enabled')) {
+                $this->redirect($this->Users->keyCloaklogout());
+            }
             return $this->redirect(\Cake\Routing\Router::url('/users/login'));
         }
     }
