@@ -186,16 +186,16 @@ class CRUDComponent extends Component
             $metaTemplates = $this->getMetaTemplates()->toArray();
             $this->Controller->set('metaFieldsEnabled', true);
             $this->Controller->set('metaTemplates', $metaTemplates);
+            $typeHandlers = $this->Table->getBehavior('MetaFields')->getTypeHandlers();
+            $typeHandlersOperators = [];
+            foreach ($typeHandlers as $type => $handler) {
+                $typeHandlersOperators[$type] = $handler::OPERATORS;
+            }
+            $this->Controller->set('typeHandlersOperators', $typeHandlersOperators);
         } else {
             $this->Controller->set('metaFieldsEnabled', false);
         }
         $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
-        $typeHandlers = $this->Table->getBehavior('MetaFields')->getTypeHandlers();
-        $typeHandlersOperators = [];
-        foreach ($typeHandlers as $type => $handler) {
-            $typeHandlersOperators[$type] = $handler::OPERATORS;
-        }
-        $this->Controller->set('typeHandlersOperators', $typeHandlersOperators);
         $this->Controller->set('filters', $filters);
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/filters');
@@ -1421,7 +1421,7 @@ class CRUDComponent extends Component
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $message, $validationErrors);
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', [], $message, $validationErrors);
                 } else {
                     $this->Controller->Flash->error($message);
                     if (empty($params['redirect'])) {
