@@ -1069,6 +1069,7 @@ class BoostrapModal extends BootstrapGeneric
         'bodyHtml' => false,
         'footerHtml' => false,
         'confirmText' => 'Confirm',
+        'confirmIcon' => false,
         'cancelText' => 'Cancel',
         'modalClass' => [''],
         'headerClass' => [''],
@@ -1210,6 +1211,7 @@ class BoostrapModal extends BootstrapGeneric
         $buttonConfirm = (new BoostrapButton([
             'variant' => $variant,
             'text' => h($this->options['confirmText']),
+            'icon' => h($this->options['confirmIcon']),
             'class' => 'modal-confirm-button',
             'params' => [
                 // 'data-bs-dismiss' => $this->options['confirmFunction'] ? '' : 'modal',
