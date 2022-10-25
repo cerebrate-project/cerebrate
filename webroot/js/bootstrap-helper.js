@@ -350,18 +350,16 @@ class Toaster {
             $toast.attr('id', options.id)
         }
         $toast.addClass('toast-' + options.variant)
-        if (options.title !== false || options.titleHtml !== false || options.muted !== false || options.mutedHtml !== false) {
+        if (options.title !== false || options.titleHtml !== false || options.muted !== false || options.mutedHtml !== false || options.closeButton) {
             var $toastHeader = $('<div class="toast-header"/>')
             $toastHeader.addClass('toast-' + options.variant)
-            if (options.title !== false || options.titleHtml !== false) {
-                var $toastHeaderText
-                if (options.titleHtml !== false) {
-                    $toastHeaderText = $('<div class="me-auto"/>').html(options.titleHtml);
-                } else {
-                    $toastHeaderText = $('<strong class="me-auto"/>').text(options.title)
-                }
-                $toastHeader.append($toastHeaderText)
+            let $toastHeaderText = $('<span class="me-auto"/>')
+            if (options.titleHtml !== false) {
+                $toastHeaderText = $('<div class="me-auto"/>').html(options.titleHtml);
+            } else if (options.title !== false) {
+                $toastHeaderText = $('<strong class="me-auto"/>').text(options.title)
             }
+            $toastHeader.append($toastHeaderText)
             if (options.muted !== false || options.mutedHtml !== false) {
                 var $toastHeaderMuted
                 if (options.mutedHtml !== false) {
