@@ -39,9 +39,17 @@ class InboxController extends AppController
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'contextFilters' => [
-                'fields' => [
-                    'scope',
-                ]
+                'custom' => [
+                    [
+                        'default' => true,
+                        'label' => __('My Notifications'),
+                        'filterConditionFunction' => function ($query) {
+                            return $query->where([
+                                'user_id' => $this->ACL->getUser()['id'],
+                            ]);
+                        }
+                    ],
+                ],
             ],
             'contain' => $this->containFields
         ]);
