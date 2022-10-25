@@ -100,7 +100,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'open_modal' => '/outbox/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash',
-                'title' => __('Discard request')
+                'title' => __('Discard message')
             ],
         ]
     ]

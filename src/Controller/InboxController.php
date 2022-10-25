@@ -107,11 +107,11 @@ class InboxController extends AppController
                 }
             }
         }
-        $this->set('deletionTitle', __('Discard request'));
+        $this->set('deletionTitle', __('Discard message'));
         if (!empty($id)) {
-            $this->set('deletionText', __('Are you sure you want to discard request #{0}?', $id));
+            $this->set('deletionText', __('Are you sure you want to discard message #{0}?', $id));
         } else {
-            $this->set('deletionText', __('Are you sure you want to discard the selected requests?'));
+            $this->set('deletionText', __('Are you sure you want to discard the selected message?'));
         }
         $this->set('deletionConfirm', __('Discard'));
         $this->CRUD->delete($id);

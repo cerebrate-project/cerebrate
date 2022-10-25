@@ -12,9 +12,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'type' => 'multi_select_actions',
                     'children' => [
                         [
-                            'text' => __('Discard requests'),
+                            'text' => __('Discard message'),
                             'variant' => 'danger',
-                            'onclick' => 'discardRequests',
+                            'onclick' => 'discardMessages',
                         ]
                     ],
                     'data' => [
@@ -34,6 +34,10 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'data' => '',
                     'searchKey' => 'value',
                     'allowFilering' => true
+                ],
+                [
+                    'type' => 'table_action',
+                    'table_setting_id' => 'inbox_index',
                 ]
             ]
         ],
@@ -105,7 +109,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'open_modal' => '/inbox/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash',
-                'title' => __('Discard request')
+                'title' => __('Discard message')
             ],
         ]
     ]
@@ -113,7 +117,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
 ?>
 
 <script>
-    function discardRequests(idList, selectedData, $table) {
+    function discardMessages(idList, selectedData, $table) {
         const successCallback = function([data, modalObject]) {
             UI.reload('/inbox/index', UI.getContainerForTable($table), $table)
         }
@@ -157,6 +161,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 }
             )
         }
+
         function handleMessageTable($modal, header, data) {
             const $modalBody = $modal.find('.modal-body')
             const $messageTable = $modalBody.find('table.message-table')
