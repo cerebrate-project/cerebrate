@@ -1296,7 +1296,7 @@ class CRUDComponent extends Component
     {
         if (empty($params['filteringLabel']) && !empty($options['contextFilters']['custom'])) {
             foreach ($options['contextFilters']['custom'] as $contextFilter) {
-                if (!empty($contextFilter['default'])) {
+                if (!empty($contextFilter['default']) && empty($params)) {
                     $params['filteringLabel'] = $contextFilter['label'];
                     $this->Controller->set('fakeFilteringLabel', $contextFilter['label']);
                     break;
