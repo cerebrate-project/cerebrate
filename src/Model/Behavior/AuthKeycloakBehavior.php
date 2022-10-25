@@ -389,7 +389,7 @@ class AuthKeycloakBehavior extends Behavior
         return false;
     }
 
-    private function createUser(array $user, string $clientId, array $rolesParsed): string|bool
+    private function createUser(array $user, string $clientId, array $rolesParsed)
     {
         $newUser = [
             'username' => $user['username'],
