@@ -25,7 +25,7 @@ class Notification
         foreach ($options as $key => $value) {
             $this->{$key} = $value;
         }
-        $this->validate();
+        $this->_validate();
     }
 
     public function get(): array
@@ -36,7 +36,7 @@ class Notification
         return null;
     }
 
-    private function validate()
+    protected function _validate()
     {
         $validator = new Validator();
 

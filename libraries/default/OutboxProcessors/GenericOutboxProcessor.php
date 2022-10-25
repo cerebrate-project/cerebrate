@@ -193,7 +193,6 @@ class GenericOutboxProcessor
         $user_id = Router::getRequest()->getSession()->read('Auth.id');
         $requestData['scope'] = $this->scope;
         $requestData['action'] = $this->action;
-        $requestData['description'] = $this->description;
         $requestData['user_id'] = $user_id;
         $request = $this->generateRequest($requestData);
         $savedRequest = $this->Outbox->createEntry($request);

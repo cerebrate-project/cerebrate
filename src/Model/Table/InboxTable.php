@@ -8,6 +8,7 @@ use Cake\ORM\Table;
 use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
 use Cake\Http\Exception\NotFoundException;
+use Cake\ORM\ResultSet;
 
 use App\Utility\UI\Notification;
 
@@ -15,6 +16,17 @@ Type::map('json', 'Cake\Database\Type\JsonType');
 
 class InboxTable extends AppTable
 {
+    public const SEVERITY_PRIMARY   = 0,
+        SEVERITY_INFO               = 1,
+        SEVERITY_WARNING            = 2,
+        SEVERITY_DANGER             = 3;
+
+    public $severityVariant = [
+        self::SEVERITY_PRIMARY  => 'primary',
+        self::SEVERITY_INFO     => 'info',
+        self::SEVERITY_WARNING  => 'warning',
+        self::SEVERITY_DANGER   => 'danger',
+    ];
 
     public function initialize(array $config): void
     {
@@ -97,8 +109,8 @@ class InboxTable extends AppTable
         $allNotifications = [];
         $inboxNotifications = $this->getNotificationsForUser($user);
         foreach ($inboxNotifications as $notification) {
-            $title = __('New message');
-            $details = $notification->title;
+            $title = $notification->title;
+            $details = $notification->message;
             $router = [
                 'controller' => 'inbox',
                 'action' => 'process',
@@ -109,7 +121,7 @@ class InboxTable extends AppTable
                 'icon' => 'envelope',
                 'details' => $details,
                 'datetime' => $notification->created,
-                'variant' => 'warning',
+                'variant' => $notification->severity_variant,
                 '_useModal' => true,
                 '_sidebarId' => 'inbox',
             ]))->get();
@@ -117,18 +129,14 @@ class InboxTable extends AppTable
         return $allNotifications;
     }
 
-    public function getNotificationsForUser(\App\Model\Entity\User $user): array
+    public function getNotificationsForUser(\App\Model\Entity\User $user): ResultSet
     {
         $query = $this->find();
-        $conditions = [];
-        if ($user['role']['perm_admin']) {
-            // Admin will not see notifications if it doesn't belong to them. They can see process the message from the inbox
-            $conditions['Inbox.user_id IS'] = null;
-        } else {
-            $conditions['Inbox.user_id'] = $user->id;
-        }
+        $conditions = [
+            'Inbox.user_id' => $user->id
+        ];
         $query->where($conditions);
-        $notifications = $query->all()->toArray();
+        $notifications = $query->all();
         return $notifications;
     }
 }

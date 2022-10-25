@@ -16,8 +16,8 @@ use Cake\Http\Exception\ForbiddenException;
 
 class InboxController extends AppController
 {
-    public $filterFields = ['scope', 'action', 'title', 'origin', 'comment'];
-    public $quickFilterFields = ['scope', 'action', ['title' => true], ['comment' => true]];
+    public $filterFields = ['scope', 'action', 'title', 'origin', 'message'];
+    public $quickFilterFields = ['scope', 'action', ['title' => true], ['message' => true]];
     public $containFields = ['Users'];
 
     public $paginate = [

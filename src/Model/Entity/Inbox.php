@@ -7,7 +7,7 @@ use Cake\ORM\Entity;
 
 class Inbox extends AppModel
 {
-    protected $_virtual = ['local_tool_connector_name'];
+    protected $_virtual = ['local_tool_connector_name', 'severity_variant'];
 
     protected function _getLocalToolConnectorName()
     {
@@ -16,5 +16,10 @@ class Inbox extends AppModel
             $localConnectorName = $this->data['connectorName'];
         }
         return $localConnectorName;
+    }
+
+    protected function _getSeverityVariant(): string
+    {
+        return $this->table()->severityVariant[$this->severity];
     }
 }

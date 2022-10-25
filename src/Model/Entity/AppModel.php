@@ -2,7 +2,9 @@
 
 namespace App\Model\Entity;
 
+use App\Model\Table\AppTable;
 use Cake\ORM\Entity;
+use Cake\ORM\TableRegistry;
 
 class AppModel extends Entity
 {
@@ -31,6 +33,11 @@ class AppModel extends Entity
     public function getAccessibleFieldForNew(): array
     {
         return $this->_accessibleOnNew ?? [];
+    }
+
+    public function table(): AppTable
+    {
+        return TableRegistry::get($this->getSource());
     }
 
     public function rearrangeForAPI(): void
