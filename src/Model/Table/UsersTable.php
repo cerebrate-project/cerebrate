@@ -7,12 +7,14 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\TableRegistry;
-use \Cake\Datasource\EntityInterface;
-use \Cake\Http\Session;
+use Cake\Event\EventInterface;
+use Cake\Datasource\EntityInterface;
+use Cake\Http\Session;
 use Cake\Http\Client;
 use Cake\Utility\Security;
 use Cake\Core\Configure;
 use Cake\Utility\Text;
+use ArrayObject;
 
 class UsersTable extends AppTable
 {
@@ -54,6 +56,19 @@ class UsersTable extends AppTable
         $this->setDisplayField('username');
     }
 
+    public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options)
+    {
+        $data['username'] = trim(mb_strtolower($data['username']));
+    }
+
+    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options)
+    {
+        if (!$entity->isNew()) {
+            $success = $this->handleUserUpdateRouter($entity);
+        }
+        return $success;
+    }
+
     private function initAuthBehaviors()
     {
         if (!empty(Configure::read('keycloak'))) {
@@ -87,8 +102,18 @@ class UsersTable extends AppTable
                     'message' => __('Password confirmation missing or not matching the password.')
                 ]
             ])
+            ->add('username', [
+                'username_policy' => [
+                    'rule' => function($value, $context) {
+                        if (mb_strlen(trim($value)) < 5 || mb_strlen(trim($value)) > 50) {
+                            return __('Invalid username length. Make sure that you provide a username of at least 5 and up to 50 characters in length.');
+                        }
+                        return true;
+                    }
+                ]
+            ])
             ->requirePresence(['username'], 'create')
-            ->notEmptyString('username', 'Please fill this field');
+            ->notEmptyString('username', __('Please fill this field'), 'create');
         return $validator;
     }
 
@@ -190,5 +215,14 @@ class UsersTable extends AppTable
         if (!empty(Configure::read('keycloak'))) {
             $this->enrollUser($data);
         }
+    }
+
+    public function handleUserUpdateRouter(\App\Model\Entity\User $user): bool
+    {
+        if (!empty(Configure::read('keycloak'))) {
+            $success = $this->handleUserUpdate($user);
+            //return $success !== false;
+        }
+        return true;
     }
 }

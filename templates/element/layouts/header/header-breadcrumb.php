@@ -49,7 +49,11 @@ if (!empty($breadcrumb)) {
     if (!empty($lastCrumb['links'])) {
         // dd($lastCrumb['links']);
         foreach ($lastCrumb['links'] as $i => $linkEntry) {
-            $active = $linkEntry['route_path'] == $lastCrumb['route_path'];
+            if (empty($linkEntry['route_path'])) {
+                $active = false;
+            } else {
+                $active = $linkEntry['route_path'] == $lastCrumb['route_path'];
+            }
             if (!empty($linkEntry['url_vars'])) {
                 $linkEntry['url'] = $this->DataFromPath->buildStringFromDataPath($linkEntry['url'], $entity, $linkEntry['url_vars']);
             }

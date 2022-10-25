@@ -22,6 +22,7 @@ if (!empty($meta_templates)) {
         $numberActiveMetaField = !empty($tableSettings['visible_meta_column'][$meta_template->id]) ? count($tableSettings['visible_meta_column'][$meta_template->id]) : 0;
         $metaTemplateColumnMenu[] = [
             'text' => $meta_template->name,
+            'sup' => $meta_template->version,
             'badge' => [
                 'text' => $numberActiveMetaField,
                 'variant' => 'secondary',

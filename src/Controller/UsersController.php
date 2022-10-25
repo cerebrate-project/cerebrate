@@ -90,6 +90,12 @@ class UsersController extends AppController
                 if (empty($data['individual_id'])) {
                     throw new MethodNotAllowedException(__('No valid individual found. Either supply it in the request or set the individual_id to a valid value.'));
                 }
+                if (Configure::read('keycloak.enabled')) {
+                    $existingUserForIndividual = $this->Users->find()->where(['individual_id' => $data['individual_id']])->first();
+                    if (!empty($existingUserForIndividual)) {
+                        throw new MethodNotAllowedException(__('Invalid individual selected - when KeyCloak is enabled, only one user account may be assigned to an individual.'));
+                    }
+                }
                 $this->Users->enrollUserRouter($data);
                 return $data;
             }
@@ -291,30 +297,44 @@ class UsersController extends AppController
 
     public function login()
     {
-        $result = $this->Authentication->getResult();
-        // If the user is logged in send them away.
-        $logModel = $this->Users->auditLogs();
-        if ($result->isValid()) {
-            $user = $logModel->userInfo();
-            $logModel->insert([
-                'request_action' => 'login',
-                'model' => 'Users',
-                'model_id' => $user['id'],
-                'model_title' => $user['name'],
-                'changed' => []
-            ]);
-            $target = $this->Authentication->getLoginRedirect() ?? '/instance/home';
-            return $this->redirect($target);
+        $blocked = false;
+        if ($this->request->is('post')) {
+            $BruteforceTable = TableRegistry::getTableLocator()->get('Bruteforces');
+            $input = $this->request->getData();
+            $blocked = $BruteforceTable->isBlocklisted($_SERVER['REMOTE_ADDR'], $input['username']);
+            if ($blocked) {
+                $this->Authentication->logout();
+                $this->Flash->error(__('Too many attempts, brute force protection triggered. Wait 5 minutes before trying again.'));
+                $this->redirect(['controller' => 'users', 'action' => 'login']);
+            }
         }
-        if ($this->request->is('post') && !$result->isValid()) {
-            $logModel->insert([
-                'request_action' => 'login_fail',
-                'model' => 'Users',
-                'model_id' => 0,
-                'model_title' => 'unknown_user',
-                'changed' => []
-            ]);
-            $this->Flash->error(__('Invalid username or password'));
+        if (!$blocked) {
+            $result = $this->Authentication->getResult();
+            // If the user is logged in send them away.
+            $logModel = $this->Users->auditLogs();
+            if ($result->isValid()) {
+                $user = $logModel->userInfo();
+                $logModel->insert([
+                    'request_action' => 'login',
+                    'model' => 'Users',
+                    'model_id' => $user['id'],
+                    'model_title' => $user['name'],
+                    'changed' => []
+                ]);
+                $target = $this->Authentication->getLoginRedirect() ?? '/instance/home';
+                return $this->redirect($target);
+            }
+            if ($this->request->is('post') && !$result->isValid()) {
+                $BruteforceTable->insert($_SERVER['REMOTE_ADDR'], $input['username']);
+                $logModel->insert([
+                    'request_action' => 'login_fail',
+                    'model' => 'Users',
+                    'model_id' => 0,
+                    'model_title' => 'unknown_user',
+                    'changed' => []
+                ]);
+                $this->Flash->error(__('Invalid username or password'));
+            }
         }
         $this->viewBuilder()->setLayout('login');
     }

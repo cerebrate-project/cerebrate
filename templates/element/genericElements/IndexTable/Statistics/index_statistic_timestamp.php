@@ -95,7 +95,7 @@ $card = $this->Bootstrap->card([
 
 ?>
 
-<div class="col-sm-6 col-md-5 col-lg-4 col-xl-3 mb-1" style="height: 90px;"><?= $card ?></div>
+<div class="col-sm-6 col-md-5 col-lg-4 col-xl-3 mb-1" style="min-height: 90px;"><?= $card ?></div>
 
 <script>
     $(document).ready(function() {

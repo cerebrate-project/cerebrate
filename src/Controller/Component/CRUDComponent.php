@@ -69,6 +69,9 @@ class CRUDComponent extends Component
         if (!empty($options['fields'])) {
             $query->select($options['fields']);
         }
+        if (!empty($options['order'])) {
+            $query->order($options['order']);
+        }
         if ($this->Controller->ParamHandler->isRest()) {
             $data = $query->all();
             if (isset($options['hidden'])) {
@@ -100,8 +103,7 @@ class CRUDComponent extends Component
             if ($this->metaFieldsSupported()) {
                 $query = $this->includeRequestedMetaFields($query);
             }
-            $this->Controller->loadComponent('Paginator');
-            $data = $this->Controller->Paginator->paginate($query, $this->Controller->paginate ?? []);
+            $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
                 if (is_callable($function)) {
@@ -145,8 +147,17 @@ class CRUDComponent extends Component
                     if (is_string($statIgnoreNull)) {
                         $statIgnoreNull = $statIgnoreNull == 'true' ? true : false;
                     }
+                    $statistics_entry_amount = $this->request->getQuery('statistics_entry_amount');
+                    if (
+                        !is_numeric($statistics_entry_amount) ||
+                        intval($statistics_entry_amount) <= 0
+                    ) {
+                        $statistics_entry_amount = 5;
+                    } else {
+                        $statistics_entry_amount = intval($statistics_entry_amount);
+                    }
                     $statsOptions = [
-                        'limit' => !is_numeric($this->request->getQuery('statistics_entry_amount')) ? 5 : $this->request->getQuery('statistics_entry_amount'),
+                        'limit' => $statistics_entry_amount,
                         'includeOthers' => $statIncludeRemaining,
                         'ignoreNull' => $statIgnoreNull,
                     ];
@@ -382,7 +393,6 @@ class CRUDComponent extends Component
         } else {
             $entity->meta_fields = [];
         }
-
         $metaFieldsToDelete = [];
         foreach ($input['MetaTemplates'] as $template_id => $template) {
             foreach ($template['meta_template_fields'] as $meta_template_field_id => $meta_template_field) {

@@ -513,6 +513,10 @@ ul.sidebar-elements > li.category > span.category-divider > hr {
     padding: 2px;
     border-radius: 0 0 0 5px;
 }
+.header-breadcrumb-children .dropdown-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+}
 .header-breadcrumb-children .dropdown-menu .dropdown-item > i {
     min-width: 25px;
 }

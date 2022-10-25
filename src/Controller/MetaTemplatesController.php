@@ -27,9 +27,9 @@ class MetaTemplatesController extends AppController
                 return $this->RestResponse->viewData($result, 'json');
             } else {
                 if ($result['success']) {
-                    $message = __n('{0} templates updated.', 'The template has been updated.', empty($template_id), $result['files_processed']);
+                    $message = __n('{0} templates updated.', 'The template has been updated.', empty($template_id), count($result['files_processed']));
                 } else {
-                    $message = __n('{0} templates could not be updated.', 'The template could not be updated.', empty($template_id), $result['files_processed']);
+                    $message = __n('{0} templates could not be updated.', 'The template could not be updated.', empty($template_id), count($result['files_processed']));
                 }
                 $this->CRUD->setResponseForController('updateAllTemplate', $result['success'], $message, $result['files_processed'], $result['update_errors'], ['redirect' => $this->referer()]);
                 $responsePayload = $this->CRUD->getResponsePayload();

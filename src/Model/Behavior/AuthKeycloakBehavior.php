@@ -30,7 +30,7 @@ class AuthKeycloakBehavior extends Behavior
         $raw_profile_payload = $profile->access_token->getJwt()->getPayload();
         $user = $this->extractProfileData($raw_profile_payload);
         if (!$user) {
-            throw new \RuntimeException('Unable to save new user');
+            throw new \RuntimeException('Unable to authenticate user. The KeyCloak and Cerebrate states of the user differ. This could be due to a missing synchronisation of the data.');
         }
 
         return $user;
@@ -50,50 +50,13 @@ class AuthKeycloakBehavior extends Behavior
                 $fields[$field] = $mapping[$field];
             }
         }
-        $user = [
-            'individual' => [
-                'email' => $profile_payload[$fields['email']],
-                'first_name' => $profile_payload[$fields['first_name']],
-                'last_name' => $profile_payload[$fields['last_name']]
-            ],
-            'user' => [
-                'username' => $profile_payload[$fields['username']],
-            ],
-            'organisation' => [
-                'uuid' => $profile_payload[$fields['org_uuid']],
-            ],
-            'role' => [
-                'name' => $profile_payload[$fields['role_name']],
-            ]
-        ];
-        //$user['user']['individual_id'] = $this->_table->captureIndividual($user);
-        //$user['user']['role_id'] = $this->_table->captureRole($user);
-        $existingUser = $this->_table->find()->where(['username' => $user['user']['username']])->first();
-        /*
-        if (empty($existingUser)) {
-            $user['user']['password'] = Security::randomString(16);
-            $existingUser = $this->_table->newEntity($user['user']);
-            if (!$this->_table->save($existingUser)) {
-                return false;
-            }
-        } else {
-            $dirty = false;
-            if ($user['user']['individual_id'] != $existingUser['individual_id']) {
-                $existingUser['individual_id'] = $user['user']['individual_id'];
-                $dirty = true;
-            }
-            if ($user['user']['role_id'] != $existingUser['role_id']) {
-                $existingUser['role_id'] = $user['user']['role_id'];
-                $dirty = true;
-            }
-            $existingUser;
-            if ($dirty) {
-                if (!$this->_table->save($existingUser)) {
-                    return false;
-                }
-            }
+        $existingUser = $this->_table->find()
+            ->where(['username' => $profile_payload[$fields['username']]])
+            ->contain('Individuals')
+            ->first();
+        if ($existingUser['individual']['email'] !== $profile_payload[$fields['email']]) {
+            return false;
         }
-        */
         return $existingUser;
     }
 
@@ -152,7 +115,8 @@ class AuthKeycloakBehavior extends Behavior
         foreach ($roles as $role) {
             $rolesParsed[$role['name']] = $role['id'];
         }
-        if ($this->createUser($user, $clientId, $rolesParsed)) {
+        $newUserId = $this->createUser($user, $clientId, $rolesParsed);
+        if (!$newUserId) {
             $logChange = [
                 'username' => $user['username'],
                 'individual_id' => $user['individual']['id'],
@@ -178,8 +142,47 @@ class AuthKeycloakBehavior extends Behavior
                 'model_title' => __('Successful Keycloak enrollment for user {0}', $user['username']),
                 'changed' => $logChange
             ]);
+            $response = $this->restApiRequest(
+                '%s/admin/realms/%s/users/' . urlencode($newUserId) . '/execute-actions-email',
+                ['UPDATE_PASSWORD'],
+                'put'
+            );
+            if (!$response->isOk()) {
+                $responseBody = json_decode($response->getStringBody(), true);
+                $this->_table->auditLogs()->insert([
+                    'request_action' => 'keycloakWelcomeEmail',
+                    'model' => 'User',
+                    'model_id' => 0,
+                    'model_title' => __('Failed to send welcome mail to user ({0}) in keycloak', $user['username']),
+                    'changed' => ['error' => empty($responseBody['errorMessage']) ? 'Unknown error.' : $responseBody['errorMessage']]
+                ]);
+            }
         }
         return true;
+    }
+
+    /**
+     * handleUserUpdate
+     *
+     * @param \App\Model\Entity\User $user
+     * @return boolean If the update was a success
+     */
+    public function handleUserUpdate(\App\Model\Entity\User $user): bool
+    {
+        $user['individual'] = $this->_table->Individuals->find()->where([
+            'id' => $user['individual_id']
+        ])->first();
+        $user['role'] = $this->_table->Roles->find()->where([
+             'id' => $user['role_id']
+        ])->first();
+        $user['organisation'] = $this->_table->Organisations->find()->where([
+            'id' => $user['organisation_id']
+        ])->first();
+
+        $users = [$user->toArray()];
+        $clientId = $this->getClientId();
+        $changes = $this->syncUsers($users, $clientId);
+        return !empty($changes);
     }
 
     private function getAdminAccessToken()
@@ -252,7 +255,6 @@ class AuthKeycloakBehavior extends Behavior
     {
         $keycloakRoles = $this->getAllRoles($clientId);
         $keycloakRolesParsed = Hash::extract($keycloakRoles, '{n}.name');
-        $rolesToAdd = [];
         $scopeString = $scope . ':';
         $modified = 0;
         foreach ($roles as $role) {
@@ -387,7 +389,7 @@ class AuthKeycloakBehavior extends Behavior
         return false;
     }
 
-    private function createUser(array $user, string $clientId, array $rolesParsed): bool
+    private function createUser(array $user, string $clientId, array $rolesParsed)
     {
         $newUser = [
             'username' => $user['username'],
@@ -409,7 +411,11 @@ class AuthKeycloakBehavior extends Behavior
                 ]
             ]);
         }
-        $newUser = $this->restApiRequest('%s/admin/realms/%s/users?username=' . urlencode($user['username']), [], 'get');
+        $newUser = $this->restApiRequest(
+            '%s/admin/realms/%s/users?username=' . $this->urlencodeEscapeForSprintf(urlencode($user['username'])),
+            [],
+            'get'
+        );
         $users = json_decode($newUser->getStringBody(), true);
         if (empty($users[0]['id'])) {
             return false;
@@ -419,7 +425,7 @@ class AuthKeycloakBehavior extends Behavior
         }
         $user['id'] = $users[0]['id'];
         $this->assignRolesToUser($user, $rolesParsed, $clientId);
-        return true;
+        return $user['id'];
     }
 
     private function assignRolesToUser(array $user, array $rolesParsed, string $clientId): bool
@@ -481,7 +487,7 @@ class AuthKeycloakBehavior extends Behavior
         $toRemove = array_diff($keycloakUserRoles, array_keys($userRoles));
         $changed = false;
         foreach ($toRemove as $k => $role) {
-            if (substr($role, 0, strlen('Organisation:')) !== 'Organisation:' && substr($role, 0, strlen('Role:') !== 'Role:')) {
+            if (substr($role, 0, strlen('Organisation:')) !== 'Organisation:' && substr($role, 0, strlen('Role:')) !== 'Role:') {
                 unset($toRemove[$k]);
             } else {
                 $toRemove[$k] = $assignedRolesParsed[$role];
@@ -509,6 +515,7 @@ class AuthKeycloakBehavior extends Behavior
             $toAdd[$k] = $userRoles[$name];
         }
         if (!empty($toAdd)) {
+            $toAdd = array_values($toAdd);
             $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'] . '/role-mappings/clients/' . $clientId, $toAdd, 'post');
             if (!$response->isOk()) {
                 $this->_table->auditLogs()->insert([
@@ -526,5 +533,10 @@ class AuthKeycloakBehavior extends Behavior
             }
         }
         return $changed;
+    }
+
+    private function urlencodeEscapeForSprintf(string $input): string
+    {
+        return str_replace('%', '%%', $input);
     }
 }

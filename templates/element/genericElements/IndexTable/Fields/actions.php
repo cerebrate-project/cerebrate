@@ -107,7 +107,7 @@
                 empty($action['title']) ? '' : h($action['title']),
                 empty($action['dbclickAction']) ? '' : 'class="dblclickActionElement"',
                 empty($action['onclick']) ? '' : sprintf('onClick="%s"', $action['onclick']),
-                empty($action['variant']) ? 'outline-dark' : h($action['variant']),
+                empty($action['variant']) ? 'outline-text' : h($action['variant']),
                 $this->FontAwesome->getClass($action['icon'])
             );
         }

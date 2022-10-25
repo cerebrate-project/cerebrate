@@ -346,6 +346,18 @@ class BreadcrumbFactory
         $this->endpoints[$sourceController][$sourceAction]['links'] = $links;
     }
 
+    public function addCustomLink(string $sourceController, string $sourceAction, string $targetUrl, string $label, $overrides = [])
+    {
+        $routeSourceConfig = $this->getRouteConfig($sourceController, $sourceAction, true);
+        $links = array_merge($routeSourceConfig['links'] ?? [], [[
+            'url' => $targetUrl,
+            'icon' => 'link',
+            'label' => $label,
+            'route_path' => 'foo:bar'
+        ]]);
+        $this->endpoints[$sourceController][$sourceAction]['links'] = $links;
+    }
+
     public function addAction(string $sourceController, string $sourceAction, string $targetController, string $targetAction, $overrides = [])
     {
         $routeSourceConfig = $this->getRouteConfig($sourceController, $sourceAction, true);

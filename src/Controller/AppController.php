@@ -99,8 +99,8 @@ class AppController extends Controller
     {
         $this->loadModel('Users');
         $this->Users->checkForNewInstance();
-        $this->authApiUser();
         if ($this->ParamHandler->isRest()) {
+            $this->authApiUser();
             $this->Security->setConfig('unlockedActions', [$this->request->getParam('action')]);
         }
         $this->ACL->setPublicInterfaces();
@@ -149,6 +149,7 @@ class AppController extends Controller
             if ($this->modelClass == 'Tags.Tags') {
                 $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
             }
+            $this->response = $this->response->withHeader('X-Frame-Options', 'DENY');
         }
         if (mt_rand(1, 50) === 1) {
             $this->FloodProtection->cleanup();

@@ -13,6 +13,11 @@ class SocialProviderHelper extends Helper
         'keycloak' => '/img/keycloak_logo.png',
     ];
 
+    public function hasSocialProfile($identity): bool
+    {
+        return !empty($identity['social_profile']);
+    }
+
     public function getIcon($identity)
     {
         if (!empty($identity['social_profile'])) {

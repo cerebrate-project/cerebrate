@@ -2012,7 +2012,11 @@ class BoostrapDropdownMenu extends BootstrapGeneric
             $params['data-open-form-id'] = mt_rand();
         }
 
-        $label = $this->genNode('span', ['class' => 'mx-1'], h($entry['text']));
+        $labelContent = sprintf('%s%s',
+            h($entry['text']),
+            !empty($entry['sup']) ? $this->genNode('sup', ['class' => 'ms-1 text-muted'], $entry['sup']) : ''
+        );
+        $label = $this->genNode('span', ['class' => 'mx-1'], $labelContent);
         $content = $icon . $label . $badge;
 
         return $this->genNode('a', array_merge([

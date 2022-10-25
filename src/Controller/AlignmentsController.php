@@ -23,8 +23,8 @@ class AlignmentsController extends AppController
             $alignments = $query->all();
             return $this->RestResponse->viewData($alignments, 'json');
         } else {
-            $this->loadComponent('Paginator');
-            $alignments = $this->Paginator->paginate($query);
+            $this->paginate['contain'] = ['Individuals', 'Organisations'];
+            $alignments = $this->paginate($query);
             $this->set('data', $alignments);
             $this->set('metaGroup', 'ContactDB');
         }

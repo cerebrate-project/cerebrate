@@ -237,6 +237,31 @@
   background-color: #170229;
 }
 
+.btn-outline-text {
+  color: #32fbe2;
+  border-color: #32fbe2;
+}
+.btn-outline-text:hover {
+  color: #fff;
+  background-color: #32fbe2;
+  border-color: #32fbe2;
+}
+.btn-check:focus + .btn-outline-text, .btn-outline-text:focus {
+  box-shadow: 0 0 0 0.25rem rgba(50, 251, 226, 0.5);
+}
+.btn-check:checked + .btn-outline-text, .btn-check:active + .btn-outline-text, .btn-outline-text:active, .btn-outline-text.active, .btn-outline-text.dropdown-toggle.show {
+  color: #fff;
+  background-color: #32fbe2;
+  border-color: #32fbe2;
+}
+.btn-check:checked + .btn-outline-text:focus, .btn-check:active + .btn-outline-text:focus, .btn-outline-text:active:focus, .btn-outline-text.active:focus, .btn-outline-text.dropdown-toggle.show:focus {
+  box-shadow: 0 0 0 0.25rem rgba(50, 251, 226, 0.5);
+}
+.btn-outline-text:disabled, .btn-outline-text.disabled {
+  color: #32fbe2;
+  background-color: transparent;
+}
+
 /* Progress Timeline */
 .progress-timeline {
   padding: 0.2em 0.2em 0.5em 0.2em;

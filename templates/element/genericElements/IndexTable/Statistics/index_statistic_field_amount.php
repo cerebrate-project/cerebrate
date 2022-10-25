@@ -57,7 +57,7 @@ foreach ($statistics['usage'] as $scope => $graphData) {
         'bodyClass' => 'py-1 px-2',
         'class' => ['shadow-sm', 'h-100']
     ]);
-    $statisticsHtml .= sprintf('<div class="col-sm-6 col-md-5 col-lg-4 col-xl-3 mb-1" style="height: 90px;">%s</div>', $statPie);
+    $statisticsHtml .= sprintf('<div class="col-sm-6 col-md-5 col-lg-4 col-xl-3 mb-1" style="min-height: 90px;">%s</div>', $statPie);
 }
 ?>
 

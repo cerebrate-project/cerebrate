@@ -32,4 +32,52 @@ class AppModel extends Entity
     {
         return $this->_accessibleOnNew ?? [];
     }
+
+    public function rearrangeForAPI(): void
+    {
+    }
+
+    public function rearrangeMetaFields(): void
+    {
+        $this->meta_fields = [];
+        foreach ($this->MetaTemplates as $template) {
+            foreach ($template['meta_template_fields'] as $field) {
+                if ($field['counter'] > 0) {
+                    foreach ($field['metaFields'] as $metaField) {
+                        if (!empty($this->meta_fields[$template['name']][$field['field']])) {
+                            if (!is_array($this->meta_fields[$template['name']][$field['field']])) {
+                                $this->meta_fields[$template['name']][$field['field']] = [$this->meta_fields[$template['name']][$field['field']]];
+                            }
+                            $this->meta_fields[$template['name']][$field['field']][] = $metaField['value'];
+                        } else {
+                            $this->meta_fields[$template['name']][$field['field']] = $metaField['value'];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function rearrangeTags(array $tags): array
+    {
+        foreach ($tags as &$tag) {
+            unset($tag['_joinData']);
+        }
+        return $tags;
+    }
+
+    public function rearrangeAlignments(array $alignments): array
+    {
+        $rearrangedAlignments = [];
+        $validAlignmentTypes = ['individual', 'organisation'];
+        foreach ($alignments as $alignment) {
+            foreach ($validAlignmentTypes as $type) {
+                if (isset($alignment[$type])) {
+                    $alignment[$type]['type'] = $alignment['type'];
+                    $rearrangedAlignments[$type][] = $alignment[$type];
+                }
+            }
+        }
+        return $rearrangedAlignments;
+    }
 }

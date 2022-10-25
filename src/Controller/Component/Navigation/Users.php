@@ -1,6 +1,7 @@
 <?php
 namespace BreadcrumbNavigation;
 
+use Cake\Core\Configure;
 require_once(APP . 'Controller' . DS . 'Component' . DS . 'Navigation' . DS . 'base.php');
 
 class UsersNavigation extends BaseNavigation
@@ -24,6 +25,7 @@ class UsersNavigation extends BaseNavigation
         $bcf = $this->bcf;
         $request = $this->request;
         $passedData = $this->request->getParam('pass');
+        $currentUserId = empty($this->currentUserId) ? null : $this->currentUserId;
         $currentUser = $this->currentUser;
         $this->bcf->addLink('Users', 'view', 'UserSettings', 'index', function ($config) use ($bcf, $request, $passedData, $currentUser) {
             if (!empty($passedData[0])) {
@@ -69,6 +71,23 @@ class UsersNavigation extends BaseNavigation
             }
             return [];
         });
+        if (
+            !empty($this->loggedUser['social_profile']) &&
+            !empty(Configure::read('keycloak.enabled')) &&
+            !empty(Configure::read('keycloak.provider.baseUrl')) &&
+            !empty(Configure::read('keycloak.provider.realm')) &&
+            !empty($passedData[0]) &&
+            $currentUserId == $passedData[0]
+        ) {
+            $url = sprintf(
+                '%s/realms/%s/account',
+                Configure::read('keycloak.provider.baseUrl'),
+                Configure::read('keycloak.provider.realm')
+            );
+            foreach (['edit', 'view', 'settings'] as $sourceAction) {
+                $this->bcf->addCustomLink('Users', $sourceAction, $url, __('Manage KeyCloak Account'));
+            }
+        }
 
         $this->bcf->addLink('Users', 'settings', 'Users', 'view', function ($config) use ($bcf, $request, $passedData) {
             if (!empty($passedData[0])) {

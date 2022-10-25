@@ -13,11 +13,12 @@
         "cakephp/migrations": "^3.0",
         "cakephp/plugin-installer": "^1.2",
         "erusev/parsedown": "^1.7",
-        "mobiledetect/mobiledetectlib": "^2.8"
+        "mobiledetect/mobiledetectlib": "^2.8",
+	"pear/crypt_gpg": "^1.6"
     },
     "require-dev": {
         "cakephp/bake": "^2.0.3",
-        "cakephp/cakephp-codesniffer": "~4.0.0",
+        "cakephp/cakephp-codesniffer": "^4.0",
         "cakephp/debug_kit": "^4.0",
         "cebe/php-openapi": "^1.6",
         "fzaninotto/faker": "^1.9",
@@ -68,7 +69,11 @@
     },
     "prefer-stable": true,
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "cakephp/plugin-installer": true
+        }
     },
     "minimum-stability": "dev"
 }

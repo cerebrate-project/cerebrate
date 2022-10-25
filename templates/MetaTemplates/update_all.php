@@ -1,4 +1,5 @@
 <?php
+
 use Cake\Routing\Router;
 
 $bodyHtml = '';
@@ -21,7 +22,8 @@ foreach ($templatesUpdateStatus as $uuid => $status) {
     if (!empty($status['new'])) {
         $tableHtml .= sprintf('<td>%s</td>', __('N/A'));
     } else {
-        $tableHtml .= sprintf('<td><a href="%s">%s</a></td>',
+        $tableHtml .= sprintf(
+            '<td><a href="%s">%s</a></td>',
             Router::url(['controller' => 'MetaTemplates', 'action' => 'view', 'plugin' => null, h($status['existing_template']->id)]),
             h($status['existing_template']->id)
         );
@@ -29,7 +31,8 @@ foreach ($templatesUpdateStatus as $uuid => $status) {
     if (!empty($status['new'])) {
         $tableHtml .= sprintf('<td>%s</td>', h($uuid));
     } else {
-        $tableHtml .= sprintf('<td><a href="%s">%s</a></td>',
+        $tableHtml .= sprintf(
+            '<td><a href="%s">%s</a></td>',
             Router::url(['controller' => 'MetaTemplates', 'action' => 'view', 'plugin' => null, h($status['existing_template']->id)]),
             h($status['existing_template']->name)
         );
@@ -37,7 +40,8 @@ foreach ($templatesUpdateStatus as $uuid => $status) {
     if (!empty($status['new'])) {
         $tableHtml .= sprintf('<td>%s</td>', __('N/A'));
     } else {
-        $tableHtml .= sprintf('<td>%s %s %s</td>',
+        $tableHtml .= sprintf(
+            '<td>%s %s %s</td>',
             h($status['current_version']),
             $this->Bootstrap->icon('arrow-right', ['class' => 'fs-8']),
             h($status['next_version'])
@@ -107,6 +111,12 @@ if (empty($numberOfSkippedUpdates) && empty($numberOfUpdates)) {
 }
 
 $bodyHtml .= $tableHtml;
+$form = sprintf(
+    '<div class="d-none">%s%s</div>',
+    $this->Form->create(null),
+    $this->Form->end()
+);
+$bodyHtml .= $form;
 
 echo $this->Bootstrap->modal([
     'title' => h($title),
@@ -117,3 +127,15 @@ echo $this->Bootstrap->modal([
     'confirmFunction' => 'updateMetaTemplate',
 ]);
 ?>
+
+<script>
+    function updateMetaTemplate(modalObject, tmpApi) {
+        const $form = modalObject.$modal.find('form')
+        return tmpApi.postForm($form[0]).catch((errors) => {
+            const formHelper = new FormValidationHelper($form[0])
+            const errorHTMLNode = formHelper.buildValidationMessageNode(errors, true)
+            modalObject.$modal.find('div.form-error-container').append(errorHTMLNode)
+            return errors
+        })
+    }
+</script>
