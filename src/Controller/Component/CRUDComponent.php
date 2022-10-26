@@ -457,6 +457,7 @@ class CRUDComponent extends Component
         }
 
         $entity->setDirty('meta_fields', true);
+        $entity->_metafields_to_delete = $metaFieldsToDelete;
         return ['entity' => $entity, 'metafields_to_delete' => $metaFieldsToDelete];
     }
 

@@ -122,6 +122,7 @@ class AppController extends Controller
                 $this->set('loggedUser', $this->ACL->getUser());
                 $this->set('roleAccess', $this->ACL->getRoleAccess(false, false));
             }
+            Configure::write('loggedUser', $user);
         } else if ($this->ParamHandler->isRest()) {
             throw new MethodNotAllowedException(__('Invalid user credentials.'));
         }
