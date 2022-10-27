@@ -48,6 +48,8 @@ class CRUDComponent extends Component
         $optionFilters = empty($options['filters']) ? [] : $options['filters'];
         foreach ($optionFilters as $i => $filter) {
             $optionFilters[] = "{$filter} !=";
+            $optionFilters[] = "{$filter} >=";
+            $optionFilters[] = "{$filter} <=";
         }
         $params = $this->Controller->ParamHandler->harvestParams($optionFilters);
         $params = $this->fakeContextFilter($options, $params);
@@ -196,6 +198,16 @@ class CRUDComponent extends Component
             $this->Controller->set('metaFieldsEnabled', false);
         }
         $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
+        $typeMap = $this->Table->getSchema()->typeMap();
+        $associatedtypeMap = !empty($this->Controller->filterFields) ? $this->_getAssociatedTypeMap() : [];
+        $typeMap = array_merge(
+            $this->Table->getSchema()->typeMap(),
+            $associatedtypeMap
+        );
+        $typeMap = array_filter($typeMap, function ($field) use ($filters) {
+            return in_array($field, $filters);
+        }, ARRAY_FILTER_USE_KEY);
+        $this->Controller->set('typeMap', $typeMap);
         $this->Controller->set('filters', $filters);
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/filters');
@@ -1521,5 +1533,25 @@ class CRUDComponent extends Component
         $builder->disableAutoLayout()->setTemplate("{$this->TableAlias}/{$templateRelativeName}");
         $view = $builder->build($data);
         return $view->render();
+    }
+
+    protected function _getAssociatedTypeMap(): array
+    {
+        $typeMap = [];
+        foreach ($this->Controller->filterFields as $filter) {
+            $exploded = explode('.', $filter);
+            if (count($exploded) > 1) {
+                $model = $exploded[0];
+                $subField = $exploded[1];
+                if ($model == $this->Table->getAlias()) {
+                    $typeMap[$filter] = $this->Table->getSchema()->typeMap()[$subField] ?? 'text';
+                } else {
+                    $association = $this->Table->associations()->get($model);
+                    $associatedTable = $association->getTarget();
+                    $typeMap[$filter] = $associatedTable->getSchema()->typeMap()[$subField] ?? 'text';
+                }
+            }
+        }
+        return $typeMap;
     }
 }

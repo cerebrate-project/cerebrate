@@ -7,6 +7,7 @@ $tableItems = array_map(function ($fieldName) {
         'fieldname' => $fieldName,
     ];
 }, $filters);
+$formTypeMap = $this->Form->getConfig('typeMap');
 
 $filteringForm = $this->Bootstrap->table(
     [
@@ -23,11 +24,19 @@ $filteringForm = $this->Bootstrap->table(
                 }
             ],
             [
-                'key' => 'operator', 'label' => __('Operator'), 'formatter' => function ($field, $row) {
+                'key' => 'operator', 'label' => __('Operator'), 'formatter' => function ($field, $row) use ($typeMap) {
+                    $fieldName = $row['fieldname'];
+                    $type = $typeMap[$fieldName] ?? 'text';
                     $options = [
                         sprintf('<option value="%s">%s</option>', '=', '='),
                         sprintf('<option value="%s">%s</option>', '!=', '!='),
                     ];
+                    if ($type === 'datetime') {
+                        $options = [
+                            sprintf('<option value="%s">%s</option>', '>=', '>='),
+                            sprintf('<option value="%s">%s</option>', '<=', '<='),
+                        ];
+                    }
                     return sprintf('<select class="fieldOperator form-select form-select-sm">%s</select>', implode('', $options));
                 }
             ],
@@ -38,8 +47,21 @@ $filteringForm = $this->Bootstrap->table(
                     __('Value'),
                     sprintf('<sup class="fa fa-info" title="%s"><sup>', __('Supports strict matches and LIKE matches with the `%` character.&#10;Example: `%.com`'))
                 ),
-                'formatter' => function ($field, $row) {
-                    return sprintf('<input type="text" class="fieldValue form-control form-control-sm">');
+                'formatter' => function ($field, $row) use ($typeMap, $formTypeMap) {
+                    $fieldName = $row['fieldname'];
+                    $formType = $formTypeMap[$typeMap[$fieldName]] ?? 'text';
+                    $this->Form->setTemplates([
+                        'formGroup' => '<div class="col-sm-10">{{input}}</div>',
+                    ]);
+                    return $this->element('genericElements/Form/fieldScaffold', [
+                        'fieldData' => [
+                            'field' => $fieldName,
+                            'type' => $formType,
+                            'label' => '',
+                            'class' => 'fieldValue form-control-sm'
+                        ],
+                        'params' => []
+                    ]);
                 }
             ],
         ],
@@ -102,8 +124,8 @@ echo $this->Bootstrap->modal([
         $rows.each(function() {
             const rowData = getDataFromRow($(this))
             let fullFilter = rowData['name']
-            if (rowData['operator'] == '!=') {
-                fullFilter += ' !='
+            if (rowData['operator'] != '=') {
+                fullFilter += ` ${rowData['operator']}`
             }
             if (rowData['value'].length > 0) {
                 activeFilters[fullFilter] = rowData['value']
@@ -111,7 +133,6 @@ echo $this->Bootstrap->modal([
         })
         if (modalObject.$modal.find('table.indexMetaFieldsFilteringTable').length > 0) {
             let metaFieldFilters = modalObject.$modal.find('table.indexMetaFieldsFilteringTable')[0].getFiltersFunction()
-            // activeFilters['filteringMetaFields'] = metaFieldFilters !== undefined ? metaFieldFilters : [];
             metaFieldFilters = metaFieldFilters !== undefined ? metaFieldFilters : []
             for (let [metaFieldPath, metaFieldValue] of Object.entries(metaFieldFilters)) {
                 activeFilters[metaFieldPath] = metaFieldValue
@@ -138,8 +159,8 @@ echo $this->Bootstrap->modal([
         for (let [field, value] of Object.entries(activeFilters)) {
             const fieldParts = field.split(' ')
             let operator = '='
-            if (fieldParts.length == 2 && fieldParts[1] == '!=') {
-                operator = '!='
+            if (fieldParts.length == 2) {
+                operator = fieldParts[1]
                 field = fieldParts[0]
             } else if (fieldParts.length > 2) {
                 console.error('Field contains multiple spaces. ' + field)
@@ -167,14 +188,24 @@ echo $this->Bootstrap->modal([
             return $(this).data('fieldname') == field
         }).closest('tr')
         $row.find('.fieldOperator').val(operator)
-        $row.find('.fieldValue').val(value)
+        const $formElement = $row.find('.fieldValue');
+        if ($formElement.attr('type') === 'datetime-local') {
+            $formElement.val(moment(value).format('yyyy-MM-DDThh:mm:ss'))
+        } else {
+            $formElement.val(value)
+        }
     }
 
     function getDataFromRow($row) {
         const rowData = {};
         rowData['name'] = $row.find('td > span.fieldName').data('fieldname')
         rowData['operator'] = $row.find('select.fieldOperator').val()
-        rowData['value'] = $row.find('input.fieldValue').val()
+        const $formElement = $row.find('.fieldValue');
+        if ($formElement.attr('type') === 'datetime-local') {
+            rowData['value'] = moment($formElement.val()).toISOString()
+        } else {
+            rowData['value'] = $formElement.val()
+        }
         return rowData
     }
 
