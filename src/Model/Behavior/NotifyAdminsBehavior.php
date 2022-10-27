@@ -19,10 +19,15 @@ class NotifyAdminsBehavior extends Behavior
 {
     /** @var array */
     protected $_defaultConfig = [
+        'implementedEvents' => [
+            'Model.afterSave' => 'afterSave',
+            'Model.afterDelete' => 'afterDelete',
+            'Model.beforeDelete' => 'beforeDelete',
+        ],
         'implementedMethods' => [
             'notifySiteAdmins' => 'notifySiteAdmins',
             'notifySiteAdminsForEntity' => 'notifySiteAdminsForEntity',
-        ]
+        ],
     ];
 
     /** @var AuditLog|null */
@@ -48,6 +53,13 @@ class NotifyAdminsBehavior extends Behavior
             return;
         }
         $this->notifySiteAdminsForEntityChange($entity);
+    }
+
+    public function beforeDelete(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
+    {
+        if ($entity->table()->hasBehavior('MetaFields') && !isset($entity->meta_fields)) {
+            $entity = $entity->table()->loadInto($entity, ['MetaFields']);
+        }
     }
 
     public function afterDelete(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
@@ -114,6 +126,7 @@ class NotifyAdminsBehavior extends Behavior
                 unset($changedFields['meta_fields']);
             }
         }
+        $originalFields = $entity->isNew() ? [] : $entity->isNew();
         $data = [
             'original' => $this->_serializeFields($originalFields),
             'changed' => $this->_serializeFields($changedFields),
