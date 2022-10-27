@@ -24,6 +24,9 @@ class UsersTable extends AppTable
         $this->addBehavior('Timestamp');
         $this->addBehavior('UUID');
         $this->addBehavior('AuditLog');
+        $this->addBehavior('NotifyAdmins', [
+            'fields' => ['role_id', 'individual_id', 'organisation_id', 'disabled', 'modified'],
+        ]);
         $this->initAuthBehaviors();
         $this->belongsTo(
             'Individuals',
@@ -221,7 +224,7 @@ class UsersTable extends AppTable
     {
         if (!empty(Configure::read('keycloak'))) {
             $success = $this->handleUserUpdate($user);
-            return $success;
+            // return $success;
         }
         return true;
     }
