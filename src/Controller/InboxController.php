@@ -16,7 +16,7 @@ use Cake\Http\Exception\ForbiddenException;
 
 class InboxController extends AppController
 {
-    public $filterFields = ['scope', 'action', 'title', 'origin', 'message', 'Users.id', 'Users.username'];
+    public $filterFields = ['scope', 'action', 'Inbox.created', 'title', 'origin', 'message', 'Users.id', 'Users.username',];
     public $quickFilterFields = ['scope', 'action', ['title' => true], ['message' => true], 'origin'];
     public $containFields = ['Users'];
 
