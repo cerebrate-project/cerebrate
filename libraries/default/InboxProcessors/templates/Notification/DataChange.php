@@ -54,26 +54,6 @@ echo $this->Bootstrap->modal([
     ),
     'confirmText' => __('Acknowledge & Discard'),
     'confirmIcon' => 'check',
-    // 'confirmFunction' => 'submitAck'
 ]);
 ?>
 </div>
-
-<script>
-    function submitAck(modalObject, tmpApi) {
-        const $form = modalObject.$modal.find('form')
-        return tmpApi.postForm($form[0]).then((result) => {
-            const url = '/inbox/index'
-            const $container = $('div[id^="table-container-"]')
-            const randomValue = $container.attr('id').split('-')[2]
-            return result
-        })
-    }
-</script>
-
-<style>
-    div.individual-container>div,
-    div.user-container>div {
-        font-size: 1.5rem;
-    }
-</style>
