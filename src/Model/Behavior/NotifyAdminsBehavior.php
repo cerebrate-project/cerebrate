@@ -72,6 +72,7 @@ class NotifyAdminsBehavior extends Behavior
         $watchedFields = !empty($this->getConfig()['fields']) ? $this->getConfig()['fields'] : $entity->getVisible();
         $originalFields = [];
         $changedFields = $entity->extract($watchedFields);
+
         $titleTemplate = 'New {0} `{1}` created';
         $title = __(
             $titleTemplate,
@@ -79,24 +80,19 @@ class NotifyAdminsBehavior extends Behavior
             $entity->get($this->table()->getDisplayField())
         );
         $message = __('New {0}', Inflector::singularize($entity->getSource()));
+
         if (!$entity->isNew()) {
-            $originalFields = $this->_getOriginalChangedFields($entity, $watchedFields);
-            if ($entity->table()->hasBehavior('MetaFields') && !empty($entity->meta_fields)) {
-                $originalFields['meta_fields'] = array_merge(
-                    $originalFields['meta_fields'],
-                    $this->_getDeletedMetafields($entity)
-                );
+            $originalFields = $this->_getOriginalFields($entity, $watchedFields);
+            $changedFields = $this->_getChangedFields($entity, $originalFields);
+
+            if (
+                $entity->table()->hasBehavior('Timestamp') &&
+                count($changedFields) == 1 && !empty($changedFields['modified'])
+            ) {
+                return; // A not watched field has changed
             }
-            $changedFields = $entity->extract(array_keys($originalFields));
-            if ($entity->table()->hasBehavior('MetaFields') && !empty($entity->meta_fields)) {
-                $originalFields['meta_fields'] = array_map(function($metaField) {
-                    $originalValues = $metaField->getOriginalValues($metaField->getVisible());
-                    $metaField->set($originalValues);
-                    return $metaField;
-                }, $originalFields['meta_fields']);
-                $originalFields['meta_fields'] = $this->_massageMetaField($entity, $originalFields['meta_fields']);
-                $changedFields['meta_fields'] = $this->_massageMetaField($entity, $changedFields['meta_fields']);
-            }
+
+            $changeAmount = $this->_computeChangeAmount($entity, $originalFields, $changedFields);
             $titleTemplate = '{0} {1} modified';
             $title = __(
                 $titleTemplate,
@@ -106,9 +102,17 @@ class NotifyAdminsBehavior extends Behavior
             $message = __n(
                 '{0} field was updated',
                 '{0} fields were updated',
-                count($changedFields),
-                count($changedFields)
+                $changeAmount,
+                $changeAmount
             );
+        }
+        if ($entity->table()->hasBehavior('MetaFields')) {
+            $originalFields['meta_fields'] = $this->_massageMetaField($entity, $originalFields['meta_fields'] ?? []);
+            $changedFields['meta_fields'] = $this->_massageMetaField($entity, $changedFields['meta_fields'] ?? []);
+            if (empty($originalFields['meta_fields']) && empty($changedFields['meta_fields'])) {
+                unset($originalFields['meta_fields']);
+                unset($changedFields['meta_fields']);
+            }
         }
         $data = [
             'original' => $this->_serializeFields($originalFields),
@@ -198,7 +202,7 @@ class NotifyAdminsBehavior extends Behavior
             ->all()->toList();
     }
 
-    protected function _getOriginalChangedFields($entity, array $fields): array
+    protected function _getOriginalFields(AppModel $entity, array $fields): array
     {
         $originalChangedFields = $entity->extractOriginalChanged($fields);
         $originalChangedFields = array_map(function ($fieldValue) {
@@ -218,7 +222,38 @@ class NotifyAdminsBehavior extends Behavior
             }
             return $fieldValue;
         }, $originalChangedFields);
+        if ($entity->table()->hasBehavior('MetaFields')) {
+            // Include deleted meta-fields
+            $originalChangedFields['meta_fields'] = array_merge(
+                $originalChangedFields['meta_fields'] ?? [],
+                $this->_getDeletedMetafields($entity)
+            );
+            // Restore original values of meta-fields as the entity has been saved with the changes
+            if (!empty($entity->meta_fields)) {
+                $originalChangedFields['meta_fields'] = array_map(function ($metaField) {
+                    $originalValues = $metaField->getOriginalValues($metaField->getVisible());
+                    $originalMetafield = $metaField->table()->newEntity($metaField->toArray());
+                    $originalMetafield->set($originalValues);
+                    return $originalMetafield;
+                }, $originalChangedFields['meta_fields']);
+            }
+        }
         return $originalChangedFields;
+    }
+
+    protected function _getChangedFields(AppModel $entity, array $originalFields): array
+    {
+        $changedFields =  array_filter(
+            $entity->extract(array_keys($originalFields)),
+            fn ($v) => !is_null($v)
+        );
+        if ($entity->table()->hasBehavior('MetaFields')) {
+            $changedMetafields = $entity->extractOriginalChanged($entity->getVisible())['meta_fields'] ?? [];
+            $changedFields['meta_fields'] = array_filter($changedMetafields, function($metaField) {
+                return !empty($metaField->getDirty());
+            });
+        }
+        return $changedFields;
     }
 
     protected function _massageMetaField(AppModel $entity, array $metaFields): array
@@ -248,6 +283,20 @@ class NotifyAdminsBehavior extends Behavior
     protected function _getDeletedMetafields(AppModel $entity): array
     {
         return $entity->_metafields_to_delete ?? [];
+    }
+
+    protected function _computeChangeAmount(AppModel $entity, array $originalFields, array $changedFields): int
+    {
+        $amount = count($changedFields);
+        if ($entity->table()->hasBehavior('MetaFields')) {
+            $amount -= 1; // `meta_fields` key was counted without checking at the content
+        }
+        if (!empty($originalFields['meta_fields']) && !empty($changedFields['meta_fields'])) {
+            $amount += count(array_intersect_key($originalFields['meta_fields'] ?? [], $changedFields['meta_fields'] ?? [])); // Add changed fields
+            $amount += count(array_diff_key($changedFields['meta_fields'] ?? [], $originalFields['meta_fields'] ?? [])); // Add new fields
+            $amount += count(array_diff_key($originalFields['meta_fields'] ?? [], $changedFields['meta_fields'] ?? [])); // Add deleted fields
+        }
+        return $amount;
     }
 
     protected function _serializeFields($fields): array
