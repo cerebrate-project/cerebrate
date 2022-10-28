@@ -1947,7 +1947,7 @@ class BoostrapDropdownMenu extends BootstrapGeneric
                 'aria-expanded' => 'false',
             ]
         ];
-        $options = array_merge($this->options['toggle-button'], $defaultOptions);
+        $options = array_merge_recursive($this->options['toggle-button'], $defaultOptions);
         return $this->btHelper->button($options);
     }
 
