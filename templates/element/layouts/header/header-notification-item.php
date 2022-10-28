@@ -21,7 +21,7 @@ $variant = empty($notification['variant']) ? 'primary' : $notification['variant'
             </span>
         <?php endif; ?>
         <span class="notification-text-container">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center gap-2">
                 <span class="notification-title text-truncate"><?= $this->ValueGetter->get($notification['text']) ?></span>
                 <?php if (!empty($notification['datetime'])) : ?>
                     <small id="<?= $seed ?>" class="notification-date text-muted fw-light"><?= h($notification['datetime']->format('Y-m-d\TH:i:s')) ?></small>
