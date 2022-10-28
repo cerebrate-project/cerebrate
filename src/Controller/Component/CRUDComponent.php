@@ -9,6 +9,7 @@ use Cake\Utility\Inflector;
 use Cake\Utility\Text;
 use Cake\View\ViewBuilder;
 use Cake\ORM\TableRegistry;
+use Cake\ORM\Query;
 use Cake\Routing\Router;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
@@ -105,6 +106,7 @@ class CRUDComponent extends Component
             if ($this->metaFieldsSupported()) {
                 $query = $this->includeRequestedMetaFields($query);
             }
+            $query = $this->setRequestedEntryAmount($query);
             $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
@@ -705,6 +707,15 @@ class CRUDComponent extends Component
                 'conditions' => $containConditions
             ]
         ]);
+    }
+
+    protected function setRequestedEntryAmount()
+    {
+        $user = $this->Controller->ACL->getUser();
+        $tableSettings = IndexSetting::getTableSetting($user, $this->Table);
+        if (!empty($tableSettings['number_of_element'])) {
+            $this->Controller->paginate['limit'] = intval($tableSettings['number_of_element']);
+        }
     }
 
     public function view(int $id, array $params = []): void

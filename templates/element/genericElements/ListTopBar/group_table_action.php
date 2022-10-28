@@ -8,6 +8,7 @@ if (empty($data['table_setting_id']) && empty($model)) {
 $data['table_setting_id'] = !empty($data['table_setting_id']) ? $data['table_setting_id'] : IndexSetting::getIDFromTable($model);
 $tableSettings = IndexSetting::getTableSetting($loggedUser, $data['table_setting_id']);
 $compactDisplay = !empty($tableSettings['compact_display']);
+$numberOfElement = $tableSettings['number_of_element'] ?? 20;
 
 $availableColumnsHtml = $this->element('/genericElements/ListTopBar/group_table_action/hiddenColumns', [
     'table_data' => $table_data,
@@ -51,7 +52,13 @@ $compactDisplayHtml = $this->element('/genericElements/ListTopBar/group_table_ac
     'table_data' => $table_data,
     'tableSettings' => $tableSettings,
     'table_setting_id' => $data['table_setting_id'],
-    'compactDisplay' => $compactDisplay
+    'compactDisplay' => $compactDisplay,
+]);
+$numberOfElementHtml = $this->element('/genericElements/ListTopBar/group_table_action/numberOfElement', [
+    'table_data' => $table_data,
+    'tableSettings' => $tableSettings,
+    'table_setting_id' => $data['table_setting_id'],
+    'numberOfElement' => $numberOfElement,
 ]);
 ?>
 <?php if (!isset($data['requirement']) || $data['requirement']) : ?>
@@ -63,6 +70,7 @@ $compactDisplayHtml = $this->element('/genericElements/ListTopBar/group_table_ac
         'toggle-button' => [
             'icon' => 'sliders-h',
             'variant' => 'primary',
+            'class' => ['table_setting_dropdown_button'],
         ],
         'submenu_alignment' => 'end',
         'submenu_direction' => 'start',
@@ -79,8 +87,22 @@ $compactDisplayHtml = $this->element('/genericElements/ListTopBar/group_table_ac
             ],
             [
                 'html' => $compactDisplayHtml,
+            ],
+            [
+                'html' => $numberOfElementHtml,
             ]
         ]
     ]);
     ?>
 <?php endif; ?>
+
+<script>
+    $(document).ready(function() {
+        const dropdownBtn = document.querySelector('button.table_setting_dropdown_button')
+        dropdownBtn.addEventListener('hidden.bs.dropdown', function() {
+            const $dropdownBtn = $(this)
+            const debouncedFunctions = $dropdownBtn.data('debouncedFunctions')
+            firePendingDebouncedFunctions(dropdownBtn)
+        })
+    })
+</script>
