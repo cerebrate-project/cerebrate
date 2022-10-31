@@ -427,6 +427,22 @@ class AuthKeycloakBehavior extends Behavior
                 ]
             ];
         }
+        foreach ($defaultMappers as $defaultMapper => $enabled) {
+            if (!$enabled) {
+                $payload[] = [
+                    'protocol' => 'openid-connect',
+                    'name' => $defaultMapper,
+                    'protocolMapper' => 'oidc-usermodel-attribute-mapper',
+                    'config' => [
+                        'id.token.claim' => true,
+                        'access.token.claim' => true,
+                        'userinfo.token.claim' => true,
+                        'user.attribute' => $defaultMapper,
+                        'claim.name' => $defaultMapper
+                    ]
+                ];
+            }
+        }
         if (!empty($payload)) {
             $response = $this->restApiRequest('%s/admin/realms/%s/clients/' . $clientId . '/protocol-mappers/add-models', $payload, 'post');
             if (!$response->isOk()) {
