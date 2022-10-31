@@ -413,4 +413,9 @@ class UsersController extends AppController
         }
         $this->viewBuilder()->setLayout('login');
     }
+
+    public function test()
+    {
+        
+    }
 }
