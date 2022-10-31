@@ -16,10 +16,10 @@ class KeycloakSyncCommand extends Command
             $this->loadModel('Users');
             $results = $this->fetchTable()->syncWithKeycloak();
             $tableData = [
-                ['Changes to', 'Count']
+                ['Modification type', 'Count', 'Affected users']
             ];
             foreach ($results as $k => $v) {
-                $tableData[] = [$k, '<text-right>' . $v . '</text-right>'];
+                $tableData[] = [$k, '<text-right>' . count($v) . '</text-right>', '<text-right>' . implode(', ', $v) . '</text-right>'];
             }
             $io->out(__('Sync done. See the results below.'));
             $io->helper('Table')->output($tableData);
