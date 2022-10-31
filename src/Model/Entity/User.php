@@ -48,4 +48,14 @@ class User extends AppModel
             return (new DefaultPasswordHasher())->hash($password);
         }
     }
+
+    public function rearrangeForAPI(): void
+    {
+        if (!empty($this->meta_fields)) {
+            $this->rearrangeMetaFields();
+        }
+        if (!empty($this->MetaTemplates)) {
+            unset($this->MetaTemplates);
+        }
+    }
 }
