@@ -1,0 +1,28 @@
+{
+    "name": "CSIRT network permissions",
+    "namespace": "csn",
+    "description": "Template of additional tooling permissions for the CSIRT network",
+    "version": 1,
+    "scope": "user",
+    "uuid": "447ded8b-314b-41c7-a913-4ce32535b28d",
+    "source": "CSIRT network",
+    "metaFields": [
+        {
+            "field": "perm_mattermost",
+            "type": "boolean"
+        },
+        {
+            "field": "perm_bigbluebutton",
+            "type": "boolean"
+        },
+        {
+            "field": "perm_sharepoint",
+            "type": "boolean"
+        },
+        {
+            "field": "perm_misp",
+            "type": "boolean"
+        }
+    ]
+}
+
