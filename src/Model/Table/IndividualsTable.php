@@ -110,4 +110,15 @@ class IndividualsTable extends AppTable
         }
         return $query->group(['Individuals.id', 'Individuals.uuid']);
     }
+
+    public function getValidIndividualsToEdit(object $currentUser): array
+    {
+        $validIndividualIds = $this->Users->find('list')->select(['individual_id'])->where(
+            [
+                'organisation_id' => $currentUser['organisation_id'],
+                'disabled' => 0
+            ]
+        )->all()->toArray();
+        return array_keys($validIndividualIds);
+    }
 }
