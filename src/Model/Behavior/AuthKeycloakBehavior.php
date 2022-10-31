@@ -176,7 +176,7 @@ class AuthKeycloakBehavior extends Behavior
 
         $users = [$user->toArray()];
         $clientId = $this->getClientId();
-        $changes = $this->syncUser($users, $clientId);
+        $changes = $this->syncUsers($users, $clientId);
         return $changes;
     }
 
@@ -231,6 +231,7 @@ class AuthKeycloakBehavior extends Behavior
 
     public function syncWithKeycloak(): array
     {
+        $this->updateMappers();
         $results = [];
         $data['Users'] = $this->_table->find()->contain(['Individuals', 'Organisations', 'Roles'])->select(
             [
@@ -316,7 +317,6 @@ class AuthKeycloakBehavior extends Behavior
                     'org_uuid' => $user['organisation']['uuid']
                 ]
             ];
-            debug($change);
             $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'], $change, 'put');
             if (!$response->isOk()) {
                 $this->_table->auditLogs()->insert([
@@ -351,7 +351,6 @@ class AuthKeycloakBehavior extends Behavior
                 'org_uuid' => $user['organisation']['uuid']
             ]
         ];
-        debug($newUser);
         $response = $this->restApiRequest('%s/admin/realms/%s/users', $newUser, 'post');
         if (!$response->isOk()) {
             $this->_table->auditLogs()->insert([
@@ -384,5 +383,56 @@ class AuthKeycloakBehavior extends Behavior
     private function urlencodeEscapeForSprintf(string $input): string
     {
         return str_replace('%', '%%', $input);
+    }
+
+    public function updateMappers(): bool
+    {
+        $clientId = $this->getClientId();
+        $response = $this->restApiRequest('%s/admin/realms/%s/clients/' . $clientId . '/protocol-mappers/models?protocolMapper=oidc-usermodel-attribute-mapper', [], 'get');
+        if ($response->isOk()) {
+            $mappers = json_decode($response->getStringBody(), true);
+        } else {
+            return false;
+        }
+        $enabledMappers = [];
+        $defaultMappers = [
+            'org_name' => 0,
+            'org_uuid' => 0,
+            'role_name' => 0,
+            'role_uuid' => 0
+        ];
+        $mappersToEnable = explode(',', Configure::read('keycloak.user_meta_mapping'));
+        foreach ($mappers as $mapper) {
+            if ($mapper['protocolMapper'] !== 'oidc-usermodel-attribute-mapper') {
+                continue;
+            }
+            if (in_array($mapper['name'], array_keys($defaultMappers))) {
+                $defaultMappers[$mapper['name']] = 1;
+                continue;
+            }
+            $enabledMappers[$mapper['name']] = $mapper;
+        }
+        $payload = [];
+        foreach ($mappersToEnable as $mapperToEnable) {
+            $payload[] = [
+                'protocol' => 'openid-connect',
+                'name' => $mapperToEnable,
+                'protocolMapper' => 'oidc-usermodel-attribute-mapper',
+                'config' => [
+                    'id.token.claim' => true,
+                    'access.token.claim' => true,
+                    'userinfo.token.claim' => true,
+                    'user.attribute' => $mapperToEnable,
+                    'claim.name' => $mapperToEnable
+                ]
+            ];
+        }
+        if (!empty($payload)) {
+            $response = $this->restApiRequest('%s/admin/realms/%s/clients/' . $clientId . '/protocol-mappers/add-models', $payload, 'post');
+            if (!$response->isOk()) {
+                return false;
+            }
+        }
+        return true;
     }
 }

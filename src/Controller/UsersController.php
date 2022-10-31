@@ -16,6 +16,7 @@ class UsersController extends AppController
 
     public function index()
     {
+        $this->Users->updateMappers();
         $currentUser = $this->ACL->getUser();
         $conditions = [];
         if (empty($currentUser['role']['perm_admin'])) {

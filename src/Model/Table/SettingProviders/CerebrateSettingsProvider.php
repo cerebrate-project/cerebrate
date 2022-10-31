@@ -284,6 +284,14 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'description' => __('family_name mapped name in keycloak'),
                             'dependsOn' => 'keycloak.enabled'
                         ],
+                        'keycloak.user_meta_mapping' => [
+                            'name' => 'User Meta-field attribute mapping',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => '',
+                            'description' => __('List of user metafields to push to keycloak as attributes. When using multiple templates, the attribute names have to be unique. Expects a comma separated list.'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ]
                     ]
                 ]
             ],
