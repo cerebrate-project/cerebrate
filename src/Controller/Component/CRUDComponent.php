@@ -73,6 +73,9 @@ class CRUDComponent extends Component
             $query->order($options['order']);
         }
         if ($this->Controller->ParamHandler->isRest()) {
+            if ($this->metaFieldsSupported()) {
+                $query = $this->includeRequestedMetaFields($query);
+            }
             $data = $query->all();
             if (isset($options['hidden'])) {
                 $data->each(function($value, $key) use ($options) {
@@ -97,6 +100,12 @@ class CRUDComponent extends Component
                         return $value !== false;
                     });
                 }
+            }
+            if ($this->metaFieldsSupported()) {
+                $metaTemplates = $this->getMetaTemplates()->toArray();
+                $data = $data->map(function($value, $key) use ($metaTemplates) {
+                    return $this->attachMetaTemplatesIfNeeded($value, $metaTemplates);
+                });
             }
             $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
         } else {
@@ -663,7 +672,9 @@ class CRUDComponent extends Component
             if (!empty($newestTemplate) && !empty($metaTemplates[$i])) {
                 $metaTemplates[$i]['hasNewerVersion'] = $newestTemplate;
             }
+            $metaTemplates[$metaTemplate->id]['meta_template_fields'] = $metaTemplates[$metaTemplate->id]['meta_template_fields'];
         }
+        $metaTemplates = $metaTemplates;
         $data['MetaTemplates'] = $metaTemplates;
         return $data;
     }

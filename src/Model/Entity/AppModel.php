@@ -61,7 +61,11 @@ class AppModel extends Entity
     public function rearrangeTags(array $tags): array
     {
         foreach ($tags as &$tag) {
-            unset($tag['_joinData']);
+            $tag = [
+                'id' => $tag['id'],
+                'name' => $tag['name'],
+                'colour' => $tag['colour']
+            ];
         }
         return $tags;
     }
@@ -70,11 +74,26 @@ class AppModel extends Entity
     {
         $rearrangedAlignments = [];
         $validAlignmentTypes = ['individual', 'organisation'];
+        $alignmentDataToKeep = [
+            'individual' => [
+                'id',
+                'email'
+            ],
+            'organisation' => [
+                'id',
+                'uuid',
+                'name'
+            ]
+        ];
         foreach ($alignments as $alignment) {
-            foreach ($validAlignmentTypes as $type) {
+            foreach (array_keys($alignmentDataToKeep) as $type) {
                 if (isset($alignment[$type])) {
                     $alignment[$type]['type'] = $alignment['type'];
-                    $rearrangedAlignments[$type][] = $alignment[$type];
+                    $temp = [];
+                    foreach ($alignmentDataToKeep[$type] as $field) {
+                        $temp[$field] = $alignment[$type][$field];
+                    }
+                    $rearrangedAlignments[$type][] = $temp;
                 }
             }
         }
