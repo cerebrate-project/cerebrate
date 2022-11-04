@@ -11,7 +11,7 @@ use App\Settings\SettingsProvider\UserSettingsProvider;
 
 class User extends AppModel
 {
-    protected $_hidden = ['password', 'confirm_password'];
+    protected $_hidden = ['password', 'confirm_password', 'user_settings_by_name', 'user_settings_by_name_with_fallback', 'SettingsProvider', 'user_settings'];
 
     protected $_virtual = ['user_settings_by_name', 'user_settings_by_name_with_fallback'];
 
@@ -51,11 +51,36 @@ class User extends AppModel
 
     public function rearrangeForAPI(): void
     {
+        if (!empty($this->tags)) {
+            $this->tags = $this->rearrangeTags($this->tags);
+        }
         if (!empty($this->meta_fields)) {
             $this->rearrangeMetaFields();
         }
         if (!empty($this->MetaTemplates)) {
             unset($this->MetaTemplates);
         }
+        if (!empty($this->user_settings_by_name)) {
+            $this->rearrangeUserSettings();
+        }
+        $this->rearrangeSimplify(['organisation', 'individual']);
+    }
+
+    private function rearrangeUserSettings()
+    {
+        $settings = [];
+        if (isset($this->user_settings_by_name)) {
+            foreach ($this->user_settings_by_name as $setting => $data) {
+                $settings[$setting] = $data['value'];
+            }
+        }
+        if (isset($this->user_settings_by_name_with_fallback)) {
+            foreach ($this->user_settings_by_name_with_fallback as $setting => $data) {
+                if (!isset($settings[$setting])) {
+                    $settings[$setting] = $data['value'];
+                }
+            }
+        }
+        $this->settings = $settings;
     }
 }
