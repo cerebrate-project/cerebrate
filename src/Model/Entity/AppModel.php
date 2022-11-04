@@ -99,4 +99,22 @@ class AppModel extends Entity
         }
         return $rearrangedAlignments;
     }
+
+    public function rearrangeSimplify(array $typesToRearrange): void
+    {
+        if (in_array('organisation', $typesToRearrange) && isset($this->organisation)) {
+            $this->organisation = [
+                'id' => $this->organisation['id'],
+                'name' => $this->organisation['name'],
+                'uuid' => $this->organisation['uuid']
+            ];
+        }
+        if (in_array('individual', $typesToRearrange) && isset($this->individual)) {
+            $this->individual = [
+                'id' => $this->individual['id'],
+                'email' => $this->individual['email'],
+                'uuid' => $this->individual['uuid']
+            ];
+        }
+    }
 }
