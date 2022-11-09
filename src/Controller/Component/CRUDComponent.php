@@ -554,7 +554,14 @@ class CRUDComponent extends Component
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
                 if ($this->metaFieldsSupported() && !empty($metaFieldsToDelete)) {
-                    $this->Table->MetaFields->unlink($savedData, $metaFieldsToDelete);
+                    foreach ($metaFieldsToDelete as $k => $v) {
+                        if ($v === null) {
+                            unset($metaFieldsToDelete[$k]);
+                        }
+                    }
+                    if (!empty($metaFieldsToDelete)) {
+                        $this->Table->MetaFields->unlink($savedData, $metaFieldsToDelete);
+                    }
                 }
                 if (isset($params['afterSave'])) {
                     $params['afterSave']($data);
