@@ -7,4 +7,9 @@ use Cake\ORM\Entity;
 
 class EncryptionKey extends AppModel
 {
+
+    public function rearrangeForAPI(): void
+    {
+        $this->rearrangeSimplify(['organisation', 'individual']);
+    }
 }
