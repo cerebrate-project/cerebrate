@@ -112,6 +112,7 @@
         echo $this->Bootstrap->modal([
             'title' => empty($data['title']) ? sprintf('%s %s', $actionName, $modelName) : h($data['title']),
             'bodyHtml' =>  $this->element('genericElements/Form/formLayouts/formRaw', [
+                'data' => $data,
                 'formCreate' => $formCreate,
                 'ajaxFlashMessage' => $ajaxFlashMessage,
                 'fieldsString' => $fieldsString,
@@ -124,6 +125,7 @@
         ]);
     } else if (!empty($raw)) {
         echo $this->element('genericElements/Form/formLayouts/formDefault', [
+            'data' => $data,
             'actionName' => $actionName,
             'modelName' => $modelName,
             'submitButtonData' => $submitButtonData,
@@ -135,6 +137,7 @@
         ]);
     } else {
         echo $this->element('genericElements/Form/formLayouts/formDefault', [
+            'data' => $data,
             'actionName' => $actionName,
             'modelName' => $modelName,
             'submitButtonData' => $submitButtonData,
