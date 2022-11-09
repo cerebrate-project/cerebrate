@@ -123,6 +123,11 @@ class Sidemenu {
                             'url' => '/auditLogs/index',
                             'icon' => 'history',
                         ],
+                        'PermissionLimitations' => [
+                            'label' => __('Permission Limitations'),
+                            'url' => '/permissionLimitations/index',
+                            'icon' => 'jedi',
+                        ],
                     ]
                 ],
                 'API' => [

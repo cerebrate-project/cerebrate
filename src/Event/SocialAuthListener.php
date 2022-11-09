@@ -31,7 +31,7 @@ class SocialAuthListener implements EventListenerInterface
 
         // You can access the profile using $user->social_profile
 
-        $this->getTableLocator()->get('Users')->saveOrFail($user);
+        // $this->getTableLocator()->get('Users')->saveOrFail($user);
 
         return $user;
     }

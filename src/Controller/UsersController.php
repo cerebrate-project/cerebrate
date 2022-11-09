@@ -16,6 +16,7 @@ class UsersController extends AppController
 
     public function index()
     {
+        $this->Users->updateMappers();
         $currentUser = $this->ACL->getUser();
         $conditions = [];
         if (empty($currentUser['role']['perm_admin'])) {
@@ -136,7 +137,11 @@ class UsersController extends AppController
             $id = $this->ACL->getUser()['id'];
         }
         $this->CRUD->view($id, [
-            'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations']
+            'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations'],
+            'afterFind' => function($data) {
+                $data = $this->fetchTable('PermissionLimitations')->attachLimitations($data);
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -354,6 +359,9 @@ class UsersController extends AppController
             ]);
             $this->Authentication->logout();
             $this->Flash->success(__('Goodbye.'));
+            if (Configure::read('keycloak.enabled')) {
+                $this->redirect($this->Users->keyCloaklogout());
+            }
             return $this->redirect(\Cake\Routing\Router::url('/users/login'));
         }
     }

@@ -23,6 +23,7 @@ class UsersTable extends AppTable
         parent::initialize($config);
         $this->addBehavior('Timestamp');
         $this->addBehavior('UUID');
+        $this->addBehavior('MetaFields');
         $this->addBehavior('AuditLog');
         $this->initAuthBehaviors();
         $this->belongsTo(
@@ -58,7 +59,9 @@ class UsersTable extends AppTable
 
     public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options)
     {
-        $data['username'] = trim(mb_strtolower($data['username']));
+        if (isset($data['username'])) {
+            $data['username'] = trim(mb_strtolower($data['username']));
+        }
     }
 
     public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options)
@@ -66,7 +69,49 @@ class UsersTable extends AppTable
         if (!$entity->isNew()) {
             $success = $this->handleUserUpdateRouter($entity);
         }
+        $permissionRestrictionCheck = $this->checkPermissionRestrictions($entity);
+        if ($permissionRestrictionCheck !== true) {
+            $entity->setErrors($permissionRestrictionCheck);
+            $event->stopPropagation();
+            $event->setResult(false);
+            return false;
+        }
         return $success;
+    }
+
+    private function checkPermissionRestrictions(EntityInterface $entity)
+    {
+        if (!isset($this->PermissionLimitations)) {
+            $this->PermissionLimitations = TableRegistry::get('PermissionLimitations');
+        }
+        $new = $entity->isNew();
+        $permissions = $this->PermissionLimitations->getListOfLimitations($entity);
+        foreach ($permissions as $permission_name => $permission) {
+            foreach ($permission as $scope => $permission_data) {
+                if (!empty($entity['meta_fields'])) {
+                    $enabled = false;
+                    foreach ($entity['meta_fields'] as $metaField) {
+                        if ($metaField['field'] === $permission_name) {
+                            $enabled = true;
+                        }
+                    }
+                    if (!$enabled) {
+                        continue;
+                    }
+                }
+                $valueToCompareTo = $permission_data['current'] + ($new ? 1 : 0);
+                if ($valueToCompareTo > $permission_data['limit']) {
+                    return [
+                        $permission_name => 
+                        __(
+                            '{0} limit exceeded.',
+                            $scope
+                        )
+                    ];
+                }
+            }
+        }
+        return true;
     }
 
     private function initAuthBehaviors()
@@ -79,6 +124,7 @@ class UsersTable extends AppTable
     public function validationDefault(Validator $validator): Validator
     {
         $validator
+            ->setStopOnFailure()
             ->requirePresence(['password'], 'create')
             ->add('password', [
                 'password_complexity' => [

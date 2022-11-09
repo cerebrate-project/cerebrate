@@ -20,6 +20,8 @@ class IndividualsController extends AppController
 
     public function index()
     {
+        $currentUser = $this->ACL->getUser();
+        $orgAdmin = !$currentUser['role']['perm_admin'] && $currentUser['role']['perm_org_admin'];
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
@@ -31,6 +33,11 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        $editableIds = null;
+        if ($orgAdmin) {
+            $editableIds = $this->Individuals->getValidIndividualsToEdit($currentUser);
+        }
+        $this->set('editableIds', $editableIds);
         $this->set('alignmentScope', 'individuals');
     }
 
@@ -59,6 +66,14 @@ class IndividualsController extends AppController
 
     public function edit($id)
     {
+        $currentUser = $this->ACL->getUser();
+        $validIndividualIds = [];
+        if ($currentUser['role']['perm_admin']) {
+            $validIndividualIds = $this->Individuals->getValidIndividualsToEdit($currentUser);
+            if (!isset($validIndividualIds[$id])) {
+                throw new NotFoundException(__('Invalid individual.'));
+            }
+        }
         $this->CRUD->edit($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

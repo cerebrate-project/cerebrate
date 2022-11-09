@@ -87,7 +87,7 @@ class ACLComponent extends Component
         'Individuals' => [
             'add' => ['perm_admin'],
             'delete' => ['perm_admin'],
-            'edit' => ['perm_admin'],
+            'edit' => ['perm_admin', 'perm_org_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
             'tag' => ['perm_tagger'],
@@ -168,6 +168,13 @@ class ACLComponent extends Component
         ],
         'Pages' => [
             'display' => ['*']
+        ],
+        'PermissionLimitations' => [
+            "index" => ['*'],
+            "add" => ['perm_admin'],
+            "view" => ['*'],
+            "edit" => ['perm_admin'],
+            "delete" => ['perm_admin']
         ],
         'Roles' => [
             'add' => ['perm_admin'],
