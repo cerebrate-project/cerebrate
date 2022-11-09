@@ -18,11 +18,9 @@ use Cake\Http\Exception\NotFoundException;
 
 class AuthKeycloakBehavior extends Behavior
 {
-/*
     public function getUser(EntityInterface $profile, Session $session)
     {
         $userId = $session->read('Auth.User.id');
-        $userId = null;
         if ($userId) {
             return $this->_table->get($userId);
         }
@@ -35,7 +33,7 @@ class AuthKeycloakBehavior extends Behavior
 
         return $user;
     }
-*/
+
     private function extractProfileData($profile_payload)
     {
         $mapping = Configure::read('keycloak.mapping');
