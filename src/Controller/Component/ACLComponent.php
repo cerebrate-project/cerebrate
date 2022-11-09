@@ -169,6 +169,13 @@ class ACLComponent extends Component
         'Pages' => [
             'display' => ['*']
         ],
+        'PermissionLimitations' => [
+            "index" => ['*'],
+            "add" => ['perm_admin'],
+            "view" => ['*'],
+            "edit" => ['perm_admin'],
+            "delete" => ['perm_admin']
+        ],
         'Roles' => [
             'add' => ['perm_admin'],
             'delete' =>  ['perm_admin'],

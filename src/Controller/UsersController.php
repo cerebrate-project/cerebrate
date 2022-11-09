@@ -137,7 +137,11 @@ class UsersController extends AppController
             $id = $this->ACL->getUser()['id'];
         }
         $this->CRUD->view($id, [
-            'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations']
+            'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations'],
+            'afterFind' => function($data) {
+                $data = $this->fetchTable('PermissionLimitations')->attachLimitations($data);
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -413,10 +417,5 @@ class UsersController extends AppController
             return $processor->genHTTPReply($this, $processorResult, ['controller' => 'Inbox', 'action' => 'index']);
         }
         $this->viewBuilder()->setLayout('login');
-    }
-
-    public function test()
-    {
-        
     }
 }
