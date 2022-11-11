@@ -674,6 +674,7 @@ class CRUDComponent extends Component
                 if (!empty($pruneEmptyDisabled) && !$metaTemplate->enabled) {
                     unset($metaTemplates[$i]);
                 }
+                continue;
             }
             $newestTemplate = $this->MetaTemplates->getNewestVersion($metaTemplate);
             if (!empty($newestTemplate) && !empty($metaTemplates[$i])) {
