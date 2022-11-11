@@ -787,12 +787,6 @@ class CRUDComponent extends Component
                 if (empty($data)) {
                     throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
                 }
-                if (isset($params['beforeSave'])) {
-                    $data = $params['beforeSave']($data);
-                    if ($data === false) {
-                        throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
-                    }
-                }
                 $this->Controller->set('id', $data['id']);
                 $this->Controller->set('data', $data);
                 $this->Controller->set('bulkEnabled', false);
