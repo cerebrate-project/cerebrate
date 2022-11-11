@@ -96,8 +96,12 @@ class UsersController extends AppController
                         throw new MethodNotAllowedException(__('Invalid individual selected - when KeyCloak is enabled, only one user account may be assigned to an individual.'));
                     }
                 }
-                $this->Users->enrollUserRouter($data);
                 return $data;
+            },
+            'afterSave' => function($data) {
+                if (Configure::read('keycloak.enabled')) {
+                    $this->Users->enrollUserRouter($data);
+                }
             }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
@@ -282,16 +286,21 @@ class UsersController extends AppController
             'beforeSave' => function($data) use ($currentUser, $validRoles) {
                 if (!$currentUser['role']['perm_admin']) {
                     if ($data['organisation_id'] !== $currentUser['organisation_id']) {
-                        throw new MethodNotAllowedException(__('You do not have permission to remove the given user.'));
+                        throw new MethodNotAllowedException(__('You do not have permission to delete the given user.'));
                     }
                     if (!in_array($data['role_id'], array_keys($validRoles))) {
-                        throw new MethodNotAllowedException(__('You do not have permission to remove the given user.'));
+                        throw new MethodNotAllowedException(__('You do not have permission to delete the given user.'));
+                    }
+                }
+                if (Configure::read('keycloak.enabled')) {
+                    if (!$this->Users->deleteUser($data)) {
+                        throw new MethodNotAllowedException(__('Could not delete the user from KeyCloak. Please try again later, or consider disabling the user instead.'));
                     }
                 }
                 return $data;
             }
         ];
-        $this->CRUD->delete($id);
+        $this->CRUD->delete($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;

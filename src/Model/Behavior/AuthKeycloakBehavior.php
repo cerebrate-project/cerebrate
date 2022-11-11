@@ -84,6 +84,62 @@ class AuthKeycloakBehavior extends Behavior
         );
     }
 
+    public function getUserIdByUsername(string $username)
+    {
+        $response = $this->restApiRequest(
+            '%s/admin/realms/%s/users/?username=' . urlencode($username),
+            [],
+            'GET'
+        );
+        if (!$response->isOk()) {
+            $responseBody = json_decode($response->getStringBody(), true);
+            $this->_table->auditLogs()->insert([
+                'request_action' => 'keycloakGetUser',
+                'model' => 'User',
+                'model_id' => 0,
+                'model_title' => __('Failed to fetch user ({0}) from keycloak', $username),
+                'changed' => ['error' => empty($responseBody['errorMessage']) ? 'Unknown error.' : $responseBody['errorMessage']]
+            ]);
+        }
+        $responseBody = json_decode($response->getStringBody(), true);
+        if (empty($responseBody[0]['id'])) {
+            return false;
+        }
+        return $responseBody[0]['id'];
+    }
+
+    public function deleteUser($data): bool
+    {
+        $userId = $this->getUserIdByUsername($data['username']);
+        if ($userId === false) {
+            $this->_table->auditLogs()->insert([
+                'request_action' => 'keycloakUserDeletion',
+                'model' => 'User',
+                'model_id' => 0,
+                'model_title' => __('User {0} not found in keycloak, deleting the user locally.', $data['username']),
+                'changed' => []
+            ]);
+            return true;
+        }
+        $response = $this->restApiRequest(
+            '%s/admin/realms/%s/users/' . urlencode($userId),
+            [],
+            'delete'
+        );
+        if (!$response->isOk()) {
+            $responseBody = json_decode($response->getStringBody(), true);
+            $this->_table->auditLogs()->insert([
+                'request_action' => 'keycloakUserDeletion',
+                'model' => 'User',
+                'model_id' => 0,
+                'model_title' => __('Failed to delete user {0} ({1}) in keycloak', $data['username'], $userId),
+                'changed' => ['error' => empty($responseBody['errorMessage']) ? 'Unknown error.' : $responseBody['errorMessage']]
+            ]);
+            return false;
+        }
+        return true;
+    }
+
     public function enrollUser($data): bool
     {
         $roleConditions = [
