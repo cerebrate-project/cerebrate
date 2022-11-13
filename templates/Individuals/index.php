@@ -53,6 +53,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'last_name',
             ],
             [
+                'name' => __('Associated User(s)'),
+                'sort' => 'user',
+                'data_path' => 'user',
+                'element' => 'user'
+            ],
+            [
                 'name' => __('Alignments'),
                 'data_path' => 'alignments',
                 'element' => 'alignments',

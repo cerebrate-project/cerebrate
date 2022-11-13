@@ -28,6 +28,12 @@ class IndividualsController extends AppController
             'quickFilterForMetaField' => ['enabled' => true, 'wildcard_search' => true],
             'contain' => $this->containFields,
             'statisticsFields' => $this->statisticsFields,
+            'afterFind' => function($data) use ($currentUser) {
+                if ($currentUser['role']['perm_admin']) {
+                    $data['user'] = $this->Individuals->Users->find()->select(['id', 'username', 'Organisations.id', 'Organisations.name'])->contain('Organisations')->where(['individual_id' => $data['id']])->all()->toArray();
+                }
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -67,6 +73,13 @@ class IndividualsController extends AppController
     public function edit($id)
     {
         $currentUser = $this->ACL->getUser();
+        if (!$currentUser['role']['perm_admin']) {
+            $validIndividuals = $this->Individuals->getValidIndividualsToEdit($currentUser);
+            if (!in_array($id, $validIndividuals)) {
+                throw new MethodNotAllowedException(__('You cannot modify that individual.'));    
+            }
+        }
+        $currentUser = $this->ACL->getUser();
         $validIndividualIds = [];
         if ($currentUser['role']['perm_admin']) {
             $validIndividualIds = $this->Individuals->getValidIndividualsToEdit($currentUser);
@@ -74,7 +87,14 @@ class IndividualsController extends AppController
                 throw new NotFoundException(__('Invalid individual.'));
             }
         }
-        $this->CRUD->edit($id);
+        $this->CRUD->edit($id, [
+            'beforeSave' => function($data) use ($currentUser) {
+                if ($currentUser['role']['perm_admin'] && isset($data['uuid'])) {
+                    unset($data['uuid']);
+                }
+                return $data;
+            }
+        ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
