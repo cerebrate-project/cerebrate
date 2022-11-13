@@ -145,9 +145,6 @@ class AuthKeycloakBehavior extends Behavior
         $roleConditions = [
             'id' => $data['role_id']
         ];
-        if (!empty(Configure::read('keycloak.user_management.actions'))) {
-            $roleConditions['name'] = Configure::read('keycloak.default_role_name');
-        }
         $user = [
             'username' => $data['username'],
             'disabled' => false,
