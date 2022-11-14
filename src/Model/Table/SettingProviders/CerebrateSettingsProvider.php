@@ -208,27 +208,6 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                                 return true;
                             }
                         ],
-                        'keycloak.authoritative' => [
-                            'name' => 'Authoritative',
-                            'type' => 'boolean',
-                            'severity' => 'info',
-                            'description' => __('Override local role and organisation settings based on the settings in KeyCloak'),
-                            'default' => false,
-                            'dependsOn' => 'keycloak.enabled'
-                        ],
-                        'keycloak.default_role_name' => [
-                            'name' => 'Default role',
-                            'type' => 'select',
-                            'severity' => 'info',
-                            'description' => __('Select the default role name to be used when creating users'),
-                            'options' => function ($settingsProviders) {
-                                $roleTable = TableRegistry::getTableLocator()->get('Roles');
-                                $allRoleNames = $roleTable->find()->toArray();
-                                $allRoleNames = array_column($allRoleNames, 'name');
-                                return array_combine($allRoleNames, $allRoleNames);
-                            },
-                            'dependsOn' => 'keycloak.enabled'
-                        ],
                         'keycloak.screw' => [
                             'name' => 'Screw',
                             'type' => 'string',

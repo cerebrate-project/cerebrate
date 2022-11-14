@@ -245,10 +245,6 @@ class UsersTable extends AppTable
     {
         $role = $this->Roles->find()->where(['name' => $user['role']['name']])->first();
         if (empty($role)) {
-            if (!empty(Configure::read('keycloak.default_role_name'))) {
-                $default_role_name = Configure::read('keycloak.default_role_name');
-                $role = $this->Roles->find()->where(['name' => $default_role_name])->first();
-            }
             if (empty($role)) {
                 throw new NotFoundException(__('Invalid role'));
             }
