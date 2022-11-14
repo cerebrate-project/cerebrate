@@ -68,7 +68,11 @@ class AppModel extends Entity
     public function rearrangeTags(array $tags): array
     {
         foreach ($tags as &$tag) {
-            unset($tag['_joinData']);
+            $tag = [
+                'id' => $tag['id'],
+                'name' => $tag['name'],
+                'colour' => $tag['colour']
+            ];
         }
         return $tags;
     }
@@ -77,14 +81,47 @@ class AppModel extends Entity
     {
         $rearrangedAlignments = [];
         $validAlignmentTypes = ['individual', 'organisation'];
+        $alignmentDataToKeep = [
+            'individual' => [
+                'id',
+                'email'
+            ],
+            'organisation' => [
+                'id',
+                'uuid',
+                'name'
+            ]
+        ];
         foreach ($alignments as $alignment) {
-            foreach ($validAlignmentTypes as $type) {
+            foreach (array_keys($alignmentDataToKeep) as $type) {
                 if (isset($alignment[$type])) {
                     $alignment[$type]['type'] = $alignment['type'];
-                    $rearrangedAlignments[$type][] = $alignment[$type];
+                    $temp = [];
+                    foreach ($alignmentDataToKeep[$type] as $field) {
+                        $temp[$field] = $alignment[$type][$field];
+                    }
+                    $rearrangedAlignments[$type][] = $temp;
                 }
             }
         }
         return $rearrangedAlignments;
+    }
+
+    public function rearrangeSimplify(array $typesToRearrange): void
+    {
+        if (in_array('organisation', $typesToRearrange) && isset($this->organisation)) {
+            $this->organisation = [
+                'id' => $this->organisation['id'],
+                'name' => $this->organisation['name'],
+                'uuid' => $this->organisation['uuid']
+            ];
+        }
+        if (in_array('individual', $typesToRearrange) && isset($this->individual)) {
+            $this->individual = [
+                'id' => $this->individual['id'],
+                'email' => $this->individual['email'],
+                'uuid' => $this->individual['uuid']
+            ];
+        }
     }
 }

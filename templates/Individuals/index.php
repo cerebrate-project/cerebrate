@@ -53,6 +53,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'last_name',
             ],
             [
+                'name' => __('Associated User(s)'),
+                'sort' => 'user',
+                'data_path' => 'user',
+                'element' => 'user'
+            ],
+            [
                 'name' => __('Alignments'),
                 'data_path' => 'alignments',
                 'element' => 'alignments',
@@ -81,12 +87,25 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'open_modal' => '/individuals/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'edit'
+                'icon' => 'edit',
+                'complex_requirement' => [
+                    'function' => function ($row, $options) use ($loggedUser, $editableIds) {
+                        if ($loggedUser['role']['perm_admin'] || ($editableIds && in_array($row['id'], $editableIds))) {
+                            return true;
+                        }
+                        return false;
+                    }
+                ]
             ],
             [
                 'open_modal' => '/individuals/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'trash'
+                'icon' => 'trash',
+                'complex_requirement' => [
+                    'function' => function ($row, $options) use ($loggedUser) {
+                        return (bool)$loggedUser['role']['perm_admin'];
+                    }
+                ]
             ],
         ]
     ]

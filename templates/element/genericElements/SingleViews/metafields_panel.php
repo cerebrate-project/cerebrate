@@ -17,7 +17,10 @@ foreach($data['MetaTemplates'] as $metaTemplate) {
                 foreach ($metaTemplateField->metaFields as $metaField) {
                     $fields[] = [
                         'key' => !$labelPrintedOnce ? $metaField->field : '',
-                        'raw' => $metaField->value
+                        'raw' => $metaField->value,
+                        'warning' => $metaField->warning ?? null,
+                        'info' => $metaField->info ?? null,
+                        'danger' => $metaField->danger ?? null
                     ];
                     $labelPrintedOnce = true;
                 }

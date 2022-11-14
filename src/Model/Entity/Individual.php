@@ -33,12 +33,28 @@ class Individual extends AppModel
     {
         $emails = [];
         if (!empty($this->meta_fields)) {
-           foreach ($this->meta_fields as $metaField) {
-               if (str_contains($metaField->field, 'email')) {
-                   $emails[] = $metaField;
-               }
-           }
+            foreach ($this->meta_fields as $metaField) {
+                if (!empty($metaField->field) && str_contains($metaField->field, 'email')) {
+                    $emails[] = $metaField;
+                }
+            }
         }
         return $emails;
+    }
+
+    public function rearrangeForAPI(): void
+    {
+        if (!empty($this->tags)) {
+            $this->tags = $this->rearrangeTags($this->tags);
+        }
+        if (!empty($this->alignments)) {
+            $this->alignments = $this->rearrangeAlignments($this->alignments);
+        }
+        if (!empty($this->meta_fields)) {
+            $this->rearrangeMetaFields();
+        }
+        if (!empty($this->MetaTemplates)) {
+            unset($this->MetaTemplates);
+        }
     }
 }

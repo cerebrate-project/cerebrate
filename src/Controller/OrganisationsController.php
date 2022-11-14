@@ -99,6 +99,13 @@ class OrganisationsController extends AppController
 
     public function edit($id)
     {
+        $currentUser = $this->ACL->getUser();
+        if (
+            !($currentUser['organisation']['id'] == $id && $currentUser['role']['perm_org_admin']) &&
+            !$currentUser['role']['perm_admin']
+        ) {
+            throw new MethodNotAllowedException(__('You cannot modify that organisation.'));
+        }
         $this->CRUD->edit($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
