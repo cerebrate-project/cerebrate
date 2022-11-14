@@ -115,7 +115,7 @@ class CRUDComponent extends Component
             if ($this->metaFieldsSupported()) {
                 $query = $this->includeRequestedMetaFields($query);
             }
-            $query = $this->setRequestedEntryAmount($query);
+            $this->setRequestedEntryAmount();
             $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
