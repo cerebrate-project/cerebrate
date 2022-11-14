@@ -14,6 +14,8 @@ class MetaTemplateField extends AppModel
         $formType = 'text';
         if (!empty($this->sane_default) || !empty($this->values_list)) {
             $formType = 'dropdown';
+        } else if ($this->type === 'boolean') {
+            $formType = 'checkbox';
         }
         return $formType;
     }

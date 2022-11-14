@@ -33,16 +33,13 @@ foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
                 'label' => $metaTemplateField->label,
                 'type' => $metaTemplateField->formType,
             ];
-            if ($metaTemplateField->formType === 'dropdown') {
+            if (!empty($metaTemplateField->formOptions)) {
                 $fieldData = array_merge_recursive($fieldData, $metaTemplateField->formOptions);
             }
             if (isset($metaField->id)) {
                 $fieldData['field'] = sprintf('MetaTemplates.%s.meta_template_fields.%s.metaFields.%s.value', $metaField->meta_template_id, $metaField->meta_template_field_id, $metaField->id);
             } else {
                 $fieldData['field'] = sprintf('MetaTemplates.%s.meta_template_fields.%s.metaFields.%s.value', $metaField->meta_template_id, $metaField->meta_template_field_id, array_key_first($metaTemplateField->metaFields));
-            }
-            if ($metaTemplateField->type === 'boolean') {
-                $fieldData['type'] = 'checkbox';
             }
             $this->Form->setTemplates($backupTemplates);
             $fieldsHtml .= $this->element(
@@ -72,12 +69,9 @@ foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
                 'label' => $metaTemplateField->label,
                 'type' => $metaTemplateField->formType,
             ];
-            if ($metaTemplateField->formType === 'dropdown') {
+            if (!empty($metaTemplateField->formOptions)) {
                 $fieldData = array_merge_recursive($fieldData, $metaTemplateField->formOptions);
             }
-            // if ($metaTemplateField->type === 'boolean') {
-            //     $fieldData['type'] = 'checkbox';
-            // }
             $fieldsHtml .= $this->element(
                 'genericElements/Form/fieldScaffold',
                 [
