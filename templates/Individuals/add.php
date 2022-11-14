@@ -24,7 +24,7 @@
                 array(
                     'field' => 'tag_list',
                     'type' => 'tags',
-                    'requirements' => $this->request->getParam('action') === 'edit'
+                    'requirements' => ($this->request->getParam('action') === 'edit' && $loggedUser['role']['perm_admin'])
                 ),
             ),
             'submit' => array(

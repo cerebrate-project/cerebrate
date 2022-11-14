@@ -208,27 +208,6 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                                 return true;
                             }
                         ],
-                        'keycloak.authoritative' => [
-                            'name' => 'Authoritative',
-                            'type' => 'boolean',
-                            'severity' => 'info',
-                            'description' => __('Override local role and organisation settings based on the settings in KeyCloak'),
-                            'default' => false,
-                            'dependsOn' => 'keycloak.enabled'
-                        ],
-                        'keycloak.default_role_name' => [
-                            'name' => 'Default role',
-                            'type' => 'select',
-                            'severity' => 'info',
-                            'description' => __('Select the default role name to be used when creating users'),
-                            'options' => function ($settingsProviders) {
-                                $roleTable = TableRegistry::getTableLocator()->get('Roles');
-                                $allRoleNames = $roleTable->find()->toArray();
-                                $allRoleNames = array_column($allRoleNames, 'name');
-                                return array_combine($allRoleNames, $allRoleNames);
-                            },
-                            'dependsOn' => 'keycloak.enabled'
-                        ],
                         'keycloak.screw' => [
                             'name' => 'Screw',
                             'type' => 'string',
@@ -284,6 +263,14 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'description' => __('family_name mapped name in keycloak'),
                             'dependsOn' => 'keycloak.enabled'
                         ],
+                        'keycloak.user_meta_mapping' => [
+                            'name' => 'User Meta-field attribute mapping',
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'default' => '',
+                            'description' => __('List of user metafields to push to keycloak as attributes. When using multiple templates, the attribute names have to be unique. Expects a comma separated list.'),
+                            'dependsOn' => 'keycloak.enabled'
+                        ]
                     ]
                 ]
             ],

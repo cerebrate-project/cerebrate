@@ -27,4 +27,9 @@ if (!empty($field['url'])) {
 } else if (empty($field['raw'])) {
     $string = h($string);
 }
+foreach (['info', 'warning', 'danger'] as $message_type) {
+    if (!empty($field[$message_type])) {
+        $string .= sprintf(' (<span class="text-%s">%s</span>)', $message_type, $field[$message_type]);
+    }
+}
 echo $string;

@@ -12,15 +12,19 @@ use Cake\Core\Configure;
 use Cake\Core\Configure\Engine\PhpConfig;
 use Cake\Utility\Inflector;
 use Cake\Routing\Router;
+use Cake\Collection\Collection;
 
 class APIRearrangeComponent extends Component
 {
-    public function rearrangeForAPI(object $data): object
+    public function rearrangeForAPI(object $data)
     {
         if (is_subclass_of($data, 'Iterator')) {
-            $data->each(function ($value, $key) {
+            $newData = [];
+            $data->each(function ($value, $key) use (&$newData) {
                 $value->rearrangeForAPI();
+                $newData[] = $value;
             });
+            return new Collection($newData);
         } else {
             $data->rearrangeForAPI();
         }

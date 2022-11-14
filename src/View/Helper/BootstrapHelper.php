@@ -811,7 +811,10 @@ class BoostrapListTable extends BootstrapGeneric
     private function genCell($field = [])
     {
         if (isset($field['raw'])) {
-            $cellContent = h($field['raw']);
+            $cellContent = $field['raw'];
+            if (empty($field['no_escaping'])) {
+                $field['raw'] = h($field['raw']);
+            }
         } else if (isset($field['formatter'])) {
             $cellContent = $field['formatter']($this->getValueFromObject($field), $this->item);
         } else if (isset($field['type'])) {
@@ -821,6 +824,11 @@ class BoostrapListTable extends BootstrapGeneric
             ]);
         } else {
             $cellContent = h($this->getValueFromObject($field));
+        }
+        foreach (['info', 'warning', 'danger'] as $message_type) {
+            if (!empty($field[$message_type])) {
+                $cellContent .= sprintf(' <span class="text-%s">%s</span>', $message_type, $field[$message_type]);
+            }
         }
         return $this->genNode('td', [
             'class' => [

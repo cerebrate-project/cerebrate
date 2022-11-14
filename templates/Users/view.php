@@ -1,5 +1,7 @@
 <?php
-$kcurl = $keycloakConfig['provider']['baseUrl'] . '/realms/' . $keycloakConfig['provider']['realm'] . '/account/#/security/signingin';
+if (!empty($keycloakConfig['enabled'])) {
+    $kcurl = $keycloakConfig['provider']['baseUrl'] . '/realms/' . $keycloakConfig['provider']['realm'] . '/account/#/security/signingin';
+}
 $fields = [
     [
         'key' => __('ID'),
