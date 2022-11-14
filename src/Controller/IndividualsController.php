@@ -81,9 +81,9 @@ class IndividualsController extends AppController
         }
         $currentUser = $this->ACL->getUser();
         $validIndividualIds = [];
-        if ($currentUser['role']['perm_admin']) {
+        if (!$currentUser['role']['perm_admin']) {
             $validIndividualIds = $this->Individuals->getValidIndividualsToEdit($currentUser);
-            if (!isset($validIndividualIds[$id])) {
+            if (!in_array($id, $validIndividualIds)) {
                 throw new NotFoundException(__('Invalid individual.'));
             }
         }
