@@ -45,6 +45,8 @@ $seed = 'mfb-' . mt_rand();
             $clonedContainer
                 .removeClass('has-error')
                 .find('.error-message ').remove()
+            $clonedContainer
+                .find('label.form-label').text('')
             const $clonedInput = $clonedContainer.find('input, select')
             if ($clonedInput.length > 0) {
                 const injectedTemplateId = $clicked.closest('.multi-metafields-container').find('.new-metafield').length
@@ -54,18 +56,21 @@ $seed = 'mfb-' . mt_rand();
             }
         }
 
-        function adjustClonedInputAttr($input, injectedTemplateId) {
-            let explodedPath = $input.attr('field').split('.').splice(0, 5)
-            explodedPath.push('new', injectedTemplateId)
-            dottedPathStr = explodedPath.join('.')
-            brackettedPathStr = explodedPath.map((elem, i) => {
-                return i == 0 ? elem : `[${elem}]`
-            }).join('')
-            $input.attr('id', dottedPathStr)
-                .attr('field', dottedPathStr)
-                .attr('name', brackettedPathStr)
-                .val('')
-                .removeClass('is-invalid')
+        function adjustClonedInputAttr($inputs, injectedTemplateId) {
+            $inputs.each(function() {
+                const $input = $(this)
+                let explodedPath = $input.attr('field').split('.').splice(0, 5)
+                explodedPath.push('new', injectedTemplateId)
+                dottedPathStr = explodedPath.join('.')
+                brackettedPathStr = explodedPath.map((elem, i) => {
+                    return i == 0 ? elem : `[${elem}]`
+                }).join('')
+                $input.attr('id', dottedPathStr)
+                    .attr('field', dottedPathStr)
+                    .attr('name', brackettedPathStr)
+                    .val('')
+                    .removeClass('is-invalid')
+            })
         }
     })()
 </script>
