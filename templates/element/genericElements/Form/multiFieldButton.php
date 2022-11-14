@@ -65,9 +65,13 @@ $seed = 'mfb-' . mt_rand();
                 brackettedPathStr = explodedPath.map((elem, i) => {
                     return i == 0 ? elem : `[${elem}]`
                 }).join('')
-                $input.attr('id', dottedPathStr)
-                    .attr('field', dottedPathStr)
-                    .attr('name', brackettedPathStr)
+                const attrs = ['id', 'field', 'name']
+                attrs.forEach((attr) => {
+                    if ($input.attr(attr) !== undefined) {
+                        $input.attr(attr, attr === 'name' ? brackettedPathStr : dottedPathStr)
+                    }
+                })
+                $input
                     .val('')
                     .removeClass('is-invalid')
             })

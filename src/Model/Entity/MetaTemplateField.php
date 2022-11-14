@@ -25,12 +25,10 @@ class MetaTemplateField extends AppModel
             $selectOptions = !empty($this->sane_default) ? $this->sane_default : $this->values_list;
             $selectOptions = array_combine($selectOptions, $selectOptions);
             if (!empty($this->sane_default)) {
-                // $selectOptions['_custom'] = __('-- custom value --');
                 $selectOptions[] = ['value' => '_custom', 'text' => __('-- custom value --'), 'class' => 'custom-value'];
             }
             $selectOptions[''] = __('-- no value --');
             $formOptions['options'] = $selectOptions;
-            // $formOptions['empty'] = [['value' => '', 'text' => __('-- select an options --'), 'hidden disabled selected value']];
         }
         return $formOptions;
     }

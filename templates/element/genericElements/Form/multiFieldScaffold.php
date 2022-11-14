@@ -34,7 +34,7 @@ if (!empty($metaFieldsEntities)) {
             $fieldData['class'] = 'new-metafield';
         }
         if ($labelPrintedOnce) { // Only the first input can have a label
-            $fieldData['label'] = false;
+            $fieldData['label'] = ['text' => ''];
         }
         if ($metaTemplateField->formType === 'dropdown') {
             $fieldData = array_merge_recursive($fieldData, $metaTemplateField->formOptions);

@@ -31,10 +31,6 @@ if (in_array('_custom', array_keys($controlParams['options']))) {
     } else {
         $customInputValue = '';
     }
-    $customControlParams = [
-        'value' => $fieldData['value'] ?? null,
-        'class' => 'd-none',
-    ];
     $controlParams['class'] .= ' dropdown-custom-value' . "-$seed";
     $adaptedField = $fieldData['field'] . '_custom';
     $controlParams['templates']['formGroup'] = sprintf(
@@ -52,17 +48,14 @@ echo $this->FormFieldMassage->prepareFormElement($this->Form, $controlParams, $f
             toggleFreetextSelectField($select[0]);
             $select.attr('onclick', 'toggleFreetextSelectField(this)')
             $select.parent().find('input.custom-value').attr('oninput', 'updateAssociatedSelect(this)')
-            // updateAssociatedSelect($select.parent().find('input.custom-value')[0])
-
-            // Multiple saves in dropdown doesn't work
-            // But multiple saves for custom works but save the first element as `_custom`
+            updateAssociatedSelect($select.parent().find('input.custom-value')[0])
         })
 
     })()
 
     function toggleFreetextSelectField(selectEl) {
         const $select = $(selectEl)
-        const show = $select.val() == '_custom'
+        const show = $select.find('option:selected').hasClass('custom-value')
         const $container = $(selectEl).parent()
         let $freetextInput = $container.find('input.custom-value')
         if (show) {
