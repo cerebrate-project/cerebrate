@@ -29,6 +29,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'request_ip',
             ],
             [
+                'name' => 'created',
+                'sort' => 'created',
+                'data_path' => 'created',
+                'element' => 'datetime'
+            ],
+            [
                 'name' => __('Username'),
                 'sort' => 'user.username',
                 'data_path' => 'user.username',

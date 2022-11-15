@@ -202,7 +202,7 @@ echo $this->Bootstrap->modal([
         rowData['operator'] = $row.find('select.fieldOperator').val()
         const $formElement = $row.find('.fieldValue');
         if ($formElement.attr('type') === 'datetime-local') {
-            rowData['value'] = moment($formElement.val()).toISOString()
+            rowData['value'] = $formElement.val().length > 0 ? moment($formElement.val()).toISOString() : $formElement.val()
         } else {
             rowData['value'] = $formElement.val()
         }

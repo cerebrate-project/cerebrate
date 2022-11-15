@@ -8,11 +8,10 @@ use Cake\ORM\TableRegistry;
 use \Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\UnauthorizedException;
 use Cake\Core\Configure;
-use PhpParser\Node\Stmt\Echo_;
 
 class AuditLogsController extends AppController
 {
-    public $filterFields = ['model_id', 'model', 'request_action', 'user_id', 'model_title'];
+    public $filterFields = ['model_id', 'model', 'request_action', 'user_id', 'model_title', 'AuditLogs.created'];
     public $quickFilterFields = ['model', 'request_action', 'model_title'];
     public $containFields = ['Users'];
 
