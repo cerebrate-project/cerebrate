@@ -56,6 +56,16 @@ class OrganisationsController extends AppController
             // ],
         ];
 
+        $loggedUserOrganisationNationality = $this->ACL->getUser()['organisation']['nationality'];
+        if (!empty($loggedUserOrganisationNationality)) {
+            $customContextFilters[] = [
+                'label' => __('Country: {0}', $loggedUserOrganisationNationality),
+                'filterCondition' => [
+                    'nationality' => $loggedUserOrganisationNationality,
+                ]
+                ];
+        }
+
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
