@@ -7,7 +7,20 @@ use Cake\ORM\Entity;
 
 class MetaTemplateField extends AppModel
 {
-    protected $_virtual = ['form_type', 'form_options', ];
+    protected $_virtual = ['index_type', 'form_type', 'form_options', ];
+
+    protected function _getIndexType()
+    {
+        $indexType = 'text';
+        if ($this->type === 'boolean') {
+            $indexType = 'boolean';
+        } else if ($this->type === 'date') {
+            $indexType = 'datetime';
+        } else if ($this->type === 'ipv4' || $this->type === 'ipv6') {
+            $indexType = 'text';
+        }
+        return $indexType;
+    }
 
     protected function _getFormType()
     {
