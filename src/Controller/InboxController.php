@@ -44,8 +44,93 @@ class InboxController extends AppController
                         'default' => true,
                         'label' => __('My Notifications'),
                         'filterConditionFunction' => function ($query) {
+                            return $query->where(function(QueryExpression $exp) {
+                                return $exp->or(['user_id' => $this->ACL->getUser()['id']])
+                                    ->isNull('user_id');
+                            });
+                        }
+                    ],
+                    [
+                        'label' => __('User Registration'),
+                        'filterConditionFunction' => function ($query) {
                             return $query->where([
-                                'user_id' => $this->ACL->getUser()['id'],
+                                'scope' => 'User',
+                                'action' => 'Registration',
+                            ]);
+                        }
+                    ],
+                    [
+                        'label' => __('Inter-connection Requests'),
+                        'filterConditionFunction' => function ($query) {
+                            return $query->where([
+                                'scope' => 'LocalTool',
+                                'action IN' => ['IncomingConnectionRequest', 'AcceptedRequest', 'DeclinedRequest'],
+                            ]);
+                        }
+                    ],
+                    [
+                        'label' => __('Data changed'),
+                        'filterConditionFunction' => function ($query) {
+                            return $query->where([
+                                'user_id' => $this->ACL->getUser()['id'], // Each admin get a message about data changes
+                                'scope' => 'Notification',
+                                'action' => 'DataChange',
+                            ]);
+                        }
+                    ],
+                    [
+                        'label' => 'severity:primary',
+                        'viewElement' => 'bootstrapUI',
+                        'viewElementParams' => [
+                            'element' => 'badge',
+                            'text' => $this->Inbox->severityVariant[$this->Inbox::SEVERITY_PRIMARY],
+                            'variant' => $this->Inbox->severityVariant[$this->Inbox::SEVERITY_PRIMARY],
+                        ],
+                        'filterConditionFunction' => function ($query) {
+                            return $query->where([
+                                'severity' => $this->Inbox::SEVERITY_PRIMARY,
+                            ]);
+                        }
+                    ],
+                    [
+                        'label' => 'severity:info',
+                        'viewElement' => 'bootstrapUI',
+                        'viewElementParams' => [
+                            'element' => 'badge',
+                            'text' => $this->Inbox->severityVariant[$this->Inbox::SEVERITY_INFO],
+                            'variant' => $this->Inbox->severityVariant[$this->Inbox::SEVERITY_INFO],
+                        ],
+                        'filterConditionFunction' => function ($query) {
+                            return $query->where([
+                                'severity' => $this->Inbox::SEVERITY_INFO,
+                            ]);
+                        }
+                    ],
+                    [
+                        'label' => 'severity:warning',
+                        'viewElement' => 'bootstrapUI',
+                        'viewElementParams' => [
+                            'element' => 'badge',
+                            'text' => $this->Inbox->severityVariant[$this->Inbox::SEVERITY_WARNING],
+                            'variant' => $this->Inbox->severityVariant[$this->Inbox::SEVERITY_WARNING],
+                        ],
+                        'filterConditionFunction' => function ($query) {
+                            return $query->where([
+                                'severity' => $this->Inbox::SEVERITY_WARNING,
+                            ]);
+                        }
+                    ],
+                    [
+                        'label' => 'severity:danger',
+                        'viewElement' => 'bootstrapUI',
+                        'viewElementParams' => [
+                            'element' => 'badge',
+                            'text' => $this->Inbox->severityVariant[$this->Inbox::SEVERITY_DANGER],
+                            'variant' => $this->Inbox->severityVariant[$this->Inbox::SEVERITY_DANGER],
+                        ],
+                        'filterConditionFunction' => function ($query) {
+                            return $query->where([
+                                'severity' => $this->Inbox::SEVERITY_DANGER,
                             ]);
                         }
                     ],
