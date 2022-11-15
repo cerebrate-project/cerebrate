@@ -63,7 +63,7 @@ class OrganisationsController extends AppController
                 'filterCondition' => [
                     'nationality' => $loggedUserOrganisationNationality,
                 ]
-                ];
+            ];
         }
 
         $this->CRUD->index([
