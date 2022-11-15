@@ -31,6 +31,7 @@ class RegistrationProcessor extends UserInboxProcessor implements GenericInboxPr
 
     public function __construct() {
         parent::__construct();
+        $this->severity = $this->Inbox::SEVERITY_WARNING;
         $this->description = __('Handle user account for this cerebrate instance');
     }
 

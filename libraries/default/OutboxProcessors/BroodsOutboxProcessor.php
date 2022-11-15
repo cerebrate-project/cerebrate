@@ -70,6 +70,7 @@ class ResendFailedMessageProcessor extends BroodsOutboxProcessor implements Gene
     public function __construct() {
         parent::__construct();
         $this->description = __('Handle re-sending messages that failed to be received from other cerebrate instances.');
+        $this->severity = $this->Inbox::SEVERITY_WARNING;
         $this->Broods = TableRegistry::getTableLocator()->get('Broods');
         $this->LocalTools = \Cake\ORM\TableRegistry::getTableLocator()->get('LocalTools');
     }
