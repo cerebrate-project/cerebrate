@@ -21,7 +21,7 @@
         } else {
             $currentFilteringContext = $filteringContext['filterCondition'];
         }
-        $contextArray[] = [
+        $contextItem = [
             'active' => (
                 (
                     $currentQuery == $currentFilteringContext &&                // query conditions match
@@ -42,9 +42,17 @@
                 "#table-container-${tableRandomValue}",
                 "#table-container-${tableRandomValue} table.table",
             ],
-            'text' => $filteringContext['label'],
             'class' => 'btn-sm'
         ];
+        if (!empty($filteringContext['viewElement'])) {
+            $contextItem['html'] = $this->element(
+                $filteringContext['viewElement'],
+                $filteringContext['viewElementParams'] ?? []
+            );
+        } else {
+            $contextItem['text'] = $filteringContext['label'];
+        }
+        $contextArray[] = $contextItem;
     }
 
     $dataGroup = [
