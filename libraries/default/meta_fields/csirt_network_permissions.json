@@ -2,7 +2,7 @@
     "name": "CSIRT network permissions",
     "namespace": "csn",
     "description": "Template of additional tooling permissions for the CSIRT network",
-    "version": 1,
+    "version": 2,
     "scope": "user",
     "uuid": "447ded8b-314b-41c7-a913-4ce32535b28d",
     "source": "CSIRT network",
@@ -21,6 +21,10 @@
         },
         {
             "field": "perm_misp",
+            "type": "boolean"
+        },
+        {
+            "field": "perm_mailing_list",
             "type": "boolean"
         }
     ]
