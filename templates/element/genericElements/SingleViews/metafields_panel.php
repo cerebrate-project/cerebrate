@@ -48,7 +48,7 @@ foreach($data['MetaTemplates'] as $metaTemplate) {
                         'text' => __('Migrate to version {0}', $metaTemplate['hasNewerVersion']->version),
                         'variant' => 'success',
                         'nodeType' => 'a',
-                        'params' => [
+                        'attrs' => [
                             'href' => Router::url([
                                 'controller' => 'metaTemplates',
                                 'action' => 'migrateOldMetaTemplateToNewestVersionForEntity',

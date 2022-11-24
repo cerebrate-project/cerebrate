@@ -31,7 +31,7 @@ class SocialProviderHelper extends Helper
 
     private function genImage($url, $alt)
     {
-        return $this->Bootstrap->genNode('img', [
+        return $this->Bootstrap->node('img', [
             'src' => $url,
             'class' => ['img-fluid'],
             'width' => '16',

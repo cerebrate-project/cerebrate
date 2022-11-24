@@ -51,7 +51,7 @@ if ($updateStatus['up-to-date']) {
             'templateOnDisk' => $templateOnDisk,
         ]);
         $bodyHtml .= $this->Bootstrap->collapse([
-            'title' => __('View conflicts'),
+            'text' => __('View conflicts'),
             'open' => false
         ], $conflictTable);
         $bodyHtml .= $this->element('MetaTemplates/conflictResolution', [

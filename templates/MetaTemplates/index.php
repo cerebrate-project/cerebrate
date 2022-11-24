@@ -18,9 +18,7 @@ if (!empty($updateableTemplates['new'])) {
                 'size' => 'sm',
                 'icon' => 'download',
                 'title' => __('Create this template'),
-                'params' => [
-                    'onclick' => "UI.submissionModalForIndex('/metaTemplates/createNewTemplate/{$entry['uuid']}', '/meta-templates')"
-                ]
+                'onclick' => "UI.submissionModalForIndex('/metaTemplates/createNewTemplate/{$entry['uuid']}', '/meta-templates')",
             ])
         );
     }, $alertList);
@@ -225,4 +223,3 @@ function getConflictingTemplate($row, $data) {
     }
     return [];
 }
-?>

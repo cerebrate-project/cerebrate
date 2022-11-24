@@ -31,10 +31,8 @@
             $buttonConfig = [
                 'icon' => 'filter',
                 'variant' => $numberActiveFilters > 0 ? 'warning' : 'primary',
-                'params' => [
-                    'title' => __('Filter index'),
-                    'id' => sprintf('toggleFilterButton-%s', h($tableRandomValue))
-                ]
+                'title' => __('Filter index'),
+                'id' => sprintf('toggleFilterButton-%s', h($tableRandomValue))
             ];
             if (count($activeFilters) > 0) {
                 $buttonConfig['badge'] = [

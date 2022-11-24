@@ -15,7 +15,7 @@
         ],
         [
             [
-                '_open' => true,
+                'open' => true,
                 'header' => [
                     'title' => __('Meta fields')
                 ],

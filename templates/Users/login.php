@@ -52,8 +52,8 @@ use Cake\Core\Configure;
             'class' => ['d-block', 'w-100'],
             'image' => [
                 'path' => '/img/keycloak_logo.png',
-                'alt' => 'Keycloak'
-            ]
+                'alt' => 'Keycloak',
+            ],
         ]);
         echo $this->Form->end();
     }

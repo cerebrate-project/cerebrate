@@ -52,8 +52,10 @@ echo $this->Bootstrap->modal([
             'bodyHTML' => $this->element('genericElements/SingleViews/Fields/jsonField', ['field' => ['raw' => $data['changed']]])
         ])
     ),
-    'confirmText' => __('Acknowledge & Discard'),
-    'confirmIcon' => 'check',
+    'confirmButton' => [
+        'text' => __('Acknowledge & Discard'),
+        'icon' => 'check',
+    ]
 ]);
 ?>
 </div>

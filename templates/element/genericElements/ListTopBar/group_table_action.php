@@ -67,14 +67,14 @@ $numberOfElementHtml = $this->element('/genericElements/ListTopBar/group_table_a
         'dropdown-class' => 'ms-1',
         'alignment' => 'end',
         'direction' => 'down',
-        'toggle-button' => [
+        'button' => [
             'icon' => 'sliders-h',
             'variant' => 'primary',
             'class' => ['table_setting_dropdown_button'],
         ],
         'submenu_alignment' => 'end',
         'submenu_direction' => 'start',
-        'params' => [
+        'attrs' => [
             'data-table-random-value' => $tableRandomValue,
             'data-table_setting_id' => $data['table_setting_id'],
         ],

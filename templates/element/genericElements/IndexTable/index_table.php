@@ -14,6 +14,7 @@ use Cake\Utility\Text;
      *      ),
      *      'title' => optional title,
      *      'description' => optional description,
+     *      'notice' => optional alert to be placed at the top,
      *      'index_statistics' => optional statistics to be displayed for the index,
      *      'primary_id_path' => path to each primary ID (extracted and passed as $primary to fields)
      *  ));
@@ -48,7 +49,7 @@ if (!empty($data['title'])) {
             'help' => $this->Bootstrap->icon('info', [
                 'class' => ['fs-6', 'align-text-top',],
                 'title' => empty($data['description']) ? '' : h($data['description']),
-                'params' => [
+                'attrs' => [
                     'data-bs-toggle' => 'tooltip',
                 ]
             ]),
