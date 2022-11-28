@@ -5,6 +5,7 @@ namespace App\View\Helper\BootstrapElements;
 use Cake\Utility\Hash;
 
 use App\View\Helper\BootstrapGeneric;
+use App\View\Helper\BootstrapHelper;
 
 /**
  * Creates a list looking like a table from 1-dimensional data $item.
@@ -93,7 +94,7 @@ class BootstrapListTable extends BootstrapGeneric
         'elementsRootPath' => '/genericElements/SingleViews/Fields/',
     ];
 
-    function __construct($options, $data, $btHelper)
+    function __construct(array $options, array $data, BootstrapHelper $btHelper)
     {
         $this->allowedOptionValues = [
             'variant' => array_merge(BootstrapGeneric::$variants, [''])
@@ -105,7 +106,7 @@ class BootstrapListTable extends BootstrapGeneric
         $this->btHelper = $btHelper;
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->options['tableClass'] = $this->convertToArrayIfNeeded($this->options['tableClass']);
@@ -113,12 +114,12 @@ class BootstrapListTable extends BootstrapGeneric
         $this->checkOptionValidity();
     }
 
-    public function table()
+    public function table(): string
     {
         return $this->genTable();
     }
 
-    private function genTable()
+    private function genTable(): string
     {
         $html = $this->nodeOpen('table', [
             'class' => [
@@ -142,7 +143,7 @@ class BootstrapListTable extends BootstrapGeneric
         return $html;
     }
 
-    private function genBody()
+    private function genBody(): string
     {
         $body =  $this->nodeOpen('tbody', [
             'class' => $this->options['bodyClass'],
@@ -154,7 +155,7 @@ class BootstrapListTable extends BootstrapGeneric
         return $body;
     }
 
-    private function genRow($field)
+    private function genRow(array $field): string
     {
         $rowValue = $this->genCell($field);
         $rowKey = $this->node('th', [
@@ -172,7 +173,7 @@ class BootstrapListTable extends BootstrapGeneric
         return $row;
     }
 
-    private function genCell($field = [])
+    private function genCell(array $field = []): string
     {
         if (isset($field['raw'])) {
             $cellContent = !empty($field['rawNoEscaping']) ? $field['raw'] : h($field['raw']);
@@ -199,14 +200,14 @@ class BootstrapListTable extends BootstrapGeneric
         ], $cellContent);
     }
 
-    private function getValueFromObject($field)
+    private function getValueFromObject(array $field): string
     {
         $key = is_array($field) ? $field['path'] : $field;
         $cellValue = Hash::get($this->item, $key);
-        return $cellValue;
+        return !is_null($cellValue) ? $cellValue : '';
     }
 
-    private function getElementPath($type)
+    private function getElementPath($type): string
     {
         return sprintf(
             '%s%sField',
@@ -215,7 +216,7 @@ class BootstrapListTable extends BootstrapGeneric
         );
     }
 
-    private function genCaption()
+    private function genCaption(): string
     {
         return !empty($this->caption) ? $this->node('caption', [], h($this->caption)) : '';
     }

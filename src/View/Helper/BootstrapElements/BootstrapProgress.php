@@ -47,18 +47,18 @@ class BootstrapProgress extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions($options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->checkOptionValidity();
     }
 
-    public function progress()
+    public function progress(): string
     {
         return $this->genProgress();
     }
 
-    private function genProgress()
+    private function genProgress(): string
     {
         $percentage = round(100 * $this->options['value'] / $this->options['total']);
         $heightStyle = !empty($this->options['height']) ? sprintf('height: %s;', h($this->options['height'])) : '';

@@ -6,6 +6,7 @@ use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 
 use App\View\Helper\BootstrapGeneric;
+use App\View\Helper\BootstrapHelper;
 
 /**
  * Creates a table from 2-dimensional data $items.
@@ -23,6 +24,7 @@ use App\View\Helper\BootstrapGeneric;
  * # Options for fields
  *  - label: The name of the field to be displayed as a label
  *  - labelHtml: The HTML of the field to be displayed as a label
+ *  - class: Additional classes to add for that row
  *  - path: The path to be fed to Hash::get() in order to get the value from the $item
  *  - element: The type of element to use combined with $elementsRootPath from the table's option
  *  - formatter: A callback function to format the value
@@ -87,7 +89,7 @@ class BootstrapTable extends BootstrapGeneric
         'elementsRootPath' => '/genericElements/SingleViews/Fields/',
     ];
 
-    function __construct($options, $data, $btHelper)
+    function __construct(array $options, array $data, BootstrapHelper $btHelper)
     {
         $this->allowedOptionValues = [
             'variant' => array_merge(BootstrapGeneric::$variants, [''])
@@ -99,7 +101,7 @@ class BootstrapTable extends BootstrapGeneric
         $this->btHelper = $btHelper;
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->checkOptionValidity();
@@ -108,12 +110,12 @@ class BootstrapTable extends BootstrapGeneric
         $this->options['headerClass'] = $this->convertToArrayIfNeeded($this->options['headerClass']);
     }
 
-    public function table()
+    public function table(): string
     {
         return $this->genTable();
     }
 
-    private function genTable()
+    private function genTable(): string
     {
         $html = $this->nodeOpen('table', [
             'class' => [
@@ -138,7 +140,7 @@ class BootstrapTable extends BootstrapGeneric
         return $html;
     }
 
-    private function genHeader()
+    private function genHeader(): string
     {
         $head =  $this->nodeOpen('thead', [
             'class' => $this->options['headerClass'],
@@ -163,7 +165,7 @@ class BootstrapTable extends BootstrapGeneric
         return $head;
     }
 
-    private function genBody()
+    private function genBody(): string
     {
         $body =  $this->nodeOpen('tbody', [
             'class' => $this->options['bodyClass'],
@@ -175,7 +177,7 @@ class BootstrapTable extends BootstrapGeneric
         return $body;
     }
 
-    private function genRow($row, $rowIndex)
+    private function genRow(array $row, int $rowIndex): string
     {
         $html = $this->nodeOpen('tr', [
             'class' => [
@@ -189,14 +191,14 @@ class BootstrapTable extends BootstrapGeneric
             }
         } else { // indexed array
             foreach ($row as $i => $cellValue) {
-                $html .= $this->genCell($cellValue, 'index', $row, $rowIndex);
+                $html .= $this->genCell($cellValue, [], $row, $rowIndex);
             }
         }
         $html .= $this->nodeClose('tr');
         return $html;
     }
 
-    private function genCell($value, $field = [], $row = [], $rowIndex = 0)
+    private function genCell(string $value, array $field = [], array $row = [], int $rowIndex = 0): string
     {
         if (isset($field['formatter'])) {
             $cellContent = $field['formatter']($value, $row, $rowIndex);
@@ -209,20 +211,23 @@ class BootstrapTable extends BootstrapGeneric
             $cellContent = h($value);
         }
         return $this->node('td', [
-            'class' => [
-                !empty($field['columnVariant']) ? "table-{$field['columnVariant']}" : ''
-            ]
+            'class' => array_merge(
+                [
+                    !empty($field['columnVariant']) ? "table-{$field['columnVariant']}" : ''
+                ],
+                $field['class'] ?? []
+            ),
         ], $cellContent);
     }
 
-    private function getValueFromObject($row, $field)
+    private function getValueFromObject(array $row, $field): string
     {
         $path = is_array($field) ? $field['path'] : $field;
         $cellValue = Hash::get($row, $path);
-        return $cellValue;
+        return !is_null($cellValue) ? $cellValue : '';
     }
 
-    private function getElementPath($type)
+    private function getElementPath(string $type): string
     {
         return sprintf(
             '%s%sField',
@@ -231,7 +236,7 @@ class BootstrapTable extends BootstrapGeneric
         );
     }
 
-    private function genCaption()
+    private function genCaption(): string
     {
         return !empty($this->caption) ? $this->node('caption', [], h($this->caption)) : '';
     }

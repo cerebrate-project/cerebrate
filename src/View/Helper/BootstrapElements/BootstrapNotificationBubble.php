@@ -33,7 +33,7 @@ class BootstrapNotificationBubble extends BootstrapGeneric
         'attrs' => [],
     ];
 
-    function __construct($options)
+    function __construct(array $options)
     {
         $this->allowedOptionValues = [
             'variant' => BootstrapGeneric::$variants,
@@ -43,7 +43,7 @@ class BootstrapNotificationBubble extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->checkOptionValidity();
@@ -57,12 +57,12 @@ class BootstrapNotificationBubble extends BootstrapGeneric
         }
     }
 
-    public function notificationBubble()
+    public function notificationBubble(): string
     {
         return $this->genNotificationBubble();
     }
 
-    private function genNotificationBubble()
+    private function genNotificationBubble(): string
     {
         $tmpId = 'tmp-' . mt_rand();
         $defaultClasses = [

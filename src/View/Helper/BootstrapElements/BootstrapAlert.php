@@ -34,7 +34,7 @@ class BootstrapAlert extends BootstrapGeneric
         'class' => [],
     ];
 
-    function __construct($options)
+    function __construct(array $options)
     {
         $this->allowedOptionValues = [
             'variant' => BootstrapGeneric::$variants,
@@ -42,19 +42,19 @@ class BootstrapAlert extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->options['class'] = $this->convertToArrayIfNeeded($this->options['class']);
         $this->checkOptionValidity();
     }
 
-    public function alert()
+    public function alert(): string
     {
         return $this->genAlert();
     }
 
-    private function genAlert()
+    private function genAlert(): string
     {
         $html = $this->nodeOpen('div', [
             'class' => array_merge([
@@ -72,7 +72,7 @@ class BootstrapAlert extends BootstrapGeneric
         return $html;
     }
 
-    private function genCloseButton()
+    private function genCloseButton(): string
     {
         $html = '';
         if ($this->options['dismissible']) {

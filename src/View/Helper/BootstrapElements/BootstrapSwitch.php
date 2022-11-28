@@ -34,7 +34,7 @@ class BootstrapSwitch extends BootstrapGeneric
         'attrs' => [],
     ];
 
-    public function __construct($options)
+    public function __construct(array $options)
     {
         $this->allowedOptionValues = [
             'variant' => BootstrapGeneric::$variants,
@@ -42,18 +42,18 @@ class BootstrapSwitch extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->checkOptionValidity();
     }
 
-    public function switch()
+    public function switch(): string
     {
         return $this->genSwitch();
     }
 
-    public function genSwitch()
+    public function genSwitch(): string
     {
         $tmpId = 'tmp-' . mt_rand();
         $input = self::node('input', array_merge(

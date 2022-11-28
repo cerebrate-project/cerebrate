@@ -92,7 +92,7 @@ class BootstrapTabs extends BootstrapGeneric
     ];
     private $bsClasses = null;
 
-    function __construct($options)
+    function __construct(array $options)
     {
         $this->allowedOptionValues = [
             'justify-header' => [false, 'center', 'end', 'start'],
@@ -104,12 +104,12 @@ class BootstrapTabs extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    public function tabs()
+    public function tabs(): string
     {
         return $this->genTabs();
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->data = $this->options['data'];
@@ -179,12 +179,12 @@ class BootstrapTabs extends BootstrapGeneric
         }
     }
 
-    private function genTabs()
+    private function genTabs(): string
     {
         return $this->options['vertical'] ? $this->genVerticalTabs() : $this->genHorizontalTabs();
     }
 
-    private function genHorizontalTabs()
+    private function genHorizontalTabs(): string
     {
         if ($this->options['card']) {
             $cardOptions = [
@@ -206,7 +206,7 @@ class BootstrapTabs extends BootstrapGeneric
         }
     }
 
-    private function genVerticalTabs()
+    private function genVerticalTabs(): string
     {
         $header = $this->node('div', ['class' => array_merge(
             [
@@ -244,7 +244,7 @@ class BootstrapTabs extends BootstrapGeneric
         return $container;
     }
 
-    private function genNav()
+    private function genNav(): string
     {
         $html = $this->nodeOpen('ul', [
             'class' => array_merge(['nav'], $this->bsClasses['nav'], $this->options['nav-class']),
@@ -257,7 +257,7 @@ class BootstrapTabs extends BootstrapGeneric
         return $html;
     }
 
-    private function genNavItem($navItem)
+    private function genNavItem(array $navItem): string
     {
         $html = $this->nodeOpen('li', [
             'class' => array_merge(['nav-item'], $this->bsClasses['nav-item'], $this->options['nav-item-class']),
@@ -282,7 +282,7 @@ class BootstrapTabs extends BootstrapGeneric
         return $html;
     }
 
-    private function genContent()
+    private function genContent(): string
     {
         $html = $this->nodeOpen('div', [
             'class' => array_merge(['tab-content'], $this->options['content-class']),
@@ -295,7 +295,7 @@ class BootstrapTabs extends BootstrapGeneric
         return $html;
     }
 
-    private function genContentItem($navItem, $content)
+    private function genContentItem(array $navItem, string $content): string
     {
         return $this->node('div', [
             'class' => array_merge(['tab-pane', 'fade'], [!empty($navItem['active']) ? 'show active' : '']),

@@ -191,10 +191,10 @@ class BootstrapHelper extends Helper
      * Creates a Bootstrap tabs from the given options
      *
      * @param array $options See BootstrapElements\BootstrapTabs
-     * @param string $content See BootstrapElements\BootstrapTabs
+     * @param array $content See BootstrapElements\BootstrapTabs
      * @return string
      */
-    public function accordion(array $options, string $content): string
+    public function accordion(array $options, array $content): string
     {
         $bsAccordion = new BootstrapAccordion($options, $content, $this);
         return $bsAccordion->accordion();

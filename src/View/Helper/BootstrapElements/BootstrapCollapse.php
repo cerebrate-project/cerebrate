@@ -5,6 +5,7 @@ namespace App\View\Helper\BootstrapElements;
 use Cake\Utility\Security;
 
 use App\View\Helper\BootstrapGeneric;
+use App\View\Helper\BootstrapHelper;
 
 /**
  * Creates a Bootstrap collapsible component
@@ -45,7 +46,7 @@ class BootstrapCollapse extends BootstrapGeneric
         'attrs' => [],
     ];
 
-    function __construct($options, $content, $btHelper)
+    function __construct(array $options, string $content, BootstrapHelper $btHelper)
     {
         $this->allowedOptionValues = [];
         $this->processOptions($options);
@@ -53,7 +54,7 @@ class BootstrapCollapse extends BootstrapGeneric
         $this->btHelper = $btHelper;
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->options['class'] = $this->convertToArrayIfNeeded($this->options['class']);
@@ -73,12 +74,12 @@ class BootstrapCollapse extends BootstrapGeneric
         $this->checkOptionValidity();
     }
 
-    public function collapse()
+    public function collapse(): string
     {
         return $this->genCollapse();
     }
 
-    private function genControl()
+    private function genControl(): string
     {
         $attrsConfig = [
             'data-bs-toggle' => 'collapse',
@@ -101,7 +102,7 @@ class BootstrapCollapse extends BootstrapGeneric
         return $html;
     }
 
-    private function genContent()
+    private function genContent(): string
     {
         $cardConfig = $this->options['card'];
         $cardConfig['bodyHTML'] = $this->content;
@@ -113,7 +114,7 @@ class BootstrapCollapse extends BootstrapGeneric
         return $container;
     }
 
-    private function genCollapse()
+    private function genCollapse(): string
     {
         return $this->genControl() . $this->genContent();
     }

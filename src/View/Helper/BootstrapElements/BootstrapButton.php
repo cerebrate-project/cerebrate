@@ -53,7 +53,7 @@ class BootstrapButton extends BootstrapGeneric
 
     private $bsClasses = [];
 
-    function __construct($options)
+    function __construct(array $options)
     {
         $this->allowedOptionValues = [
             'variant' => array_merge(BootstrapGeneric::$variants, ['link', 'text']),
@@ -63,7 +63,7 @@ class BootstrapButton extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->options['class'] = $this->convertToArrayIfNeeded($this->options['class']);
@@ -91,12 +91,12 @@ class BootstrapButton extends BootstrapGeneric
         }
     }
 
-    public function button()
+    public function button(): string
     {
         return $this->genButton();
     }
 
-    private function genButton()
+    private function genButton(): string
     {
         $html = $this->nodeOpen($this->options['nodeType'], array_merge($this->options['attrs'], [
             'class' => array_merge($this->options['class'], $this->bsClasses),
@@ -116,7 +116,7 @@ class BootstrapButton extends BootstrapGeneric
         return $html;
     }
 
-    private function genIcon()
+    private function genIcon(): string
     {
         if (!empty($this->options['icon'])) {
             $bsIcon = new BootstrapIcon($this->options['icon'], [
@@ -127,7 +127,7 @@ class BootstrapButton extends BootstrapGeneric
         return '';
     }
 
-    private function genImage()
+    private function genImage(): string
     {
         if (!empty($this->options['image'])) {
             return $this->node('img', [

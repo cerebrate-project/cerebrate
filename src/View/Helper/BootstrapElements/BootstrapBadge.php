@@ -34,7 +34,7 @@ class BootstrapBadge extends BootstrapGeneric
         'class' => [],
     ];
 
-    function __construct($options)
+    function __construct(array $options)
     {
         $this->allowedOptionValues = [
             'variant' => BootstrapGeneric::$variants,
@@ -42,19 +42,19 @@ class BootstrapBadge extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->options['class'] = $this->convertToArrayIfNeeded($this->options['class']);
         $this->checkOptionValidity();
     }
 
-    public function badge()
+    public function badge(): string
     {
         return $this->genBadge();
     }
 
-    private function genBadge()
+    private function genBadge(): string
     {
         $html = $this->node('span', [
             'class' => array_merge($this->options['class'], [

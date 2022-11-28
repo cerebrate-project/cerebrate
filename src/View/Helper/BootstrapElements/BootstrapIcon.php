@@ -26,25 +26,25 @@ class BootstrapIcon extends BootstrapGeneric
         'attrs' => [],
     ];
 
-    function __construct($icon, $options = [])
+    function __construct(string $icon, array $options = [])
     {
         $this->icon = $icon;
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->checkOptionValidity();
         $this->options['class'] = $this->convertToArrayIfNeeded($this->options['class']);
     }
 
-    public function icon()
+    public function icon(): string
     {
         return $this->genIcon();
     }
 
-    private function genIcon()
+    private function genIcon(): string
     {
         $html = $this->node('span', array_merge(
             [

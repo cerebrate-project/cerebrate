@@ -51,18 +51,18 @@ class BootstrapProgressTimeline extends BootstrapGeneric
         $this->btHelper = $btHelper;
     }
 
-    private function processOptions($options)
+    private function processOptions($options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->checkOptionValidity();
     }
 
-    public function progressTimeline()
+    public function progressTimeline(): string
     {
         return $this->genProgressTimeline();
     }
 
-    private function getStepIcon($step, $i, $nodeActive, $lineActive)
+    private function getStepIcon(array $step, int $i, bool $nodeActive, bool $lineActive): string
     {
         $icon = $this->node('b', [
             'class' => [
@@ -92,7 +92,7 @@ class BootstrapProgressTimeline extends BootstrapGeneric
         return $html;
     }
 
-    private function getHorizontalLine($i, $nodeActive, $lineActive)
+    private function getHorizontalLine(int $i, bool $nodeActive, bool $lineActive): string
     {
         $stepCount = count($this->options['steps']);
         if ($i == $stepCount - 1) {
@@ -114,7 +114,7 @@ class BootstrapProgressTimeline extends BootstrapGeneric
         return $line;
     }
 
-    private function getStepText($step, $isActive)
+    private function getStepText(array $step, bool $isActive): string
     {
         return $this->node('li', [
             'class' => [
@@ -125,7 +125,7 @@ class BootstrapProgressTimeline extends BootstrapGeneric
         ], h($step['text'] ?? ''));
     }
 
-    private function genProgressTimeline()
+    private function genProgressTimeline(): string
     {
         $iconLis = '';
         $textLis = '';

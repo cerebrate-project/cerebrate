@@ -40,7 +40,7 @@ class BootstrapToast extends BootstrapGeneric
         'closeButton' => true,
     ];
 
-    function __construct($options)
+    function __construct(array $options)
     {
         $this->allowedOptionValues = [
             'variant' => array_merge(BootstrapGeneric::$variants, ['default']),
@@ -48,7 +48,7 @@ class BootstrapToast extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $validOptions = array_filter($options, function($optionName) {
             return isset($this->defaultOptions[$optionName]);
@@ -57,12 +57,12 @@ class BootstrapToast extends BootstrapGeneric
         $this->checkOptionValidity();
     }
 
-    public function toast()
+    public function toast(): string
     {
         return $this->genToast();
     }
 
-    private function genToast()
+    private function genToast(): string
     {
         return $this->node('script', [], sprintf(
             "$(document).ready(function() {

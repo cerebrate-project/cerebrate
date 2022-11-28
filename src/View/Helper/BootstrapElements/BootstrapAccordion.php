@@ -3,6 +3,7 @@
 namespace App\View\Helper\BootstrapElements;
 
 use App\View\Helper\BootstrapGeneric;
+use App\View\Helper\BootstrapHelper;
 
 /**
  * Creates an collapsible accordion component
@@ -53,7 +54,7 @@ class BootstrapAccordion extends BootstrapGeneric
         'class' => [],
     ];
 
-    function __construct($options, $content, $btHelper)
+    function __construct(array $options, array $content, BootstrapHelper $btHelper)
     {
         $this->allowedOptionValues = [];
         $this->content = $content;
@@ -61,7 +62,7 @@ class BootstrapAccordion extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->checkOptionValidity();
@@ -78,12 +79,12 @@ class BootstrapAccordion extends BootstrapGeneric
         }
     }
 
-    public function accordion()
+    public function accordion(): string
     {
         return $this->genAccordion();
     }
 
-    private function genHeader($accordionItem, $i)
+    private function genHeader(array $accordionItem, int $i): string
     {
         $html = $this->nodeOpen('h2', [
             'class' => ['accordion-header'],
@@ -110,7 +111,7 @@ class BootstrapAccordion extends BootstrapGeneric
         return $html;
     }
 
-    private function genBody($accordionItem, $i)
+    private function genBody(array $accordionItem, int $i): string
     {
         $content = $this->node('div', [
             'class' => ['accordion-body']
@@ -134,7 +135,7 @@ class BootstrapAccordion extends BootstrapGeneric
         return $html;
     }
 
-    private function genAccordion()
+    private function genAccordion(): string
     {
         $html = $this->nodeOpen('div', [
             'class' => array_merge(['accordion'], $this->options['class']),

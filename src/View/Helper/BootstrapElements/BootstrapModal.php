@@ -155,7 +155,7 @@ class BootstrapModal extends BootstrapGeneric
         'cancelOnclick' => ''
     ];
 
-    function __construct($options)
+    function __construct(array $options)
     {
         $this->allowedOptionValues = [
             'size' => ['sm', 'lg', 'xl', ''],
@@ -167,7 +167,7 @@ class BootstrapModal extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->checkOptionValidity();
@@ -188,7 +188,7 @@ class BootstrapModal extends BootstrapGeneric
         }
     }
 
-    public function modal()
+    public function modal(): string
     {
         $modal = $this->genModal();
         if ($this->options['show']) {
@@ -211,7 +211,7 @@ class BootstrapModal extends BootstrapGeneric
         ));
     }
 
-    private function genModal()
+    private function genModal(): string
     {
         $dialog = $this->nodeOpen('div', [
             'class' => array_merge(
@@ -231,7 +231,7 @@ class BootstrapModal extends BootstrapGeneric
         return $html;
     }
 
-    private function genHeader()
+    private function genHeader(): string
     {
         $header = $this->nodeOpen('div', ['class' => array_merge(['modal-header'], $this->options['headerClass'])]);
         $header .= $this->options['titleHtml'] ?? $this->node('h5', ['class' => ['modal-title']], h($this->options['title']));
@@ -242,7 +242,7 @@ class BootstrapModal extends BootstrapGeneric
         return $header;
     }
 
-    private function genBody()
+    private function genBody(): string
     {
         $body = $this->nodeOpen('div', ['class' => array_merge(['modal-body'], $this->options['bodyClass'])]);
         $body .= $this->options['bodyHtml'] ?? h($this->options['body']);
@@ -250,7 +250,7 @@ class BootstrapModal extends BootstrapGeneric
         return $body;
     }
 
-    private function genFooter()
+    private function genFooter(): string
     {
         $footer = $this->nodeOpen('div', [
             'class' => array_merge(['modal-footer'], $this->options['footerClass']),
@@ -261,7 +261,7 @@ class BootstrapModal extends BootstrapGeneric
         return $footer;
     }
 
-    private function getFooterBasedOnType()
+    private function getFooterBasedOnType(): string
     {
         if ($this->options['type'] == 'ok-only') {
             return $this->getFooterOkOnly();
@@ -274,7 +274,7 @@ class BootstrapModal extends BootstrapGeneric
         }
     }
 
-    private function getFooterOkOnly()
+    private function getFooterOkOnly(): string
     {
         return (new BootstrapButton([
             'variant' => 'primary',
@@ -286,7 +286,7 @@ class BootstrapModal extends BootstrapGeneric
         ]))->button();
     }
 
-    private function getFooterConfirm()
+    private function getFooterConfirm(): string
     {
         $buttonCancelConfig = array_merge(
             [
@@ -318,7 +318,7 @@ class BootstrapModal extends BootstrapGeneric
         return $buttonCancel . $buttonConfirm;
     }
 
-    private function getFooterCustom()
+    private function getFooterCustom(): string
     {
         $buttons = [];
         foreach ($this->options['footerButtons'] as $buttonConfig) {

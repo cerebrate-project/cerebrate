@@ -41,7 +41,7 @@ class BootstrapCard extends BootstrapGeneric
         'footerClass' => '',
     ];
 
-    public function __construct($options)
+    public function __construct(array $options)
     {
         $this->allowedOptionValues = [
             'headerVariant' => array_merge(BootstrapGeneric::$variants, ['']),
@@ -51,7 +51,7 @@ class BootstrapCard extends BootstrapGeneric
         $this->processOptions($options);
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->options['headerClass'] = $this->convertToArrayIfNeeded($this->options['headerClass']);
@@ -61,12 +61,12 @@ class BootstrapCard extends BootstrapGeneric
         $this->options['borderVariant'] = !empty($this->options['headerVariant']) ? "border-{$this->options['headerVariant']}" : '';
     }
 
-    public function card()
+    public function card(): string
     {
         return $this->genCard();
     }
 
-    private function genCard()
+    private function genCard(): string
     {
         $card = $this->node('div', [
             'class' => array_merge(
@@ -80,7 +80,7 @@ class BootstrapCard extends BootstrapGeneric
         return $card;
     }
 
-    private function genHeader()
+    private function genHeader(): string
     {
         if (empty($this->options['headerHTML']) && empty($this->options['headerText'])) {
             return '';
@@ -98,7 +98,7 @@ class BootstrapCard extends BootstrapGeneric
         return $header;
     }
 
-    private function genBody()
+    private function genBody(): string
     {
         if (empty($this->options['bodyHTML']) && empty($this->options['bodyText'])) {
             return '';
@@ -116,7 +116,7 @@ class BootstrapCard extends BootstrapGeneric
         return $body;
     }
 
-    private function genFooter()
+    private function genFooter(): string
     {
         if (empty($this->options['footerHTML']) && empty($this->options['footerText'])) {
             return '';

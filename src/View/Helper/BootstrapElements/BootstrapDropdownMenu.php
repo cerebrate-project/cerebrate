@@ -3,6 +3,7 @@
 namespace App\View\Helper\BootstrapElements;
 
 use App\View\Helper\BootstrapGeneric;
+use App\View\Helper\BootstrapHelper;
 
 /**
  * # Options
@@ -65,7 +66,7 @@ class BootstrapDropdownMenu extends BootstrapGeneric
         'attrs' => [],
     ];
 
-    function __construct($options, $btHelper)
+    function __construct(array $options, BootstrapHelper $btHelper)
     {
         $this->allowedOptionValues = [
             'direction' => ['start', 'end', 'up', 'down'],
@@ -77,24 +78,24 @@ class BootstrapDropdownMenu extends BootstrapGeneric
         $this->btHelper = $btHelper;
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->options['dropdown-class'] = $this->convertToArrayIfNeeded($this->options['dropdown-class']);
         $this->checkOptionValidity();
     }
 
-    public function dropdownMenu()
+    public function dropdownMenu(): string
     {
         return $this->fullDropdown();
     }
 
-    public function fullDropdown()
+    public function fullDropdown(): string
     {
         return $this->genDropdownWrapper($this->genDropdownToggleButton(), $this->genDropdownMenu($this->menu));
     }
 
-    public function genDropdownWrapper($toggle = '', $menu = '', $direction = null, $classes = null)
+    public function genDropdownWrapper(string $toggle = '', string $menu = '', $direction = null, $classes = null): string
     {
         $classes = !is_null($classes) ? $classes :  $this->options['dropdown-class'];
         $direction = !is_null($direction) ? $direction : $this->options['direction'];
@@ -114,7 +115,7 @@ class BootstrapDropdownMenu extends BootstrapGeneric
         return $html;
     }
 
-    public function genDropdownToggleButton()
+    public function genDropdownToggleButton(): string
     {
         $defaultOptions = [
             'class' => ['dropdown-toggle'],
@@ -127,7 +128,7 @@ class BootstrapDropdownMenu extends BootstrapGeneric
         return $this->btHelper->button($options);
     }
 
-    private function genDropdownMenu($entries, $alignment = null)
+    private function genDropdownMenu(array $entries, $alignment = null): string
     {
         $alignment = !is_null($alignment) ? $alignment : $this->options['alignment'];
         $html = $this->node('div', [
@@ -136,7 +137,7 @@ class BootstrapDropdownMenu extends BootstrapGeneric
         return $html;
     }
 
-    private function genEntries($entries)
+    private function genEntries(array $entries): string
     {
         $html = '';
         foreach ($entries as $entry) {
@@ -150,7 +151,7 @@ class BootstrapDropdownMenu extends BootstrapGeneric
         return $html;
     }
 
-    private function genEntry($entry)
+    private function genEntry(array $entry): string
     {
         if (!empty($entry['html'])) {
             return $entry['html'];

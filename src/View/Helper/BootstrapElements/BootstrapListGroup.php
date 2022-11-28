@@ -60,14 +60,14 @@ class BootstrapListGroup extends BootstrapGeneric
     private static $defaultClasses = ['list-group',];
     private static $defaultItemClasses = ['list-group-item', 'list-group-item-action', 'd-flex', 'align-items-start', 'justify-content-between'];
 
-    function __construct($items, $options, $btHelper)
+    function __construct(array $items, array $options, \App\View\BootstrapHelper $btHelper)
     {
         $this->items = $items;
         $this->processOptions($options);
         $this->btHelper = $btHelper;
     }
 
-    private function processOptions($options)
+    private function processOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
         $this->options['class'] = $this->convertToArrayIfNeeded($this->options['class']);
@@ -90,7 +90,7 @@ class BootstrapListGroup extends BootstrapGeneric
         return $html;
     }
 
-    private function genItem($item)
+    private function genItem(array $item): string
     {
         $item['class'] = !is_array($item['class']) ? [$item['class']] : $item['class'];
         $itemOptions = array_merge($this->defaultItemOptions, $item);
@@ -109,7 +109,7 @@ class BootstrapListGroup extends BootstrapGeneric
         return $html;
     }
 
-    private function genBadge($badge)
+    private function genBadge(array $badge): string
     {
         if (empty($badge)) {
             return '';
