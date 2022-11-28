@@ -25,7 +25,7 @@ use App\View\Helper\BootstrapGeneric;
  *          - `confirmButton` and `cancelButton`: Can be used to pass a BootstrapElements/BootstrapButton configuration
  *      - The `custom` Display a list of button defined in the $footerButtons parameter
  *  - confirmFunction: The function to be called when clicking the "confirm" button
- *      - This options only works if the option $show is enabled or if the modal is loaded with the UI ModalFactory function (e.g. `UI.submissionModal()` or `UI.modal()`)
+ *      - This options *only* works if the option $show is enabled or if the modal is loaded with the UI ModalFactory function (e.g. `UI.submissionModal()` or `UI.modal()`)
  *  - cancelOnclick: The function to be called once the "cancel" button trigger the `onclick` event
  *  - footerButtons: A list of configuration to be passed to BootstrapElements/BootstrapButton
  *      - The option `clickFunction` can be used to set the function to be called when clicking the button. Behavior similar to "confirmFunction"
