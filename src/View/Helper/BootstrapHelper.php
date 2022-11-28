@@ -1,51 +1,15 @@
 <?php
 
 /**
- * Bootstrap Tabs helper
- * Options:
- *  [style]
- *      - fill: Should the navigation items occupy all available space
- *      - justify: Should the navigation items be justified (accept: ['center', 'end'])
- *      - pills: Should the navigation items be pills
- *      - vertical: Should the navigation bar be placed on the left side of the content
- *      - vertical-size: Specify how many bootstrap's `cols` should be used for the navigation (only used when `vertical` is true)
- *      - card: Should the navigation be placed in a bootstrap card
- *      - header-variant: The bootstrap variant to be used for the card header
- *      - body-variant: The bootstrap variant to be used for the card body
- *      - nav-class: additional class to add to the nav container
- *      - content-class: additional class to add to the content container
- *  [data]
- *      - data: contains the data for the tabs and content
- *      {
- *          'navs': [{nav-item}, {nav-item}, ...],
- *          'content': [{nav-content}, {nav-content}, ...]
- *      }
+ * Bootstrap Helper class to quicly create Bootstrap components
  * 
  * # Usage:
- *    echo $this->Bootstrap->Tabs([
- *       'pills' => true,
- *       'card' => true,
- *       'data' => [
- *           'navs' => [
- *               'tab1',
- *               ['text' => 'tab2', 'active' => true],
- *               ['html' => '<b>tab3</b>', 'disabled' => true],
- *           ],
- *           'content' => [
- *               'body1',
- *               '<i>body2</i>',
- *               '~body3~'
- *           ]
- *       ]
- *   ]);
+ *    $this->Bootstrap->{$componentName}($options);
  */
 
 namespace App\View\Helper;
 
-use App\View\AppView;
 use Cake\View\Helper;
-use Cake\Utility\Hash;
-use Cake\Utility\Inflector;
 use Cake\Utility\Text;
 use InvalidArgumentException;
 
@@ -87,120 +51,251 @@ class BootstrapHelper extends Helper
 {
     public $helpers = ['FontAwesome'];
 
-    public function tabs($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function tabs(array $options): string
     {
         $bsTabs = new BootstrapTabs($options);
         return $bsTabs->tabs();
     }
 
-    public function alert($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function alert(array $options): string
     {
         $bsAlert = new BootstrapAlert($options);
         return $bsAlert->alert();
     }
 
-    public function table($options, $data)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @param array $data See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function table(array $options, array $data = []): string
     {
         $bsTable = new BootstrapTable($options, $data, $this);
         return $bsTable->table();
     }
 
-    public function listTable($options, $data)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @param array $data See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function listTable(array $options, array $data = []): string
     {
         $bsListTable = new BootstrapListTable($options, $data, $this);
         return $bsListTable->table();
     }
 
-    public function button($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function button(array $options): string
     {
         $bsButton = new BootstrapButton($options);
         return $bsButton->button();
     }
 
-    public function icon($icon, $options = [])
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param string $icon See BootstrapElements\BootstrapTabs
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function icon(string $icon, array $options = []): string
     {
         $bsIcon = new BootstrapIcon($icon, $options);
         return $bsIcon->icon();
     }
 
-    public function badge($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function badge(array $options): string
     {
         $bsBadge = new BootstrapBadge($options);
         return $bsBadge->badge();
     }
 
-    public function modal($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function modal(array $options): string
     {
         $bsModal = new BootstrapModal($options);
         return $bsModal->modal();
     }
 
-    public function card($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function card(array $options): string
     {
         $bsCard = new BootstrapCard($options);
         return $bsCard->card();
     }
 
-    public function progress($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function progress(array $options): string
     {
         $bsProgress = new BootstrapProgress($options);
         return $bsProgress->progress();
     }
 
-    public function collapse($options, $content)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @param string $content See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function collapse(array $options, string $content): string
     {
         $bsCollapse = new BootstrapCollapse($options, $content, $this);
         return $bsCollapse->collapse();
     }
 
-    public function accordion($options, $content)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @param string $content See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function accordion(array $options, string $content): string
     {
         $bsAccordion = new BootstrapAccordion($options, $content, $this);
         return $bsAccordion->accordion();
     }
 
-    public function progressTimeline($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function progressTimeline(array $options): string
     {
         $bsProgressTimeline = new BootstrapProgressTimeline($options, $this);
         return $bsProgressTimeline->progressTimeline();
     }
 
-    public function listGroup($options, $data)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $data See BootstrapElements\BootstrapTabs
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function listGroup(array $data, array $options = []): string
     {
-        $bsListGroup = new BootstrapListGroup($options, $data, $this);
+        $bsListGroup = new BootstrapListGroup($data, $options, $this);
         return $bsListGroup->listGroup();
     }
 
-    public function switch($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function switch(array $options): string
     {
         $bsSwitch = new BootstrapSwitch($options, $this);
         return $bsSwitch->switch();
     }
 
-    public function notificationBubble($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function notificationBubble(array $options): string
     {
         $bsNotificationBubble = new BootstrapNotificationBubble($options, $this);
         return $bsNotificationBubble->notificationBubble();
     }
 
-    public function dropdownMenu($options)
+    /**
+     * Creates a Bootstrap tabs from the given options
+     *
+     * @param array $options See BootstrapElements\BootstrapTabs
+     * @return string
+     */
+    public function dropdownMenu(array $options): string
     {
         $bsDropdownMenu = new BootstrapDropdownMenu($options, $this);
         return $bsDropdownMenu->dropdownMenu();
     }
 
-    public function toast($options)
+    /**
+     * Creates a Bootstrap toast from the given options
+     *
+     * @param array $options
+     * @return string
+     */
+    public function toast(array $options): string
     {
         $bsToast = new BootstrapToast($options, $this);
         return $bsToast->toast();
     }
 
-    public function node($tag, $attrs=[], $content='', $options=[]): string
+    /**
+     * Creates a HTML node
+     *
+     * @param string $tag The tag of the node. Example: `div`, `span`, ...
+     * @param array $attrs Optional HTML attributes to be added on the node
+     * @param string $content Optional innerHTML of the node
+     * @param array $options Optional options to build the node. See BootstrapGeneric\node
+     * @return string
+     */
+    public function node(string $tag, array $attrs = [], string $content = '', array $options = []): string
     {
         return BootstrapGeneric::node($tag, $attrs, $content, $options);
     }
 
-    public function render($template, $data=[], $options=[])
+    /**
+     * Render the provided template with the given data
+     *
+     * @param string $template The template to render. See BootstrapGeneric\render
+     * @param array $data The data to be used during the template building
+     * @param array $options Optional options to build the template
+     * @return string
+     */
+    public function render(string $template, array $data = [], array $options = []): string
     {
         return BootstrapGeneric::render($template, $data, $options);
     }
@@ -267,7 +362,7 @@ class BootstrapGeneric
     /**
      * Creates an HTML node
      *
-     * ### Options
+     * # Options
      *
      * - `escape` Set to false to disable escaping of attribute value.
      * 

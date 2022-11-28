@@ -5,6 +5,8 @@ namespace App\View\Helper\BootstrapElements;
 use App\View\Helper\BootstrapGeneric;
 
 /**
+ * Creates a Bootstrap list group where items can be links or buttons
+ * 
  * # Options for list container
  *  - class: A list of class
  *  - attrs: A list of additional HTML attributes
