@@ -52,7 +52,7 @@ foreach (array_keys($mainNoticeHeading) as $level) {
             'fields' => [
                 ['path' => 'name', 'label' => __('Name'), 'formatter' => function($name, $row) {
                     $settingID = preg_replace('/(\.|\W)/', '_', h($row['true-name']));
-                    return sprintf('<a style="max-width: 200px; white-space: pre-wrap;" href="#lb-%s" onclick="redirectToSetting(\'#lb-%s\')">%s</a>', $settingID, $settingID, h($name));
+                    return sprintf('<a style="max-width: 200px; white-space: nowrap;" href="#lb-%s" onclick="redirectToSetting(\'#lb-%s\')">%s</a>', $settingID, $settingID, h($name));
                 }],
                 ['path' => 'setting-path', 'label' => __('Category'), 'formatter' => function($path, $row) {
                     return '<span class="text-nowrap">' . h(str_replace('.', ' ▸ ', $path)) . '</span>';
