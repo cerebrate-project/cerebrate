@@ -14,6 +14,18 @@ class BroodsController extends AppController
     public $quickFilterFields = [['Broods.name' => true], 'Broods.uuid', ['Broods.description' => true]];
     public $containFields = ['Organisations'];
 
+    protected $previewScopes = [
+        'organisations' => [
+            'quickFilterFields' => ['uuid', ['name' => true], ],
+        ],
+        'individuals' => [
+            'quickFilterFields' => ['uuid', ['email' => true], ['first_name' => true], ['last_name' => true], ],
+        ],
+        'sharingGroups' => [
+            'quickFilterFields' => ['uuid', ['name' => true], ],
+        ],
+    ];
+
     public function index()
     {
         $this->CRUD->index([
@@ -96,8 +108,9 @@ class BroodsController extends AppController
 
     public function previewIndex($id, $scope)
     {
-        if (!in_array($scope, ['organisations', 'individuals', 'sharingGroups'])) {
-            throw new MethodNotAllowedException(__('Invalid scope. Valid options are: organisations, individuals, sharing_groups'));
+        $validScopes = array_keys($this->previewScopes);
+        if (!in_array($scope, $validScopes)) {
+            throw new MethodNotAllowedException(__('Invalid scope. Valid options are: {0}', implode(', ', $validScopes)));
         }
         $filter = $this->request->getQuery('quickFilter');
         $data = $this->Broods->queryIndex($id, $scope, $filter);
@@ -108,6 +121,12 @@ class BroodsController extends AppController
             return $this->RestResponse->viewData($data, 'json');
         } else {
             $data = $this->CustomPagination->paginate($data);
+            $optionFilters = ['quickFilter'];
+            $CRUDParams = $this->ParamHandler->harvestParams($optionFilters);
+            $CRUDOptions = [
+                'quickFilters' => $this->previewScopes[$scope]['quickFilterFields'],
+            ];
+            $this->CRUD->setQuickFilterForView($CRUDParams, $CRUDOptions);
             $this->set('data', $data);
             $this->set('brood_id', $id);
             if ($this->request->is('ajax')) {
