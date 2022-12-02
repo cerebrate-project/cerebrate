@@ -198,7 +198,7 @@ class BootstrapTable extends BootstrapGeneric
         return $html;
     }
 
-    private function genCell(string $value, array $field = [], array $row = [], int $rowIndex = 0): string
+    private function genCell($value, array $field = [], array $row = [], int $rowIndex = 0): string
     {
         if (isset($field['formatter'])) {
             $cellContent = $field['formatter']($value, $row, $rowIndex);
@@ -220,7 +220,7 @@ class BootstrapTable extends BootstrapGeneric
         ], $cellContent);
     }
 
-    private function getValueFromObject(array $row, $field): string
+    private function getValueFromObject(array $row, $field)
     {
         $path = is_array($field) ? $field['path'] : $field;
         $cellValue = Hash::get($row, $path);
