@@ -122,6 +122,10 @@ $toast-color-level:                 70% !default;
     }
 }
 
+.table-xs > :not(caption) > * > * {
+    padding: 0.05rem 0.05rem;
+}
+
 /* Utilities */
 // Use bootstrap's utilities API with something like this
 // $utilities: map-merge(
