@@ -629,6 +629,9 @@ class ModalFactory {
             }
         } else {
             $modalDialog = $('<div class="modal-dialog"/>')
+            if (this.options.size !== false) {
+                $modalDialog.addClass(`modal-${this.options.size}`)
+            }
             const $modalContent = $('<div class="modal-content"/>')
             if (this.options.title !== false || this.options.titleHtml !== false) {
                 const $modalHeader = $('<div class="modal-header"/>')
