@@ -13,6 +13,7 @@ use App\View\Helper\BootstrapGeneric;
  * - html: The HTML content of the badge
  * - variant: The Bootstrap variant of the badge
  * - pill: Should the badge have a Bootstrap pill style
+ * - icon: Should the button have an icon right before the text
  * - title: The title of the badge
  * - class: Additional class to add to the button
  * 
@@ -26,10 +27,12 @@ use App\View\Helper\BootstrapGeneric;
 class BootstrapBadge extends BootstrapGeneric
 {
     private $defaultOptions = [
+        'id' => '',
         'text' => '',
         'html' => null,
         'variant' => 'primary',
         'pill' => false,
+        'icon' => false,
         'title' => '',
         'class' => [],
     ];
@@ -63,8 +66,23 @@ class BootstrapBadge extends BootstrapGeneric
                 self::getBGAndTextClassForVariant($this->options['variant']),
                 $this->options['pill'] ? 'rounded-pill' : '',
             ]),
-            'title' => $this->options['title']
-        ], $this->options['html'] ?? h($this->options['text']));
+            'title' => $this->options['title'],
+            'id' => $this->options['id'] ?? '',
+        ], [
+            $this->genIcon(),
+            $this->options['html'] ?? h($this->options['text'])
+        ]);
         return $html;
+    }
+
+    private function genIcon(): string
+    {
+        if (!empty($this->options['icon'])) {
+            $bsIcon = new BootstrapIcon($this->options['icon'], [
+                'class' => [(!empty($this->options['text']) ? 'me-1' : '')]
+            ]);
+            return $bsIcon->icon();
+        }
+        return '';
     }
 }
