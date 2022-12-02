@@ -1124,12 +1124,16 @@ class HtmlHelper {
         if (options.variant) {
             $table.addClass(`table-${options.variant}`)
         }
+        if (options.fixed_layout) {
+            $table.css('table-layout', 'fixed')
+        }
         if (options.tableClass) {
             $table.addClass(options.tableClass)
         }
 
-        const $caption = $('<caption/>')
+        let $caption = null
         if (options.caption) {
+            $caption = $('<caption/>')
             if (options.caption instanceof jQuery) {
                 $caption = options.caption
             } else {
@@ -1137,21 +1141,28 @@ class HtmlHelper {
             }
         }
 
-        const $theadRow = $('<tr/>')
-        head.forEach(head => {
-            if (head instanceof jQuery) {
-                $theadRow.append($('<td/>').append(head))
-            } else {
-                $theadRow.append($('<th/>').text(head))
-            }
-        })
-        $thead.append($theadRow)
+        let $theadRow = null
+        if (head) {
+            $theadRow = $('<tr/>')
+            head.forEach(head => {
+                if (head instanceof jQuery) {
+                    $theadRow.append($('<td/>').append(head))
+                } else {
+                    $theadRow.append($('<th/>').text(head))
+                }
+            })
+            $thead.append($theadRow)
+        }
 
         body.forEach(row => {
             const $bodyRow = $('<tr/>')
             row.forEach(item => {
                 if (item instanceof jQuery) {
-                    $bodyRow.append($('<td/>').append(item))
+                    if (item.is('td')) {
+                        $bodyRow.append(item)
+                    } else {
+                        $bodyRow.append($('<td/>').append(item))
+                    }
                 } else {
                     $bodyRow.append($('<td/>').text(item))
                 }
