@@ -42,6 +42,9 @@ class MetaTemplatesTable extends AppTable
                 'cascadeCallbacks' => true,
             ]
         );
+        $this->hasOne('MetaTemplateNameDirectory')
+            ->setForeignKey('meta_template_directory_id');
+
         $this->setDisplayField('name');
     }
 
@@ -54,7 +57,7 @@ class MetaTemplatesTable extends AppTable
             ->notEmptyString('uuid')
             ->notEmptyString('version')
             ->notEmptyString('source')
-            ->requirePresence(['scope', 'source', 'version', 'uuid', 'name', 'namespace'], 'create');
+            ->requirePresence(['scope', 'source', 'version', 'uuid', 'name', 'namespace', 'meta_template_directory_id'], 'create');
         return $validator;
     }
 
@@ -731,6 +734,8 @@ class MetaTemplatesTable extends AppTable
         $metaTemplate = $this->newEntity($template, [
             'associated' => ['MetaTemplateFields']
         ]);
+        $metaTemplateDirectory = $this->MetaTemplateNameDirectory->createFromMetaTemplate($metaTemplate);
+        $metaTemplate->meta_template_directory_id = $metaTemplateDirectory->id;
         $tmp = $this->save($metaTemplate, [
             'associated' => ['MetaTemplateFields']
         ]);

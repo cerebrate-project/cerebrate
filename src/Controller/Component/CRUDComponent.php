@@ -432,6 +432,7 @@ class CRUDComponent extends Component
                                     'field' => $rawMetaTemplateField->field,
                                     'meta_template_id' => $rawMetaTemplateField->meta_template_id,
                                     'meta_template_field_id' => $rawMetaTemplateField->id,
+                                    'meta_template_directory_id' => $allMetaTemplates[$template_id]->meta_template_directory_id,
                                     'parent_id' => $entity->id,
                                     'uuid' => Text::uuid(),
                                 ]);
@@ -462,6 +463,7 @@ class CRUDComponent extends Component
                                     'field' => $rawMetaTemplateField->field,
                                     'meta_template_id' => $rawMetaTemplateField->meta_template_id,
                                     'meta_template_field_id' => $rawMetaTemplateField->id,
+                                    'meta_template_directory_id' => $template->meta_template_directory_id,
                                     'parent_id' => $entity->id,
                                     'uuid' => Text::uuid(),
                                 ]);

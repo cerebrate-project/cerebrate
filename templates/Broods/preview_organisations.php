@@ -3,8 +3,17 @@ echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $data,
         'top_bar' => [
-            'pull' => 'right',
             'children' => [
+                [
+                    'type' => 'simple',
+                    'children' => [
+                        'data' => [
+                            'type' => 'simple',
+                            'text' => __('Download All'),
+                            'popover_url' => sprintf('/broods/downloadOrg/%s/all', h($brood_id)),
+                        ]
+                    ]
+                ],
                 [
                     'type' => 'search',
                     'button' => __('Search'),
@@ -21,6 +30,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'sort' => 'id',
                 'class' => 'short',
                 'data_path' => 'id',
+            ],
+            [
+                'name' => __('Status'),
+                'class' => 'short',
+                'data_path' => 'status',
+                'display_field_data_path' => 'name',
+                'sort' => 'status',
+                'element' => 'brood_sync_status',
             ],
             [
                 'name' => __('Name'),
@@ -58,8 +75,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'pull' => 'right',
         'actions' => [
             [
-                'url' => '/broods/downloadOrg/' . $brood_id,
-                'url_params_data_paths' => ['id'],
+                'open_modal' => '/broods/downloadOrg/' . $brood_id . '/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
                 'title' => __('Download'),
                 'icon' => 'download'
             ]

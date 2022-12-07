@@ -42,7 +42,7 @@ class Individual extends AppModel
         return $emails;
     }
 
-    public function rearrangeForAPI(): void
+    public function rearrangeForAPI(array $options = []): void
     {
         if (!empty($this->tags)) {
             $this->tags = $this->rearrangeTags($this->tags);
@@ -51,10 +51,7 @@ class Individual extends AppModel
             $this->alignments = $this->rearrangeAlignments($this->alignments);
         }
         if (!empty($this->meta_fields)) {
-            $this->rearrangeMetaFields();
-        }
-        if (!empty($this->MetaTemplates)) {
-            unset($this->MetaTemplates);
+            $this->rearrangeMetaFields($options);
         }
     }
 }

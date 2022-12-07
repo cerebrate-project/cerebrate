@@ -283,6 +283,7 @@ class RestResponseComponent extends Component
     private $__scopedFieldsConstraint = array();
 
     public function initialize(array $config): void {
+        parent::initialize($config);
         $this->__configureFieldConstraints();
         $this->Controller = $this->getController();
     }
@@ -559,7 +560,14 @@ class RestResponseComponent extends Component
             $data['errors'] = $errors;
         }
         if (!$raw && is_object($data)) {
-            $data = $this->APIRearrange->rearrangeForAPI($data);
+            $rearrangeOptions = [];
+            if (!empty($this->Controller->getRequest()->getQuery('includeMetatemplate', false))) {
+                $rearrangeOptions['includeMetatemplate'] = true;
+            }
+            if (!empty($this->Controller->getRequest()->getQuery('includeFullMetaFields', false))) {
+                $rearrangeOptions['includeFullMetaFields'] = true;
+            }
+            $data = $this->APIRearrange->rearrangeForAPI($data, $rearrangeOptions);
         }
         return $this->__sendResponse($data, 200, $format, $raw, $download, $headers);
     }
