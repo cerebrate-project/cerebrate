@@ -126,7 +126,7 @@ class UsersController extends AppController
             'organisation' => $this->Users->Organisations->find('list', [
                 'sort' => ['name' => 'asc'],
                 'conditions' => $org_conditions
-            ])
+            ])->toArray()
         ];
         $this->set(compact('dropdownData'));
         $this->set('defaultRole', $defaultRole['id'] ?? null);
@@ -247,7 +247,7 @@ class UsersController extends AppController
             'organisation' => $this->Users->Organisations->find('list', [
                 'sort' => ['name' => 'asc'],
                 'conditions' => $org_conditions
-            ])
+            ])->toArray()
         ];
         $this->set(compact('dropdownData'));
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
