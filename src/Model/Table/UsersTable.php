@@ -69,6 +69,7 @@ class UsersTable extends AppTable
 
     public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options)
     {
+        $success = true;
         if (!$entity->isNew()) {
             $success = $this->handleUserUpdateRouter($entity);
         }
