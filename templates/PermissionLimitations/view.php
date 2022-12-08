@@ -18,7 +18,7 @@ echo $this->element(
             ],
             [
                 'key' => __('Limit'),
-                'path' => 'limit'
+                'path' => 'max_occurrence'
             ],
             [
                 'key' => __('Comment'),
