@@ -22,6 +22,7 @@ class PermissionLimitationsTable extends AppTable
         $validator
             ->notEmptyString('permission')
             ->notEmptyString('scope')
+            ->naturalNumber('max_occurrence', __('That field can only hold non-negative values.'))
             ->requirePresence(['permission', 'scope', 'max_occurrence'], 'create');
         return $validator;
     }
