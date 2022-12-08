@@ -126,7 +126,7 @@ class NotifyAdminsBehavior extends Behavior
                 unset($changedFields['meta_fields']);
             }
         }
-        $originalFields = $entity->isNew() ? [] : $entity->isNew();
+        $originalFields = $entity->isNew() ? [] : $originalFields;
         $data = [
             'original' => $this->_serializeFields($originalFields),
             'changed' => $this->_serializeFields($changedFields),
