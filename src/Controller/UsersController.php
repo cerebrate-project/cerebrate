@@ -189,7 +189,8 @@ class UsersController extends AppController
             ],
             'fields' => [
                 'password', 'confirm_password'
-            ]
+            ],
+            'contain' => ['Roles', ],
         ];
         if ($this->request->is(['get'])) {
             $params['fields'] = array_merge($params['fields'], ['individual_id', 'role_id', 'disabled']);
