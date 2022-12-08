@@ -26,7 +26,7 @@ class UsersTable extends AppTable
         $this->addBehavior('MetaFields');
         $this->addBehavior('AuditLog');
         $this->addBehavior('NotifyAdmins', [
-            'fields' => ['role_id', 'individual_id', 'organisation_id', 'disabled', 'modified'],
+            'fields' => ['role_id', 'individual_id', 'organisation_id', 'disabled', 'modified', 'meta_fields'],
         ]);
         $this->initAuthBehaviors();
         $this->belongsTo(
