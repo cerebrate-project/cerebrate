@@ -176,11 +176,6 @@ class UsersController extends AppController
             $id = $currentUser['id'];
         } else {
             $id = intval($id);
-            if ((empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
-                if ($id !== $currentUser['id']) {
-                    throw new MethodNotAllowedException(__('You are not authorised to edit that user.'));
-                }
-            }
         }
 
         $params = [
@@ -197,6 +192,16 @@ class UsersController extends AppController
             if (!empty($this->ACL->getUser()['role']['perm_admin'])) {
                 $params['fields'][] = 'organisation_id';
             }
+            if (!$currentUser['role']['perm_admin']) {
+                $params['afterFind'] = function ($user, &$params) use ($currentUser) {
+                    if (!empty($user)) { // We don't have a 404
+                        if (!$this->ACL->canEditUser($currentUser, $user)) {
+                            throw new MethodNotAllowedException(__('You cannot edit the given user.'));
+                        }
+                    }
+                    return $user;
+                };
+            }
         }
         if ($this->request->is(['post', 'put']) && !empty($this->ACL->getUser()['role']['perm_admin'])) {
             $params['fields'][] = 'individual_id';
@@ -211,7 +216,7 @@ class UsersController extends AppController
                     if (!in_array($data['role_id'], array_keys($validRoles))) {
                         throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
                     }
-                    if ($data['organisation_id'] !== $currentUser['organisation_id']) {
+                    if (!$this->ACL->canEditUser($currentUser, $data)) {
                         throw new MethodNotAllowedException(__('You cannot edit the given user.'));
                     }
                     return $data;
