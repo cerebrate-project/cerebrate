@@ -88,22 +88,33 @@ class UsersTable extends AppTable
         if (!isset($this->PermissionLimitations)) {
             $this->PermissionLimitations = TableRegistry::get('PermissionLimitations');
         }
-        $new = $entity->isNew();
         $permissions = $this->PermissionLimitations->getListOfLimitations($entity);
         foreach ($permissions as $permission_name => $permission) {
             foreach ($permission as $scope => $permission_data) {
-                if (!empty($entity['meta_fields'])) {
-                    $enabled = false;
+                $valueToCompareTo = $permission_data['current'];
+
+                $enabled = false;
+                if (!empty($entity->meta_fields)) {
                     foreach ($entity['meta_fields'] as $metaField) {
                         if ($metaField['field'] === $permission_name) {
                             $enabled = true;
+                            if ($metaField->isNew()) {
+                                $valueToCompareTo += !empty($metaField->value) ? 1 : 0;
+                            } else {
+                                $valueToCompareTo += !empty($metaField->value) ? 0 : -1;
+                            }
                         }
                     }
-                    if (!$enabled) {
-                        continue;
+                }
+
+                if (!$enabled && !empty($entity->_metafields_to_delete)) {
+                    foreach ($entity->_metafields_to_delete as $metaFieldToDelete) {
+                        if ($metaFieldToDelete['field'] === $permission_name) {
+                            $valueToCompareTo += !empty($metaFieldToDelete->value) ? -1 : 0;
+                        }
                     }
                 }
-                $valueToCompareTo = $permission_data['current'] + ($new ? 1 : 0);
+
                 if ($valueToCompareTo > $permission_data['limit']) {
                     return [
                         $permission_name => 
