@@ -95,7 +95,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url' => '/user-settings/index?Users.id={{url_data}}',
                 'url_data_path' => 'id'
             ],
-            // [
+            // [ // We might want to uncomment this at some point
             //     'name' => __('Keycloak status'),
             //     'element' => 'keycloak_status',
             //     'data_path' => 'keycloak_status',

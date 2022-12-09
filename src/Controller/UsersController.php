@@ -23,7 +23,7 @@ class UsersController extends AppController
         }
         $keycloakUsersParsed = null;
         if (!empty(Configure::read('keycloak.enabled'))) {
-            $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
+            // $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
         }
         $this->CRUD->index([
             'contain' => $this->containFields,
@@ -31,6 +31,7 @@ class UsersController extends AppController
             'quickFilters' => $this->quickFilterFields,
             'conditions' => $conditions,
             'afterFind' => function($data) use ($keycloakUsersParsed) {
+                // TODO: We might want to uncomment this at some point Still need to evaluate the impact
                 // if (!empty(Configure::read('keycloak.enabled'))) {
                 //     $keycloakUser = $keycloakUsersParsed[$data->username];
                 //     $data['keycloak_status'] = array_values($this->Users->checkKeycloakStatus([$data->toArray()], [$keycloakUser]))[0];
