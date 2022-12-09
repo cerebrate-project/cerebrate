@@ -183,18 +183,6 @@ class UsersTable extends AppTable
         return $rules;
     }
 
-    public function test()
-    {
-        $this->Roles = TableRegistry::get('Roles');
-        $role = $this->Roles->newEntity([
-            'name' => 'admin',
-            'perm_admin' => 1,
-            'perm_org_admin' => 1,
-            'perm_sync' => 1
-        ]);
-        $this->Roles->save($role);
-    }
-
     public function checkForNewInstance(): bool
     {
         if (empty($this->find()->first())) {

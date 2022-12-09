@@ -51,14 +51,22 @@ $fields = [
         'scope' => 'individuals'
     ]
 ];
-if ($keycloakConfig['enabled'] && $loggedUser['id'] == $entity['id']) {
+if ($keycloakConfig['enabled']) {
     $fields[] = [
-        'type' => 'generic',
-        'key' => __('Modify keycloak profile'),
-        'path' => 'username',
-        'url' => $kcurl,
-        'requirements' => false
+        'key' => __('Keycloak status'),
+        'type' => 'keycloakStatus',
+        'path' => 'keycloak_status',
+        'requirements' => !empty($keycloakConfig['enabled']),
     ];
+    if ($loggedUser['id'] == $entity['id']) {
+        $fields[] = [
+            'type' => 'generic',
+            'key' => __('Modify keycloak profile'),
+            'path' => 'username',
+            'url' => $kcurl,
+            'requirements' => false
+        ];
+    }
 }
 echo $this->element(
     '/genericElements/SingleViews/single_view',

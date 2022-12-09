@@ -21,11 +21,22 @@ class UsersController extends AppController
         if (empty($currentUser['role']['perm_admin'])) {
             $conditions['organisation_id'] = $currentUser['organisation_id'];
         }
+        $keycloakUsersParsed = null;
+        if (!empty(Configure::read('keycloak.enabled'))) {
+            $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
+        }
         $this->CRUD->index([
             'contain' => $this->containFields,
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
-            'conditions' => $conditions
+            'conditions' => $conditions,
+            'afterFind' => function($data) use ($keycloakUsersParsed) {
+                // if (!empty(Configure::read('keycloak.enabled'))) {
+                //     $keycloakUser = $keycloakUsersParsed[$data->username];
+                //     $data['keycloak_status'] = array_values($this->Users->checkKeycloakStatus([$data->toArray()], [$keycloakUser]))[0];
+                // }
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -139,10 +150,18 @@ class UsersController extends AppController
         if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
             $id = $this->ACL->getUser()['id'];
         }
+        $keycloakUsersParsed = null;
+        if (!empty(Configure::read('keycloak.enabled'))) {
+            $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
+        }
         $this->CRUD->view($id, [
             'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations'],
-            'afterFind' => function($data) {
+            'afterFind' => function($data) use ($keycloakUsersParsed) {
                 $data = $this->fetchTable('PermissionLimitations')->attachLimitations($data);
+                if (!empty(Configure::read('keycloak.enabled'))) {
+                    $keycloakUser = $keycloakUsersParsed[$data->username];
+                    $data['keycloak_status'] = array_values($this->Users->checkKeycloakStatus([$data->toArray()], [$keycloakUser]))[0];
+                }
                 return $data;
             }
         ]);

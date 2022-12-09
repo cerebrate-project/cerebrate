@@ -284,27 +284,34 @@ class AuthKeycloakBehavior extends Behavior
     {
         $this->updateMappers();
         $results = [];
-        $data['Users'] = $this->_table->find()->contain(['Individuals', 'Organisations', 'Roles'])->select(
-            [
-                'id',
-                'uuid',
-                'username',
-                'disabled',
-                'Individuals.email',
-                'Individuals.first_name',
-                'Individuals.last_name',
-                'Individuals.uuid',
-                'Roles.name',
-                'Roles.uuid',
-                'Organisations.name',
-                'Organisations.uuid'
-            ]
-        )->disableHydration()->toArray();
+        $data['Users'] = $this->getCerebrateUsers();
         $clientId = $this->getClientId();
         return $this->syncUsers($data['Users'], $clientId);
     }
 
     private function syncUsers(array $users, $clientId): array
+    {
+        $keycloakUsersParsed = $this->getParsedKeycloakUser();
+        $changes = [
+            'created' => [],
+            'modified' => [],
+        ];
+        foreach ($users as &$user) {
+            $changed = false;
+            if (empty($keycloakUsersParsed[$user['username']])) {
+                if ($this->createUser($user, $clientId)) {
+                    $changes['created'][] = $user['username'];
+                }
+            } else {
+                if ($this->checkAndUpdateUser($keycloakUsersParsed[$user['username']], $user)) {
+                    $changes['modified'][] = $user['username'];
+                }
+            }
+        }
+        return $changes;
+    }
+
+    public function getParsedKeycloakUser(): array
     {
         $response = $this->restApiRequest('%s/admin/realms/%s/users', [], 'get');
         $keycloakUsers = json_decode($response->getStringBody(), true);
@@ -325,23 +332,25 @@ class AuthKeycloakBehavior extends Behavior
                 ]
             ];
         }
-        $changes = [
-            'created' => [],
-            'modified' => [],
-        ];
-        foreach ($users as &$user) {
-            $changed = false;
-            if (empty($keycloakUsersParsed[$user['username']])) {
-                if ($this->createUser($user, $clientId)) {
-                    $changes['created'][] = $user['username'];
-                }
-            } else {
-                if ($this->checkAndUpdateUser($keycloakUsersParsed[$user['username']], $user)) {
-                    $changes['modified'][] = $user['username'];
-                }
-            }
-        }
-        return $changes;
+        return $keycloakUsersParsed;
+    }
+
+    private function getCerebrateUsers(): array
+    {
+        return $this->_table->find()->contain(['Individuals', 'Organisations', 'Roles'])->select([
+            'id',
+            'uuid',
+            'username',
+            'disabled',
+            'Individuals.email',
+            'Individuals.first_name',
+            'Individuals.last_name',
+            'Individuals.uuid',
+            'Roles.name',
+            'Roles.uuid',
+            'Organisations.name',
+            'Organisations.uuid'
+        ])->disableHydration()->toArray();
     }
 
     private function checkAndUpdateUser(array $keycloakUser, array $user): bool
@@ -383,6 +392,63 @@ class AuthKeycloakBehavior extends Behavior
             } else {
                 return true;
             }
+        }
+        return false;
+    }
+
+    public function checkKeycloakStatus(array $users, array $keycloakUsers): array
+    {
+        $users = Hash::combine($users, '{n}.username', '{n}');
+        $keycloakUsersParsed = Hash::combine($keycloakUsers, '{n}.username', '{n}');
+        $status = [];
+        foreach ($users as $username => $user) {
+            $differences = [];
+            $requireUpdate = $this->checkKeycloakUserRequiresUpdate($keycloakUsersParsed[$username], $user, $differences);
+            $status[$user['id']] = [
+                'require_update' => $requireUpdate,
+                'differences' => $differences,
+            ];
+        }
+        return $status;
+    }
+
+    private function checkKeycloakUserRequiresUpdate(array $keycloakUser, array $user, array &$differences = []): bool
+    {
+
+        $cEnabled = $keycloakUser['enabled'] == $user['disabled'];
+        $cFn = $keycloakUser['firstName'] !== $user['individual']['first_name'];
+        $Ln = $keycloakUser['lastName'] !== $user['individual']['last_name'];
+        $cEmail = $keycloakUser['email'] !== $user['individual']['email'];
+        $cRolename = (empty($keycloakUser['attributes']['role_name']) || $keycloakUser['attributes']['role_name'] !== $user['role']['name']);
+        $cRoleuuid = (empty($keycloakUser['attributes']['role_uuid']) || $keycloakUser['attributes']['role_uuid'] !== $user['role']['uuid']);
+        $cOrgname = (empty($keycloakUser['attributes']['org_name']) || $keycloakUser['attributes']['org_name'] !== $user['organisation']['name']);
+        $cOrguuid = (empty($keycloakUser['attributes']['org_uuid']) || $keycloakUser['attributes']['org_uuid'] !== $user['organisation']['uuid']);
+        if ($cEnabled || $cFn || $Ln || $cEmail || $cRolename || $cRoleuuid || $cOrgname || $cOrguuid) {
+            if ($cEnabled) {
+                $differences['enabled'] = ['kc' => $keycloakUser['enabled'], 'cerebrate' => $user['disabled']];
+            }
+            if ($cFn) {
+                $differences['first_name'] = ['kc' => $keycloakUser['firstName'], 'cerebrate' => $user['individual']['first_name']];
+            }
+            if ($Ln) {
+                $differences['last_name'] = ['kc' => $keycloakUser['lastName'], 'cerebrate' => $user['individual']['last_name']];
+            }
+            if ($cEmail) {
+                $differences['email'] = ['kc' => $keycloakUser['email'], 'cerebrate' => $user['individual']['email']];
+            }
+            if ($cRolename) {
+                $differences['role_name'] = ['kc' => $keycloakUser['attributes']['role_name'], 'cerebrate' => $user['role']['name']];
+            }
+            if ($cRoleuuid) {
+                $differences['role_uuid'] = ['kc' => $keycloakUser['attributes']['role_uuid'], 'cerebrate' => $user['role']['uuid']];
+            }
+            if ($cOrgname) {
+                $differences['org_name'] = ['kc' => $keycloakUser['attributes']['org_name'], 'cerebrate' => $user['organisation']['name']];
+            }
+            if ($cOrguuid) {
+                $differences['org_uuid'] = ['kc' => $keycloakUser['attributes']['org_uuid'], 'cerebrate' => $user['organisation']['uuid']];
+            }
+            return true;
         }
         return false;
     }
