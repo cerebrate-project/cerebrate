@@ -521,7 +521,7 @@ class CRUDComponent extends Component
                 $params['contain'] = [$params['contain'], 'MetaFields'];
             }
         }
-        $query = $this->Table->find()->where(['id' => $id]);
+        $query = $this->Table->find()->where(["{$this->TableAlias}.id" => $id]);
         if (!empty($params['contain'])) {
             $query->contain($params['contain']);
         }
