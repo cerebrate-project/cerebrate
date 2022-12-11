@@ -20,46 +20,58 @@ class OrganisationsController extends AppController
 
     public function index()
     {
+        $customContextFilters = [
+            // [
+            //     'label' => __('ENISA Accredited'),
+            //     'filterCondition' => [
+            //         'MetaFields.field' => 'enisa-tistatus',
+            //         'MetaFields.value' => 'Accredited',
+            //         'MetaFields.MetaTemplates.name' => 'ENISA CSIRT Network'
+            //     ]
+            // ],
+            // [
+            //     'label' => __('ENISA not-Accredited'),
+            //     'filterCondition' => [
+            //         'MetaFields.field' => 'enisa-tistatus',
+            //         'MetaFields.value !=' => 'Accredited',
+            //         'MetaFields.MetaTemplates.name' => 'ENISA CSIRT Network'
+            //     ]
+            // ],
+            // [
+            //     'label' => __('ENISA CSIRT Network (GOV)'),
+            //     'filterConditionFunction' => function ($query) {
+            //         return $this->CRUD->setParentConditionsForMetaFields($query, [
+            //             'ENISA CSIRT Network' => [
+            //                 [
+            //                     'field' => 'constituency',
+            //                     'value LIKE' => '%Government%',
+            //                 ],
+            //                 [
+            //                     'field' => 'csirt-network-status',
+            //                     'value' => 'Member',
+            //                 ],
+            //             ]
+            //         ]);
+            //     }
+            // ],
+        ];
+
+        $loggedUserOrganisationNationality = $this->ACL->getUser()['organisation']['nationality'];
+        if (!empty($loggedUserOrganisationNationality)) {
+            $customContextFilters[] = [
+                'label' => __('Country: {0}', $loggedUserOrganisationNationality),
+                'filterCondition' => [
+                    'nationality' => $loggedUserOrganisationNationality,
+                ]
+            ];
+        }
+
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'quickFilterForMetaField' => ['enabled' => true, 'wildcard_search' => true],
             'contextFilters' => [
-                'custom' => [
-                    [
-                        'label' => __('ENISA Accredited'),
-                        'filterCondition' => [
-                            'MetaFields.field' => 'enisa-tistatus',
-                            'MetaFields.value' => 'Accredited',
-                            'MetaFields.MetaTemplates.name' => 'ENISA CSIRT Network'
-                        ]
-                    ],
-                    [
-                        'label' => __('ENISA not-Accredited'),
-                        'filterCondition' => [
-                            'MetaFields.field' => 'enisa-tistatus',
-                            'MetaFields.value !=' => 'Accredited',
-                            'MetaFields.MetaTemplates.name' => 'ENISA CSIRT Network'
-                        ]
-                    ],
-                    [
-                        'label' => __('ENISA CSIRT Network (GOV)'),
-                        'filterConditionFunction' => function($query) {
-                            return $this->CRUD->setParentConditionsForMetaFields($query, [
-                                'ENISA CSIRT Network' => [
-                                    [
-                                        'field' => 'constituency',
-                                        'value LIKE' => '%Government%',
-                                    ],
-                                    [
-                                        'field' => 'csirt-network-status',
-                                        'value' => 'Member',
-                                    ],
-                                ]
-                            ]);
-                        }
-                    ]
-                ],
+                'custom' => $customContextFilters,
             ],
             'contain' => $this->containFields,
             'statisticsFields' => $this->statisticsFields,

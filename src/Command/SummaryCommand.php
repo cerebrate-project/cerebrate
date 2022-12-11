@@ -11,7 +11,7 @@ use Cake\Console\Command;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
-use Cake\Filesystem\File;
+use Cake\Filesystem\Folder;
 use Cake\Utility\Hash;
 use Cake\Utility\Text;
 use Cake\Validation\Validator;
@@ -22,7 +22,7 @@ class SummaryCommand extends Command
 {
     protected function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {
-        $parser->setDescription('Create a summary for data associated to the passed nationality that has been modified.');
+        $parser->setDescription('Create a summary for data associated to the passed nationality that has been modified. Summaries will be printed out in STDIN and written in individual `txt` files.');
         $parser->addArgument('nationality', [
             'short' => 'n',
             'help' => 'The organisation nationality.',
@@ -32,6 +32,11 @@ class SummaryCommand extends Command
             'short' => 'd',
             'help' => 'The amount of days to look back in the logs',
             'default' => 7
+        ]);
+        $parser->addOption('output', [
+            'short' => 'o',
+            'help' => 'The destination folder where to write the files',
+            'default' => '/tmp'
         ]);
         return $parser;
     }
@@ -49,15 +54,16 @@ class SummaryCommand extends Command
         }
         foreach ($nationalities as $nationality) {
             $this->io->out(sprintf('Nationality: %s', $nationality));
-            $this->_collectChangedForNationality($nationality, $days);
+            $this->_collectChangedForNationality($nationality, $days, $args->getOption('output'));
             $this->io->out($io->nl(2));
             $this->io->hr();
         }
     }
 
-    protected function _collectChangedForNationality($nationality, $days)
+    protected function _collectChangedForNationality($nationality, $days, $folderPath)
     {
-        $filename = sprintf('/tmp/%s.txt', $nationality);
+        $folderPath = rtrim($folderPath, '/');
+        $filename = sprintf('%s/%s.txt', $folderPath, $nationality);
         $file_input = fopen($filename, 'w');
         $organisationIDsForNationality = $this->_fetchOrganisationsForNationality($nationality);
         if (empty($organisationIDsForNationality)) {

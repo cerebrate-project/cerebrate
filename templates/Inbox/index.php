@@ -12,9 +12,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'type' => 'multi_select_actions',
                     'children' => [
                         [
-                            'text' => __('Discard requests'),
+                            'text' => __('Discard message'),
                             'variant' => 'danger',
-                            'onclick' => 'discardRequests',
+                            'onclick' => 'discardMessages',
                         ]
                     ],
                     'data' => [
@@ -34,6 +34,10 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'data' => '',
                     'searchKey' => 'value',
                     'allowFilering' => true
+                ],
+                [
+                    'type' => 'table_action',
+                    'table_setting_id' => 'inbox_index',
                 ]
             ]
         ],
@@ -48,6 +52,18 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'sort' => 'created',
                 'data_path' => 'created',
                 'element' => 'datetime'
+            ],
+            [
+                'name' => 'severity',
+                'sort' => 'severity',
+                'data_path' => 'severity',
+                'element' => 'function',
+                'function' => function ($entry, $context) {
+                    return $context->Bootstrap->badge([
+                        'text' => $entry->severity_variant,
+                        'variant' => $entry->severity_variant,
+                    ]);
+                }
             ],
             [
                 'name' => 'scope',
@@ -76,14 +92,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'user'
             ],
             [
-                'name' => 'description',
-                'sort' => 'description',
-                'data_path' => 'description',
-            ],
-            [
-                'name' => 'comment',
-                'sort' => 'comment',
-                'data_path' => 'comment',
+                'name' => 'message',
+                'sort' => 'message',
+                'data_path' => 'message',
             ],
         ],
         'title' => __('Inbox'),
@@ -105,7 +116,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'open_modal' => '/inbox/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash',
-                'title' => __('Discard request')
+                'title' => __('Discard message')
             ],
         ]
     ]
@@ -113,7 +124,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
 ?>
 
 <script>
-    function discardRequests(idList, selectedData, $table) {
+    function discardMessages(idList, selectedData, $table) {
         const successCallback = function([data, modalObject]) {
             UI.reload('/inbox/index', UI.getContainerForTable($table), $table)
         }
@@ -157,6 +168,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 }
             )
         }
+
         function handleMessageTable($modal, header, data) {
             const $modalBody = $modal.find('.modal-body')
             const $messageTable = $modalBody.find('table.message-table')

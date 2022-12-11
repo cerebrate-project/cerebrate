@@ -10,13 +10,13 @@ class InboxNavigation extends BaseNavigation
         $this->bcf->addRoute('Inbox', 'index', $this->bcf->defaultCRUD('Inbox', 'index'));
         $this->bcf->addRoute('Inbox', 'view', $this->bcf->defaultCRUD('Inbox', 'view'));
         $this->bcf->addRoute('Inbox', 'discard', [
-            'label' => __('Discard request'),
+            'label' => __('Discard message'),
             'icon' => 'trash',
             'url' => '/inbox/discard/{{id}}',
             'url_vars' => ['id' => 'id'],
         ]);
         $this->bcf->addRoute('Inbox', 'process', [
-            'label' => __('Process request'),
+            'label' => __('Process message'),
             'icon' => 'cogs',
             'url' => '/inbox/process/{{id}}',
             'url_vars' => ['id' => 'id'],

@@ -88,7 +88,7 @@ $sidebarOpen = $loggedUser->user_settings_by_name_with_fallback['ui.sidebar.expa
         </main>
     </div>
     <div id="mainModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel" aria-hidden="true"></div>
-    <div id="mainToastContainer" style="position: absolute; top: 15px; right: 15px; z-index: 1080"></div>
+    <div id="mainToastContainer" class="main-toast-container"></div>
     <div id="mainModalContainer"></div>
 </body>
 

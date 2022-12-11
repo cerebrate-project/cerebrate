@@ -33,8 +33,8 @@ echo $this->element(
                 'path' => 'user_id',
             ],
             [
-                'key' => 'description',
-                'path' => 'description',
+                'key' => 'message',
+                'path' => 'message',
             ],
             [
                 'key' => 'comment',

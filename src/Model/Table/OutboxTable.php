@@ -8,11 +8,13 @@ use Cake\ORM\Table;
 use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
 use Cake\Http\Exception\NotFoundException;
+use Cake\ORM\TableRegistry;
 
 Type::map('json', 'Cake\Database\Type\JsonType');
 
 class OutboxTable extends AppTable
 {
+    public $severityVariant;
 
     public function initialize(array $config): void
     {
@@ -22,6 +24,9 @@ class OutboxTable extends AppTable
         $this->belongsTo('Users');
         $this->addBehavior('AuditLog');
         $this->setDisplayField('title');
+
+        $this->Inbox = TableRegistry::getTableLocator()->get('Inbox');
+        $this->severityVariant = $this->Inbox->severityVariant;
     }
 
     protected function _initializeSchema(TableSchemaInterface $schema): TableSchemaInterface

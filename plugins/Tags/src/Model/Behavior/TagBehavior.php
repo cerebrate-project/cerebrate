@@ -189,6 +189,8 @@ class TagBehavior extends Behavior
     {
         if (is_object($tag)) {
             return $tag->name;
+        } else if (is_array($tag)) {
+            return $tag['name'];
         } else {
             return trim($tag);
         }

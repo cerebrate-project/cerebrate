@@ -20,9 +20,14 @@ class GenericOutboxProcessor
     protected $validator;
     protected $processingTemplate = '/genericTemplates/confirm';
     protected $processingTemplatesDirectory = ROOT . '/libraries/default/OutboxProcessors/templates';
+    protected $defaultSeverity;
+    protected $severity;
+
 
     public function __construct($registerActions=false) {
         $this->Outbox = TableRegistry::getTableLocator()->get('Outbox');
+        $this->Inbox = TableRegistry::getTableLocator()->get('Inbox');
+        $this->defaultSeverity = $this->Inbox::SEVERITY_INFO;
         if ($registerActions) {
             $this->registerActionInProcessor();
         }
@@ -55,6 +60,10 @@ class GenericOutboxProcessor
     {
         return $this->description ?? '';
     }
+    public function getSeverity()
+    {
+        return $this->severity ?? $this->defaultSeverity;
+    }
 
     protected function getProcessingTemplatePath()
     {
@@ -77,8 +86,9 @@ class GenericOutboxProcessor
         $builder = new ViewBuilder();
         $builder->disableAutoLayout()
             ->setClassName('Monad')
-            ->setTemplate($processingTemplate);
-        $view = $builder->build($viewVariables);
+            ->setTemplate($processingTemplate)
+            ->setVars($viewVariables);
+        $view = $builder->build();
         $view->setRequest($serverRequest);
         return $view->render();
     }
@@ -193,7 +203,7 @@ class GenericOutboxProcessor
         $user_id = Router::getRequest()->getSession()->read('Auth.id');
         $requestData['scope'] = $this->scope;
         $requestData['action'] = $this->action;
-        $requestData['description'] = $this->description;
+        $requestData['severity'] = $this->getSeverity();
         $requestData['user_id'] = $user_id;
         $request = $this->generateRequest($requestData);
         $savedRequest = $this->Outbox->createEntry($request);

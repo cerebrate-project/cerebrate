@@ -31,6 +31,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'field' => 'textarea'
             ],
             [
+                'name' => __('Sane defaults'),
+                'data_path' => 'sane_default'
+            ],
+            [
+                'name' => __('Values List'),
+                'data_path' => 'values_list'
+            ],
+            [
                 'name' => __('Validation regex'),
                 'sort' => 'regex',
                 'data_path' => 'regex'

@@ -207,6 +207,15 @@ main.content {
     min-width: 25px;
 }
 
+.main-toast-container {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 1080;
+    display: flex;
+    flex-direction: column;
+    row-gap: 0.5em;
+}
 
 /* sidebar */
 .sidebar-wrapper {
@@ -537,9 +546,10 @@ ul.sidebar-elements > li.category > span.category-divider > hr {
 }
 .navbar .right-navbar .notification-menu a.notification-item .notification-text-container {
     max-width: calc(100% - 40px - 0.25rem);
+    flex-grow: 1;
 }
 .navbar .right-navbar .notification-menu a.notification-item .notification-title {
-    max-width: calc(100% - 90px);
+    max-width: 300px;
 }
 .navbar .right-navbar .notification-menu a.notification-item .notification-date {
     max-width: 90px;

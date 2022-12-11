@@ -26,7 +26,8 @@
                 ],
                 [
                     'field' => 'comment',
-                    'label' => 'Comment'
+                    'label' => 'Comment',
+                    'type' => 'textarea',
                 ]
             ],
             'submit' => [

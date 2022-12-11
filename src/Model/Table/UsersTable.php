@@ -25,6 +25,9 @@ class UsersTable extends AppTable
         $this->addBehavior('UUID');
         $this->addBehavior('MetaFields');
         $this->addBehavior('AuditLog');
+        $this->addBehavior('NotifyAdmins', [
+            'fields' => ['role_id', 'individual_id', 'organisation_id', 'disabled', 'modified', 'meta_fields'],
+        ]);
         $this->initAuthBehaviors();
         $this->belongsTo(
             'Individuals',
@@ -66,6 +69,7 @@ class UsersTable extends AppTable
 
     public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options)
     {
+        $success = true;
         if (!$entity->isNew()) {
             $success = $this->handleUserUpdateRouter($entity);
         }
@@ -84,22 +88,33 @@ class UsersTable extends AppTable
         if (!isset($this->PermissionLimitations)) {
             $this->PermissionLimitations = TableRegistry::get('PermissionLimitations');
         }
-        $new = $entity->isNew();
         $permissions = $this->PermissionLimitations->getListOfLimitations($entity);
         foreach ($permissions as $permission_name => $permission) {
             foreach ($permission as $scope => $permission_data) {
-                if (!empty($entity['meta_fields'])) {
-                    $enabled = false;
+                $valueToCompareTo = $permission_data['current'];
+
+                $enabled = false;
+                if (!empty($entity->meta_fields)) {
                     foreach ($entity['meta_fields'] as $metaField) {
                         if ($metaField['field'] === $permission_name) {
                             $enabled = true;
+                            if ($metaField->isNew()) {
+                                $valueToCompareTo += !empty($metaField->value) ? 1 : 0;
+                            } else {
+                                $valueToCompareTo += !empty($metaField->value) ? 0 : -1;
+                            }
                         }
                     }
-                    if (!$enabled) {
-                        continue;
+                }
+
+                if (!$enabled && !empty($entity->_metafields_to_delete)) {
+                    foreach ($entity->_metafields_to_delete as $metaFieldToDelete) {
+                        if ($metaFieldToDelete['field'] === $permission_name) {
+                            $valueToCompareTo += !empty($metaFieldToDelete->value) ? -1 : 0;
+                        }
                     }
                 }
-                $valueToCompareTo = $permission_data['current'] + ($new ? 1 : 0);
+
                 if ($valueToCompareTo > $permission_data['limit']) {
                     return [
                         $permission_name => 
@@ -166,18 +181,6 @@ class UsersTable extends AppTable
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         return $rules;
-    }
-
-    public function test()
-    {
-        $this->Roles = TableRegistry::get('Roles');
-        $role = $this->Roles->newEntity([
-            'name' => 'admin',
-            'perm_admin' => 1,
-            'perm_org_admin' => 1,
-            'perm_sync' => 1
-        ]);
-        $this->Roles->save($role);
     }
 
     public function checkForNewInstance(): bool
@@ -263,7 +266,7 @@ class UsersTable extends AppTable
     {
         if (!empty(Configure::read('keycloak'))) {
             $success = $this->handleUserUpdate($user);
-            //return $success !== false;
+            // return $success;
         }
         return true;
     }

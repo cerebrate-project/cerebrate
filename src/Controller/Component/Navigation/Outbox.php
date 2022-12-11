@@ -10,13 +10,13 @@ class OutboxNavigation extends BaseNavigation
         $this->bcf->addRoute('Outbox', 'index', $this->bcf->defaultCRUD('Outbox', 'index'));
         $this->bcf->addRoute('Outbox', 'view', $this->bcf->defaultCRUD('Outbox', 'view'));
         $this->bcf->addRoute('Outbox', 'discard', [
-            'label' => __('Discard request'),
+            'label' => __('Discard message'),
             'icon' => 'trash',
             'url' => '/outbox/discard/{{id}}',
             'url_vars' => ['id' => 'id'],
         ]);
         $this->bcf->addRoute('Outbox', 'process', [
-            'label' => __('Process request'),
+            'label' => __('Process message'),
             'icon' => 'cogs',
             'url' => '/outbox/process/{{id}}',
             'url_vars' => ['id' => 'id'],

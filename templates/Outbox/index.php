@@ -50,6 +50,18 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'datetime'
             ],
             [
+                'name' => 'severity',
+                'sort' => 'severity',
+                'data_path' => 'severity',
+                'element' => 'function',
+                'function' => function ($entry, $context) {
+                    return $context->Bootstrap->badge([
+                        'text' => $entry->severity_variant,
+                        'variant' => $entry->severity_variant,
+                    ]);
+                }
+            ],
+            [
                 'name' => 'scope',
                 'sort' => 'scope',
                 'data_path' => 'scope',
@@ -71,14 +83,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'user'
             ],
             [
-                'name' => 'description',
-                'sort' => 'description',
-                'data_path' => 'description',
-            ],
-            [
-                'name' => 'comment',
-                'sort' => 'comment',
-                'data_path' => 'comment',
+                'name' => 'message',
+                'sort' => 'message',
+                'data_path' => 'message',
             ],
         ],
         'title' => __('Outbox'),
@@ -100,7 +107,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'open_modal' => '/outbox/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash',
-                'title' => __('Discard request')
+                'title' => __('Discard message')
             ],
         ]
     ]

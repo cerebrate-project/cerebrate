@@ -16,6 +16,7 @@ class AppTable extends Table
 {
     public function initialize(array $config): void
     {
+        FrozenTime::setToStringFormat("yyyy-MM-dd HH:mm:ss");
     }
 
     public function getStatisticsUsageForModel(Object $table, array $scopes, array $options=[]): array

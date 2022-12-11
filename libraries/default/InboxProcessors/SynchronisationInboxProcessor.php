@@ -28,6 +28,7 @@ class DataExchangeProcessor extends SynchronisationInboxProcessor implements Gen
 
     public function __construct() {
         parent::__construct();
+        $this->severity = $this->Inbox::SEVERITY_WARNING;
         $this->description = __('Handle exchange of data between two cerebrate instances');
         $this->Users = TableRegistry::getTableLocator()->get('Users');
     }

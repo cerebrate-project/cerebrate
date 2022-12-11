@@ -1,11 +1,10 @@
 <?php
     if (is_array($fieldData)) {
-        if (empty($fieldData['type'])) {
-            $fieldData['type'] = 'text';
-        }
         $fieldTemplate = 'genericField';
-        if (file_exists(ROOT . '/templates/element/genericElements/Form/Fields/' . $fieldData['type'] . 'Field.php')) {
-            $fieldTemplate = $fieldData['type'] . 'Field';
+        if (!empty($fieldData['type'])) {
+            if (file_exists(ROOT . '/templates/element/genericElements/Form/Fields/' . $fieldData['type'] . 'Field.php')) {
+                $fieldTemplate = $fieldData['type'] . 'Field';
+            }
         }
         if (empty($fieldData['label'])) {
             if (!isset($fieldData['label']) || $fieldData['label'] !== false) {

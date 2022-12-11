@@ -19,9 +19,12 @@ class GenericInboxProcessor
     protected $validator;
     protected $processingTemplate = '/genericTemplates/confirm';
     protected $processingTemplatesDirectory = ROOT . '/libraries/default/InboxProcessors/templates';
+    protected $defaultSeverity;
+    protected $severity;
 
     public function __construct($registerActions=false) {
         $this->Inbox = TableRegistry::getTableLocator()->get('Inbox');
+        $this->defaultSeverity = $this->Inbox::SEVERITY_INFO;
         if ($registerActions) {
             $this->registerActionInProcessor();
         }
@@ -54,6 +57,10 @@ class GenericInboxProcessor
     {
         return $this->description ?? '';
     }
+    public function getSeverity()
+    {
+        return $this->severity ?? $this->defaultSeverity;
+    }
 
     protected function getProcessingTemplatePath()
     {
@@ -76,8 +83,9 @@ class GenericInboxProcessor
         $builder = new ViewBuilder();
         $builder->disableAutoLayout()
             ->setClassName('Monad')
-            ->setTemplate($processingTemplate);
-        $view = $builder->build($viewVariables);
+            ->setTemplate($processingTemplate)
+            ->setVars($viewVariables);
+        $view = $builder->build();
         $view->setRequest($serverRequest);
         return $view->render();
     }
@@ -191,7 +199,7 @@ class GenericInboxProcessor
     {
         $requestData['scope'] = $this->scope;
         $requestData['action'] = $this->action;
-        $requestData['description'] = $this->description;
+        $requestData['severity'] = $this->getSeverity();
         $request = $this->generateRequest($requestData);
         $savedRequest = $this->Inbox->createEntry($request);
         return $this->genActionResult(
