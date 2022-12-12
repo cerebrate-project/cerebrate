@@ -297,14 +297,26 @@ class AuthKeycloakBehavior extends Behavior
             'modified' => [],
         ];
         foreach ($users as &$user) {
-            if (empty($keycloakUsersParsed[$user['username']])) {
-                if ($this->createUser($user, $clientId)) {
-                    $changes['created'][] = $user['username'];
+            try {
+                if (empty($keycloakUsersParsed[$user['username']])) {
+                    if ($this->createUser($user, $clientId)) {
+                        $changes['created'][] = $user['username'];
+                    }
+                } else {
+                    if ($this->checkAndUpdateUser($keycloakUsersParsed[$user['username']], $user)) {
+                        $changes['modified'][] = $user['username'];
+                    }
                 }
-            } else {
-                if ($this->checkAndUpdateUser($keycloakUsersParsed[$user['username']], $user)) {
-                    $changes['modified'][] = $user['username'];
-                }
+            } catch (\Exception $e) {
+                $this->_table->auditLogs()->insert([
+                    'request_action' => 'syncUsers',
+                    'model' => 'User',
+                    'model_id' => 0,
+                    'model_title' => __('Failed to create or modify user ({0}) in keycloak', $user['username']),
+                    'changed' => [
+                        'message' => $e->getMessage(),
+                    ]
+                ]);
             }
         }
         return $changes;
