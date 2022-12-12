@@ -68,7 +68,7 @@ class UsersController extends AppController
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
-        $defaultRole = $this->Users->Roles->find()->select(['id'])->first()->toArray();
+        $defaultRole = $this->Users->Roles->find()->select(['id'])->where(['is_default' => true])->first()->toArray();
         $individuals = $this->Users->Individuals->find('list', $individuals_params)->toArray();
         $this->CRUD->add([
             'beforeMarshal' => function($data) {
@@ -442,6 +442,8 @@ class UsersController extends AppController
                     'first_name' => $data['first_name'],
                     'last_name' => $data['last_name'],
                     'password' => $data['password'],
+                    'org_name' => $data['org_name'],
+                    'org_uuid' => $data['org_uuid'],
                 ],
             ];
             $processorResult = $processor->create($data);

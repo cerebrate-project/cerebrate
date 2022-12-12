@@ -1,10 +1,23 @@
 <?php
+$infoAlert = $this->Bootstrap->alert([
+    'variant' => 'info',
+    'html' => sprintf('
+        <ul>
+            <li>%s: <strong>%s</strong></li>
+            <li>%s: <strong>%s</strong></li>
+        </ul>',
+        __('Requested Organisation name'), $desiredOrganisation['org_name'],
+        __('Requested Organisation UUID'), $desiredOrganisation['org_uuid']
+    ),
+    'dismissible' => false,
+]);
+
 $combinedForm = $this->element('genericElements/Form/genericForm', [
     'entity' => $userEntity,
     'ajax' => false,
     'raw' => true,
     'data' => [
-        'description' => __('Create user account'),
+        'descriptionHtml' => __('Create user account') . sprintf('<div class="mt-2">%s</div>', $infoAlert),
         'model' => 'User',
         'fields' => [
             [
@@ -18,18 +31,25 @@ $combinedForm = $this->element('genericElements/Form/genericForm', [
                 'autocomplete' => 'off',
             ],
             [
+                'field' => 'org_id',
+                'type' => 'dropdown',
+                'label' => __('Associated organisation'),
+                'options' => $dropdownData['organisation'],
+            ],
+            [
                 'field' => 'role_id',
                 'type' => 'dropdown',
                 'label' => __('Role'),
-                'options' => $dropdownData['role']
+                'options' => $dropdownData['role'],
+                'default' => $defaultRole,
             ],
             [
                 'field' => 'disabled',
                 'type' => 'checkbox',
                 'label' => 'Disable'
             ],
-
-            sprintf('<div class="pb-2 fs-4">%s</div>', __('Create individual')),
+            '<div class="individual-container">',
+            sprintf('<div class="pb-2 fs-4">%s</div>', __('Create a new individual')),
             [
                 'field' => 'email',
                 'autocomplete' => 'off'
@@ -52,6 +72,7 @@ $combinedForm = $this->element('genericElements/Form/genericForm', [
                 'field' => 'position',
                 'autocomplete' => 'off'
             ],
+            '</div>',
         ],
         'submit' => [
             'action' => $this->request->getParam('action')
@@ -86,14 +107,18 @@ echo $this->Bootstrap->modal([
     }
 
     $(document).ready(function() {
-        $('div.user-container #individual_id-field').change(function() {
-            if ($(this).val() == -1) {
-                $('div.individual-container').show()
-            } else {
-                $('div.individual-container').hide()
-            }
+        $('form #individual_id-field').change(function() {
+            toggleIndividualContainer($(this).val() == -1)
         })
     })
+
+    function toggleIndividualContainer(show) {
+        if (show) {
+            $('div.individual-container').show()
+        } else {
+            $('div.individual-container').hide()
+        }
+    }
 
     function getFormData(form) {
         return Object.values(form).reduce((obj, field) => {
@@ -106,10 +131,3 @@ echo $this->Bootstrap->modal([
         }, {})
     }
 </script>
-
-<style>
-    div.individual-container>div,
-    div.user-container>div {
-        font-size: 1.5rem;
-    }
-</style>

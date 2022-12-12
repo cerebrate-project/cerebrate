@@ -34,6 +34,20 @@ use Cake\Core\Configure;
         echo '</div>';
     echo '</div>';
 
+    echo '<div class="row g-1 mb-3">';
+        echo $this->Form->control('org_name', ['label' => __('Organisation Name'), 'class' => 'form-control']);
+        echo $this->Form->control('org_uuid', [
+            'label' => __('UUID'),
+            'class' => 'form-control form-control-sm mb-2',
+            'style' => 'font-size: 0.815rem;',
+            'div' => ['class' => 'test'],
+            'templates' => [
+                'inputContainer' => '<div class="input d-flex {{type}}{{required}}">{{content}}</div>',
+                'label' => '<label class="fw-light fs-7 me-1 align-self-center small-label-addon" {{attrs}}>{{text}}</label>',
+            ],
+        ]);
+    echo '</div>';
+
     echo $this->Form->control('password', ['type' => 'password', 'label' => __('Password'), 'class' => 'form-control mb-4']);
 
     echo $this->Form->control(__('Sign up'), ['type' => 'submit', 'class' => 'btn btn-primary']);
@@ -43,3 +57,15 @@ use Cake\Core\Configure;
     echo $this->Form->end();
     ?>
 </div>
+
+<style>
+    .text-input-addon-center {
+        display: flex;
+        flex: 0 0 0%;
+        align-items: center
+    }
+
+    .small-label-addon {
+        height: calc(1.5em + 0.5rem + 2px);
+    }
+</style>

@@ -73,8 +73,28 @@ class RegistrationProcessor extends UserInboxProcessor implements GenericInboxPr
             ]),
             'individual' => [-1 => __('-- New individual --')] + $this->Users->Individuals->find('list', [
                 'sort' => ['email' => 'asc']
-            ])->toArray()
+            ])->toArray(),
+            'organisation' => $this->Users->Organisations->find('list', [
+                'sort' => ['email' => 'asc']
+            ])->toArray(),
         ];
+
+        $defaultRole = $this->Users->Roles->find()->select(['id'])->where(['is_default' => true])->first()->toArray();
+
+        $conditions = [];
+        if (!empty($request['data']['org_uuid'])) {
+            $conditions['uuid'] = $request['data']['org_uuid'];
+        } else if (!empty($request['data']['org_name'])) {
+            $conditions['name'] = $request['data']['org_name'];
+        }
+        $desiredOrg = null;
+        if (!empty($conditions)) {
+            $desiredOrg = $this->Users->Organisations->find()
+                ->where($conditions)
+                ->first()
+                ->toArray();
+        }
+
         $individualEntity = $this->Users->Individuals->newEntity([
             'email' => !empty($request['data']['email']) ? $request['data']['email'] : '',
             'first_name' => !empty($request['data']['first_name']) ? $request['data']['first_name'] : '',
@@ -86,6 +106,7 @@ class RegistrationProcessor extends UserInboxProcessor implements GenericInboxPr
             'username' => !empty($request['data']['username']) ? $request['data']['username'] : '',
             'role_id' => !empty($request['data']['role_id']) ? $request['data']['role_id'] : '',
             'disabled' => !empty($request['data']['disabled']) ? $request['data']['disabled'] : '',
+            'org_id' => !empty($desiredOrg) ? $desiredOrg['id'] : '',
 
             'email' => !empty($request['data']['email']) ? $request['data']['email'] : '',
             'first_name' => !empty($request['data']['first_name']) ? $request['data']['first_name'] : '',
@@ -95,7 +116,12 @@ class RegistrationProcessor extends UserInboxProcessor implements GenericInboxPr
         return [
             'dropdownData' => $dropdownData,
             'userEntity' => $userEntity,
-            'individualEntity' => $individualEntity
+            'individualEntity' => $individualEntity,
+            'desiredOrganisation' => [
+                'org_name' => $request['data']['org_name'],
+                'org_uuid' => $request['data']['org_uuid'],
+            ],
+            'defaultRole' => $defaultRole,
         ];
     }
 
@@ -120,6 +146,7 @@ class RegistrationProcessor extends UserInboxProcessor implements GenericInboxPr
             'password' => '~PASSWORD_TO_BE_REPLACED~',
             'role_id' => $requestData['role_id'],
             'disabled' => $requestData['disabled'],
+            'organisation_id' => $requestData['org_id'],
         ]);
         $user->set('password', $hashedPassword, ['setter' => false]); // ignore default password hashing as it has already been hashed
         $user = $this->Users->save($user);
