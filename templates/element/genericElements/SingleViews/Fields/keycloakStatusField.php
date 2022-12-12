@@ -12,7 +12,7 @@
     if (!empty($value['require_update'])) {
         echo sprintf(
             '<div class="alert alert-warning"><div>%s</div>%s</div>',
-            $this->Bootstrap->icon('exclamation-triangle') . __(' This user is not synchronise with Keycloak. Differences:'),
+            $this->Bootstrap->icon('exclamation-triangle') . __(' This user is not synchronised with Keycloak. Differences:'),
             $this->Html->nestedList($differencesRearranged, ['class' => ''])
         );
     } else {
