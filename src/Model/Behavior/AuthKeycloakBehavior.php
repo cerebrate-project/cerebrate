@@ -52,7 +52,7 @@ class AuthKeycloakBehavior extends Behavior
             ->where(['username' => $profile_payload[$fields['username']]])
             ->contain('Individuals')
             ->first();
-        if ($existingUser['individual']['email'] !== $profile_payload[$fields['email']]) {
+        if (mb_strtolower($existingUser['individual']['email']) !== mb_strtolower($profile_payload[$fields['email']])) {
             return false;
         }
         return $existingUser;
@@ -297,7 +297,6 @@ class AuthKeycloakBehavior extends Behavior
             'modified' => [],
         ];
         foreach ($users as &$user) {
-            $changed = false;
             if (empty($keycloakUsersParsed[$user['username']])) {
                 if ($this->createUser($user, $clientId)) {
                     $changes['created'][] = $user['username'];
@@ -355,16 +354,7 @@ class AuthKeycloakBehavior extends Behavior
 
     private function checkAndUpdateUser(array $keycloakUser, array $user): bool
     {
-        if (
-            $keycloakUser['enabled'] == $user['disabled'] ||
-            $keycloakUser['firstName'] !== $user['individual']['first_name'] ||
-            $keycloakUser['lastName'] !== $user['individual']['last_name'] ||
-            $keycloakUser['email'] !== $user['individual']['email'] ||
-            (empty($keycloakUser['attributes']['role_name']) || $keycloakUser['attributes']['role_name'] !== $user['role']['name']) ||
-            (empty($keycloakUser['attributes']['role_uuid']) || $keycloakUser['attributes']['role_uuid'] !== $user['role']['uuid']) ||
-            (empty($keycloakUser['attributes']['org_name']) || $keycloakUser['attributes']['org_name'] !== $user['organisation']['name']) ||
-            (empty($keycloakUser['attributes']['org_uuid']) || $keycloakUser['attributes']['org_uuid'] !== $user['organisation']['uuid'])
-        ) {
+        if ($this->checkKeycloakUserRequiresUpdate($keycloakUser, $user)) {
             $change = [
                 'enabled' => !$user['disabled'],
                 'firstName' => $user['individual']['first_name'],
@@ -416,13 +406,13 @@ class AuthKeycloakBehavior extends Behavior
     {
 
         $condEnabled = $keycloakUser['enabled'] == $user['disabled'];
-        $condFirstname = $keycloakUser['firstName'] !== $user['individual']['first_name'];
-        $condLastname = $keycloakUser['lastName'] !== $user['individual']['last_name'];
-        $condEmail = $keycloakUser['email'] !== $user['individual']['email'];
-        $condRolename = (empty($keycloakUser['attributes']['role_name']) || $keycloakUser['attributes']['role_name'] !== $user['role']['name']);
-        $condRoleuuid = (empty($keycloakUser['attributes']['role_uuid']) || $keycloakUser['attributes']['role_uuid'] !== $user['role']['uuid']);
-        $condOrgname = (empty($keycloakUser['attributes']['org_name']) || $keycloakUser['attributes']['org_name'] !== $user['organisation']['name']);
-        $condOrguuid = (empty($keycloakUser['attributes']['org_uuid']) || $keycloakUser['attributes']['org_uuid'] !== $user['organisation']['uuid']);
+        $condFirstname = mb_strtolower($keycloakUser['firstName']) !== mb_strtolower($user['individual']['first_name']);
+        $condLastname = mb_strtolower($keycloakUser['lastName']) !== mb_strtolower($user['individual']['last_name']);
+        $condEmail = mb_strtolower($keycloakUser['email']) !== mb_strtolower($user['individual']['email']);
+        $condRolename = (empty($keycloakUser['attributes']['role_name']) || mb_strtolower($keycloakUser['attributes']['role_name']) !== mb_strtolower($user['role']['name']));
+        $condRoleuuid = (empty($keycloakUser['attributes']['role_uuid']) || mb_strtolower($keycloakUser['attributes']['role_uuid']) !== mb_strtolower($user['role']['uuid']));
+        $condOrgname = (empty($keycloakUser['attributes']['org_name']) || mb_strtolower($keycloakUser['attributes']['org_name']) !== mb_strtolower($user['organisation']['name']));
+        $condOrguuid = (empty($keycloakUser['attributes']['org_uuid']) || mb_strtolower($keycloakUser['attributes']['org_uuid']) !== mb_strtolower($user['organisation']['uuid']));
         if ($condEnabled || $condFirstname || $condLastname || $condEmail || $condRolename || $condRoleuuid || $condOrgname || $condOrguuid) {
             if ($condEnabled) {
                 $differences['enabled'] = ['keycloak' => $keycloakUser['enabled'], 'cerebrate' => $user['disabled']];
