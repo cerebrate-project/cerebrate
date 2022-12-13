@@ -187,7 +187,7 @@ class NotifyAdminsBehavior extends Behavior
     public function notifySiteAdmins(
         string $origin,
         string $title,
-        string $message = '',
+        string $message,
         array $data
     ): void {
         $this->InboxProcessors = $this->InboxProcessors ?: TableRegistry::getTableLocator()->get('InboxProcessors');
