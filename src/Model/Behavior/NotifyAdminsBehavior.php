@@ -140,7 +140,7 @@ class NotifyAdminsBehavior extends Behavior
                 $entity->id
             ]),
         ];
-        $this->notifySiteAdmins($entity->getSource(), $title, $message, $data);
+        $this->notifySiteAdmins($entity->getSource(), $title, $data, $message);
     }
 
     public function notifySiteAdminsForEntityDeletion(EntityInterface $entity): void
@@ -168,7 +168,7 @@ class NotifyAdminsBehavior extends Behavior
                 $entity->id
             ]),
         ];
-        $this->notifySiteAdmins($entity->getSource(), $title, $message, $data);
+        $this->notifySiteAdmins($entity->getSource(), $title, $data, $message);
     }
 
     /**
@@ -187,8 +187,8 @@ class NotifyAdminsBehavior extends Behavior
     public function notifySiteAdmins(
         string $origin,
         string $title,
-        string $message,
-        array $data
+        array $data,
+        string $message = ''
     ): void {
         $this->InboxProcessors = $this->InboxProcessors ?: TableRegistry::getTableLocator()->get('InboxProcessors');
         $processor = $this->InboxProcessors->getProcessor('Notification', 'DataChange');
