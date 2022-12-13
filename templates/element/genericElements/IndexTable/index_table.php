@@ -25,10 +25,12 @@ if (!empty($requestedMetaFields)) { // Create mapping for new index table fields
     foreach ($requestedMetaFields as $requestedMetaField) {
         $template_id = $requestedMetaField['template_id'];
         $meta_template_field_id = $requestedMetaField['meta_template_field_id'];
+        $viewElementCandidate = $meta_templates[$template_id]['meta_template_fields'][$meta_template_field_id]['index_type'];
+        $viewElementCandidatePath = '/genericElements/IndexTable/Fields/' . $viewElementCandidate;
         $newMetaFields[] = [
             'name' => $meta_templates[$template_id]['meta_template_fields'][$meta_template_field_id]['field'],
             'data_path' => "MetaTemplates.{$template_id}.meta_template_fields.{$meta_template_field_id}.metaFields.{n}.value",
-            'element' => 'generic_field',
+            'element' => $this->elementExists($viewElementCandidatePath) ? $viewElementCandidate : 'generic_field',
             '_metafield' => true,
             '_automatic_field' => true,
         ];

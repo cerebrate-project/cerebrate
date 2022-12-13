@@ -16,6 +16,9 @@ class OrganisationsTable extends AppTable
         $this->addBehavior('Timestamp');
         $this->addBehavior('Tags.Tag');
         $this->addBehavior('AuditLog');
+        $this->addBehavior('NotifyAdmins', [
+            'fields' => ['uuid', 'name', 'url', 'nationality', 'sector', 'type', 'contacts', 'modified', 'meta_fields'],
+        ]);
         $this->hasMany(
             'Alignments',
             [

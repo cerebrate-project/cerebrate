@@ -41,6 +41,7 @@ $compactDisplayInputSeed = 'seed-' . mt_rand();
             const $container = $dropdownMenu.closest('div[id^="table-container-"]')
             const $table = $container.find(`table[data-table-random-value="${tableRandomValue}"]`)
             toggleCompactState($checkbox[0].checked, $table)
+            registerDebouncedFunction($container, debouncedCompactSaver)
         })
     })()
 </script>

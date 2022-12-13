@@ -67,14 +67,21 @@ function saveAndUpdateSetting(statusNode, $input, settingName, settingValue) {
         settingValue = JSON.stringify(settingValue)
     }
     saveSetting(statusNode, settingName, settingValue).then((result) => {
-        window.settingsFlattened[settingName] = result.data
-        if ($input.attr('type') == 'checkbox') {
-            $input.prop('checked', result.data.value == true)
-        } else {
-            $input.val(result.data.value)
-        }
+        updateSettingValue($input, settingName, result.data)
+    }).catch((e) => {
+        updateSettingValue($input, settingName, window.settingsFlattened[settingName])
+    }).finally(() => {
         handleSettingValueChange($input)
-    }).catch((e) => { })
+    })
+}
+
+function updateSettingValue($input, settingName, settingValue) {
+    window.settingsFlattened[settingName] = settingValue
+    if ($input.attr('type') == 'checkbox') {
+        $input.prop('checked', settingValue.value == true)
+    } else {
+        $input.val(settingValue.value)
+    }
 }
 
 function handleSettingValueChange($input) {

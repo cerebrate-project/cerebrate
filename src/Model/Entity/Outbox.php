@@ -7,5 +7,10 @@ use Cake\ORM\Entity;
 
 class Outbox extends AppModel
 {
-    
+    protected $_virtual = ['severity_variant'];
+
+    protected function _getSeverityVariant(): string
+    {
+        return $this->table()->severityVariant[$this->severity];
+    }
 }

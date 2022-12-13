@@ -4,12 +4,12 @@
     </h2>
     <?= $formCreate ?>
     <?= $ajaxFlashMessage ?>
-    <?php if (!empty($data['description'])) : ?>
+    <?php if (!empty($data['description']) || !empty($data['descriptionHtml'])) : ?>
         <div class="pb-3 fw-light">
-            <?= h($data['description']) ?>
+            <?= !empty($data['descriptionHtml']) ? $data['descriptionHtml'] : h($data['description']) ?>
         </div>
     <?php endif; ?>
-    <div class="panel col-lg-8">
+    <div class="panel col-lg-12">
         <?= $fieldsString ?>
     </div>
 

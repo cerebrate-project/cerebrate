@@ -1,4 +1,7 @@
 <?php
+
+use Cake\Core\Configure;
+
 echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $data,
@@ -92,6 +95,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url' => '/user-settings/index?Users.id={{url_data}}',
                 'url_data_path' => 'id'
             ],
+            // [ // We might want to uncomment this at some point
+            //     'name' => __('Keycloak status'),
+            //     'element' => 'keycloak_status',
+            //     'data_path' => 'keycloak_status',
+            //     'requirements' => Configure::read('keycloak.enabled', false),
+            // ],
         ],
         'title' => __('User index'),
         'description' => __('The list of enrolled users in this Cerebrate instance. All of the users have or at one point had access to the system.'),

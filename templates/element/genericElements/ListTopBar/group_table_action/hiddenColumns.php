@@ -40,7 +40,8 @@ echo $availableColumnsHtml;
         const debouncedHiddenColumnSaverWithReload = debounce(mergeAndSaveSettingsWithReload, 2000)
 
         function attachListeners() {
-            let debouncedFunctionWithReload = false, debouncedFunction = false // used to flush debounce function if dropdown menu gets closed
+            let debouncedFunctionWithReload = false,
+                debouncedFunction = false // used to flush debounce function if dropdown menu gets closed
             $('form.visible-column-form, form.visible-meta-column-form').find('input').change(function() {
                 const $dropdownMenu = $(this).closest(`[data-table-random-value]`)
                 const tableRandomValue = $dropdownMenu.attr('data-table-random-value')
@@ -108,24 +109,6 @@ echo $availableColumnsHtml;
             return tableSetting
         }
 
-        function mergeAndSaveSettingsWithReload(table_setting_id, tableSettings, $table) {
-            mergeAndSaveSettings(table_setting_id, tableSettings, false).then((apiResult) => {
-                const theToast = UI.toast({
-                    variant: 'success',
-                    title: apiResult.message,
-                    bodyHtml: $('<div/>').append(
-                        $('<span/>').text('<?= __('The table needs to be reloaded for the new fields to be included.') ?>'),
-                        $('<button/>').addClass(['btn', 'btn-primary', 'btn-sm', 'ms-3']).text('<?= __('Reload table') ?>').click(function() {
-                            const reloadUrl = $table.data('reload-url');
-                            UI.reload(reloadUrl, $table.closest('div[id^="table-container-"]'), $(this)).then(() => {
-                                theToast.removeToast()
-                            })
-                        }),
-                    ),
-                })
-            })
-        }
-
         $(document).ready(function() {
             addSupportOfNestedDropdown();
             const $form = $('form.visible-column-form, form.visible-meta-column-form')
@@ -138,6 +121,8 @@ echo $availableColumnsHtml;
                 toggleColumn(this.getAttribute('data-columnname'), this.checked, $table)
             })
             attachListeners()
+            registerDebouncedFunction($container, debouncedHiddenColumnSaver)
+            registerDebouncedFunction($container, debouncedHiddenColumnSaverWithReload)
         })
     })()
 </script>

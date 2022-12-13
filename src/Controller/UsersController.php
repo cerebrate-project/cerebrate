@@ -21,11 +21,23 @@ class UsersController extends AppController
         if (empty($currentUser['role']['perm_admin'])) {
             $conditions['organisation_id'] = $currentUser['organisation_id'];
         }
+        $keycloakUsersParsed = null;
+        if (!empty(Configure::read('keycloak.enabled'))) {
+            // $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
+        }
         $this->CRUD->index([
             'contain' => $this->containFields,
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
-            'conditions' => $conditions
+            'conditions' => $conditions,
+            'afterFind' => function($data) use ($keycloakUsersParsed) {
+                // TODO: We might want to uncomment this at some point Still need to evaluate the impact
+                // if (!empty(Configure::read('keycloak.enabled'))) {
+                //     $keycloakUser = $keycloakUsersParsed[$data->username];
+                //     $data['keycloak_status'] = array_values($this->Users->checkKeycloakStatus([$data->toArray()], [$keycloakUser]))[0];
+                // }
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -56,7 +68,7 @@ class UsersController extends AppController
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
-        $defaultRole = $this->Users->Roles->find()->select(['id'])->first()->toArray();
+        $defaultRole = $this->Users->Roles->find()->select(['id'])->where(['is_default' => true])->first()->toArray();
         $individuals = $this->Users->Individuals->find('list', $individuals_params)->toArray();
         $this->CRUD->add([
             'beforeMarshal' => function($data) {
@@ -126,7 +138,7 @@ class UsersController extends AppController
             'organisation' => $this->Users->Organisations->find('list', [
                 'sort' => ['name' => 'asc'],
                 'conditions' => $org_conditions
-            ])
+            ])->toArray()
         ];
         $this->set(compact('dropdownData'));
         $this->set('defaultRole', $defaultRole['id'] ?? null);
@@ -139,10 +151,18 @@ class UsersController extends AppController
         if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
             $id = $this->ACL->getUser()['id'];
         }
+        $keycloakUsersParsed = null;
+        if (!empty(Configure::read('keycloak.enabled'))) {
+            $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
+        }
         $this->CRUD->view($id, [
             'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations'],
-            'afterFind' => function($data) {
+            'afterFind' => function($data) use ($keycloakUsersParsed) {
                 $data = $this->fetchTable('PermissionLimitations')->attachLimitations($data);
+                if (!empty(Configure::read('keycloak.enabled'))) {
+                    $keycloakUser = $keycloakUsersParsed[$data->username];
+                    $data['keycloak_status'] = array_values($this->Users->checkKeycloakStatus([$data->toArray()], [$keycloakUser]))[0];
+                }
                 return $data;
             }
         ]);
@@ -150,7 +170,7 @@ class UsersController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('keycloakConfig', Configure::read('keycloak'));
+        $this->set('keycloakConfig', Configure::read('keycloak', ['enabled' => false]));
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 
@@ -176,11 +196,6 @@ class UsersController extends AppController
             $id = $currentUser['id'];
         } else {
             $id = intval($id);
-            if ((empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_admin']))) {
-                if ($id !== $currentUser['id']) {
-                    throw new MethodNotAllowedException(__('You are not authorised to edit that user.'));
-                }
-            }
         }
 
         $params = [
@@ -189,12 +204,23 @@ class UsersController extends AppController
             ],
             'fields' => [
                 'password', 'confirm_password'
-            ]
+            ],
+            'contain' => ['Roles', ],
         ];
         if ($this->request->is(['get'])) {
             $params['fields'] = array_merge($params['fields'], ['individual_id', 'role_id', 'disabled']);
             if (!empty($this->ACL->getUser()['role']['perm_admin'])) {
                 $params['fields'][] = 'organisation_id';
+            }
+            if (!$currentUser['role']['perm_admin']) {
+                $params['afterFind'] = function ($user, &$params) use ($currentUser) {
+                    if (!empty($user)) { // We don't have a 404
+                        if (!$this->ACL->canEditUser($currentUser, $user)) {
+                            throw new MethodNotAllowedException(__('You cannot edit the given user.'));
+                        }
+                    }
+                    return $user;
+                };
             }
         }
         if ($this->request->is(['post', 'put']) && !empty($this->ACL->getUser()['role']['perm_admin'])) {
@@ -210,7 +236,7 @@ class UsersController extends AppController
                     if (!in_array($data['role_id'], array_keys($validRoles))) {
                         throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
                     }
-                    if ($data['organisation_id'] !== $currentUser['organisation_id']) {
+                    if (!$this->ACL->canEditUser($currentUser, $data)) {
                         throw new MethodNotAllowedException(__('You cannot edit the given user.'));
                     }
                     return $data;
@@ -247,7 +273,7 @@ class UsersController extends AppController
             'organisation' => $this->Users->Organisations->find('list', [
                 'sort' => ['name' => 'asc'],
                 'conditions' => $org_conditions
-            ])
+            ])->toArray()
         ];
         $this->set(compact('dropdownData'));
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
@@ -416,6 +442,8 @@ class UsersController extends AppController
                     'first_name' => $data['first_name'],
                     'last_name' => $data['last_name'],
                     'password' => $data['password'],
+                    'org_name' => $data['org_name'],
+                    'org_uuid' => $data['org_uuid'],
                 ],
             ];
             $processorResult = $processor->create($data);

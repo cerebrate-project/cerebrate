@@ -27,6 +27,8 @@ class MetaTemplateFieldsTable extends AppTable
         $this->hasMany('MetaFields');
 
         $this->setDisplayField('field');
+        $this->getSchema()->setColumnType('sane_default', 'json');
+        $this->getSchema()->setColumnType('values_list', 'json');
         $this->loadTypeHandlers();
     }
 

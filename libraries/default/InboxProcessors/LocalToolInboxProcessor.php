@@ -179,6 +179,7 @@ class IncomingConnectionRequestProcessor extends LocalToolInboxProcessor impleme
 
     public function __construct() {
         parent::__construct();
+        $this->severity = $this->Inbox::SEVERITY_WARNING;
         $this->description = __('Handle Phase I of inter-connection when another cerebrate instance performs the request.');
     }
 
@@ -291,6 +292,7 @@ class AcceptedRequestProcessor extends LocalToolInboxProcessor implements Generi
 
     public function __construct() {
         parent::__construct();
+        $this->severity = $this->Inbox::SEVERITY_WARNING;
         $this->description = __('Handle Phase II of inter-connection when initial request has been accepted by the remote cerebrate.');
     }
 
@@ -367,6 +369,7 @@ class DeclinedRequestProcessor extends LocalToolInboxProcessor implements Generi
 
     public function __construct() {
         parent::__construct();
+        $this->severity = $this->Inbox::SEVERITY_WARNING;
         $this->description = __('Handle Phase II of MISP inter-connection when initial request has been declined by the remote cerebrate.');
     }
 

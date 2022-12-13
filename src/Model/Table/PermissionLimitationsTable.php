@@ -22,6 +22,7 @@ class PermissionLimitationsTable extends AppTable
         $validator
             ->notEmptyString('permission')
             ->notEmptyString('scope')
+            ->naturalNumber('max_occurrence', __('That field can only hold non-negative values.'))
             ->requirePresence(['permission', 'scope', 'max_occurrence'], 'create');
         return $validator;
     }
@@ -43,6 +44,14 @@ class PermissionLimitationsTable extends AppTable
             $limitations[$entry['permission']][$entry['scope']] = [
                 'limit' => $entry['max_occurrence']
             ];
+        }
+        foreach ($limitations as $i => $permissions) { // Make sure global and organisations permission are mirror in the case where one of the two is not defined
+            if (!isset($permissions['global']['limit'])) {
+                $limitations[$i]['global']['limit'] = $permissions['organisation']['limit'];
+            }
+            if (!isset($permissions['organisation']['limit'])) {
+                $limitations[$i]['organisation']['limit'] = $permissions['global']['limit'];
+            }
         }
         foreach ($limitations as $field => $data) {
             if (isset($data['global'])) {

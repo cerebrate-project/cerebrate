@@ -9,6 +9,7 @@ use Cake\Utility\Inflector;
 use Cake\Utility\Text;
 use Cake\View\ViewBuilder;
 use Cake\ORM\TableRegistry;
+use Cake\ORM\Query;
 use Cake\Routing\Router;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
@@ -48,6 +49,8 @@ class CRUDComponent extends Component
         $optionFilters = empty($options['filters']) ? [] : $options['filters'];
         foreach ($optionFilters as $i => $filter) {
             $optionFilters[] = "{$filter} !=";
+            $optionFilters[] = "{$filter} >=";
+            $optionFilters[] = "{$filter} <=";
         }
         $params = $this->Controller->ParamHandler->harvestParams($optionFilters);
         $params = $this->fakeContextFilter($options, $params);
@@ -112,6 +115,7 @@ class CRUDComponent extends Component
             if ($this->metaFieldsSupported()) {
                 $query = $this->includeRequestedMetaFields($query);
             }
+            $this->setRequestedEntryAmount();
             $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
@@ -195,16 +199,26 @@ class CRUDComponent extends Component
             $metaTemplates = $this->getMetaTemplates()->toArray();
             $this->Controller->set('metaFieldsEnabled', true);
             $this->Controller->set('metaTemplates', $metaTemplates);
+            $typeHandlers = $this->Table->getBehavior('MetaFields')->getTypeHandlers();
+            $typeHandlersOperators = [];
+            foreach ($typeHandlers as $type => $handler) {
+                $typeHandlersOperators[$type] = $handler::OPERATORS;
+            }
+            $this->Controller->set('typeHandlersOperators', $typeHandlersOperators);
         } else {
             $this->Controller->set('metaFieldsEnabled', false);
         }
         $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
-        $typeHandlers = $this->Table->getBehavior('MetaFields')->getTypeHandlers();
-        $typeHandlersOperators = [];
-        foreach ($typeHandlers as $type => $handler) {
-            $typeHandlersOperators[$type] = $handler::OPERATORS;
-        }
-        $this->Controller->set('typeHandlersOperators', $typeHandlersOperators);
+        $typeMap = $this->Table->getSchema()->typeMap();
+        $associatedtypeMap = !empty($this->Controller->filterFields) ? $this->_getAssociatedTypeMap() : [];
+        $typeMap = array_merge(
+            $this->Table->getSchema()->typeMap(),
+            $associatedtypeMap
+        );
+        $typeMap = array_filter($typeMap, function ($field) use ($filters) {
+            return in_array($field, $filters);
+        }, ARRAY_FILTER_USE_KEY);
+        $this->Controller->set('typeMap', $typeMap);
         $this->Controller->set('filters', $filters);
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/filters');
@@ -466,6 +480,7 @@ class CRUDComponent extends Component
         }
 
         $entity->setDirty('meta_fields', true);
+        $entity->_metafields_to_delete = $metaFieldsToDelete;
         return ['entity' => $entity, 'metafields_to_delete' => $metaFieldsToDelete];
     }
 
@@ -506,7 +521,7 @@ class CRUDComponent extends Component
                 $params['contain'] = [$params['contain'], 'MetaFields'];
             }
         }
-        $query = $this->Table->find()->where(['id' => $id]);
+        $query = $this->Table->find()->where(["{$this->TableAlias}.id" => $id]);
         if (!empty($params['contain'])) {
             $query->contain($params['contain']);
         }
@@ -711,6 +726,15 @@ class CRUDComponent extends Component
                 'conditions' => $containConditions
             ]
         ]);
+    }
+
+    protected function setRequestedEntryAmount()
+    {
+        $user = $this->Controller->ACL->getUser();
+        $tableSettings = IndexSetting::getTableSetting($user, $this->Table);
+        if (!empty($tableSettings['number_of_element'])) {
+            $this->Controller->paginate['limit'] = intval($tableSettings['number_of_element']);
+        }
     }
 
     public function view(int $id, array $params = []): void
@@ -1309,7 +1333,7 @@ class CRUDComponent extends Component
     {
         if (empty($params['filteringLabel']) && !empty($options['contextFilters']['custom'])) {
             foreach ($options['contextFilters']['custom'] as $contextFilter) {
-                if (!empty($contextFilter['default'])) {
+                if (!empty($contextFilter['default']) && empty($params)) {
                     $params['filteringLabel'] = $contextFilter['label'];
                     $this->Controller->set('fakeFilteringLabel', $contextFilter['label']);
                     break;
@@ -1434,7 +1458,7 @@ class CRUDComponent extends Component
                 );
                 if ($this->Controller->ParamHandler->isRest()) {
                 } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', $message, $validationErrors);
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'toggle', [], $message, $validationErrors);
                 } else {
                     $this->Controller->Flash->error($message);
                     if (empty($params['redirect'])) {
@@ -1533,5 +1557,25 @@ class CRUDComponent extends Component
         $builder->disableAutoLayout()->setTemplate("{$this->TableAlias}/{$templateRelativeName}");
         $view = $builder->build($data);
         return $view->render();
+    }
+
+    protected function _getAssociatedTypeMap(): array
+    {
+        $typeMap = [];
+        foreach ($this->Controller->filterFields as $filter) {
+            $exploded = explode('.', $filter);
+            if (count($exploded) > 1) {
+                $model = $exploded[0];
+                $subField = $exploded[1];
+                if ($model == $this->Table->getAlias()) {
+                    $typeMap[$filter] = $this->Table->getSchema()->typeMap()[$subField] ?? 'text';
+                } else {
+                    $association = $this->Table->associations()->get($model);
+                    $associatedTable = $association->getTarget();
+                    $typeMap[$filter] = $associatedTable->getSchema()->typeMap()[$subField] ?? 'text';
+                }
+            }
+        }
+        return $typeMap;
     }
 }
