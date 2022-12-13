@@ -405,7 +405,8 @@ class AuthKeycloakBehavior extends Behavior
         $status = [];
         foreach ($users as $username => $user) {
             $differences = [];
-            $requireUpdate = $this->checkKeycloakUserRequiresUpdate($keycloakUsersParsed[$username], $user, $differences);
+            $keycloakUser = $keycloakUsersParsed[$username] ?? [];
+            $requireUpdate = $this->checkKeycloakUserRequiresUpdate($keycloakUser, $user, $differences);
             $status[$user['id']] = [
                 'require_update' => $requireUpdate,
                 'differences' => $differences,
@@ -416,7 +417,6 @@ class AuthKeycloakBehavior extends Behavior
 
     private function checkKeycloakUserRequiresUpdate(array $keycloakUser, array $user, array &$differences = []): bool
     {
-
         $condEnabled = $keycloakUser['enabled'] == $user['disabled'];
         $condFirstname = mb_strtolower($keycloakUser['firstName']) !== mb_strtolower($user['individual']['first_name']);
         $condLastname = mb_strtolower($keycloakUser['lastName']) !== mb_strtolower($user['individual']['last_name']);

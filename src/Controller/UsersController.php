@@ -160,7 +160,7 @@ class UsersController extends AppController
             'afterFind' => function($data) use ($keycloakUsersParsed) {
                 $data = $this->fetchTable('PermissionLimitations')->attachLimitations($data);
                 if (!empty(Configure::read('keycloak.enabled'))) {
-                    $keycloakUser = $keycloakUsersParsed[$data->username];
+                    $keycloakUser = $keycloakUsersParsed[$data->username] ?? [];
                     $data['keycloak_status'] = array_values($this->Users->checkKeycloakStatus([$data->toArray()], [$keycloakUser]))[0];
                 }
                 return $data;
