@@ -235,10 +235,6 @@ class AuthKeycloakBehavior extends Behavior
         $user['organisation'] = $this->_table->Organisations->find()->where([
             'id' => $user['organisation_id']
         ])->first();
-        $user['meta_fields'] = $this->_table->MetaFields->find()->where([
-            'scope' => 'user',
-            'parent_id' => $user['id']
-        ])->all()->toArray();
 
         $users = [$user->toArray()];
         $clientId = $this->getClientId();
