@@ -15,9 +15,20 @@ use Cake\Core\Configure;
 use Cake\Http\Client;
 use Cake\Http\Client\FormData;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Utility\Inflector;
 
 class AuthKeycloakBehavior extends Behavior
 {
+
+    public function getMappedFieldList(): array
+    {
+        $mappers = Configure::read('keycloak.user_meta_mapping');
+        if (empty($mappers)) {
+            return [];
+        }
+        return explode(',', $mappers);
+    }
+
     public function getUser(EntityInterface $profile, Session $session)
     {
         $userId = $session->read('Auth.User.id');
@@ -327,7 +338,9 @@ class AuthKeycloakBehavior extends Behavior
         $response = $this->restApiRequest('%s/admin/realms/%s/users', [], 'get');
         $keycloakUsers = json_decode($response->getStringBody(), true);
         $keycloakUsersParsed = [];
+        $mappers = array_merge(['role_name', 'role_uuid', 'org_uuid', 'org_name'], $this->getMappedFieldList());
         foreach ($keycloakUsers as $u) {
+            $attributes = [];
             $keycloakUsersParsed[$u['username']] = [
                 'id' => $u['id'],
                 'username' => $u['username'],
@@ -335,20 +348,19 @@ class AuthKeycloakBehavior extends Behavior
                 'firstName' => $u['firstName'],
                 'lastName' => $u['lastName'],
                 'email' => $u['email'],
-                'attributes' => [
-                    'role_name' => $u['attributes']['role_name'][0] ?? '',
-                    'role_uuid' => $u['attributes']['role_uuid'][0] ?? '',
-                    'org_uuid' => $u['attributes']['org_uuid'][0] ?? '',
-                    'org_name' => $u['attributes']['org_name'][0] ?? ''
-                ]
+                'attributes' => []
             ];
+            foreach ($mappers as $mapper) {
+                $keycloakUsersParsed[$u['username']]['attributes'][$mapper] = $u['attributes'][$mapper][0] ?? '';
+            }
         }
         return $keycloakUsersParsed;
     }
 
     private function getCerebrateUsers(): array
     {
-        return $this->_table->find()->contain(['Individuals', 'Organisations', 'Roles'])->select([
+        $metaFieldsSelector = ['fields' => ['MetaFields.field', 'MetaFields.parent_id', 'MetaFields.value']];
+        $results = $this->_table->find()->contain(['Individuals', 'Organisations', 'Roles', 'MetaFields' => $metaFieldsSelector])->select([
             'id',
             'uuid',
             'username',
@@ -362,23 +374,55 @@ class AuthKeycloakBehavior extends Behavior
             'Organisations.name',
             'Organisations.uuid'
         ])->disableHydration()->toArray();
+        foreach ($results as &$result) {
+            if (!empty($result['meta_fields'])) {
+                $temp = [];
+                foreach ($result['meta_fields'] as $meta_field) {
+                    $temp[$meta_field['field']] = $meta_field['value'];
+                }
+                $result['meta_fields'] = $temp;
+            }
+        }
+        return $results;
     }
 
     private function checkAndUpdateUser(array $keycloakUser, array $user): bool
     {
+        if (!empty($user['meta_fields'][0])) {
+            $temp = [];
+            foreach ($user['meta_fields'] as $meta_field) {
+                $temp[$meta_field['field']] = $meta_field['value'];
+            }
+            $user['meta_fields'] = $temp;
+        }
         if ($this->checkKeycloakUserRequiresUpdate($keycloakUser, $user)) {
+            $default_mappers = [
+                'role' => [
+                    'uuid',
+                    'name'
+                ],
+                'organisation' => [
+                    'uuid',
+                    'name'
+                ]
+            ];
+            $custom_mappers = $this->getMappedFieldList();
             $change = [
                 'enabled' => !$user['disabled'],
                 'firstName' => $user['individual']['first_name'],
                 'lastName' => $user['individual']['last_name'],
                 'email' => $user['individual']['email'],
-                'attributes' => [
-                    'role_name' => $user['role']['name'],
-                    'role_uuid' => $user['role']['uuid'],
-                    'org_name' => $user['organisation']['name'],
-                    'org_uuid' => $user['organisation']['uuid']
-                ]
+                'attributes' => []
             ];
+            foreach ($default_mappers as $object_type => $object_data) {
+                foreach ($object_data as $mapper) {
+                    $object_type_kc = $object_type === 'organisation' ? 'org' : $object_type;
+                    $change['attributes'][$object_type_kc . '_' . $mapper] = $user[$object_type][$mapper];
+                }
+            }
+            foreach ($custom_mappers as $mapper) {
+                $change['attributes'][$mapper] = $user['meta_fields'][$mapper] ?? '';
+            }
             $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'], $change, 'put');
             if (!$response->isOk()) {
                 $this->_table->auditLogs()->insert([
@@ -404,8 +448,14 @@ class AuthKeycloakBehavior extends Behavior
         $keycloakUsersParsed = Hash::combine($keycloakUsers, '{n}.username', '{n}');
         $status = [];
         foreach ($users as $username => $user) {
+            $temp = [];
+            foreach ($user['meta_fields'] as $meta_field) {
+                $temp[$meta_field['field']] = $meta_field['value'];
+            }
+            $user['meta_fields'] = $temp;
             $differences = [];
-            $requireUpdate = $this->checkKeycloakUserRequiresUpdate($keycloakUsersParsed[$username], $user, $differences);
+            $keycloakUser = $keycloakUsersParsed[$username] ?? [];
+            $requireUpdate = $this->checkKeycloakUserRequiresUpdate($keycloakUser, $user, $differences);
             $status[$user['id']] = [
                 'require_update' => $requireUpdate,
                 'differences' => $differences,
@@ -415,8 +465,8 @@ class AuthKeycloakBehavior extends Behavior
     }
 
     private function checkKeycloakUserRequiresUpdate(array $keycloakUser, array $user, array &$differences = []): bool
-    {
-
+    {   
+        $mappedFields = $this->getMappedFieldList();
         $condEnabled = $keycloakUser['enabled'] == $user['disabled'];
         $condFirstname = mb_strtolower($keycloakUser['firstName']) !== mb_strtolower($user['individual']['first_name']);
         $condLastname = mb_strtolower($keycloakUser['lastName']) !== mb_strtolower($user['individual']['last_name']);
@@ -425,7 +475,24 @@ class AuthKeycloakBehavior extends Behavior
         $condRoleuuid = (empty($keycloakUser['attributes']['role_uuid']) || mb_strtolower($keycloakUser['attributes']['role_uuid']) !== mb_strtolower($user['role']['uuid']));
         $condOrgname = (empty($keycloakUser['attributes']['org_name']) || mb_strtolower($keycloakUser['attributes']['org_name']) !== mb_strtolower($user['organisation']['name']));
         $condOrguuid = (empty($keycloakUser['attributes']['org_uuid']) || mb_strtolower($keycloakUser['attributes']['org_uuid']) !== mb_strtolower($user['organisation']['uuid']));
-        if ($condEnabled || $condFirstname || $condLastname || $condEmail || $condRolename || $condRoleuuid || $condOrgname || $condOrguuid) {
+        $condMapped = false;
+        if (!empty($user['meta_fields']) && isset($user['meta_fields'][0])) {
+            $temp = [];
+            foreach ($user['meta_fields'] as $meta_field) {
+                $temp[$meta_field['field']] = $meta_field['value'];
+            }
+            $user['meta_fields'] = $temp;
+        }
+        foreach ($mappedFields as $mappedField) {
+            if (($keycloakUser['attributes'][$mappedField] ?? '') != ($user['meta_fields'][$mappedField] ?? '')) {
+                $condMapped = true;
+                $differences[$mappedField] = [
+                    'keycloak' => $keycloakUser['attributes'][$mappedField] ?? '',
+                    'cerebrate' => $user['meta_fields'][$mappedField] ?? ''
+                ];
+            }
+        }
+        if ($condEnabled || $condFirstname || $condLastname || $condEmail || $condRolename || $condRoleuuid || $condOrgname || $condOrguuid || $condMapped) {
             if ($condEnabled) {
                 $differences['enabled'] = ['keycloak' => $keycloakUser['enabled'], 'cerebrate' => $user['disabled']];
             }
