@@ -7,6 +7,7 @@ use Cake\Http\Exception\UnauthorizedException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Core\Configure;
 use Cake\Utility\Security;
+use Cake\Http\Exception\NotFoundException;
 
 class UsersController extends AppController
 {
@@ -157,7 +158,10 @@ class UsersController extends AppController
         }
         $this->CRUD->view($id, [
             'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations'],
-            'afterFind' => function($data) use ($keycloakUsersParsed) {
+            'afterFind' => function($data) use ($keycloakUsersParsed, $currentUser) {
+                if (empty($currentUser['role']['perm_admin']) && $currentUser['organisation_id'] != $data['organisation_id']) {
+                    throw new NotFoundException(__('Invalid User.'));
+                }
                 $data = $this->fetchTable('PermissionLimitations')->attachLimitations($data);
                 if (!empty(Configure::read('keycloak.enabled'))) {
                     $keycloakUser = $keycloakUsersParsed[$data->username] ?? [];
