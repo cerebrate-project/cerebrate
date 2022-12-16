@@ -264,7 +264,7 @@ class UsersTable extends AppTable
 
     public function handleUserUpdateRouter(\App\Model\Entity\User $user): bool
     {
-        if (!empty(Configure::read('keycloak'))) {
+        if (!empty(Configure::read('keycloak.enabled'))) {
             $success = $this->handleUserUpdate($user);
             // return $success;
         }
