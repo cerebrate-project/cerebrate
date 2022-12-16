@@ -21,6 +21,41 @@ Cerebrate communicates via HTTPS so in order to be able to connect to other cere
 
 It should be sufficient to issue the following command to install the dependencies:
 
+### Note for Ubuntu 20.04 :
+
+You will need to type this command first to be able to download php8 otherwise php 7.4 will be install instead.
+
+~~~
+sudo add-apt-repository ppa:ondrej/php
+~~~
+
+- for apache
+
+```bash
+sudo apt install apache2 mariadb-server git php8.2-intl php8.2-mbstring php8.2-dom php8.2-xml unzip php8.2-ldap php8.2-sqlite3 ph8.2p-curl sqlite libapache2-mod-php php8.2-mysql
+```
+
+- for nginx
+
+```bash
+sudo apt install nginx mariadb-server git php8.2-intl php8.2-mbstring php8.2-dom php8.2-xml unzip php8.2-ldap php8.2-sqlite3 ph8.2p-curl sqlite php8.2-mysql
+```
+
+
+
+Install composer:
+
+~~~bash
+cd
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+sudo mv composer.phar /usr/local/bin/composer
+~~~
+
+### Other
+
 - for apache
 
 ```bash
@@ -31,6 +66,8 @@ sudo apt install apache2 mariadb-server git composer php-intl php-mbstring php-d
 ```bash
 sudo apt install nginx mariadb-server git composer php-intl php-mbstring php-dom php-xml unzip php-ldap php-sqlite3 sqlite php-fpm php-curl php-mysql
 ```
+
+
 
 Clone this repository (for example into /var/www/cerebrate)
 
@@ -84,12 +121,6 @@ sudo -u www-data cp -a /var/www/cerebrate/config/config.example.json /var/www/ce
 sudo -u www-data vim /var/www/cerebrate/config/app_local.php
 ```
 
-mod_rewrite needs to be enabled if __using apache__:
-
-```bash
-sudo a2enmod rewrite
-```
-
 Simply modify the Datasource -> default array's username, password, database fields
 This would be, when following the steps above:
 
@@ -102,7 +133,14 @@ This would be, when following the steps above:
             'database' => 'cerebrate',
 ```
 
+mod_rewrite needs to be enabled if __using apache__:
+
+```bash
+sudo a2enmod rewrite
+```
+
 Run the database schema migrations
+
 ```bash
 sudo -u www-data /var/www/cerebrate/bin/cake migrations migrate
 sudo -u www-data /var/www/cerebrate/bin/cake migrations migrate -p tags
