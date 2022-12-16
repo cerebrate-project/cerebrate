@@ -1,6 +1,6 @@
 ## Requirements
 
-An Ubuntu server (18.04/20.04 should both work fine) - though other linux installations should work too.
+An Ubuntu server (20.04/22.04 should both work fine) - though other linux installations should work too.
 
 - apache2 (or nginx), mysql/mariadb, sqlite need to be installed and running
 - php version 8+ is required
