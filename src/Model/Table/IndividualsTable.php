@@ -54,7 +54,7 @@ class IndividualsTable extends AppTable
         return $validator;
     }
 
-    public function captureIndividual($individual): ?int
+    public function captureIndividual($individual, $skipUpdate = false): ?int
     {
         if (!empty($individual['uuid'])) {
             $existingIndividual = $this->find()->where([
@@ -71,6 +71,9 @@ class IndividualsTable extends AppTable
                 'accessibleFields' => $entityToSave->getAccessibleFieldForNew()
             ]);
         } else {
+            if ($skipUpdate) {
+                return $existingIndividual->id;
+            }
             $this->patchEntity($existingIndividual, $individual);
             $entityToSave = $existingIndividual;
         }
