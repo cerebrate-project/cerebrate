@@ -175,11 +175,22 @@ class UsersTable extends AppTable
             ])
             ->requirePresence(['username'], 'create')
             ->notEmptyString('username', __('Please fill this field'), 'create');
+        if (Configure::read('user.username-must-be-email')) {
+            $validator->add('username', 'valid_email', [
+                'rule' => 'email',
+                'message' => 'Username has to be a valid e-mail address.'
+            ]);
+        }
         return $validator;
     }
 
     public function buildRules(RulesChecker $rules): RulesChecker
     {
+        $rules->add($rules->isUnique(['username']));
+        $allowDuplicateIndividuals = false;
+        if (empty(Configure::read('user.multiple-users-per-individual')) || !empty(Configure::read('keycloak.enabled'))) {
+            $rules->add($rules->isUnique(['individual_id']));
+        }
         return $rules;
     }
 
