@@ -20,7 +20,8 @@
                     'field' => 'individual_id',
                     'type' => 'dropdown',
                     'label' => __('Associated individual'),
-                    'options' => $dropdownData['individual']
+                    'options' => isset($dropdownData['individual']) ? $dropdownData['individual'] : [],
+                    'conditions' => $this->request->getParam('action') === 'add'
                 ],
                 [
                     'field' => 'individual.email',

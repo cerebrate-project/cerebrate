@@ -7,6 +7,7 @@ use Cake\Http\Exception\UnauthorizedException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Core\Configure;
 use Cake\Utility\Security;
+use Cake\Http\Exception\NotFoundException;
 
 class UsersController extends AppController
 {
@@ -93,7 +94,7 @@ class UsersController extends AppController
                         throw new MethodNotAllowedException(__('No valid organisation found. Either encode the organisation separately or select a valid one.'));
                     }
                     $data['individual']['alignments'][] = ['type' => 'Member', 'organisation' => ['uuid' => $existingOrg['uuid']]];
-                    $data['individual_id'] = $this->Users->Individuals->captureIndividual($data['individual']);
+                    $data['individual_id'] = $this->Users->Individuals->captureIndividual($data['individual'], true);
                 } else if (!$currentUser['role']['perm_admin'] && isset($data['individual_id'])) {
                     if (!in_array($data['individual_id'], $individual_ids)) {
                         throw new MethodNotAllowedException(__('The selected individual is not aligned with your organisation. Creating a user for them is not permitted.'));
@@ -157,7 +158,10 @@ class UsersController extends AppController
         }
         $this->CRUD->view($id, [
             'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations'],
-            'afterFind' => function($data) use ($keycloakUsersParsed) {
+            'afterFind' => function($data) use ($keycloakUsersParsed, $currentUser) {
+                if (empty($currentUser['role']['perm_admin']) && $currentUser['organisation_id'] != $data['organisation_id']) {
+                    throw new NotFoundException(__('Invalid User.'));
+                }
                 $data = $this->fetchTable('PermissionLimitations')->attachLimitations($data);
                 if (!empty(Configure::read('keycloak.enabled'))) {
                     $keycloakUser = $keycloakUsersParsed[$data->username] ?? [];
@@ -184,11 +188,6 @@ class UsersController extends AppController
         $individual_ids = [];
         if (!$currentUser['role']['perm_admin']) {
             $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->toArray();
-            $individual_ids = $this->Users->Individuals->find('aligned', ['organisation_id' => $currentUser['organisation_id']])->all()->extract('id')->toArray();
-            if (empty($individual_ids)) {
-                $individual_ids = [-1];
-            }
-            $individuals_params['conditions'] = ['id IN' => $individual_ids];
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
@@ -208,7 +207,7 @@ class UsersController extends AppController
             'contain' => ['Roles', ],
         ];
         if ($this->request->is(['get'])) {
-            $params['fields'] = array_merge($params['fields'], ['individual_id', 'role_id', 'disabled']);
+            $params['fields'] = array_merge($params['fields'], ['role_id', 'disabled']);
             if (!empty($this->ACL->getUser()['role']['perm_admin'])) {
                 $params['fields'][] = 'organisation_id';
             }
@@ -224,7 +223,6 @@ class UsersController extends AppController
             }
         }
         if ($this->request->is(['post', 'put']) && !empty($this->ACL->getUser()['role']['perm_admin'])) {
-            $params['fields'][] = 'individual_id';
             $params['fields'][] = 'role_id';
             $params['fields'][] = 'organisation_id';
             $params['fields'][] = 'disabled';
@@ -254,22 +252,12 @@ class UsersController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $dropdownData = [
-            'role' => $validRoles,
-            'individual' => $this->Users->Individuals->find('list', [
-                'sort' => ['email' => 'asc']
-            ]),
-            'organisation' => $this->Users->Organisations->find('list', [
-                'sort' => ['name' => 'asc']
-            ])
-        ];
         $org_conditions = [];
         if (empty($currentUser['role']['perm_admin'])) {
             $org_conditions = ['id' => $currentUser['organisation_id']];
         }
         $dropdownData = [
             'role' => $validRoles,
-            'individual' => $this->Users->Individuals->find('list', $individuals_params)->toArray(),
             'organisation' => $this->Users->Organisations->find('list', [
                 'sort' => ['name' => 'asc'],
                 'conditions' => $org_conditions
@@ -396,6 +384,7 @@ class UsersController extends AppController
             if (Configure::read('keycloak.enabled')) {
                 $this->redirect($this->Users->keyCloaklogout());
             }
+            $this->request->getSession()->destroy();
             return $this->redirect(\Cake\Routing\Router::url('/users/login'));
         }
     }

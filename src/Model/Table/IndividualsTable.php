@@ -6,6 +6,8 @@ use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\ORM\Query;
+use Cake\ORM\RulesChecker;
+use Cake\Core\Configure;
 
 
 class IndividualsTable extends AppTable
@@ -46,6 +48,12 @@ class IndividualsTable extends AppTable
         $this->setDisplayField('email');
     }
 
+    public function buildRules(RulesChecker $rules): RulesChecker
+    {
+        $rules->add($rules->isUnique(['email']));
+        return $rules;
+    }
+
     public function validationDefault(Validator $validator): Validator
     {
         $validator
@@ -54,7 +62,7 @@ class IndividualsTable extends AppTable
         return $validator;
     }
 
-    public function captureIndividual($individual): ?int
+    public function captureIndividual($individual, $skipUpdate = false): ?int
     {
         if (!empty($individual['uuid'])) {
             $existingIndividual = $this->find()->where([
@@ -71,6 +79,9 @@ class IndividualsTable extends AppTable
                 'accessibleFields' => $entityToSave->getAccessibleFieldForNew()
             ]);
         } else {
+            if ($skipUpdate) {
+                return $existingIndividual->id;
+            }
             $this->patchEntity($existingIndividual, $individual);
             $entityToSave = $existingIndividual;
         }

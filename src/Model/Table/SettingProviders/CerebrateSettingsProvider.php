@@ -328,6 +328,24 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                     ],
                 ]
             ],
+            'Users' => [
+                'Users' => [
+                    'Settings' => [
+                        'user.multiple-users-per-individual' => [
+                            'name' => __('Multiple users per individual'),
+                            'type' => 'boolean',
+                            'description' => __('Allow for multiple user accounts to be assigned to a single user account. This setting will automatically be restricted when using KeyCloak.'),
+                            'default' => false
+                        ],
+                        'user.username-must-be-email' => [
+                            'name' => __('Usernames must be e-mail addresses'),
+                            'type' => 'boolean',
+                            'description' => __('This setting will enforce that usernames conform to basic requirements of e-mail addresses.'),
+                            'default' => false
+                        ]
+                    ]
+                ]
+            ]
             /*
             'Features' => [
                 'Demo Settings' => [
