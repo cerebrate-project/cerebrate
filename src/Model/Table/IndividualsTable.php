@@ -6,6 +6,8 @@ use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\ORM\Query;
+use Cake\ORM\RulesChecker;
+use Cake\Core\Configure;
 
 
 class IndividualsTable extends AppTable
@@ -44,6 +46,12 @@ class IndividualsTable extends AppTable
         ]);
 
         $this->setDisplayField('email');
+    }
+
+    public function buildRules(RulesChecker $rules): RulesChecker
+    {
+        $rules->add($rules->isUnique(['email']));
+        return $rules;
     }
 
     public function validationDefault(Validator $validator): Validator
