@@ -455,7 +455,17 @@ class AuthKeycloakBehavior extends Behavior
             $user['meta_fields'] = $temp;
             $differences = [];
             $keycloakUser = $keycloakUsersParsed[$username] ?? [];
-            $requireUpdate = $this->checkKeycloakUserRequiresUpdate($keycloakUser, $user, $differences);
+            if (empty($keycloakUser)) {
+                $requireUpdate = true;
+                $differences = [
+                    'user' => [
+                        'keycloak' => 'USER NOT FOUND',
+                        'cerebrate' => $user['username']
+                    ]
+                ];
+            } else {
+                $requireUpdate = $this->checkKeycloakUserRequiresUpdate($keycloakUser, $user, $differences);
+            }
             $status[$user['id']] = [
                 'require_update' => $requireUpdate,
                 'differences' => $differences,
