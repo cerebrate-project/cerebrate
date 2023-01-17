@@ -105,7 +105,7 @@ class AlignmentsController extends AppController
             }
         }
         if ($scope === 'organisations') {
-            $individuals = $this->Individuals->find('list', ['valueField' => 'email']);
+            $individuals = $this->Individuals->find('list', ['valueField' => 'email'])->toArray();
             $this->set('individuals', $individuals);
             $organisation = $this->Organisations->find()->where(['id' => $source_id])->first();
             if (empty($organisation)) {
@@ -113,7 +113,7 @@ class AlignmentsController extends AppController
             }
             $this->set(compact('organisation'));
         } else {
-            $organisations = $this->Organisations->find('list', ['valueField' => 'name']);
+            $organisations = $this->Organisations->find('list', ['valueField' => 'name'])->toArray();
             $this->set('organisations', $organisations);
             $individual = $this->Individuals->find()->where(['id' => $source_id])->first();
             if (empty($individual)) {
