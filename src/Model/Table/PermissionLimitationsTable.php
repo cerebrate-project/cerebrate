@@ -63,12 +63,15 @@ class PermissionLimitationsTable extends AppTable
                 ])->count();
             }
             if (isset($data['global'])) {
+                $conditions = [
+                    'scope' => 'user',
+                    'field' => $field,
+                ];
+                if (!empty($ownOrgUserIds)) {
+                    $conditions['parent_id IN'] = array_values($ownOrgUserIds);
+                }
                 $limitations[$field]['organisation']['current'] = $MetaFields->find('all', [
-                    'conditions' => [
-                        'scope' => 'user',
-                        'field' => $field,
-                        'parent_id IN' => array_values($ownOrgUserIds)
-                    ]
+                    'conditions' => $conditions,
                 ])->count();
             }
         }
