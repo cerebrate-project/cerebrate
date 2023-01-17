@@ -10,7 +10,8 @@ echo $this->element('genericElements/Form/genericForm', array(
             array(
                 'field' => ($scope === 'individuals' ? 'organisation_id' : 'individual_id'),
                 'options' => ($scope === 'individuals' ? $organisations : $individuals),
-                'type' => 'select'
+                'type' => 'dropdown',
+                'select2' => true,
             ),
             array(
                 'field' => 'type'
