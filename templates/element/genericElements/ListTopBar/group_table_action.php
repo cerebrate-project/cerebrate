@@ -19,27 +19,31 @@ $availableColumnsHtml = $this->element('/genericElements/ListTopBar/group_table_
 $metaTemplateColumnMenu = [];
 if (!empty($meta_templates)) {
     $metaTemplateColumnMenu[] = ['header' => true, 'text' => __('Meta Templates'), 'icon' => 'object-group',];
-    foreach ($meta_templates as $meta_template) {
-        $numberActiveMetaField = !empty($tableSettings['visible_meta_column'][$meta_template->id]) ? count($tableSettings['visible_meta_column'][$meta_template->id]) : 0;
-        $metaTemplateColumnMenu[] = [
-            'text' => $meta_template->name,
-            'sup' => $meta_template->version,
-            'badge' => [
-                'text' => $numberActiveMetaField,
-                'variant' => 'secondary',
-                'title' => __n('{0} meta-field active for this meta-template', '{0} meta-fields active for this meta-template', $numberActiveMetaField, $numberActiveMetaField),
-            ],
-            'keepOpen' => true,
-            'menu' => [
-                [
-                    'html' => $this->element('/genericElements/ListTopBar/group_table_action/hiddenMetaColumns', [
-                        'tableSettings' => $tableSettings,
-                        'table_setting_id' => $data['table_setting_id'],
-                        'meta_template' => $meta_template,
-                    ])
-                ]
-            ],
-        ];
+    if (empty($meta_templates_enabled)) {
+        $metaTemplateColumnMenu[] = ['header' => false, 'text' => __('- No enabled Meta Templates found -'), 'class' => ['disabled', 'muted']];
+    } else {
+        foreach ($meta_templates_enabled as $meta_template) {
+            $numberActiveMetaField = !empty($tableSettings['visible_meta_column'][$meta_template->id]) ? count($tableSettings['visible_meta_column'][$meta_template->id]) : 0;
+            $metaTemplateColumnMenu[] = [
+                'text' => $meta_template->name,
+                'sup' => $meta_template->version,
+                'badge' => [
+                    'text' => $numberActiveMetaField,
+                    'variant' => 'secondary',
+                    'title' => __n('{0} meta-field active for this meta-template', '{0} meta-fields active for this meta-template', $numberActiveMetaField, $numberActiveMetaField),
+                ],
+                'keepOpen' => true,
+                'menu' => [
+                    [
+                        'html' => $this->element('/genericElements/ListTopBar/group_table_action/hiddenMetaColumns', [
+                            'tableSettings' => $tableSettings,
+                            'table_setting_id' => $data['table_setting_id'],
+                            'meta_template' => $meta_template,
+                        ])
+                    ]
+                ],
+            ];
+        }
     }
 }
 $indexColumnMenu = array_merge(
