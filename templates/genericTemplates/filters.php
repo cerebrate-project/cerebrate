@@ -19,12 +19,12 @@ $filteringForm = $this->Bootstrap->table(
     [
         'fields' => [
             [
-                'key' => 'fieldname', 'label' => __('Field'), 'formatter' => function ($field, $row) {
+                'path' => 'fieldname', 'label' => __('Field'), 'formatter' => function ($field, $row) {
                     return sprintf('<span class="fieldName" data-fieldname="%s">%s</span>', h($field), h($field));
                 }
             ],
             [
-                'key' => 'operator', 'label' => __('Operator'), 'formatter' => function ($field, $row) use ($typeMap) {
+                'path' => 'operator', 'label' => __('Operator'), 'formatter' => function ($field, $row) use ($typeMap) {
                     $fieldName = $row['fieldname'];
                     $type = $typeMap[$fieldName] ?? 'text';
                     $options = [
@@ -41,7 +41,7 @@ $filteringForm = $this->Bootstrap->table(
                 }
             ],
             [
-                'key' => 'value',
+                'path' => 'value',
                 'labelHtml' => sprintf(
                     '%s %s',
                     __('Value'),
@@ -71,23 +71,23 @@ $filteringForm = $this->Bootstrap->table(
 
 $filteringMetafields = '';
 if ($metaFieldsEnabled) {
-    $helpText = $this->Bootstrap->genNode('sup', [
+    $helpText = $this->Bootstrap->node('sup', [
         'class' => ['ms-1 fa fa-info'],
         'title' => __('Include help'),
         'data-bs-toggle' => 'tooltip',
     ]);
-    $filteringMetafields = $this->Bootstrap->genNode('h5', [], __('Meta Fields') . $helpText);
+    $filteringMetafields = $this->Bootstrap->node('h5', [], __('Meta Fields') . $helpText);
     $filteringMetafields .= $this->element('genericElements/IndexTable/metafield_filtering', $metaTemplates);
 }
 
 $filteringTags = '';
 if ($taggingEnabled) {
-    $helpText = $this->Bootstrap->genNode('sup', [
+    $helpText = $this->Bootstrap->node('sup', [
         'class' => ['ms-1 fa fa-info'],
         'title' => __('Supports negation matches (with the `!` character) and LIKE matches (with the `%` character).&#10;Example: `!exportable`, `%able`'),
         'data-bs-toggle' => 'tooltip',
     ]);
-    $filteringTags = $this->Bootstrap->genNode('h5', [
+    $filteringTags = $this->Bootstrap->node('h5', [
         'class' => 'mt-2'
     ], __('Tags') . $helpText);
     $filteringTags .= $this->Tag->tags([], [
@@ -104,7 +104,9 @@ echo $this->Bootstrap->modal([
     'size' => !empty($metaFieldsEnabled) ? 'xl' : 'lg',
     'type' => 'confirm',
     'bodyHtml' => $modalBody,
-    'confirmText' => __('Filter'),
+    'confirmButton' => [
+        'text' => __('Filter'),
+    ],
     'confirmFunction' => 'filterIndex'
 ]);
 ?>

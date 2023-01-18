@@ -2,10 +2,15 @@
 
 namespace App\Model\Table;
 
+require_once APP . DS . 'Utility/Utils.php';
 use App\Model\Table\AppTable;
+use function App\Utility\Utils\array_diff_recursive;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\Core\Configure;
+use Cake\Utility\Inflector;
+use Cake\Utility\Hash;
+use Cake\I18n\FrozenTime;
 use Cake\Http\Client;
 use Cake\Http\Client\Response;
 use Cake\Http\Exception\NotFoundException;
@@ -15,6 +20,27 @@ use Cake\Error\Debugger;
 
 class BroodsTable extends AppTable
 {
+
+    public $previewScopes = [
+        'organisations' => [
+            'quickFilterFields' => ['uuid', ['name' => true],],
+            'contain' => ['MetaFields' => ['MetaTemplateNameDirectory'], 'Tags'],
+            'compareFields' => ['name', 'url', 'nationality', 'sector', 'type', 'contacts', 'modified', 'tags', 'meta_fields',],
+        ],
+        'individuals' => [
+            'quickFilterFields' => ['uuid', ['email' => true], ['first_name' => true], ['last_name' => true],],
+            'contain' => ['MetaFields'],
+            'compareFields' => ['email', 'first_name', 'last_name', 'position', 'modified', 'meta_fields', 'tags',],
+        ],
+        'sharingGroups' => [
+            'quickFilterFields' => ['uuid', ['name' => true],],
+            'contain' => ['SharingGroupOrgs', 'Organisations'],
+            'compareFields' => ['name', 'releasability', 'description', 'organisation_id', 'user_id', 'active', 'local', 'modified', 'organisation', 'sharing_group_orgs',],
+        ],
+    ];
+
+    private $metaFieldCompareFields = ['modified', 'value'];
+
     public function initialize(array $config): void
     {
         parent::initialize($config);
@@ -119,13 +145,16 @@ class BroodsTable extends AppTable
         return $result;
     }
 
-    public function queryIndex($id, $scope, $filter)
+    public function queryIndex($id, $scope, $filter, $full = false)
     {
         $brood = $this->find()->where(['id' => $id])->first();
         if (empty($brood)) {
             throw new NotFoundException(__('Brood not found'));
         }
         $filterQuery = empty($filter) ? '' : '?quickFilter=' . urlencode($filter);
+        if (!empty($full)) {
+            $filterQuery .= (empty($filterQuery) ? '?' : '&') . 'full=1';
+        }
         $response = $this->HTTPClientGET(sprintf('/%s/index.json%s', $scope, $filterQuery), $brood);
         if ($response->isOk()) {
             return $response->getJson();
@@ -370,5 +399,125 @@ class BroodsTable extends AppTable
     {
         $connector = $params['connector'][$params['remote_tool']['connector']];
         $connector->remoteToolConnectionStatus($params, constant(get_class($connector) . '::' . $status));
+    }
+
+    public function attachAllSyncStatus(array $data, string $scope): array
+    {
+        $options = $this->previewScopes[$scope];
+        foreach ($data as $i => $entry) {
+            $data[$i] = $this->__attachSyncStatus($scope, $entry, $options);
+        }
+        return $data;
+    }
+
+    private function __attachSyncStatus(string $scope, array $entry, array $options = []): array
+    {
+        $table = TableRegistry::getTableLocator()->get(Inflector::camelize($scope));
+        $localEntry = $table
+            ->find()
+            ->where(['uuid' => $entry['uuid']])
+            ->first();
+        if (is_null($localEntry)) {
+            $entry['status'] = $this->__statusNotLocal();
+        } else {
+            if (!empty($options['contain'])) {
+                $localEntry = $table->loadInto($localEntry, $options['contain']);
+            }
+            $localEntry = json_decode(json_encode($localEntry), true);
+            $entry['status'] = $this->__statusLocal($entry, $localEntry, $options);
+        }
+
+        return $entry;
+    }
+
+    private function __statusNotLocal(): array
+    {
+        return self::__getStatus(false);
+    }
+
+    private function __statusLocal(array $remoteEntry, $localEntry, array $options = []): array
+    {
+        $isLocalNewer = (new FrozenTime($localEntry['modified']))->toUnixString() >= (new FrozenTime($remoteEntry['modified']))->toUnixString();
+        $compareFields = $options['compareFields'];
+        $fieldDifference = [];
+        $fieldDifference = array_diff_recursive($remoteEntry, $localEntry);
+        // if (in_array('meta_fields', $options['compareFields']) && !empty($fieldDifference['meta_fields'])) {
+        //     $fieldDifference['meta_fields'] = $this->_compareMetaFields($remoteEntry, $localEntry, $options);
+        // }
+        $fieldDifference = array_filter($fieldDifference, function($value, $field) use ($compareFields) {
+            return in_array($field, $compareFields);
+        }, ARRAY_FILTER_USE_BOTH);
+        foreach ($fieldDifference as $fieldName => $value) {
+            $fieldDifference[$fieldName] = [
+                'local' => $localEntry[$fieldName],
+                'remote' => $value,
+            ];
+        }
+        if (in_array('meta_fields', $options['compareFields']) && !empty($fieldDifference['meta_fields'])) {
+            $fieldDifference['meta_fields'] = $this->_compareMetaFields($remoteEntry, $localEntry, $options);
+        }
+
+        return self::__getStatus(true, $isLocalNewer, $fieldDifference);
+    }
+
+    private static function __getStatus($local=true, $updateToDate=false, array $data = []): array
+    {
+        $status = [
+            'local' => $local,
+            'up_to_date' => $updateToDate,
+            'data' => $data,
+        ];
+        if ($status['local'] && $status['up_to_date']) {
+            $status['title'] = __('This entity is up-to-date');
+        } else if ($status['local'] && !$status['up_to_date']) {
+            $status['title'] = __('This entity is known but differs with the remote');
+        } else {
+            $status['title'] = __('This entity is not known locally');
+        }
+        return $status;
+    }
+
+    private function _compareMetaFields($remoteEntry, $localEntry): array
+    {
+        $compareFields = $this->metaFieldCompareFields;
+        $indexedRemoteMF = [];
+        $indexedLocalMF = [];
+        foreach ($remoteEntry['meta_fields'] as $metafields) {
+            $indexedRemoteMF[$metafields['uuid']] = array_intersect_key($metafields, array_flip($compareFields));
+        }
+        foreach ($localEntry['meta_fields'] as $metafields) {
+            $indexedLocalMF[$metafields['uuid']] = array_intersect_key($metafields, array_flip($compareFields));
+        }
+        $fieldDifference = [];
+        foreach ($remoteEntry['meta_fields'] as $remoteMetafield) {
+            $uuid = $remoteMetafield['uuid'];
+            $metafieldName = $remoteMetafield['field'];
+            // $metafieldName = sprintf('%s(v%s) :: %s', $remoteMetafield['template_name'], $remoteMetafield['template_version'], $remoteMetafield['field']);
+            if (empty($fieldDifference[$metafieldName])) {
+                $fieldDifference[$metafieldName] = [
+                    'meta_template' => [
+                        'name' => $remoteMetafield['template_name'],
+                        'version' => $remoteMetafield['template_version'],
+                        'uuid' => $remoteMetafield['template_uuid']
+                    ],
+                    'delta' => [],
+                ];
+            }
+            if (empty($indexedLocalMF[$uuid])) {
+                $fieldDifference[$metafieldName]['delta'][] = [
+                    'local' => null,
+                    'remote' => $indexedRemoteMF[$uuid],
+                ];
+            } else {
+                $fieldDifferenceTmp = array_diff_recursive($indexedRemoteMF[$uuid], $indexedLocalMF[$uuid]);
+                if (!empty($fieldDifferenceTmp)) {
+                    $fieldDifference[$metafieldName]['delta'][] = [
+                        'local' => $indexedLocalMF[$uuid],
+                        'remote' => $indexedRemoteMF[$uuid],
+                    ];
+                }
+            }
+        }
+        return $fieldDifference;
     }
 }

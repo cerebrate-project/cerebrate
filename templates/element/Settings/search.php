@@ -17,7 +17,7 @@
     $(document).ready(function() {
         $("#search-settings").select2({
                 data: selectData,
-                placeholder: '<?= __('Search setting by typing here...') ?>',
+                placeholder: '<?= __('Search a setting by typing here...') ?>',
                 templateResult: formatSettingSearchResult,
                 templateSelection: formatSettingSearchSelection,
                 matcher: settingMatcher,

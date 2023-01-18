@@ -40,28 +40,47 @@ class AppModel extends Entity
         return TableRegistry::get($this->getSource());
     }
 
-    public function rearrangeForAPI(): void
+    public function rearrangeForAPI(array $options = []): void
     {
     }
 
-    public function rearrangeMetaFields(): void
+    public function rearrangeMetaFields(array $options = []): void
     {
-        $this->meta_fields = [];
-        foreach ($this->MetaTemplates as $template) {
-            foreach ($template['meta_template_fields'] as $field) {
-                if ($field['counter'] > 0) {
-                    foreach ($field['metaFields'] as $metaField) {
-                        if (!empty($this->meta_fields[$template['name']][$field['field']])) {
-                            if (!is_array($this->meta_fields[$template['name']][$field['field']])) {
-                                $this->meta_fields[$template['name']][$field['field']] = [$this->meta_fields[$template['name']][$field['field']]];
+        if (!empty($options['includeFullMetaFields'])) {
+            $this->meta_fields = [];
+            foreach ($this->MetaTemplates as $template) {
+                foreach ($template['meta_template_fields'] as $field) {
+                    if ($field['counter'] > 0) {
+                        foreach ($field['metaFields'] as $metaField) {
+                            if (!empty($this->meta_fields[$template['name']][$field['field']])) {
+                                if (!is_array($this->meta_fields[$template['name']][$field['field']])) {
+                                    $this->meta_fields[$template['name']][$field['field']] = [$this->meta_fields[$template['name']][$field['field']]];
+                                }
+                                $this->meta_fields[$template['name']][$field['field']][] = $metaField['value'];
+                            } else {
+                                $this->meta_fields[$template['name']][$field['field']] = $metaField['value'];
                             }
-                            $this->meta_fields[$template['name']][$field['field']][] = $metaField['value'];
-                        } else {
-                            $this->meta_fields[$template['name']][$field['field']] = $metaField['value'];
                         }
                     }
                 }
             }
+        } elseif (!empty($this->meta_fields)) {
+            $templateDirectoryTable = TableRegistry::get('MetaTemplateNameDirectory');
+            $templates = [];
+            foreach ($this->meta_fields as $i => $metafield) {
+                $templateDirectoryId = $metafield['meta_template_directory_id'];
+                if (empty($templates[$templateDirectoryId])) {
+                    $templates[$templateDirectoryId] = $templateDirectoryTable->find()->where(['id' => $templateDirectoryId])->first();
+                }
+                $this->meta_fields[$i]['template_uuid'] = $templates[$templateDirectoryId]['uuid'];
+                $this->meta_fields[$i]['template_version'] = $templates[$templateDirectoryId]['version'];
+                $this->meta_fields[$i]['template_name'] = $templates[$templateDirectoryId]['name'];
+                $this->meta_fields[$i]['template_namespace'] = $templates[$templateDirectoryId]['namespace'];
+            }
+        }
+        // if ((!isset($options['includeMetatemplate']) || empty($options['includeMetatemplate'])) && !empty($this->MetaTemplates)) {
+        if ((!isset($options['includeMetatemplate']) || empty($options['includeMetatemplate']))) {
+            unset($this->MetaTemplates);
         }
     }
 

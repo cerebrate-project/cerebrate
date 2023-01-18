@@ -96,18 +96,26 @@ class BroodsController extends AppController
 
     public function previewIndex($id, $scope)
     {
-        if (!in_array($scope, ['organisations', 'individuals', 'sharingGroups'])) {
-            throw new MethodNotAllowedException(__('Invalid scope. Valid options are: organisations, individuals, sharing_groups'));
+        $validScopes = array_keys($this->Broods->previewScopes);
+        if (!in_array($scope, $validScopes)) {
+            throw new MethodNotAllowedException(__('Invalid scope. Valid options are: {0}', implode(', ', $validScopes)));
         }
         $filter = $this->request->getQuery('quickFilter');
-        $data = $this->Broods->queryIndex($id, $scope, $filter);
+        $data = $this->Broods->queryIndex($id, $scope, $filter, true);
         if (!is_array($data)) {
             $data = [];
         }
         if ($this->ParamHandler->isRest()) {
             return $this->RestResponse->viewData($data, 'json');
         } else {
+            $data = $this->Broods->attachAllSyncStatus($data, $scope);
             $data = $this->CustomPagination->paginate($data);
+            $optionFilters = ['quickFilter'];
+            $CRUDParams = $this->ParamHandler->harvestParams($optionFilters);
+            $CRUDOptions = [
+                'quickFilters' => $this->Broods->previewScopes[$scope]['quickFilterFields'],
+            ];
+            $this->CRUD->setQuickFilterForView($CRUDParams, $CRUDOptions);
             $this->set('data', $data);
             $this->set('brood_id', $id);
             if ($this->request->is('ajax')) {
@@ -120,23 +128,43 @@ class BroodsController extends AppController
 
     public function downloadOrg($brood_id, $org_id)
     {
-        $result = $this->Broods->downloadOrg($brood_id, $org_id);
-        $success = __('Organisation fetched from remote.');
-        $fail = __('Could not save the remote organisation');
-        if ($this->ParamHandler->isRest()) {
-            if ($result) {
-                return $this->RestResponse->saveSuccessResponse('Brood', 'downloadOrg', $brood_id, 'json', $success);
+        if ($this->request->is('post')) {
+            $result = $this->Broods->downloadOrg($brood_id, $org_id);
+            $success = __('Organisation fetched from remote.');
+            $fail = __('Could not save the remote organisation');
+            if ($this->ParamHandler->isRest()) {
+                if ($result) {
+                    return $this->RestResponse->saveSuccessResponse('Brood', 'downloadOrg', $brood_id, 'json', $success);
+                } else {
+                    return $this->RestResponse->saveFailResponse('Brood', 'downloadOrg', $brood_id, $fail, 'json');
+                }
             } else {
-                return $this->RestResponse->saveFailResponse('Brood', 'downloadOrg', $brood_id, $fail, 'json');
+                if ($result) {
+                    $this->Flash->success($success);
+                } else {
+                    $this->Flash->error($fail);
+                }
+                $this->redirect($this->referer());
             }
-        } else {
-            if ($result) {
-                $this->Flash->success($success);
-            } else {
-                $this->Flash->error($fail);
-            }
-            $this->redirect($this->referer());
         }
+        if ($org_id === 'all') {
+            $question = __('All organisations from brood `{0}` will be downloaded. Continue?', h($brood_id));
+            $title = __('Download all organisations from this brood');
+            $actionName = __('Download all');
+        } else {
+            $question = __('The organisations `{0}` from brood `{1}` will be downloaded. Continue?', h($org_id), h($brood_id));
+            $title = __('Download organisation from this brood');
+            $actionName = __('Download organisation');
+        }
+        $this->set('title',  $title);
+        $this->set('question', $question);
+        $this->set('modalOptions', [
+            'confirmButton' => [
+                'variant' => $org_id === 'all' ? 'warning' : 'primary',
+                'text' => $actionName,
+            ],
+        ]);
+        $this->render('/genericTemplates/confirm');
     }
 
     public function downloadIndividual($brood_id, $individual_id)

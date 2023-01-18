@@ -40,22 +40,22 @@ $tools = sprintf(
 
 $table = $this->Bootstrap->table(['small' => true, 'bordered' => false, 'striped' => false, 'hover' => false], [
     'fields' => [
-        ['key' => 'created', 'label' => __('Date'), 'formatter' => function($value, $row) {
+        ['path' => 'created', 'label' => __('Date'), 'formatter' => function($value, $row) {
             return $value->i18nFormat('yyyy-MM-dd HH:mm:ss');
         }],
-        ['key' => 'brood', 'label' => __('Brood'), 'formatter' => function($brood, $row) {
+        ['path' => 'brood', 'label' => __('Brood'), 'formatter' => function($brood, $row) {
             return sprintf('<a href="%s" target="_blank">%s</a>',
                 $this->Url->build(['controller' => 'broods', 'action' => 'view', $brood['id']]),
                 h($brood['name'])
             );
         }],
-        ['key' => 'individual', 'label' => __('Individual'), 'formatter' => function($individual, $row) {
+        ['path' => 'individual', 'label' => __('Individual'), 'formatter' => function($individual, $row) {
             return sprintf('<a href="%s" target="_blank">%s</a>',
                 $this->Url->build(['controller' => 'users', 'action' => 'view', $individual['id']]),
                 h($individual['email'])
             );
         }],
-        ['key' => 'individual.alignments', 'label' => __('Alignment'), 'formatter' => function($alignments, $row) {
+        ['path' => 'individual.alignments', 'label' => __('Alignment'), 'formatter' => function($alignments, $row) {
             $html = '';
             foreach ($alignments as $alignment) {
                 $html .= sprintf('<div class="text-nowrap"><b>%s</b> @ <a href="%s" target="_blank">%s</a></div>',
@@ -71,7 +71,7 @@ $table = $this->Bootstrap->table(['small' => true, 'bordered' => false, 'striped
 ]);
 
 $requestData = $this->Bootstrap->collapse([
-        'title' => __('Message data'),
+        'text' => __('Message data'),
         'open' => true,
     ],
     sprintf('<pre class="p-2 rounded mb-0" style="background: #eeeeee55;"><code>%s</code></pre>', json_encode($request['data']['sent'], JSON_PRETTY_PRINT))

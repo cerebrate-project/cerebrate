@@ -82,7 +82,7 @@ foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
         }
     }
 }
-$fieldContainer = $this->Bootstrap->genNode('div', [
+$fieldContainer = $this->Bootstrap->node('div', [
     'class' => [],
 ], $fieldsHtml);
 echo $fieldContainer;

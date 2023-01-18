@@ -359,6 +359,9 @@ class AJAXApi {
         if (!skipRequestHooks) {
             this.beforeRequest()
         }
+        if (form === undefined || form.nodeName !== 'FORM') {
+            throw new Error(`Form argument must be a valid HTMLFormELement.`)
+        }
         let toReturn
         let feedbackShown = false
         try {

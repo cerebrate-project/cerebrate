@@ -5,7 +5,9 @@ namespace App\Model\Table;
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Event\EventInterface;
 use Cake\ORM\RulesChecker;
+use ArrayObject;
 
 class MetaFieldsTable extends AppTable
 {
@@ -22,6 +24,8 @@ class MetaFieldsTable extends AppTable
         $this->addBehavior('Timestamp');
         $this->belongsTo('MetaTemplates');
         $this->belongsTo('MetaTemplateFields');
+        $this->belongsTo('MetaTemplateNameDirectory')
+            ->setForeignKey('meta_template_directory_id');
 
         $this->setDisplayField('field');
     }
@@ -35,7 +39,10 @@ class MetaFieldsTable extends AppTable
             ->notEmptyString('value')
             ->notEmptyString('meta_template_id')
             ->notEmptyString('meta_template_field_id')
-            ->requirePresence(['scope', 'field', 'value', 'uuid', 'meta_template_id', 'meta_template_field_id'], 'create');
+            // ->requirePresence(['scope', 'field', 'value', 'uuid', 'meta_template_id', 'meta_template_field_id'], 'create');
+            // ->requirePresence(['scope', 'field', 'value', 'uuid',], 'create');
+            ->notEmptyString('meta_template_directory_id')
+            ->requirePresence(['scope', 'field', 'value', 'uuid', 'meta_template_directory_id', ], 'create');
 
         $validator->add('value', 'validMetaField', [
             'rule' => 'isValidMetaField',
@@ -46,10 +53,28 @@ class MetaFieldsTable extends AppTable
         return $validator;
     }
 
+    public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options)
+    {
+        if (!isset($data['meta_template_directory_id'])) {
+            $data['meta_template_directory_id'] = $this->getTemplateDirectoryIdFromMetaTemplate($data['meta_template_id']);
+        }
+    }
+
+    public function getTemplateDirectoryIdFromMetaTemplate($metaTemplateId): int
+    {
+        return $this->MetaTemplates->find()
+            ->select('meta_template_directory_id')
+            ->where(['id' => $metaTemplateId])
+            ->first();
+    }
+
     public function isValidMetaField($value, array $context)
     {
         $metaFieldsTable = $context['providers']['table'];
         $entityData = $context['data'];
+        if (empty($entityData['meta_template_field_id'])) {
+            return true;
+        }
         $metaTemplateField = $metaFieldsTable->MetaTemplateFields->get($entityData['meta_template_field_id']);
         return $this->isValidMetaFieldForMetaTemplateField($value, $metaTemplateField);
     }

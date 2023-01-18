@@ -91,10 +91,6 @@ class PermissionLimitationsTable extends AppTable
                 foreach ($metaTemplate['meta_template_fields'] as &$meta_template_field) {
                     $boolean = $meta_template_field['type'] === 'boolean';
                     foreach ($meta_template_field['metaFields'] as &$metaField) {
-                        if ($boolean) {
-                            $metaField['value'] = '<i class="fas fa-' . ((bool)$metaField['value'] ? 'check' : 'times') . '"></i>';
-                            $metaField['no_escaping'] = true;
-                        }
                         if (isset($permissionLimitations[$metaField['field']])) {
                             foreach ($permissionLimitations[$metaField['field']] as $scope => $value) {
                                 $messageType = 'warning';
