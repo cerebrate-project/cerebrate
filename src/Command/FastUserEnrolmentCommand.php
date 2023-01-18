@@ -34,7 +34,7 @@ class FastUserEnrolmentCommand extends Command
             'default' => 'member',
         ]);
         $parser->addOption('individual_email_column', [
-            'short' => 'e',
+            'short' => 'i',
             'help' => 'The name of the column to find the individual email address',
             'default' => 'Email',
         ]);
@@ -50,6 +50,7 @@ class FastUserEnrolmentCommand extends Command
             'default' => false,
         ]);
         $parser->addOption('role_id', [
+            'short' => 'r',
             'help' => 'The role to assign to the user',
         ]);
         $parser->addOption('yes', [
@@ -69,7 +70,7 @@ class FastUserEnrolmentCommand extends Command
         $this->individual_email_column = $args->getOption('individual_email_column');
         $this->organisation_name_column = $args->getOption('organisation_name_column');
         $this->create_user = $args->getOption('create_user');
-        $this->role_id = $args->getArgument('role_id');
+        $this->role_id = $args->getOption('role_id');
         $this->autoYes = $args->getOption('yes');
 
         $alignmentTable = $this->modelClass;
@@ -93,11 +94,12 @@ class FastUserEnrolmentCommand extends Command
         if ($this->create_user) {
             $this->loadModel('Users');
             if (is_null($this->role_id)) {
-                $defaultRole = $this->Users->Roles->find()->select(['id'])->where(['is_default' => true])->first()->toArray();
+                $defaultRole = $this->Users->Roles->find()->select(['id'])->where(['is_default' => true])->first();
                 if (empty($defaultRole)) {
-                    $this->io->error(__('No default role available. Create a defaul role or provide the role ID to be assigned.'));
+                    $this->io->error(__('No default role available. Create a default role or provide the role ID to be assigned.'));
                     die(1);
                 }
+                $defaultRole = $defaultRole->toArray();
                 if (!empty($defaultRole['perm_admin'])) {
                     $selection = $io->askChoice('The default role has the `admin` permission. Confirm giving the admin permission to users to be enrolled.', ['Y', 'N'], 'N');
                     if ($selection != 'Y') {
@@ -171,9 +173,6 @@ class FastUserEnrolmentCommand extends Command
     {
         $entities = [];
         foreach ($alignmentEntities as $alignmentEntity) {
-            if ($alignmentEntity->individual_email != 'Lionel.Ferette@cert.be') {
-                continue;
-            }
             $entity = $this->Users->newEntity([
                 'individual_id' => $alignmentEntity->individual_id,
                 'organisation_id' => $alignmentEntity->organisation_id,
