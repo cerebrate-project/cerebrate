@@ -154,7 +154,12 @@ class UsersController extends AppController
         }
         $keycloakUsersParsed = null;
         if (!empty(Configure::read('keycloak.enabled'))) {
-            $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
+            try {
+                $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
+            } catch (\Exception $e) {
+                $keycloakUsersParsed = [];
+                $this->Flash->error(__('Issue while connecting to keycloak. {0}', $e->getMessage()));
+            }
         }
         $this->CRUD->view($id, [
             'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations'],
