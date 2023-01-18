@@ -45,7 +45,7 @@ class BroodsController extends AppController
         $dropdownData = [
             'organisation' => $this->Organisations->find('list', [
                 'sort' => ['name' => 'asc']
-            ])
+            ])->toArray()
         ];
         $this->set(compact('dropdownData'));
     }
@@ -72,7 +72,7 @@ class BroodsController extends AppController
         $dropdownData = [
             'organisation' => $this->Organisations->find('list', [
                 'sort' => ['name' => 'asc']
-            ])
+            ])->toArray()
         ];
         $this->set(compact('dropdownData'));
         $this->render('add');

@@ -142,6 +142,9 @@ class CRUDComponent extends Component
                     $data[$i] = $this->attachMetaTemplatesIfNeeded($row, $metaTemplates);
                 }
                 $this->Controller->set('meta_templates', $metaTemplates);
+                $this->Controller->set('meta_templates_enabled', array_filter($metaTemplates, function($template) {
+                    return $template['enabled'];
+                }));
             }
             if (true) { // check if stats are requested
                 $modelStatistics = [];

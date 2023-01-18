@@ -98,7 +98,7 @@ class AuthKeycloakBehavior extends Behavior
     public function getUserIdByUsername(string $username)
     {
         $response = $this->restApiRequest(
-            '%s/admin/realms/%s/users/?username=' . urlencode($username),
+            '%s/admin/realms/%s/users/?username=' . $this->urlencodeEscapeForSprintf($username),
             [],
             'GET'
         );

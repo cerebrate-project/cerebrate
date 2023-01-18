@@ -87,11 +87,10 @@ class FieldSquasherCommand extends Command
         if ($selection == 'Y') {
             $this->saveDataOnDisk($filename, $candidateResult['candidates']);
         }
-        die(1);
-
+        $entities = $candidateResult['candidates'];
         $selection = $io->askChoice('A sample of the data you about to be saved is provided above. Would you like to proceed?', ['Y', 'N'], 'N');
         if ($selection == 'Y') {
-            // $this->saveData($this->{$table}, $entities);
+            $this->saveData($this->{$table}, $entities);
         }
     }
 

@@ -19,6 +19,9 @@ if (!empty($fieldData['label'])) {
 if ($controlParams['options'] instanceof \Cake\ORM\Query) {
     $controlParams['options'] = $controlParams['options']->all()->toList();
 }
+if (!empty($fieldData['select2'])) {
+    $controlParams['class'] .= ' select2-input';
+}
 if (in_array('_custom', array_keys($controlParams['options']))) {
     $customInputValue = $this->Form->getSourceValue($fieldData['field']);
     if (!in_array($customInputValue, $controlParams['options'])) {
@@ -49,6 +52,15 @@ echo $this->FormFieldMassage->prepareFormElement($this->Form, $controlParams, $f
             $select.attr('onclick', 'toggleFreetextSelectField(this)')
             $select.parent().find('input.custom-value').attr('oninput', 'updateAssociatedSelect(this)')
             updateAssociatedSelect($select.parent().find('input.custom-value')[0])
+            <?php if (!empty($fieldData['select2'])) : ?>
+                let $container = $select.closest('.modal-dialog')
+                if ($container.length == 0) {
+                    $container = $(document.body)
+                }
+                $select.select2({
+                    dropdownParent: $container,
+                })
+            <?php endif; ?>
         })
 
     })()

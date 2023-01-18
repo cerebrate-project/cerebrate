@@ -190,7 +190,7 @@ class ImporterCommand extends Command
                         if (is_null($metaEntity)) {
                             $metaEntity = $this->MetaFields->newEmptyEntity();
                             $metaEntity->field = $fieldName;
-                            $metaEntity->scope = $table->metaFields;
+                            $metaEntity->scope = $table->getBehavior('MetaFields')->getScope();
                             $metaEntity->meta_template_id = $metaTemplate->id;
                             if (isset($metaTemplateFieldsMapping[$fieldName])) { // a meta field template must exists
                                 $metaEntity->meta_template_field_id = $metaTemplateFieldsMapping[$fieldName];
@@ -248,6 +248,7 @@ class ImporterCommand extends Command
     {
         foreach ($entity->metaFields as $i => $metaEntity) {
             $metaEntity->parent_id = $entity->id;
+            $metaEntity->setNew(true);
             if ($metaEntity->hasErrors() || is_null($metaEntity->value)) {
                 $this->io->error(json_encode(['entity' => $metaEntity, 'errors' => $metaEntity->getErrors()], JSON_PRETTY_PRINT));
                 unset($entity->metaFields[$i]);
@@ -289,9 +290,9 @@ class ImporterCommand extends Command
                 $values = array_map("self::{$fieldConfig['massage']}", $values);
             }
             if (isset($defaultFields[$key])) {
-                $data[$key] = $values;
+                $data[$key] = array_map('trim', $values);
             } else {
-                $data['metaFields'][$key] = $values;
+                $data['metaFields'][$key] = array_map('trim', $values);
             }
         }
         return $this->invertArray($data);
@@ -299,25 +300,25 @@ class ImporterCommand extends Command
 
     private function extractDataFromCSV($defaultFields, $config, $source)
     {
+        $csvData = $this->csvToAssociativeArray($source);
+        return $this->extractDataFromJSON($defaultFields, $config, $csvData);
+    }
+
+    private function csvToAssociativeArray($source): array
+    {
         $rows = array_map('str_getcsv', explode(PHP_EOL, $source));
         if (count($rows[0]) != count($rows[1])) {
             $this->io->error('Error while parsing source data. CSV doesn\'t have the same number of columns');
             die(1);
         }
-        $header = array_shift($rows);
-        $data = array();
-        foreach($rows as $row) {
-            $dataRow = [];
-            foreach ($header as $i => $headerField) {
-                if (isset($defaultFields[$headerField])) {
-                    $dataRow[$headerField] = $row[$i];
-                } else {
-                    $dataRow['metaFields'][$headerField] = $row[$i];
-                }
+        $csvData = [];
+        $headers = array_shift($rows);
+        foreach ($rows as $row) {
+            if (count($headers) == count($row)) {
+                $csvData[] = array_combine($headers, $row);
             }
-            $data[] = $dataRow;
         }
-        return $data;
+        return $csvData;
     }
 
     private function lockAccess(&$entity)
@@ -477,6 +478,9 @@ class ImporterCommand extends Command
             foreach ($entities as $entity) {
                 $row = [];
                 foreach ($tableHeader as $key) {
+                    if (in_array($key, $entity->getVirtual())) {
+                        continue;
+                    }
                     $subKeys = explode('.', $key);
                     if (in_array('metaFields', $subKeys)) {
                         $found = false;

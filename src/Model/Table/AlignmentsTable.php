@@ -4,6 +4,7 @@ namespace App\Model\Table;
 
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
+use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
 
 class AlignmentsTable extends AppTable
@@ -24,7 +25,16 @@ class AlignmentsTable extends AppTable
             ->notEmptyString('organisation_id')
             ->requirePresence(['individual_id', 'organisation_id'], 'create');
         return $validator;
-        }
+    }
+
+    public function buildRules(RulesChecker $rules): RulesChecker
+    {
+        $rules->add($rules->isUnique(
+            ['individual_id', 'organisation_id', 'type'],
+            __('This alignment already exists.')
+        ));
+        return $rules;
+    }
 
     public function setAlignment($organisation_id, $individual_id, $type): void
     {
