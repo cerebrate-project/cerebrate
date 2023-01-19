@@ -17,6 +17,7 @@ use App\View\Helper\BootstrapGeneric;
  *  - body: The body of the modal
  *  - bodyHtml: The HTML body of the modal
  *  - footerHtml: The HTML footer of the modal. Override the $type option
+ *  - dialogScrollable: Allows to scroll the modal body
  *  - modalClass, headerClass, footerClass: Classes to be applied to these modal sections
  *  - type: Control the type of actions available.
  *      Valid values: 'ok-only', 'confirm', 'custom'
@@ -139,6 +140,7 @@ class BootstrapModal extends BootstrapGeneric
         'body' => '',
         'bodyHtml' => null,
         'footerHtml' => null,
+        'dialogScrollable' => true,
         'modalClass' => [''],
         'headerClass' => [''],
         'bodyClass' => [''],
@@ -175,6 +177,10 @@ class BootstrapModal extends BootstrapGeneric
         $this->options['headerClass'] = $this->convertToArrayIfNeeded($this->options['headerClass']);
         $this->options['bodyClass'] = $this->convertToArrayIfNeeded($this->options['bodyClass']);
         $this->options['footerClass'] = $this->convertToArrayIfNeeded($this->options['footerClass']);
+
+        if (!empty($this->options['dialogScrollable'])) {
+            $this->options['modalClass'][] = 'modal-dialog-scrollable';
+        }
 
         $possiblVariants = ['header-variant', 'body-variant', 'footer-variant'];
         foreach ($possiblVariants as $possiblVariant) {
