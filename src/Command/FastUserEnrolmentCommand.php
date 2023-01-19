@@ -201,11 +201,11 @@ class FastUserEnrolmentCommand extends Command
         foreach ($data as $entry) {
             $individual = $this->getIndividualByEmail($entry[$this->individual_email_column]);
             $organisation = $this->getOrganisationsByName($entry[$this->organisation_name_column]);
-            if (empty($individual)) {
+            if (empty($organisation)) {
                 $this->io->error("Error while parsing source data. Could not find organisation with name: " . $entry[$this->organisation_name_column]);
                 die(1);
             }
-            if (empty($organisation)) {
+            if (empty($individual)) {
                 $this->io->error("Error while parsing source data. Could not find individuals with email: " . $entry[$this->individual_email_column]);
                 die(1);
             }
@@ -215,8 +215,6 @@ class FastUserEnrolmentCommand extends Command
                 'type' => $this->alignment_type,
                 'individual_email' => $entry[$this->individual_email_column],
             ];
-            $new['individual_id'] = $new['individual_id']['id'];
-            $new['organisation_id'] = $new['organisation_id']['id'];
             $updatedData[] = $new;
         }
         return $updatedData;
