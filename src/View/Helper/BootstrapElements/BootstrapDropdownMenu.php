@@ -177,6 +177,12 @@ class BootstrapDropdownMenu extends BootstrapGeneric
         }
 
         $classes = ['dropdown-item'];
+        if (!empty($entry['class'])) {
+            if (!is_array($entry['class'])) {
+                $entry['class'] = [$entry['class']];
+            }
+            $classes = array_merge($classes, $entry['class']);
+        }
         $params = ['href' => '#'];
 
         if (!empty($entry['menu'])) {
