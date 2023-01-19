@@ -199,20 +199,22 @@ class FastUserEnrolmentCommand extends Command
         $this->loadModel('Organisations');
         $updatedData = [];
         foreach ($data as $entry) {
-            $new = [
-                'individual_id' => $this->getIndividualByEmail($entry[$this->individual_email_column]),
-                'organisation_id' => $this->getOrganisationsByName($entry[$this->organisation_name_column]),
-                'type' => $this->alignment_type,
-                'individual_email' => $entry[$this->individual_email_column],
-            ];
-            if (empty($new['organisation_id'])) {
+            $individual = $this->getIndividualByEmail($entry[$this->individual_email_column]);
+            $organisation = $this->getOrganisationsByName($entry[$this->organisation_name_column]);
+            if (empty($individual)) {
                 $this->io->error("Error while parsing source data. Could not find organisation with name: " . $entry[$this->organisation_name_column]);
                 die(1);
             }
-            if (empty($new['individual_id'])) {
+            if (empty($organisation)) {
                 $this->io->error("Error while parsing source data. Could not find individuals with email: " . $entry[$this->individual_email_column]);
                 die(1);
             }
+            $new = [
+                'individual_id' => $individual->id,
+                'organisation_id' => $organisation->id,
+                'type' => $this->alignment_type,
+                'individual_email' => $entry[$this->individual_email_column],
+            ];
             $new['individual_id'] = $new['individual_id']['id'];
             $new['organisation_id'] = $new['organisation_id']['id'];
             $updatedData[] = $new;
@@ -224,14 +226,14 @@ class FastUserEnrolmentCommand extends Command
     {
         return $this->Individuals->find()->where([
             'email' => $email,
-        ])->first()->toArray();
+        ])->first();
     }
 
     private function getOrganisationsByName($name)
     {
         return $this->Organisations->find()->where([
             'name' => $name,
-        ])->first()->toArray();
+        ])->first();
     }
 
     private function getDataFromFile($path)
