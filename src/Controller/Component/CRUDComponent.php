@@ -76,10 +76,9 @@ class CRUDComponent extends Component
         if (!empty($options['order'])) {
             $query->order($options['order']);
         }
-        if ($this->Controller->ParamHandler->isRest()) {
-            if ($this->metaFieldsSupported()) {
-                $query = $this->includeRequestedMetaFields($query);
-            }
+        if ($this->metaFieldsSupported() && !$this->Controller->ParamHandler->isRest()) {
+            $query = $this->includeRequestedMetaFields($query);
+        }
         if (!$this->Controller->ParamHandler->isRest()) {
             $this->setRequestedEntryAmount();
         }
