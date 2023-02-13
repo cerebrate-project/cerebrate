@@ -206,6 +206,24 @@ function deleteBookmark(bookmark, forSidebar=false) {
     }).catch((e) => { })
 }
 
+function downloadIndexTable(downloadButton, filename) {
+    const $dropdownMenu = $(downloadButton).closest('.dropdown')
+    const tableRandomValue = $dropdownMenu.attr('data-table-random-value')
+    const $container = $dropdownMenu.closest('div[id^="table-container-"]')
+    const $table = $container.find(`table[data-table-random-value="${tableRandomValue}"]`)
+    const $filterButton = $(`#toggleFilterButton-${tableRandomValue}`)
+    const activeFilters = $filterButton.data('activeFilters')
+    const additionalUrlParams = $filterButton.data('additionalUrlParams') ? $filterButton.data('additionalUrlParams') : ''
+    const searchParam = jQuery.param(activeFilters);
+    const url = $table.data('reload-url') + additionalUrlParams + '?' + searchParam
+    let options = {}
+    const downloadPromise = AJAXApi.quickFetchJSON(url, options)
+    UI.overlayUntilResolve($dropdownMenu, downloadPromise)
+    downloadPromise.then((data) => {
+        download(filename, JSON.stringify(data, undefined, 4))
+    })
+}
+
 function overloadBSDropdown() {
     // Inspired from https://jsfiddle.net/dallaslu/mvk4uhzL/
     (function ($bs) {

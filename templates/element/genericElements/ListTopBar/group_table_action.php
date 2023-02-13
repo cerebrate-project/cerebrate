@@ -67,6 +67,8 @@ $numberOfElementHtml = $this->element('/genericElements/ListTopBar/group_table_a
 ?>
 <?php if (!isset($data['requirement']) || $data['requirement']) : ?>
     <?php
+    $now = date("Y-m-d_H-i-s");
+    $downloadFilename = sprintf('%s_%s.json', $data['table_setting_id'] ?? h($model), $now);
     echo $this->Bootstrap->dropdownMenu([
         'dropdown-class' => 'ms-1',
         'alignment' => 'end',
@@ -88,6 +90,13 @@ $numberOfElementHtml = $this->element('/genericElements/ListTopBar/group_table_a
                 'icon' => 'eye-slash',
                 'keepOpen' => true,
                 'menu' => $indexColumnMenu,
+            ],
+            [
+                'text' => __('Download'),
+                'icon' => 'download',
+                'attrs' => [
+                    'onclick' => sprintf('downloadIndexTable(this, "%s")', $downloadFilename),
+                ],
             ],
             [
                 'html' => $compactDisplayHtml,
