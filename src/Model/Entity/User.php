@@ -54,7 +54,7 @@ class User extends AppModel
         if (!empty($this->tags)) {
             $this->tags = $this->rearrangeTags($this->tags);
         }
-        if (!empty($this->meta_fields)) {
+        if (!empty($this->meta_fields) || !empty($this->MetaTemplates)) {
             $this->rearrangeMetaFields($options);
         }
         if (!empty($this->user_settings_by_name)) {
