@@ -13,7 +13,7 @@ use App\View\Helper\BootstrapHelper;
  * - button: Configuration for the dropdown button to be passed to BootstrapElements\BootstrapButton
  * - submenu_alignment: Alignment of the child dropdown will be displayed Valid: "start", "end", "up", "down"
  * - submenu_direction: Position where the child dropdown will be displayed Valid: "start", "end", "up", "down"
- * - attrs: Additional HTML attributes tro be applied on the dropdown container
+ * - attrs: Additional HTML attributes to be applied on the dropdown container
  * - menu: Entries making the dropdown menu. Accept the following options:
  *      - text: Text of the entry
  *      - html: HTML of the entry
@@ -22,6 +22,7 @@ use App\View\Helper\BootstrapHelper;
  *      - header: Is this item a list header
  *      - keepOpen: Keep the dropdown open if this entry is clicked
  *      - sup: Additional text to be added as a <sup> element
+ *      - attrs: Additional HTML attributes to be applied on the entry
  * 
  * # Usage:
  * $this->Bootstrap->dropdownMenu([
@@ -183,7 +184,8 @@ class BootstrapDropdownMenu extends BootstrapGeneric
             }
             $classes = array_merge($classes, $entry['class']);
         }
-        $params = ['href' => '#'];
+        $params = $entry['attrs'] ?? [];
+        $params['href'] = '#';
 
         if (!empty($entry['menu'])) {
             $classes[] = 'dropdown-toggle';
