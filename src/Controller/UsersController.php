@@ -26,8 +26,13 @@ class UsersController extends AppController
         if (!empty(Configure::read('keycloak.enabled'))) {
             // $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
         }
+        $additionalContainFields = [];
+        if ($this->ParamHandler->isRest()) {
+            $additionalContainFields[] = 'MetaFields';
+        }
+        $containFields = array_merge($this->containFields, $additionalContainFields);
         $this->CRUD->index([
-            'contain' => $this->containFields,
+            'contain' => $containFields,
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'conditions' => $conditions,
