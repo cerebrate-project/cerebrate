@@ -11,9 +11,9 @@ class MetaTemplatesNavigation extends BaseNavigation
         $this->bcf->addRoute('MetaTemplates', 'index', $this->bcf->defaultCRUD('MetaTemplates', 'index'));
         $this->bcf->addRoute('MetaTemplates', 'view', $this->bcf->defaultCRUD('MetaTemplates', 'view'));
         $this->bcf->addRoute('MetaTemplates', 'enable', [
-            'label' => __('Enable'),
+            'label' => __('Enable / Disable'),
             'icon' => 'check-square',
-            'url' => '/metaTemplates/enable/{{id}}/enabled',
+            'url' => '/metaTemplates/toggle/{{id}}/enabled',
             'url_vars' => ['id' => 'id'],
         ]);
         $this->bcf->addRoute('MetaTemplates', 'set_default', [
@@ -74,7 +74,7 @@ class MetaTemplatesNavigation extends BaseNavigation
             $totalUpdateCount = $udpateCount + $newCount;
         }
         $updateAllActionConfig = [
-            'label' => __('Update template'),
+            'label' => __('Update all template'),
             'url' => '/metaTemplates/updateAllTemplates',
             'url_vars' => ['id' => 'id'],
         ];
@@ -87,7 +87,7 @@ class MetaTemplatesNavigation extends BaseNavigation
         }
         $this->bcf->addAction('MetaTemplates', 'index', 'MetaTemplates', 'update_all_templates', $updateAllActionConfig);
         $this->bcf->addAction('MetaTemplates', 'index', 'MetaTemplates', 'prune_outdated_template', [
-            'label' => __('Prune outdated template'),
+            'label' => __('Prune outdated templates'),
             'url' => '/metaTemplates/prune_outdated_template',
         ]);
 
