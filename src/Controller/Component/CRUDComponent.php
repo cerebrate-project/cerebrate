@@ -46,7 +46,8 @@ class CRUDComponent extends Component
             $options['filters'][] = 'filteringTags';
         }
 
-        $optionFilters = empty($options['filters']) ? [] : $options['filters'];
+        $optionFilters = [];
+        $optionFilters += empty($options['filters']) ? [] : $options['filters'];
         foreach ($optionFilters as $i => $filter) {
             $optionFilters[] = "{$filter} !=";
             $optionFilters[] = "{$filter} >=";
@@ -79,7 +80,13 @@ class CRUDComponent extends Component
             if ($this->metaFieldsSupported()) {
                 $query = $this->includeRequestedMetaFields($query);
             }
-            $data = $query->all();
+        if (!$this->Controller->ParamHandler->isRest()) {
+            $this->setRequestedEntryAmount();
+        }
+        $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
+        $totalCount = $this->Controller->getRequest()->getAttribute('paging')[$this->TableAlias]['count'];
+        if ($this->Controller->ParamHandler->isRest()) {
+            $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
             if (isset($options['hidden'])) {
                 $data->each(function($value, $key) use ($options) {
                     $hidden = is_array($options['hidden']) ? $options['hidden'] : [$options['hidden']];
@@ -110,13 +117,11 @@ class CRUDComponent extends Component
                     return $this->attachMetaTemplatesIfNeeded($value, $metaTemplates);
                 });
             }
-            $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+            $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json', false, false, false, [
+                'X-Total-Count' => $totalCount,
+            ]);
         } else {
-            if ($this->metaFieldsSupported()) {
-                $query = $this->includeRequestedMetaFields($query);
-            }
-            $this->setRequestedEntryAmount();
-            $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
+            $this->Controller->setResponse($this->Controller->getResponse()->withHeader('X-Total-Count', $totalCount));
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
                 if (is_callable($function)) {
