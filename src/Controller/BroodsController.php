@@ -90,6 +90,7 @@ class BroodsController extends AppController
 
     public function testConnection($id)
     {
+        $this->request->getSession()->close(); // close session to allow concurrent requests
         $status = $this->Broods->queryStatus($id);
         return $this->RestResponse->viewData($status, 'json');
     }
