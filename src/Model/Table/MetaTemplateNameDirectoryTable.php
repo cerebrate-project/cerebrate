@@ -5,6 +5,7 @@ namespace App\Model\Table;
 use App\Model\Entity\MetaTemplate;
 use App\Model\Entity\MetaTemplateNameDirectory;
 use App\Model\Table\AppTable;
+use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
 
 class MetaTemplateNameDirectoryTable extends AppTable
@@ -33,6 +34,15 @@ class MetaTemplateNameDirectoryTable extends AppTable
         return $validator;
     }
 
+    public function buildRules(RulesChecker $rules): RulesChecker
+    {
+        $rules->add($rules->isUnique(
+            ['uuid', 'version'],
+            __('This meta-template already exists.')
+        ));
+        return $rules;
+    }
+
     public function createFromMetaTemplate(MetaTemplate $metaTemplate): MetaTemplateNameDirectory
     {
         $metaTemplateDirectory = $this->newEntity([
@@ -41,6 +51,14 @@ class MetaTemplateNameDirectoryTable extends AppTable
             'uuid' => $metaTemplate['uuid'],
             'version' => $metaTemplate['version'],
         ]);
+        $existingTemplate = $this->find()
+            ->where([
+                'uuid' => $metaTemplate['uuid'],
+                'version' => $metaTemplate['version'],
+            ])->first();
+        if (!empty($existingTemplate)) {
+            return $existingTemplate;
+        }
         $this->save($metaTemplateDirectory);
         return $metaTemplateDirectory;
     }
