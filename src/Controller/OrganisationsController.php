@@ -66,7 +66,7 @@ class OrganisationsController extends AppController
             ];
         }
         $additionalContainFields = [];
-        if ($this->ParamHandler->isRest() && !empty($this->request->getQuery('full'))) {
+        if ($this->ParamHandler->isRest()) {
             $additionalContainFields[] = 'MetaFields';
         }
         $containFields = array_merge($this->containFields, $additionalContainFields);
