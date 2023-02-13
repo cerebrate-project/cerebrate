@@ -151,11 +151,10 @@ class BroodsTable extends AppTable
         if (empty($brood)) {
             throw new NotFoundException(__('Brood not found'));
         }
-        $filterQuery = empty($filter) ? '' : '?quickFilter=' . urlencode($filter);
         if (!empty($full)) {
-            $filterQuery .= (empty($filterQuery) ? '?' : '&') . 'full=1';
+            $filter['full'] = 1;
         }
-        $response = $this->HTTPClientGET(sprintf('/%s/index.json%s', $scope, $filterQuery), $brood);
+        $response = $this->HTTPClientGET(sprintf('/%s/index.json?%s', $scope, http_build_query($filter)), $brood);
         if ($response->isOk()) {
             return $response->getJson();
         } else {

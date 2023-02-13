@@ -101,8 +101,14 @@ class BroodsController extends AppController
         if (!in_array($scope, $validScopes)) {
             throw new MethodNotAllowedException(__('Invalid scope. Valid options are: {0}', implode(', ', $validScopes)));
         }
-        $filter = $this->request->getQuery('quickFilter');
-        $data = $this->Broods->queryIndex($id, $scope, $filter, true);
+        $filtering = [
+            'page' => $this->request->getQuery('page', 1),
+            'limit' => $this->request->getQuery('limit', 20),
+        ];
+        if (!empty($this->request->getQuery('quickFilter'))) {
+            $filtering['quickFilter'] = $this->request->getQuery('quickFilter');
+        }
+        $data = $this->Broods->queryIndex($id, $scope, $filtering, true);
         if (!is_array($data)) {
             $data = [];
         }
