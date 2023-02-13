@@ -65,7 +65,8 @@ class MetaFieldsTable extends AppTable
         return $this->MetaTemplates->find()
             ->select('meta_template_directory_id')
             ->where(['id' => $metaTemplateId])
-            ->first();
+            ->first()
+            ->meta_template_directory_id;
     }
 
     public function isValidMetaField($value, array $context)
