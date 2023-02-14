@@ -91,7 +91,7 @@ class MetaTemplatesNavigation extends BaseNavigation
             'url' => '/metaTemplates/prune_outdated_template',
         ]);
 
-        if (empty($this->viewVars['updateableTemplates']['up-to-date'])) {
+        if (empty($this->viewVars['templateStatus']['up-to-date'])) {
             $this->bcf->addAction('MetaTemplates', 'view', 'MetaTemplates', 'update', [
                 'label' => __('Update template'),
                 'url' => '/metaTemplates/update/{{id}}',

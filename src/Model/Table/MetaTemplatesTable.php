@@ -24,8 +24,12 @@ class MetaTemplatesTable extends AppTable
     public const UPDATE_STRATEGY_KEEP_BOTH = 'keep_both';
     public const UPDATE_STRATEGY_DELETE = 'delete_all';
 
-    public const DEFAULT_STRATEGY = MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW;
-    public const ALLOWED_STRATEGIES = [MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW];
+    public const DEFAULT_STRATEGY = MetaTemplatesTable::UPDATE_STRATEGY_UPDATE_EXISTING;
+    public const ALLOWED_STRATEGIES = [
+        MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW,
+        MetaTemplatesTable::UPDATE_STRATEGY_UPDATE_EXISTING,
+        MetaTemplatesTable::UPDATE_STRATEGY_KEEP_BOTH,
+    ];
 
     private $templatesOnDisk = null;
 
@@ -74,6 +78,41 @@ class MetaTemplatesTable extends AppTable
      */
     public function updateAllTemplates(): array
     {
+        // Create new template found on the disk
+        $newTemplateResult = $this->createAllNewTemplates();
+        $files_processed = $newTemplateResult['files_processed'];
+        $updatesErrors = $newTemplateResult['update_errors'];
+
+        $templatesUpdateStatus = $this->getUpdateStatusForTemplates();
+
+        // Update all existing templates
+        foreach ($templatesUpdateStatus as $uuid => $templateUpdateStatus) {
+            if (!empty($templateUpdateStatus['existing_template'])) {
+                $metaTemplate = $templateUpdateStatus['existing_template'];
+                $result = $this->update($metaTemplate, null);
+                if ($result['success']) {
+                    $files_processed[] = $metaTemplate->uuid;
+                }
+                if (!empty($result['errors'])) {
+                    $updatesErrors[] = $result['errors'];
+                }
+            }
+        }
+        $results = [
+            'update_errors' => $updatesErrors,
+            'files_processed' => $files_processed,
+            'success' => !empty($files_processed),
+        ];
+        return $results;
+    }
+
+    /**
+     * Load the templates stored on the disk update and create them in the database without touching at the existing ones
+     *
+     * @return array The update result containing potential errors and the successes
+     */
+    public function createAllNewTemplates(): array
+    {
         $updatesErrors = [];
         $files_processed = [];
         $templatesOnDisk = $this->readTemplatesFromDisk();
@@ -106,13 +145,32 @@ class MetaTemplatesTable extends AppTable
      * @param string|null $strategy The strategy to be used when updating templates with conflicts
      * @return array The update result containing potential errors and the successes
      */
-    public function update($metaTemplate, $strategy = null): array
+    public function update(\App\Model\Entity\MetaTemplate $metaTemplate, $strategy = null): array
     {
         $files_processed = [];
         $updatesErrors = [];
         $templateOnDisk = $this->readTemplateFromDisk($metaTemplate->uuid);
         $templateStatus = $this->getStatusForMetaTemplate($templateOnDisk, $metaTemplate);
         $updateStatus = $this->computeFullUpdateStatusForMetaTemplate($templateStatus, $metaTemplate);
+        $errors = [];
+
+        $result = $this->doUpdate($updateStatus, $templateOnDisk, $metaTemplate, $strategy);
+        if ($result['success']) {
+            $files_processed[] = $templateOnDisk['uuid'];
+        }
+        if (!empty($result['errors'])) {
+            $updatesErrors[] = $errors;
+        }
+        $results = [
+            'update_errors' => $updatesErrors,
+            'files_processed' => $files_processed,
+            'success' => !empty($files_processed),
+        ];
+        return $results;
+    }
+
+    private function doUpdate(array $updateStatus, array $templateOnDisk, \App\Model\Entity\MetaTemplate $metaTemplate, string $strategy = null): array
+    {
         $errors = [];
         $success = false;
         if ($updateStatus['up-to-date']) {
@@ -126,22 +184,17 @@ class MetaTemplatesTable extends AppTable
             $errors['message'] = __('Cannot update meta-template, update strategy not allowed');
         } else if (!$updateStatus['up-to-date']) {
             $strategy = is_null($strategy) ? MetaTemplatesTable::DEFAULT_STRATEGY : $strategy;
+            if ($strategy == MetaTemplatesTable::UPDATE_STRATEGY_UPDATE_EXISTING && !$updateStatus['automatically-updateable']) {
+                $strategy = MetaTemplatesTable::UPDATE_STRATEGY_KEEP_BOTH;
+            }
             $success = $this->updateMetaTemplateWithStrategyRouter($metaTemplate, $templateOnDisk, $strategy, $errors);
         } else {
             $errors['message'] = __('Could not update. Something went wrong.');
         }
-        if ($success) {
-            $files_processed[] = $templateOnDisk['uuid'];
-        }
-        if (!empty($errors)) {
-            $updatesErrors[] = $errors;
-        }
-        $results = [
-            'update_errors' => $updatesErrors,
-            'files_processed' => $files_processed,
-            'success' => !empty($files_processed),
+        return [
+            'success' => $success,
+            'errors' => $errors,
         ];
-        return $results;
     }
 
     /**
@@ -764,13 +817,27 @@ class MetaTemplatesTable extends AppTable
             $errors[] = new UpdateError(false, $metaTemplate);
             return false;
         }
-        $metaTemplate = $this->patchEntity($metaTemplate, $template, [
-            'associated' => ['MetaTemplateFields']
-        ]);
+        $metaTemplate = $this->patchEntity($metaTemplate, $template);
+        foreach ($template['metaFields'] as $newMetaField) {
+            $newMetaField['__patched'] = true;
+            foreach($metaTemplate->meta_template_fields as $i => $oldMetaField) {
+                if ($oldMetaField->field == $newMetaField['field']) {
+                    $metaTemplate->meta_template_fields[$i] = $this->MetaTemplateFields->patchEntity($oldMetaField, $newMetaField);
+                    continue 2;
+                }
+            }
+            $metaTemplate->meta_template_fields[] = $this->MetaTemplateFields->newEntity($newMetaField);
+        }
+        $metaTemplate->setDirty('meta_template_fields', true);
         $metaTemplate = $this->save($metaTemplate, [
             'associated' => ['MetaTemplateFields']
         ]);
-        if (!empty($metaTemplate)) {
+        foreach ($metaTemplate->meta_template_fields as $savedMetafield) {
+            if (empty($savedMetafield['__patched'])) {
+                $this->MetaTemplateFields->delete($savedMetafield);
+            }
+        }
+        if (empty($metaTemplate)) {
             $errors[] = new UpdateError(false, __('Could not save the template.'), $metaTemplate->getErrors());
             return false;
         }
@@ -797,8 +864,8 @@ class MetaTemplatesTable extends AppTable
         }
         if ($strategy == MetaTemplatesTable::UPDATE_STRATEGY_KEEP_BOTH) {
             $result = $this->executeStrategyKeep($template, $metaTemplate);
-        } else if ($strategy == MetaTemplatesTable::UPDATE_STRATEGY_DELETE) {
-            $result = $this->executeStrategyDeleteAll($template, $metaTemplate);
+        } else if ($strategy == MetaTemplatesTable::UPDATE_STRATEGY_UPDATE_EXISTING) {
+            $result = $this->updateMetaTemplate($metaTemplate, $template);
         } else if ($strategy == MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW) {
             $result = $this->executeStrategyCreateNew($template, $metaTemplate);
         } else {
@@ -830,6 +897,7 @@ class MetaTemplatesTable extends AppTable
             $errors[] = new UpdateError(false, __('Could not save the template. A template with this UUID and version already exists'), ['A template with UUID and version already exists']);
         }
         $conflicts = $this->getMetaTemplateConflictsForMetaTemplate($metaTemplate, $template);
+        $conflictingEntities = Hash::combine($conflicts, '{s}.conflictingEntities.{n}.parent_id', '{s}.conflictingEntities.{n}.parent_id');
         $blockingConflict = Hash::extract($conflicts, '{s}.conflicts');
         $errors = [];
         if (empty($blockingConflict)) { // No conflict, everything can be updated without special care
@@ -838,7 +906,6 @@ class MetaTemplatesTable extends AppTable
         }
         $entities = $this->getEntitiesHavingMetaFieldsFromTemplate($metaTemplate->id, null);
 
-        $conflictingEntities = [];
         foreach ($entities as $entity) {
             $conflicts = $this->getMetaFieldsConflictsUnderTemplate($entity['meta_fields'], $template);
             if (!empty($conflicts)) {
@@ -849,8 +916,9 @@ class MetaTemplatesTable extends AppTable
             $this->updateMetaTemplate($metaTemplate, $template, $errors);
             return !empty($errors) ? $errors[0] : true;
         }
-        $template['is_default'] = $metaTemplate['is_default'];
-        $template['enabled'] = $metaTemplate['enabled'];
+        $template['is_default'] = $metaTemplate->is_default;
+        $template['enabled'] = $metaTemplate->enabled;
+        $metaTemplate->set('enabled', false);
         if ($metaTemplate->is_default) {
             $metaTemplate->set('is_default', false);
             $this->save($metaTemplate);
@@ -858,19 +926,53 @@ class MetaTemplatesTable extends AppTable
         $savedMetaTemplate = null;
         $this->saveNewMetaTemplate($template, $errors, $savedMetaTemplate);
         if (!empty($savedMetaTemplate)) {
-            $savedMetaTemplateFieldByName = Hash::combine($savedMetaTemplate['meta_template_fields'], '{n}.field', '{n}');
             foreach ($entities as $entity) {
                 if (empty($conflictingEntities[$entity->id])) { // conflicting entities remain untouched
-                    foreach ($entity['meta_fields'] as $metaField) {
-                        $savedMetaTemplateField = $savedMetaTemplateFieldByName[$metaField->field];
-                        $this->supersedeMetaFieldWithMetaTemplateField($metaField, $savedMetaTemplateField);
-                    }
+                    $this->supersedeMetaFieldsWithMetaTemplateField($entity['meta_fields'], $savedMetaTemplate);
                 }
             }
         } else {
             return $errors[0]->message;
         }
         return true;
+    }
+
+    public function migrateMetafieldsToNewestTemplate(\App\Model\Entity\MetaTemplate $oldMetaTemplate, \App\Model\Entity\MetaTemplate $newestMetaTemplate): array
+    {
+        $result = [
+            'success' => true,
+            'migrated_count' => 0,
+            'conflicting_entities' => 0,
+            'migration_errors' => 0,
+        ];
+
+        $entities = $this->getEntitiesHavingMetaFieldsFromTemplate($oldMetaTemplate->id, null);
+        if (empty($entities)) {
+            return $result;
+        }
+
+        $successfullyMigratedEntities = 0;
+        $migrationErrors = 0;
+        $conflictingEntities = [];
+        foreach ($entities as $entity) {
+            $conflicts = $this->getMetaFieldsConflictsUnderTemplate($entity->meta_fields, $newestMetaTemplate);
+            if (!empty($conflicts)) {
+                $conflictingEntities[] = $entity->id;
+            } else {
+                $success = $this->supersedeMetaFieldsWithMetaTemplateField($entity->meta_fields, $newestMetaTemplate);
+                if ($success) {
+                    $successfullyMigratedEntities += 1;
+                } else {
+                    $migrationErrors += 1;
+                }
+            }
+        }
+
+        $result['success'] = $migrationErrors == 0;
+        $result['migrated_count'] = $successfullyMigratedEntities;
+        $result['conflicting_entities'] = count($conflictingEntities);
+        $result['migration_errors'] = $migrationErrors;
+        return $result;
     }
 
     /**
@@ -941,16 +1043,20 @@ class MetaTemplatesTable extends AppTable
     /**
      * Supersede a meta-fields's meta-template-field with the provided one.
      *
-     * @param \App\Model\Entity\MetaField $metaField
+     * @param array $metaFields
      * @param \App\Model\Entity\MetaTemplateField $savedMetaTemplateField
      * @return bool True if the replacement was a success, False otherwise
      */
-    public function supersedeMetaFieldWithMetaTemplateField(\App\Model\Entity\MetaField $metaField,  \App\Model\Entity\MetaTemplateField $savedMetaTemplateField): bool
+    public function supersedeMetaFieldsWithMetaTemplateField(array $metaFields,  \App\Model\Entity\MetaTemplate $savedMetaTemplate): bool
     {
-        $metaField->set('meta_template_id', $savedMetaTemplateField->meta_template_id);
-        $metaField->set('meta_template_field_id', $savedMetaTemplateField->id);
-        $metaField = $this->MetaTemplateFields->MetaFields->save($metaField);
-        return !empty($metaField);
+        $savedMetaTemplateFieldByName = Hash::combine($savedMetaTemplate['meta_template_fields'], '{n}.field', '{n}');
+        foreach ($metaFields as $i => $metaField) {
+            $savedMetaTemplateField = $savedMetaTemplateFieldByName[$metaField->field];
+            $metaField->set('meta_template_id', $savedMetaTemplateField->meta_template_id);
+            $metaField->set('meta_template_field_id', $savedMetaTemplateField->id);
+        }
+        $entities = $this->MetaTemplateFields->MetaFields->saveMany($metaFields);
+        return !empty($entities);
     }
 
     /**
@@ -977,13 +1083,14 @@ class MetaTemplatesTable extends AppTable
             $metaTemplateFieldByName[$metaTemplateField['field']] = $this->MetaTemplateFields->newEntity($metaTemplateField);
         }
         foreach ($metaFields as $metaField) {
-            if ($existingMetaTemplate && $metaField->meta_template_id != $template->id) {
-                continue;
+            if (empty($metaTemplateFieldByName[$metaField->field])) { // Meta-field was removed from the template
+                $isValid = false;
+            } else {
+                $isValid = $this->MetaTemplateFields->MetaFields->isValidMetaFieldForMetaTemplateField(
+                    $metaField->value,
+                    $metaTemplateFieldByName[$metaField->field]
+                );
             }
-            $isValid = $this->MetaTemplateFields->MetaFields->isValidMetaFieldForMetaTemplateField(
-                $metaField->value,
-                $metaTemplateFieldByName[$metaField->field]
-            );
             if ($isValid !== true) {
                 $conflicting[] = $metaField;
             }
@@ -1027,27 +1134,12 @@ class MetaTemplatesTable extends AppTable
                 $result['conflictingEntities'] = Hash::extract($conflictingStatus, '{n}.parent_id');
             }
         }
-        if (!empty($templateField['regex']) && $templateField['regex'] != $metaTemplateField->regex) {
-            $entitiesWithMetaFieldQuery = $this->MetaTemplateFields->MetaFields->find();
-            $entitiesWithMetaFieldQuery
-                ->enableHydration(false)
-                ->select([
-                    'parent_id',
-                ])
-                ->where([
-                    'meta_template_field_id' => $metaTemplateField->id,
-                ]);
-            $entitiesTable = $this->getTableForMetaTemplateScope($scope);
-            $entities = $entitiesTable->find()
-                ->where(['id IN' => $entitiesWithMetaFieldQuery])
-                ->contain([
-                    'MetaFields' => [
-                        'conditions' => [
-                            'MetaFields.meta_template_field_id' => $metaTemplateField->id
-                        ]
-                    ]
-                ])
-                ->all()->toList();
+
+        if (
+            (!empty($templateField['regex']) && $templateField['regex'] != $metaTemplateField->regex) ||
+            !empty($templateField['values_list'])
+        ) {
+            $entities = $this->getEntitiesForMetaTemplateField($scope, $metaTemplateField->id, true);
             $conflictingEntities = [];
             foreach ($entities as $entity) {
                 foreach ($entity['meta_fields'] as $metaField) {
@@ -1056,7 +1148,10 @@ class MetaTemplatesTable extends AppTable
                         $templateField
                     );
                     if ($isValid !== true) {
-                        $conflictingEntities[] = $entity->id;
+                        $conflictingEntities[] = [
+                            'parent_id' => $entity->id,
+                            'meta_template_field_id' => $metaTemplateField->id,
+                        ];
                         break;
                     }
                 }
@@ -1064,11 +1159,48 @@ class MetaTemplatesTable extends AppTable
 
             if (!empty($conflictingEntities)) {
                 $result['automatically-updateable'] = $result['automatically-updateable'] && false;
-                $result['conflicts'][] = __('This field is instantiated with values not passing the validation anymore');
+                $result['conflicts'][] = __('This field is instantiated with values not passing the validation anymore.');
                 $result['conflictingEntities'] = array_merge($result['conflictingEntities'], $conflictingEntities);
             }
         }
         return $result;
+    }
+
+    /**
+     * Return all entities having the meta-fields using the provided meta-template-field.
+     *
+     * @param string $scope
+     * @param integer $metaTemplateFieldID The ID of the matching meta-template-field
+     * @param boolean $includeMatchingMetafields Should the entities also include the matching meta-fields
+     * @return array
+     */
+    private function getEntitiesForMetaTemplateField(string $scope, int $metaTemplateFieldID, bool $includeMatchingMetafields=true): array
+    {
+        $entitiesTable = $this->getTableForMetaTemplateScope($scope);
+        $entitiesWithMetaFieldQuery = $this->MetaTemplateFields->MetaFields->find();
+        $entitiesWithMetaFieldQuery
+            ->enableHydration(false)
+            ->select([
+                'parent_id',
+            ])
+            ->where([
+                'meta_template_field_id' => $metaTemplateFieldID,
+            ]);
+
+        $entitiesQuery = $entitiesTable->find()
+            ->where(['id IN' => $entitiesWithMetaFieldQuery]);
+
+        if ($includeMatchingMetafields) {
+            $entitiesQuery->contain([
+                'MetaFields' => [
+                    'conditions' => [
+                        'MetaFields.meta_template_field_id' => $metaTemplateFieldID,
+                    ]
+                ]
+            ]);
+        }
+
+        return $entitiesQuery->all()->toList();
     }
 
     /**
@@ -1087,7 +1219,7 @@ class MetaTemplatesTable extends AppTable
             $templateMetaFields = $template['metaFields'];
         }
         $conflicts = [];
-        $existingMetaTemplateFields = Hash::combine($metaTemplate->toArray(), 'meta_template_fields.{n}.field');
+        $existingMetaTemplateFields = Hash::combine($metaTemplate->toArray(), 'meta_template_fields.{n}.field', 'meta_template_fields.{n}');
         foreach ($templateMetaFields as $newMetaField) {
             foreach ($metaTemplate->meta_template_fields as $metaField) {
                 if ($newMetaField['field'] == $metaField->field) {
@@ -1103,10 +1235,23 @@ class MetaTemplatesTable extends AppTable
             }
         }
         if (!empty($existingMetaTemplateFields)) {
-            foreach ($existingMetaTemplateFields as $field => $tmp) {
-                $conflicts[$field] = [
+            foreach ($existingMetaTemplateFields as $metaTemplateField) {
+                $query = $this->MetaTemplateFields->MetaFields->find();
+                $query
+                    ->enableHydration(false)
+                    ->select([
+                        'parent_id',
+                        'meta_template_field_id',
+                    ])
+                    ->where([
+                        'meta_template_field_id' => $metaTemplateField['id'],
+                    ])
+                    ->group(['parent_id']);
+                $entityWithMetafieldToBeRemoved = $query->all()->toList();
+                $conflicts[$metaTemplateField['field']] = [
                     'automatically-updateable' => false,
                     'conflicts' => [__('This field is intended to be removed')],
+                    'conflictingEntities' => $entityWithMetafieldToBeRemoved,
                 ];
             }
         }
@@ -1159,9 +1304,9 @@ class MetaTemplatesTable extends AppTable
         $updateStatus['current_version'] = $metaTemplate->version;
         $updateStatus['next_version'] = $template['version'];
         $updateStatus['new'] = false;
+        $updateStatus['automatically-updateable'] = false;
         if ($metaTemplate->version >= $template['version']) {
             $updateStatus['up-to-date'] = true;
-            $updateStatus['automatically-updateable'] = false;
             $updateStatus['conflicts'][] = __('Could not update the template. Local version is equal or newer.');
             return $updateStatus;
         }
@@ -1169,6 +1314,17 @@ class MetaTemplatesTable extends AppTable
         $conflicts = $this->getMetaTemplateConflictsForMetaTemplate($metaTemplate, $template);
         if (!empty($conflicts)) {
             $updateStatus['conflicts'] = $conflicts;
+            $updateStatus['automatically-updateable'] = false;
+            $emptySum = 0;
+            foreach ($conflicts as $fieldname => $fieldStatus) {
+                if (!empty($fieldStatus['conflictingEntities'])) {
+                    break;
+                }
+                $emptySum += 1;
+            }
+            if ($emptySum == count($conflicts)) {
+                $updateStatus['automatically-updateable'] = true;
+            }
         } else {
             $updateStatus['automatically-updateable'] = true;
         }

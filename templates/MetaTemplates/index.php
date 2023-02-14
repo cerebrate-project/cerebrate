@@ -199,9 +199,21 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 ]
             ],
             [
+                'open_modal' => '/metaTemplates/migrateMetafieldsToNewestTemplate/[onclick_params_data_path]',
+                'modal_params_data_path' => 'id',
+                'title' => __('Update meta-fields to the newest version of this meta-template'),
+                'icon' => 'arrow-circle-up',
+                'variant' => 'success',
+                'complex_requirement' => [
+                    'function' => function ($row, $options) {
+                        return !empty($row['updateStatus']['to-existing']) && empty($row['updateStatus']['can-be-removed']);
+                    }
+                ]
+            ],
+            [
                 'open_modal' => '/metaTemplates/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'title' => __('Get meta-fields that should be moved to the newest version of this meta-template'),
+                'title' => __('This meta-template doesn\'t have any meta-fields and can be safely removed.'),
                 'icon' => 'trash',
                 'variant' => 'success',
                 'complex_requirement' => [

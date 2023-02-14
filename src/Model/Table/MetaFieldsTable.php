@@ -39,8 +39,6 @@ class MetaFieldsTable extends AppTable
             ->notEmptyString('value')
             ->notEmptyString('meta_template_id')
             ->notEmptyString('meta_template_field_id')
-            // ->requirePresence(['scope', 'field', 'value', 'uuid', 'meta_template_id', 'meta_template_field_id'], 'create');
-            // ->requirePresence(['scope', 'field', 'value', 'uuid',], 'create');
             ->notEmptyString('meta_template_directory_id')
             ->requirePresence(['scope', 'field', 'value', 'uuid', 'meta_template_directory_id', ], 'create');
 
@@ -53,10 +51,9 @@ class MetaFieldsTable extends AppTable
         return $validator;
     }
 
-    public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options)
-    {
-        if (!isset($data['meta_template_directory_id'])) {
-            $data['meta_template_directory_id'] = $this->getTemplateDirectoryIdFromMetaTemplate($data['meta_template_id']);
+    public function afterMarshal(EventInterface $event, \App\Model\Entity\MetaField $entity, ArrayObject $data, ArrayObject $options) {
+        if (!isset($entity->meta_template_directory_id)) {
+            $entity->set('meta_template_directory_id', $this->getTemplateDirectoryIdFromMetaTemplate($entity->meta_template_id));
         }
     }
 
@@ -89,6 +86,9 @@ class MetaFieldsTable extends AppTable
         if (!empty($metaTemplateField['regex'])) {
             return $this->isValidRegex($value, $metaTemplateField);
         }
+        if (!empty($metaTemplateField['values_list'])) {
+            return $this->isValidValuesList($value, $metaTemplateField);
+        }
         return true;
     }
 
@@ -117,5 +117,12 @@ class MetaFieldsTable extends AppTable
             return __('Metafield value `{0}` for `{1}` doesn\'t pass regex validation.', $value, $metaTemplateField['field']);
         }
         return true;
+    }
+
+    public function isValidValuesList($value, $metaTemplateField)
+    {
+
+        $valuesList = $metaTemplateField['values_list'];
+        return in_array($value, $valuesList);
     }
 }

@@ -18,6 +18,11 @@ if ($updateStatus['up-to-date']) {
             'html' => __('This meta-template can be updated to version {0} (current: {1}).', sprintf('<strong>%s</strong>', h($templateOnDisk['version'])), h($metaTemplate->version)),
             'dismissible' => false,
         ]);
+        $bodyHtml .= $this->Bootstrap->alert([
+            'variant' => 'success',
+            'text' => __('All meta-fields will be migrated to the newest version.'),
+            'dismissible' => false,
+        ]);
         $form = $this->element('genericElements/Form/genericForm', [
             'entity' => null,
             'ajax' => false,
@@ -28,9 +33,9 @@ if ($updateStatus['up-to-date']) {
                     [
                         'field' => 'update_strategy',
                         'type' => 'checkbox',
-                        'value' => MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW,
+                        'value' => MetaTemplatesTable::UPDATE_STRATEGY_UPDATE_EXISTING,
                         'checked' => true,
-                    ]
+                    ],
                 ],
                 'submit' => [
                     'action' => $this->request->getParam('action')
@@ -42,7 +47,7 @@ if ($updateStatus['up-to-date']) {
         $modalSize = 'xl';
         $bodyHtml .= $this->Bootstrap->alert([
             'variant' => 'warning',
-            'text' => __('Updating to version {0} cannot be done automatically as it introduces some conflicts.', h($templateOnDisk['version'])),
+            'html' => __('Updating to version {0} cannot be done automatically as it introduces some conflicts.', sprintf('<strong>%s</strong>', h($templateOnDisk['version']))),
             'dismissible' => false,
         ]);
         $conflictTable = $this->element('MetaTemplates/conflictTable', [
@@ -50,8 +55,11 @@ if ($updateStatus['up-to-date']) {
             'metaTemplate' => $metaTemplate,
             'templateOnDisk' => $templateOnDisk,
         ]);
+        $conflictCount = array_reduce($templateStatus['conflicts'], function ($carry, $conflict) {
+            return $carry + count($conflict['conflictingEntities']);
+        }, 0);
         $bodyHtml .= $this->Bootstrap->collapse([
-            'text' => __('View conflicts'),
+            'text' => __('View conflicts ({0})', $conflictCount),
             'open' => false
         ], $conflictTable);
         $bodyHtml .= $this->element('MetaTemplates/conflictResolution', [
