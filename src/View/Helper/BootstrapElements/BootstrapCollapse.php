@@ -42,7 +42,7 @@ class BootstrapCollapse extends BootstrapGeneric
         'horizontal' => false,
         'class' => [],
         'button' => [],
-        'card' => [],
+        'card' => false,
         'attrs' => [],
     ];
 
@@ -65,7 +65,7 @@ class BootstrapCollapse extends BootstrapGeneric
         if ($this->options['open']) {
             $this->options['class'][] = 'show';
         }
-        if (empty($this->options['card']['bodyClass'])) {
+        if ($this->options['card'] !== false && empty($this->options['card']['bodyClass'])) {
             $this->options['card']['bodyClass'] = ['p-0'];
         }
         if (empty($this->options['id'])) {
@@ -104,9 +104,13 @@ class BootstrapCollapse extends BootstrapGeneric
 
     private function genContent(): string
     {
-        $cardConfig = $this->options['card'];
-        $cardConfig['bodyHTML'] = $this->content;
-        $content = $this->btHelper->card($cardConfig);
+        if (!empty($this->options['card'])) {
+            $cardConfig = $this->options['card'];
+            $cardConfig['bodyHTML'] = $this->content;
+            $content = $this->btHelper->card($cardConfig);
+        } else {
+            $content = $this->content;
+        }
         $container = $this->node('div', [
             'class' => $this->options['class'],
             'id' => $this->options['id'],
