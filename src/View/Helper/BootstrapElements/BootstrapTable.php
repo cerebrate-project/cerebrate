@@ -38,7 +38,7 @@ use App\View\Helper\BootstrapHelper;
  *     $this->Bootstrap->table(
  *         [
  *             'hover' => false,
- *             'striped' => 'false',
+ *             'striped' => false,
  *         ],
  *         [
  *             'items' => [
@@ -191,7 +191,7 @@ class BootstrapTable extends BootstrapGeneric
             }
         } else { // indexed array
             foreach ($row as $i => $cellValue) {
-                $html .= $this->genCell($cellValue, [], $row, $rowIndex);
+                $html .= $this->genCell($cellValue, $this->fields[$i], $row, $rowIndex);
             }
         }
         $html .= $this->nodeClose('tr');
