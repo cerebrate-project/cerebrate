@@ -1,4 +1,7 @@
 <?php
+$randomIdOld = Cake\Utility\Security::randomString(8);
+$randomIdNew = Cake\Utility\Security::randomString(8);
+
 if (!empty($data['summary'])) {
     $changedSummary = h($data['summary']);
 } else if (!empty($data['summaryTemplate']) && !empty($data['summaryMessage'])) {
@@ -37,6 +40,7 @@ foreach ($properties as $i => $property) {
         $data['changed'][$property] ?? '',
     ];
 }
+$emptyValueHTML = $this->Bootstrap->node('span', ['class' => ['text-muted', 'fw-light', 'fst-italic']], __('- empty -'));
 
 $diffTable = $this->Bootstrap->table(
     [
@@ -54,25 +58,39 @@ $diffTable = $this->Bootstrap->table(
                 }
             ],
             [
-                'label' => __('New value'),
-                'formatter' => function ($field, $row) {
-                    return $this->Bootstrap->alert([
-                        'text' => $field,
-                        'variant' => 'success',
+                'label' => __('Old value'),
+                'formatter' => function ($field, $row) use ($randomIdOld, $emptyValueHTML) {
+                    $fieldText = is_array($field) ? json_encode($field, JSON_FORCE_OBJECT | JSON_PRETTY_PRINT) : $field;
+                    $config = [
+                        'text' => $fieldText,
+                        'variant' => 'danger',
                         'dismissible' => false,
-                        'class' => ['p-2', 'mb-0'],
-                    ]);
+                        'class' => ['p-2', 'mb-0', !empty($fieldText) && is_array($field) ? "json_container_{$randomIdOld}" : ''],
+                    ];
+                    if (empty($fieldText)) {
+                        $config['html'] = $emptyValueHTML;
+                    } else {
+                        $config['text'] = $fieldText;
+                    }
+                    return $this->Bootstrap->alert($config);
                 }
             ],
             [
-                'label' => __('Old value'),
-                'formatter' => function ($field, $row) {
-                    return $this->Bootstrap->alert([
-                        'text' => $field,
-                        'variant' => 'danger',
+                'label' => __('New value'),
+                'formatter' => function ($field, $row) use ($randomIdNew, $emptyValueHTML) {
+                    $fieldText = is_array($field) ? json_encode($field, JSON_FORCE_OBJECT | JSON_PRETTY_PRINT) : $field;
+                    $config = [
+                        'text' => $fieldText,
+                        'variant' => 'success',
                         'dismissible' => false,
-                        'class' => ['p-2', 'mb-0'],
-                    ]);
+                        'class' => ['p-2', 'mb-0', !empty($fieldText) && is_array($field) ? "json_container_{$randomIdNew}" : ''],
+                    ];
+                    if (empty($fieldText)) {
+                        $config['html'] = $emptyValueHTML;
+                    } else {
+                        $config['text'] = $fieldText;
+                    }
+                    return $this->Bootstrap->alert($config);
                 }
             ],
         ],
@@ -123,3 +141,16 @@ echo $this->Bootstrap->modal([
 ]);
 ?>
 </div>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        const $containerOld = $('.json_container_<?= $randomIdOld; ?>')
+        const $containerNew = $('.json_container_<?= $randomIdNew; ?>')
+        if ($containerOld.length == 1) {
+            $containerOld.html(syntaxHighlightJson($containerOld.text()));
+        }
+        if ($containerNew.length == 1) {
+            $containerNew.html(syntaxHighlightJson($containerNew.text()));
+        }
+    });
+</script>
