@@ -14,12 +14,14 @@ class OutboxNavigation extends BaseNavigation
             'icon' => 'trash',
             'url' => '/outbox/discard/{{id}}',
             'url_vars' => ['id' => 'id'],
+            'isPOST' => true,
         ]);
         $this->bcf->addRoute('Outbox', 'process', [
             'label' => __('Process message'),
             'icon' => 'cogs',
             'url' => '/outbox/process/{{id}}',
             'url_vars' => ['id' => 'id'],
+            'isPOST' => true,
         ]);
     }
 

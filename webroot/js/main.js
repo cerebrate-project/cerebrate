@@ -1,5 +1,5 @@
-function executePagination(randomValue, url) {
-    UI.reload(url, $(`#table-container-${randomValue}`), $(`#table-container-${randomValue} table.table`))
+function executePagination(selector, url) {
+    UI.reload(url, $(selector), $(selector).find('table.table'))
 }
 
 function executeStateDependencyChecks(dependenceSourceSelector) {

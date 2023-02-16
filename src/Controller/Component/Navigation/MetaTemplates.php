@@ -15,12 +15,14 @@ class MetaTemplatesNavigation extends BaseNavigation
             'icon' => 'check-square',
             'url' => '/metaTemplates/toggle/{{id}}/enabled',
             'url_vars' => ['id' => 'id'],
+            'isPOST' => true,
         ]);
         $this->bcf->addRoute('MetaTemplates', 'set_default', [
             'label' => __('Set as default'),
             'icon' => 'check-square',
             'url' => '/metaTemplates/toggle/{{id}}/default',
             'url_vars' => ['id' => 'id'],
+            'isPOST' => true,
         ]);
 
         $totalUpdateCount = 0;
@@ -46,11 +48,13 @@ class MetaTemplatesNavigation extends BaseNavigation
             'label' => __('Update template'),
             'icon' => 'download',
             'url' => '/metaTemplates/update',
+            'isPOST' => true,
         ]);
         $this->bcf->addRoute('MetaTemplates', 'prune_outdated_template', [
             'label' => __('Prune outdated template'),
             'icon' => 'trash',
             'url' => '/metaTemplates/prune_outdated_template',
+            'isPOST' => true,
         ]);
     }
 

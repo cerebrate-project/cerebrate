@@ -33,6 +33,10 @@ class CRUDComponent extends Component
 
     public function index(array $options): void
     {
+        $embedInModal = !empty($this->request->getQuery('embedInModal', false));
+        $excludeStats = !empty($this->request->getQuery('excludeStats', false));
+        $skipTableToolbar = !empty($this->request->getQuery('skipTableToolbar', false));
+
         if (!empty($options['quickFilters'])) {
             if (empty($options['filters'])) {
                 $options['filters'] = [];
@@ -150,7 +154,7 @@ class CRUDComponent extends Component
                     return $template['enabled'];
                 }));
             }
-            if (true) { // check if stats are requested
+            if (empty($excludeStats)) { // check if stats are requested
                 $modelStatistics = [];
                 if ($this->Table->hasBehavior('Timestamp')) {
                     $modelStatistics = $this->Table->getActivityStatisticsForModel(
@@ -191,6 +195,8 @@ class CRUDComponent extends Component
             }
             $this->Controller->set('model', $this->Table);
             $this->Controller->set('data', $data);
+            $this->Controller->set('embedInModal', $embedInModal);
+            $this->Controller->set('skipTableToolbar', $skipTableToolbar);
         }
     }
 
