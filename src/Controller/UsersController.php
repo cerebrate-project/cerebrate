@@ -308,6 +308,9 @@ class UsersController extends AppController
         }
         $params = [
             'beforeSave' => function($data) use ($currentUser, $validRoles) {
+                if (empty(Configure::read('user.allow-user-deletion'))) {
+                    throw new MethodNotAllowedException(__('User deletion is disabled on this instance.'));
+                }
                 if (!$currentUser['role']['perm_admin']) {
                     if ($data['organisation_id'] !== $currentUser['organisation_id']) {
                         throw new MethodNotAllowedException(__('You do not have permission to delete the given user.'));

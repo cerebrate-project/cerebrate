@@ -342,7 +342,13 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'type' => 'boolean',
                             'description' => __('This setting will enforce that usernames conform to basic requirements of e-mail addresses.'),
                             'default' => false
-                        ]
+                        ],
+                        'user.allow-user-deletion' => [
+                            'name' => __('Allow user deletion'),
+                            'type' => 'boolean',
+                            'description' => __('This setting will allow the deletion of users by authorized users.'),
+                            'default' => false
+                        ],
                     ]
                 ]
             ]

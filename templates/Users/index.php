@@ -145,6 +145,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         ]
                     ],
                     'function' => function ($row, $options)  use ($loggedUser, $validRoles) {
+                        if (empty(Configure::read('user.allow-user-deletion'))) {
+                            return false;
+                        }
                         if ($row['id'] == $loggedUser['id']) {
                             return false;
                         }
