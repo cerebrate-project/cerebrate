@@ -60,7 +60,33 @@ class UIFactory {
         }).catch((error) => {
             UI.toast({
                 variant: 'danger',
-                title: 'Error while loading the processor',
+                title: 'Error while loading the modal',
+                body: error.message
+            })
+        })
+    }
+
+    /**
+     * Create and display a modal where the modal's content is fetched from the provided URL
+     * @param  {string} url - The URL from which the modal's content should be fetched
+     * @param  {Object=[]} modalOptions - Additional options to be passed to the modal constructor
+     * @return {Promise<Object>} Promise object resolving to the ModalFactory object
+     */
+    async modalFromUrl(url, modalOptions={}) {
+        return AJAXApi.quickFetchURL(url).then((modalHTML) => {
+            const defaultOptions = {
+                rawHtml: modalHTML,
+            }
+            const options = Object.assign({}, defaultOptions, modalOptions)
+            const theModal = new ModalFactory(options);
+            theModal.makeModal()
+            theModal.show()
+            theModal.$modal.data('modalObject', theModal)
+            return [theModal, theModal.ajaxApi]
+        }).catch((error) => {
+            UI.toast({
+                variant: 'danger',
+                title: 'Error while loading the modal',
                 body: error.message
             })
         })
@@ -183,7 +209,6 @@ class UIFactory {
         }
         return UI.submissionModal(url, successCallback)
     }
-    
 
     /**
      * Creates and displays a modal where the modal's content is fetched from the provided URL. Reloads the provided element after a successful operation.
@@ -448,13 +473,13 @@ class ModalFactory {
      */
     /**
      * @callback ModalFactory~confirm
-     * @param {ModalFactory~closeModalFunction} closeFunction - A function that will close the modal if called
+     * @param {ModalFactory~confirm} closeFunction - A function that will close the modal if called
      * @param {Object} modalFactory - The instance of the ModalFactory
      * @param {Object} evt - The event that triggered the confirm operation
      */
     /**
      * @callback ModalFactory~cancel
-     * @param {ModalFactory~closeModalFunction} closeFunction - A function that will close the modal if called
+     * @param {ModalFactory~cancel} closeFunction - A function that will close the modal if called
      * @param {Object} modalFactory - The instance of the ModalFactory
      * @param {Object} evt - The event that triggered the confirm operation
      */
