@@ -25,6 +25,18 @@ class UIFactory {
     }
 
     /**
+     * Create a popover
+     * @param  {Object} element - The target element on which to attach the popover
+     * @param  {Object} options - The options to be passed to the PopoverFactory class
+     * @return {Object} The PopoverFactory object
+     */
+    popover(element, options) {
+        const thePopover = new PopoverFactory(element, options);
+        thePopover.makePopover()
+        return thePopover
+    }
+
+    /**
      * Create and display a modal where the modal's content is fetched from the provided URL. Link an AJAXApi to the submission button
      * @param  {string} url - The URL from which the modal's content should be fetched
      * @param  {ModalFactory~POSTSuccessCallback} POSTSuccessCallback - The callback that handles successful form submission
@@ -1097,6 +1109,90 @@ class FormValidationHelper {
         $(this.form).parent().find('.alert').remove()
     }
 
+}
+
+/** Class representing a Popover */
+class PopoverFactory {
+    /**
+     * Create a Popover.
+     * @param  {Object} element - The target element on which to attach the popover
+     * @param  {Object} options - The options supported by PopoverFactory#defaultOptions
+     */
+    constructor(element, options) {
+        this.element = $(element)[0]
+        this.options = Object.assign({}, PopoverFactory.defaultOptions, options)
+    }
+
+    /**
+     * @namespace
+     * @property {string} title                            - The title's content of the popover
+     * @property {string} titleHtml                        - The raw HTML title's content of the popover
+     * @property {string} body                             - The body's content of the popover
+     * @property {string} bodyHtml                         - The raw HTML body's content of the popover
+     * @property {string} content                          - Forward the popover's content to the bootstrap popover constructor
+     * @property {string} html                             - Manually allow HTML in both the title and body
+     * @property {string=('primary'|'secondary'|'success'|'danger'|'warning'|'info'|'light'|'dark'|'white'|'transparent')} variant - The variant of the popover
+     * @property {string} popoverClass                       - Classes to be added to the popover's container
+     * @property {string} container                        - Appends the popover to a specific element
+     * @property {string=('auto'|'top'|'bottom'|'left'|'right')} placement                        - How to position the popover
+     */
+    static defaultOptions = {
+        title: '',
+        titleHtml: false,
+        body: false,
+        bodyHtml: false,
+        content: null,
+        html: false,
+        popoverClass: '',
+        container: false,
+        placement: 'right',
+    }
+
+    /** Create the HTML of the modal and inject it into the DOM */
+    makePopover() {
+        if (this.isValid()) {
+            if (this.options.titleHtml || this.options.bodyHtml) {
+                this.options.html = true
+            }
+            this.options.title = this.options.titleHtml ? this.options.titleHtml : sanitize(this.options.title)
+            if (this.options.content === null) {
+                this.options.content = this.options.bodyHtml ? this.options.bodyHtml : sanitize(this.options.body)
+            }
+            this.popoverInstance = new bootstrap.Popover(this.element, this.options)
+        } else {
+            console.error('Popover not valid')
+        }
+    }
+
+    /** Display the popover */
+    show() {
+        this.popoverInstance.show()
+    }
+
+    /** Hide the popover */
+    hide() {
+        this.popoverInstance.hide()
+    }
+
+    /** Updates the position of an element’s popover. */
+    updatePosition() {
+        this.popoverInstance.update()
+    }
+
+    /** Hides and destroys an element’s popover */
+    dispose() {
+        this.popoverInstance.dispose();
+    }
+
+    /**
+     * Check wheter a popover is valid
+     * @return {boolean} Return true if the popover contains at least data to be rendered
+     */
+    isValid() {
+        return this.options.title !== false || this.options.titleHtml !== false ||
+            this.options.body !== false || this.options.bodyHtml !== false ||
+            this.options.rawHtml !== false
+    }
 }
 
 class HtmlHelper {
