@@ -201,3 +201,9 @@ function download(filename, data, type='application/json') {
     document.body.removeChild(a)
     URL.revokeObjectURL(objectURL)
 }
+
+function sanitize(unsafeText) {
+    const decoder = $('<div>')
+    decoder.text(unsafeText)
+    return decoder.html()
+}
