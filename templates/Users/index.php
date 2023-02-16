@@ -145,6 +145,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         ]
                     ],
                     'function' => function ($row, $options)  use ($loggedUser, $validRoles) {
+                        if ($row['id'] == $loggedUser['id']) {
+                            return false;
+                        }
                         if (empty($loggedUser['role']['perm_admin'])) {
                             if (empty($loggedUser['role']['perm_org_admin'])) {
                                 return false;
