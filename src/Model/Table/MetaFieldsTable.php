@@ -94,9 +94,6 @@ class MetaFieldsTable extends AppTable
 
     public function isValidType($value, $metaTemplateField)
     {
-        if (empty($value)) {
-            return __('Metafield value cannot be empty.');
-        }
         $typeHandler = $this->MetaTemplateFields->getTypeHandler($metaTemplateField['type']);
         if (!empty($typeHandler)) {
             $success = $typeHandler->validate($value);

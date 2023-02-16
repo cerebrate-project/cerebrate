@@ -226,13 +226,16 @@ class MetaTemplatesController extends AppController
             foreach ($newestMetaTemplate->meta_template_fields as $i => $newMetaTemplateField) {
                 if ($metaTemplateField->field == $newMetaTemplateField->field && empty($newMetaTemplateField->metaFields)) {
                     $movedMetaTemplateFields[] = $metaTemplateField->id;
+                    $nonEmptyMetaFields = array_filter($metaTemplateField->metaFields, function ($e) {
+                        return $e->value !== '';
+                    });
                     $copiedMetaFields = array_map(function ($e) use ($newMetaTemplateField) {
                         $e = $e->toArray();
                         $e['meta_template_id'] = $newMetaTemplateField->meta_template_id;
                         $e['meta_template_field_id'] = $newMetaTemplateField->id;
                         unset($e['id']);
                         return $e;
-                    }, $metaTemplateField->metaFields);
+                    }, $nonEmptyMetaFields);
                     $newMetaTemplateField->metaFields = $this->MetaTemplates->MetaTemplateFields->MetaFields->newEntities($copiedMetaFields);
                 }
             }

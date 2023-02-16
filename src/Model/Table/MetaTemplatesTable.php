@@ -1305,7 +1305,7 @@ class MetaTemplatesTable extends AppTable
         $updateStatus['next_version'] = $template['version'];
         $updateStatus['new'] = false;
         $updateStatus['automatically-updateable'] = false;
-        if ($metaTemplate->version >= $template['version']) {
+        if (intval($metaTemplate->version) >= intval($template['version'])) {
             $updateStatus['up-to-date'] = true;
             $updateStatus['conflicts'][] = __('Could not update the template. Local version is equal or newer.');
             return $updateStatus;
