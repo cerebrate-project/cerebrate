@@ -33,7 +33,7 @@ if (empty($conflictingEntities)) {
         'dismissible' => false,
     ]);
     $bodyHtml .= '<ul>';
-    foreach ($conflictingEntities as $entity) {
+    foreach ($conflictingEntities as $i => $entity) {
         $url = Router::url([
             'controller' => 'metaTemplates',
             'action' => 'migrateOldMetaTemplateToNewestVersionForEntity',
@@ -46,9 +46,10 @@ if (empty($conflictingEntities)) {
             __('{0}::{1}', h(Inflector::humanize($oldMetaTemplate->scope)), $entity->id),
             __('has {0} meta-fields to update', count($entity->meta_fields))
         );
-    }
-    if (count($conflictingEntities) > 10) {
-        $bodyHtml .= sprintf('<li class="list-inline-item fw-light fs-7">%s</li>', __('{0} more entities', h(10 - count($conflictingEntities))));
+        if ($i >= 9) {
+            $bodyHtml .= sprintf('<li class="list-inline-item fw-light fs-7">%s</li>', __('{0} more entities', count($conflictingEntities) - 10));
+            break;
+        }
     }
     $bodyHtml .= '</ul>';
 }

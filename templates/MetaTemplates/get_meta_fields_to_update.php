@@ -29,7 +29,7 @@ foreach ($entities as $entity) {
     );
 }
 if ($amountOfEntitiesToUpdate > 10) {
-    $bodyHtml .= sprintf('<li class="list-inline-item fw-light fs-7">%s</li>', __('{0} more entities', h(10 - $amountOfEntitiesToUpdate)));
+    $bodyHtml .= sprintf('<li class="list-inline-item fw-light fs-7">%s</li>', __('{0} more entities', $amountOfEntitiesToUpdate - 10));
 }
 $bodyHtml .= '</ul>';
 
