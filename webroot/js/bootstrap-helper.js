@@ -284,6 +284,67 @@ class UIFactory {
         })
         return promise
     }
+
+    /**
+     * Place an overlay onto a node and remove it whenever the promise resolves
+     * @param {(jQuery|string)} node       - The node on which the confirm popover should be palced
+     * @param {Object} options             - The options to be passed to the overlay class
+     * @return {Promise} Result of the passed promised
+     */
+    quickConfirm(node, options={}) {
+        const $node = $(node)
+        const defaultOptions = {
+            title: 'Confirm action',
+            description: '',
+            descriptionHtml: false,
+            container: 'body',
+            variant: 'success',
+            confirmText: 'Confirm',
+            confirm: function() {}
+        }
+        options = Object.assign({}, defaultOptions, options)
+        options.description = options.descriptionHtml ? options.descriptionHtml : sanitize(options.description)
+        const popoverOptions = {
+            title: options.title,
+            titleHtml: options.titleHtml,
+            container: options.container,
+            html: true,
+        }
+
+        var promiseResolve, promiseReject;
+        const confirmPromise = new Promise(function (resolve, reject) {
+            promiseResolve = resolve;
+            promiseReject = reject;
+        })
+        popoverOptions.content = function() {
+            const $node = $(this)
+            const $container = $('<div>')
+            const $buttonCancel = $('<a class="btn btn-secondary btn-sm me-2">Cancel</a>')
+                .click(function() {
+                    const popover = bootstrap.Popover.getInstance($node[0])
+                    popover.dispose()
+                })
+            const $buttonSubmit = $(`<a class="submit-button btn btn-${options.variant} btn-sm">${options.confirmText}</a>`)
+                .click(function() {
+                    options.confirm()
+                        .then(function(result) {
+                            promiseResolve(result)
+                        })
+                        .catch(function(error) {
+                            promiseReject(error)
+                        })
+                    const popover = bootstrap.Popover.getInstance($node[0])
+                    popover.dispose()
+                })
+            $container.append(`<p>${options.description}</p>`)
+            $container.append($(`<div>`).append($buttonCancel, $buttonSubmit))
+            return $container
+        }
+
+        const thePopover = this.popover($node, popoverOptions)
+        thePopover.show()
+        return confirmPromise // have to return a promise to avoid closing the modal
+    }
 }
 
 /** Class representing a Toast */
