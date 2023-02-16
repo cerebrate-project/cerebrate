@@ -22,13 +22,14 @@ class MetaTemplatesTable extends AppTable
     public const UPDATE_STRATEGY_CREATE_NEW = 'create_new';
     public const UPDATE_STRATEGY_UPDATE_EXISTING = 'update_existing';
     public const UPDATE_STRATEGY_KEEP_BOTH = 'keep_both';
-    public const UPDATE_STRATEGY_DELETE = 'delete_all';
+    public const UPDATE_STRATEGY_DELETE_ALL = 'delete_all';
 
     public const DEFAULT_STRATEGY = MetaTemplatesTable::UPDATE_STRATEGY_UPDATE_EXISTING;
     public const ALLOWED_STRATEGIES = [
         MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW,
         MetaTemplatesTable::UPDATE_STRATEGY_UPDATE_EXISTING,
         MetaTemplatesTable::UPDATE_STRATEGY_KEEP_BOTH,
+        MetaTemplatesTable::UPDATE_STRATEGY_DELETE_ALL,
     ];
 
     private $templatesOnDisk = null;
@@ -159,7 +160,7 @@ class MetaTemplatesTable extends AppTable
             $files_processed[] = $templateOnDisk['uuid'];
         }
         if (!empty($result['errors'])) {
-            $updatesErrors[] = $errors;
+            $updatesErrors[] = implode(', ', Hash::extract($result['errors'], '{n}.message'));
         }
         $results = [
             'update_errors' => $updatesErrors,
@@ -868,6 +869,8 @@ class MetaTemplatesTable extends AppTable
             $result = $this->updateMetaTemplate($metaTemplate, $template);
         } else if ($strategy == MetaTemplatesTable::UPDATE_STRATEGY_CREATE_NEW) {
             $result = $this->executeStrategyCreateNew($template, $metaTemplate);
+        } else if ($strategy == MetaTemplatesTable::UPDATE_STRATEGY_DELETE_ALL) {
+            $result = $this->executeStrategyDeleteAll($template, $metaTemplate);
         } else {
             $errors[] = new UpdateError(false, __('Invalid strategy {0}', $strategy));
             return false;
@@ -969,7 +972,7 @@ class MetaTemplatesTable extends AppTable
                             unset($entity->meta_fields[$i]);
                         }
                     }
-                    $this->MetaTemplateFields->MetaFields->unlink($entity, $metaFieldsToDelete); // FIXME
+                    $this->MetaTemplateFields->MetaFields->unlink($entity, $metaFieldsToDelete);
                 }
             }
             $success = $this->supersedeMetaFieldsWithMetaTemplateField($entity->meta_fields, $newestMetaTemplate);
@@ -1013,9 +1016,7 @@ class MetaTemplatesTable extends AppTable
 
         foreach ($entities as $entity) {
             $conflicts = $this->getMetaFieldsConflictsUnderTemplate($entity['meta_fields'], $template);
-            $deletedCount = $this->MetaTemplateFields->MetaFields->deleteAll([
-                'id IN' => $conflicts
-            ]);
+            $this->MetaTemplateFields->MetaFields->unlink($entity, $conflicts);
         }
         $this->updateMetaTemplate($metaTemplate, $template, $errors);
         return !empty($errors) ? $errors[0] : true;
