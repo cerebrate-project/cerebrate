@@ -247,7 +247,7 @@ class MetaTemplatesController extends AppController
         $this->set('movedMetaTemplateFields', $movedMetaTemplateFields);
     }
 
-    public function migrateMetafieldsToNewestTemplate(int $template_id)
+    public function migrateMetafieldsToNewestTemplate(int $template_id, $forceMigration=false)
     {
         $oldMetaTemplate = $this->MetaTemplates->find()->where([
             'id' => $template_id
@@ -262,7 +262,7 @@ class MetaTemplatesController extends AppController
         }
 
         if ($this->request->is('post')) {
-            $result = $this->MetaTemplates->migrateMetafieldsToNewestTemplate($oldMetaTemplate, $newestMetaTemplate);
+            $result = $this->MetaTemplates->migrateMetafieldsToNewestTemplate($oldMetaTemplate, $newestMetaTemplate, !empty($forceMigration));
             if ($this->ParamHandler->isRest()) {
                 return $this->RestResponse->viewData($result, 'json');
             } else {

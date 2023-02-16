@@ -937,7 +937,7 @@ class MetaTemplatesTable extends AppTable
         return true;
     }
 
-    public function migrateMetafieldsToNewestTemplate(\App\Model\Entity\MetaTemplate $oldMetaTemplate, \App\Model\Entity\MetaTemplate $newestMetaTemplate): array
+    public function migrateMetafieldsToNewestTemplate(\App\Model\Entity\MetaTemplate $oldMetaTemplate, \App\Model\Entity\MetaTemplate $newestMetaTemplate, bool $forceMigration): array
     {
         $result = [
             'success' => true,
@@ -958,13 +958,25 @@ class MetaTemplatesTable extends AppTable
             $conflicts = $this->getMetaFieldsConflictsUnderTemplate($entity->meta_fields, $newestMetaTemplate);
             if (!empty($conflicts)) {
                 $conflictingEntities[] = $entity->id;
-            } else {
-                $success = $this->supersedeMetaFieldsWithMetaTemplateField($entity->meta_fields, $newestMetaTemplate);
-                if ($success) {
-                    $successfullyMigratedEntities += 1;
+                if (!$forceMigration) {
+                    continue;
                 } else {
-                    $migrationErrors += 1;
+                    $conflictingMetafieldIDs = Hash::extract($conflicts, '{n}.id');
+                    $metaFieldsToDelete = [];
+                    foreach ($entity->meta_fields as $i => $metaField) {
+                        if (in_array($metaField->id, $conflictingMetafieldIDs)) {
+                            $metaFieldsToDelete[] = $metaField;
+                            unset($entity->meta_fields[$i]);
+                        }
+                    }
+                    $this->MetaTemplateFields->MetaFields->unlink($entity, $metaFieldsToDelete); // FIXME
                 }
+            }
+            $success = $this->supersedeMetaFieldsWithMetaTemplateField($entity->meta_fields, $newestMetaTemplate);
+            if ($success) {
+                $successfullyMigratedEntities += 1;
+            } else {
+                $migrationErrors += 1;
             }
         }
 

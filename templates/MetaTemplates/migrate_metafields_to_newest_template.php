@@ -14,8 +14,6 @@ $bodyHtml .= sprintf('<div><span>%s: </span><span class="font-monospace">%s</spa
 $bodyHtml .= sprintf('<div><span>%s: </span><a href="%s" target="_blank" class="font-monospac">%s</a></div>', __('Newest version'), $urlNewestMetaTemplate, h($newestMetaTemplate->version));
 $bodyHtml .= sprintf('<h4 class="my-2">%s</h4>', __('{0} Entities with meta-fields for the meta-template version <span class="font-monospace">{1}</span>', h($entityCount), h($oldMetaTemplate->version)));
 
-// debug($conflictingEntities);
-
 if (empty($conflictingEntities)) {
     $bodyHtml .= $this->Bootstrap->alert([
         'text' => __('All entities can updated automatically', count($conflictingEntities)),
@@ -65,6 +63,19 @@ $form = sprintf(
     $this->Form->end()
 );
 $bodyHtml .= $form;
+$form = sprintf(
+    '<div class="d-none hidden-form-force-container">%s%s</div>',
+    $this->Form->create(null, [
+        'url' => [
+            'controller' => 'MetaTemplates',
+            'action' => 'migrateMetafieldsToNewestTemplate',
+            $oldMetaTemplate->id,
+            1,
+        ]
+    ]),
+    $this->Form->end()
+);
+$bodyHtml .= $form;
 
 $title = __('{0} has a new meta-template and meta-fields to be updated', sprintf('<i class="me-1">%s</i>', h($oldMetaTemplate->name)));
 if (!empty($ajax)) {
@@ -72,16 +83,35 @@ if (!empty($ajax)) {
         'titleHtml' => $title,
         'bodyHtml' => $bodyHtml,
         'size' => 'lg',
-        'type' => 'confirm',
-        'confirmButton' => [
-            'text' => __('Migrate meta-fields'),
-            'variant' => 'success',
+        'type' => 'custom',
+        'footerButtons' => [
+            [
+                'text' => __('Cancel'),
+                'variant' => 'secondary',
+            ],
+            [
+                'text' => __('Force Migrate meta-fields'),
+                'title' => __('Any meta-field having conflict will be deleted.'),
+                'variant' => 'danger',
+                'clickFunction' => 'forceMigrateMetafieldsToNewestTemplate',
+            ],
+            [
+                'text' => __('Migrate meta-fields'),
+                'variant' => 'success',
+                'clickFunction' => 'migrateMetafieldsToNewestTemplate',
+            ],
         ],
-        'confirmFunction' => 'migrateMetafieldsToNewestTemplate',
     ]);
 } else {
     echo $this->Bootstrap->node('h1', [], $title);
     echo $bodyHtml;
+    echo $this->Bootstrap->button([
+        'text' => __('Force Migrate meta-fields'),
+        'title' => __('Any meta-field having conflict will be deleted.'),
+        'variant' => 'danger',
+        'class' => ['me-2'],
+        'onclick' => '$(".hidden-form-force-container form").submit()',
+    ]);
     echo $this->Bootstrap->button([
         'text' => __('Migrate meta-fields'),
         'variant' => 'success',
@@ -92,7 +122,25 @@ if (!empty($ajax)) {
 
 <script>
     function migrateMetafieldsToNewestTemplate(modalObject, tmpApi) {
-        const $form = modalObject.$modal.find('form')
+        const $form = modalObject.$modal.find('.hidden-form-container form')
+        return doMigration($form, modalObject, tmpApi)
+    }
+
+    function forceMigrateMetafieldsToNewestTemplate(modalObject, tmpApi) {
+        return UI.quickConfirm(tmpApi.options.statusNode, {
+            variant: 'danger',
+            title: '<?= __('Confirm potential deletion of data') ?>',
+            description: '<?= __('By chosing to force the migration, any meta-fields not satisfying the validation requirements will be deleted.') ?>',
+            confirmText: '<?= __('Force migration') ?>',
+            confirm: function() {
+                const $form = modalObject.$modal.find('.hidden-form-force-container form')
+                return doMigration($form, modalObject, tmpApi)
+            }
+        })
+
+    }
+
+    function doMigration($form, modalObject, tmpApi) {
         return tmpApi.postForm($form[0]).catch((errors) => {
             const formHelper = new FormValidationHelper($form[0])
             const errorHTMLNode = formHelper.buildValidationMessageNode(errors, true)
