@@ -1576,8 +1576,11 @@ class CRUDComponent extends Component
     private function renderViewInVariable($templateRelativeName, $data)
     {
         $builder = new ViewBuilder();
-        $builder->disableAutoLayout()->setTemplate("{$this->TableAlias}/{$templateRelativeName}");
-        $view = $builder->build($data);
+        $builder->disableAutoLayout()
+            ->setClassName('Monad')
+            ->setTemplate("{$this->TableAlias}/{$templateRelativeName}")
+            ->setVars($data);
+        $view = $builder->build();
         return $view->render();
     }
 
