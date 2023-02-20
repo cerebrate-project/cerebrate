@@ -73,7 +73,11 @@ class CRUDComponent extends Component
             $query->select($options['fields']);
         }
         if (!empty($options['order'])) {
-            $query->order($options['order']);
+            $orderFields = array_keys($options['order']);
+            if ($this->_validOrderFields($orderFields)) {
+                $query->order($options['order']);
+                $this->Controller->paginate['order'] = $options['order'];
+            }
         }
         if ($this->Controller->ParamHandler->isRest()) {
             if ($this->metaFieldsSupported()) {
@@ -1580,5 +1584,35 @@ class CRUDComponent extends Component
             }
         }
         return $typeMap;
+    }
+
+    protected function _validOrderFields($fields): bool
+    {
+        if (!is_array($fields)) {
+            $fields = [$fields];
+        }
+        foreach ($fields as $field) {
+            $exploded = explode('.', $field);
+            if (count($exploded) > 1) {
+                $model = $exploded[0];
+                $subField = $exploded[1];
+                if ($model == $this->Table->getAlias()) {
+                    if (empty($this->Table->getSchema()->typeMap()[$subField])) {
+                        return false;
+                    }
+                } else {
+                    $association = $this->Table->associations()->get($model);
+                    $associatedTable = $association->getTarget();
+                    if (empty($associatedTable->getSchema()->typeMap()[$subField])) {
+                        return false;
+                    }
+                }
+            } else {
+                if (empty($this->Table->getSchema()->typeMap()[$field])) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }
