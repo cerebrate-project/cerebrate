@@ -203,7 +203,8 @@ main.content {
     margin: auto 0;
 }
 
-.right-navbar .header-menu .dropdown-menu a.dropdown-item > i {
+.right-navbar .header-menu .dropdown-menu a.dropdown-item > i,
+.right-navbar .header-menu .dropdown-menu a.dropdown-item > img {
     min-width: 25px;
 }
 

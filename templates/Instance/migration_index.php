@@ -9,9 +9,7 @@ if (!empty($updateAvailables)) {
             'icon' => 'arrow-alt-circle-up',
             'class' => 'mt-1',
             'text' => __n('Run update', 'Run all updates', count($updateAvailables)),
-            'params' => [
-                'onclick' => 'runAllUpdate()'
-            ]
+            'onclick' => 'runAllUpdate()',
         ])
     );
     echo $this->Bootstrap->alert([
@@ -35,11 +33,11 @@ foreach ($status as $i => &$update) {
 
 echo $this->Bootstrap->table([], [
     'fields' => [
-        ['key' => 'id', 'label' => __('ID')],
-        ['key' => 'name', 'label' => __('Name')],
-        ['key' => 'end_time', 'label' => __('End Time')],
-        ['key' => 'time_taken_formated', 'label' => __('Time Taken')],
-        ['key' => 'status', 'label' => __('Status')]
+        ['path' => 'id', 'label' => __('ID')],
+        ['path' => 'name', 'label' => __('Name')],
+        ['path' => 'end_time', 'label' => __('End Time')],
+        ['path' => 'time_taken_formated', 'label' => __('Time Taken')],
+        ['path' => 'status', 'label' => __('Status')]
     ],
     'items' => $status,
 ]);

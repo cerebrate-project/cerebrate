@@ -65,6 +65,11 @@ class OrganisationsController extends AppController
                 ]
             ];
         }
+        $additionalContainFields = [];
+        if ($this->ParamHandler->isRest()) {
+            $additionalContainFields[] = 'MetaFields';
+        }
+        $containFields = array_merge($this->containFields, $additionalContainFields);
 
         $this->CRUD->index([
             'filters' => $this->filterFields,
@@ -73,7 +78,7 @@ class OrganisationsController extends AppController
             'contextFilters' => [
                 'custom' => $customContextFilters,
             ],
-            'contain' => $this->containFields,
+            'contain' => $containFields,
             'statisticsFields' => $this->statisticsFields,
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();

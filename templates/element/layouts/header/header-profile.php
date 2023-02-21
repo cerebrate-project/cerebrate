@@ -20,14 +20,14 @@ use Cake\Routing\Router;
         </h6>
         <div class="dropdown-divider"></div>
         <a class="dropdown-item" href="<?= Router::url(['controller' => 'users', 'action' => 'view', 'plugin' => null, h($this->request->getAttribute('identity')['id'])]) ?>">
-            <i class="me-1 <?= $this->FontAwesome->getClass('user-circle') ?>"></i>
+            <i class="me-1 fa-fw <?= $this->FontAwesome->getClass('user-circle') ?>"></i>
             <?= __('My Account') ?>
         </a>
         <a
             class="dropdown-item"
             href="<?= Router::url(['controller' => 'users', 'action' => 'settings', 'plugin' => null, h($this->request->getAttribute('identity')['id'])]) ?>"
         >
-            <i class="me-1 <?= $this->FontAwesome->getClass('user-cog') ?>"></i>
+            <i class="me-1 fa-fw <?= $this->FontAwesome->getClass('user-cog') ?>"></i>
             <?= __('Account Settings') ?>
         </a>
         <?php
@@ -49,16 +49,16 @@ use Cake\Routing\Router;
                     ); ?>"
         >
             <?php if (!empty($this->SocialProvider->getIcon($this->request->getAttribute('identity')))): ?>
-                <?= $this->SocialProvider->getIcon($this->request->getAttribute('identity')) ?>
+                <?= $this->SocialProvider->getIcon($this->request->getAttribute('identity'), ['me-1']) ?>
             <?php else: ?>
-                <i class="me-1 <?= $this->FontAwesome->getClass('key') ?>"></i>
+                <i class="me-1 fa-fw <?= $this->FontAwesome->getClass('key') ?>"></i>
             <?php endif; ?>
             <?= __('SSO Account') ?>
         </a>
         <?php endif; ?>
         <div class="dropdown-divider"></div>
         <a class="dropdown-item dropdown-item-outline-danger" href="<?= Router::url(['controller' => 'users', 'action' => 'logout', 'plugin' => null]) ?>">
-            <i class="me-1 <?= $this->FontAwesome->getClass('sign-out-alt') ?>"></i>
+            <i class="me-1 fa-fw <?= $this->FontAwesome->getClass('sign-out-alt') ?>"></i>
             <?= __('Logout') ?>
         </a>
     </div>

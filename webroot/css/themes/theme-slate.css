@@ -344,6 +344,10 @@
   box-shadow: 0 0 0 0.2rem rgba(248, 148, 6, 0.25);
 }
 
+.table-xs > :not(caption) > * > * {
+  padding: 0.05rem 0.05rem;
+}
+
 /* Utilities */
 .mw-75 {
   max-width: 75% !important;

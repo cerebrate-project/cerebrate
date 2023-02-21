@@ -14,12 +14,14 @@ class InboxNavigation extends BaseNavigation
             'icon' => 'trash',
             'url' => '/inbox/discard/{{id}}',
             'url_vars' => ['id' => 'id'],
+            'isPOST' => true,
         ]);
         $this->bcf->addRoute('Inbox', 'process', [
             'label' => __('Process message'),
             'icon' => 'cogs',
             'url' => '/inbox/process/{{id}}',
             'url_vars' => ['id' => 'id'],
+            'isPOST' => true,
         ]);
     }
     

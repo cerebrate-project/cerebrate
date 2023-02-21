@@ -71,6 +71,7 @@
                 if ($childHasNotification || ($hasNotification && !empty($children))) {
                     echo $this->Bootstrap->notificationBubble([
                         'variant' => $childHasNotification ? $childNotificationVariant : $notificationVariant,
+                        'borderVariant' => 'light',
                     ]);
                 }
                 ?>

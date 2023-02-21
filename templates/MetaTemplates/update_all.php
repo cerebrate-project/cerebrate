@@ -40,12 +40,19 @@ foreach ($templatesUpdateStatus as $uuid => $status) {
     if (!empty($status['new'])) {
         $tableHtml .= sprintf('<td>%s</td>', __('N/A'));
     } else {
-        $tableHtml .= sprintf(
-            '<td>%s %s %s</td>',
-            h($status['current_version']),
-            $this->Bootstrap->icon('arrow-right', ['class' => 'fs-8']),
-            h($status['next_version'])
-        );
+        if ($status['current_version'] == $status['next_version']) {
+            $tableHtml .= sprintf(
+                '<td>%s</td>',
+                h($status['current_version'])
+            );
+        } else {
+            $tableHtml .= sprintf(
+                '<td>%s %s %s</td>',
+                h($status['current_version']),
+                $this->Bootstrap->icon('arrow-right', ['class' => 'fs-8']),
+                h($status['next_version'])
+            );
+        }
     }
     if (!empty($status['new'])) {
         $numberOfUpdates += 1;
@@ -59,6 +66,8 @@ foreach ($templatesUpdateStatus as $uuid => $status) {
         $tableHtml .= sprintf('<td>%s</td>', empty($status['up-to-date']) ? $this->Bootstrap->icon('check') : $this->Bootstrap->icon('times'));
     }
     if (!empty($status['new'])) {
+        $tableHtml .= sprintf('<td>%s</td>', __('N/A'));
+    } elseif (!empty($status['up-to-date'])) {
         $tableHtml .= sprintf('<td>%s</td>', __('N/A'));
     } else {
         $tableHtml .= sprintf('<td>%s</td>', !empty($status['conflicts']) ? $this->Bootstrap->icon('check') : $this->Bootstrap->icon('times'));

@@ -16,17 +16,17 @@ use Cake\Collection\Collection;
 
 class APIRearrangeComponent extends Component
 {
-    public function rearrangeForAPI(object $data)
+    public static function rearrangeForAPI(object $data, array $options = [])
     {
         if (is_subclass_of($data, 'Iterator')) {
             $newData = [];
-            $data->each(function ($value, $key) use (&$newData) {
-                $value->rearrangeForAPI();
+            $data->each(function ($value, $key) use (&$newData, $options) {
+                $value->rearrangeForAPI($options);
                 $newData[] = $value;
             });
             return new Collection($newData);
         } else {
-            $data->rearrangeForAPI();
+            $data->rearrangeForAPI($options);
         }
         return $data;
     }

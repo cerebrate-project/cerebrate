@@ -160,7 +160,7 @@ class SharingGroupsController extends AppController
             'organisation' => $this->SharingGroups->Organisations->find('list', [
                 'sort' => ['name' => 'asc'],
                 'conditions' => $conditions
-            ])
+            ])->toArray()
         ];
         if ($this->request->is('post')) {
             $input = $this->request->getData();
@@ -280,7 +280,7 @@ class SharingGroupsController extends AppController
                 'conditions' => [
                     'id' => $user['organisation_id']
                 ]
-            ]);
+            ])->toArray();
         }
         return $organisations;
     }

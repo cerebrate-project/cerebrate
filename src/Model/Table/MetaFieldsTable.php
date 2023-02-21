@@ -5,7 +5,9 @@ namespace App\Model\Table;
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Event\EventInterface;
 use Cake\ORM\RulesChecker;
+use ArrayObject;
 
 class MetaFieldsTable extends AppTable
 {
@@ -22,6 +24,8 @@ class MetaFieldsTable extends AppTable
         $this->addBehavior('Timestamp');
         $this->belongsTo('MetaTemplates');
         $this->belongsTo('MetaTemplateFields');
+        $this->belongsTo('MetaTemplateNameDirectory')
+            ->setForeignKey('meta_template_directory_id');
 
         $this->setDisplayField('field');
     }
@@ -35,7 +39,8 @@ class MetaFieldsTable extends AppTable
             ->notEmptyString('value')
             ->notEmptyString('meta_template_id')
             ->notEmptyString('meta_template_field_id')
-            ->requirePresence(['scope', 'field', 'value', 'uuid', 'meta_template_id', 'meta_template_field_id'], 'create');
+            ->notEmptyString('meta_template_directory_id')
+            ->requirePresence(['scope', 'field', 'value', 'uuid', 'meta_template_directory_id', ], 'create');
 
         $validator->add('value', 'validMetaField', [
             'rule' => 'isValidMetaField',
@@ -46,10 +51,28 @@ class MetaFieldsTable extends AppTable
         return $validator;
     }
 
+    public function afterMarshal(EventInterface $event, \App\Model\Entity\MetaField $entity, ArrayObject $data, ArrayObject $options) {
+        if (!isset($entity->meta_template_directory_id)) {
+            $entity->set('meta_template_directory_id', $this->getTemplateDirectoryIdFromMetaTemplate($entity->meta_template_id));
+        }
+    }
+
+    public function getTemplateDirectoryIdFromMetaTemplate($metaTemplateId): int
+    {
+        return $this->MetaTemplates->find()
+            ->select('meta_template_directory_id')
+            ->where(['id' => $metaTemplateId])
+            ->first()
+            ->meta_template_directory_id;
+    }
+
     public function isValidMetaField($value, array $context)
     {
         $metaFieldsTable = $context['providers']['table'];
         $entityData = $context['data'];
+        if (empty($entityData['meta_template_field_id'])) {
+            return true;
+        }
         $metaTemplateField = $metaFieldsTable->MetaTemplateFields->get($entityData['meta_template_field_id']);
         return $this->isValidMetaFieldForMetaTemplateField($value, $metaTemplateField);
     }
@@ -63,14 +86,14 @@ class MetaFieldsTable extends AppTable
         if (!empty($metaTemplateField['regex'])) {
             return $this->isValidRegex($value, $metaTemplateField);
         }
+        if (!empty($metaTemplateField['values_list'])) {
+            return $this->isValidValuesList($value, $metaTemplateField);
+        }
         return true;
     }
 
     public function isValidType($value, $metaTemplateField)
     {
-        if (empty($value)) {
-            return __('Metafield value cannot be empty.');
-        }
         $typeHandler = $this->MetaTemplateFields->getTypeHandler($metaTemplateField['type']);
         if (!empty($typeHandler)) {
             $success = $typeHandler->validate($value);
@@ -91,5 +114,12 @@ class MetaFieldsTable extends AppTable
             return __('Metafield value `{0}` for `{1}` doesn\'t pass regex validation.', $value, $metaTemplateField['field']);
         }
         return true;
+    }
+
+    public function isValidValuesList($value, $metaTemplateField)
+    {
+
+        $valuesList = $metaTemplateField['values_list'];
+        return in_array($value, $valuesList);
     }
 }

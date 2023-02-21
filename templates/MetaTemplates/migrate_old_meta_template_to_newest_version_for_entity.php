@@ -71,9 +71,7 @@ use Cake\Routing\Router;
         $this->Bootstrap->button([
             'text' => __('Update to version {0}', h($newMetaTemplate->version)),
             'variant' => 'success',
-            'params' => [
-                'onclick' => 'submitMigration()'
-            ]
+            'onclick' => 'submitMigration()',
         ])
         ?>
     </div>

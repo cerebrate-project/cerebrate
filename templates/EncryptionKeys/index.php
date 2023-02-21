@@ -49,7 +49,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'owner'
             ],
             [
-                'name' => __('Revoked'),
+                'name' => __('Fingerprint'),
                 'data_path' => 'fingerprint'
             ],
             [

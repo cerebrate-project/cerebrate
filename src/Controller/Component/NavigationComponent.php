@@ -217,6 +217,7 @@ class BreadcrumbFactory
                 'label' => __('[new {0}]', $controller),
                 'icon' => 'plus',
                 'url' => "/{$controller}/add",
+                'isPOST' => true,
             ]);
         } else if ($action === 'edit') {
             $item = $this->genRouteConfig($controller, $action, [
@@ -224,6 +225,7 @@ class BreadcrumbFactory
                 'icon' => 'edit',
                 'url' => "/{$controller}/edit/{{id}}",
                 'url_vars' => ['id' => 'id'],
+                'isPOST' => true,
                 'textGetter' => !empty($table->getDisplayField()) ? $table->getDisplayField() : 'id',
             ]);
         } else if ($action === 'delete') {
@@ -232,6 +234,15 @@ class BreadcrumbFactory
                 'icon' => 'trash',
                 'url' => "/{$controller}/delete/{{id}}",
                 'url_vars' => ['id' => 'id'],
+                'isPOST' => true,
+                'textGetter' => !empty($table->getDisplayField()) ? $table->getDisplayField() : 'id',
+            ]);
+        } else if ($action === 'audit') {
+            $item = $this->genRouteConfig($controller, $action, [
+                'label' => __('Audit changes'),
+                'icon' => 'history',
+                'url' => "/audit-logs?model={{model}}&model_id={{id}}&sort=created&direction=desc&embedInModal=1&excludeStats=1&skipTableToolbar=1",
+                'url_vars' => ['id' => 'id', 'model' => ['raw' => $table->getAlias()]],
                 'textGetter' => !empty($table->getDisplayField()) ? $table->getDisplayField() : 'id',
             ]);
         }
@@ -253,6 +264,7 @@ class BreadcrumbFactory
         $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'label');
         $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'textGetter');
         $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'badge');
+        $routeConfig = $this->addIfNotEmpty($routeConfig, $config, 'isPOST');
         return $routeConfig;
     }
 
@@ -279,6 +291,7 @@ class BreadcrumbFactory
         $this->addRoute($controller, 'add', $this->defaultCRUD($controller, 'add'));
         $this->addRoute($controller, 'edit', $this->defaultCRUD($controller, 'edit'));
         $this->addRoute($controller, 'delete', $this->defaultCRUD($controller, 'delete'));
+        $this->addRoute($controller, 'audit', $this->defaultCRUD($controller, 'audit'));
 
         $this->addParent($controller, 'view', $controller, 'index');
         $this->addParent($controller, 'add', $controller, 'index');
@@ -292,8 +305,10 @@ class BreadcrumbFactory
 
         $this->addAction($controller, 'view', $controller, 'add');
         $this->addAction($controller, 'view', $controller, 'delete');
+        $this->addAction($controller, 'view', $controller, 'audit');
         $this->addAction($controller, 'edit', $controller, 'add');
         $this->addAction($controller, 'edit', $controller, 'delete');
+        $this->addAction($controller, 'edit', $controller, 'audit');
     }
 
     public function get($controller, $action)

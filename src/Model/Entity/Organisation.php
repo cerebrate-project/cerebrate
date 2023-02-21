@@ -17,7 +17,7 @@ class Organisation extends AppModel
         'created' => true
     ];
 
-    public function rearrangeForAPI(): void
+    public function rearrangeForAPI(array $options = []): void
     {
         if (!empty($this->tags)) {
             $this->tags = $this->rearrangeTags($this->tags);
@@ -25,11 +25,9 @@ class Organisation extends AppModel
         if (!empty($this->alignments)) {
             $this->alignments = $this->rearrangeAlignments($this->alignments);
         }
-        if (!empty($this->meta_fields)) {
-            $this->rearrangeMetaFields();
-        }
-        if (!empty($this->MetaTemplates)) {
-            unset($this->MetaTemplates);
+        if (!empty($this->meta_fields) || !empty($this->MetaTemplates)) {
+            $this->rearrangeMetaFields($options);
         }
     }
+    // MetaTemplate object property is not unset!!
 }
