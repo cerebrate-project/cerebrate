@@ -21,7 +21,7 @@ use Cake\Routing\Router;
                     </td>
                     <td>
                         <?php
-                        foreach ($fieldConflict['conflictingEntities'] as $i => $id) {
+                        foreach ($fieldConflict['conflictingEntities'] as $i => $metaEntity) {
                             if ($i > 0) {
                                 echo ', ';
                             }
@@ -32,9 +32,9 @@ use Cake\Routing\Router;
                             $url = Router::url([
                                 'controller' => Inflector::pluralize($templateStatus['existing_template']->scope),
                                 'action' => 'view',
-                                $id
+                                $metaEntity['parent_id']
                             ]);
-                            echo sprintf('<a href="%s" target="_blank">%s</a>', $url, __('{0} #{1}', h(Inflector::humanize($templateStatus['existing_template']->scope)),  h($id)));
+                            echo sprintf('<a href="%s" target="_blank">%s</a>', $url, __('{0} #{1}', h(Inflector::humanize($templateStatus['existing_template']->scope)),  h($metaEntity['parent_id'])));
                         }
                         ?>
                     </td>

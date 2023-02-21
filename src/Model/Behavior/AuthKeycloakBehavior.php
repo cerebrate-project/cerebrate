@@ -459,7 +459,7 @@ class AuthKeycloakBehavior extends Behavior
                 $requireUpdate = true;
                 $differences = [
                     'user' => [
-                        'keycloak' => 'USER NOT FOUND',
+                        'keycloak' => __('ERROR or USER NOT FOUND'),
                         'cerebrate' => $user['username']
                     ]
                 ];

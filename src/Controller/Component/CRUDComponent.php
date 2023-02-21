@@ -33,6 +33,10 @@ class CRUDComponent extends Component
 
     public function index(array $options): void
     {
+        $embedInModal = !empty($this->request->getQuery('embedInModal', false));
+        $excludeStats = !empty($this->request->getQuery('excludeStats', false));
+        $skipTableToolbar = !empty($this->request->getQuery('skipTableToolbar', false));
+
         if (!empty($options['quickFilters'])) {
             if (empty($options['filters'])) {
                 $options['filters'] = [];
@@ -46,7 +50,8 @@ class CRUDComponent extends Component
             $options['filters'][] = 'filteringTags';
         }
 
-        $optionFilters = empty($options['filters']) ? [] : $options['filters'];
+        $optionFilters = [];
+        $optionFilters += empty($options['filters']) ? [] : $options['filters'];
         foreach ($optionFilters as $i => $filter) {
             $optionFilters[] = "{$filter} !=";
             $optionFilters[] = "{$filter} >=";
@@ -79,11 +84,16 @@ class CRUDComponent extends Component
                 $this->Controller->paginate['order'] = $options['order'];
             }
         }
+        if ($this->metaFieldsSupported() && !$this->Controller->ParamHandler->isRest()) {
+            $query = $this->includeRequestedMetaFields($query);
+        }
+        if (!$this->Controller->ParamHandler->isRest()) {
+            $this->setRequestedEntryAmount();
+        }
+        $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
+        $totalCount = $this->Controller->getRequest()->getAttribute('paging')[$this->TableAlias]['count'];
         if ($this->Controller->ParamHandler->isRest()) {
-            if ($this->metaFieldsSupported()) {
-                $query = $this->includeRequestedMetaFields($query);
-            }
-            $data = $query->all();
+            $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
             if (isset($options['hidden'])) {
                 $data->each(function($value, $key) use ($options) {
                     $hidden = is_array($options['hidden']) ? $options['hidden'] : [$options['hidden']];
@@ -114,13 +124,11 @@ class CRUDComponent extends Component
                     return $this->attachMetaTemplatesIfNeeded($value, $metaTemplates);
                 });
             }
-            $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json');
+            $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json', false, false, false, [
+                'X-Total-Count' => $totalCount,
+            ]);
         } else {
-            if ($this->metaFieldsSupported()) {
-                $query = $this->includeRequestedMetaFields($query);
-            }
-            $this->setRequestedEntryAmount();
-            $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
+            $this->Controller->setResponse($this->Controller->getResponse()->withHeader('X-Total-Count', $totalCount));
             if (isset($options['afterFind'])) {
                 $function = $options['afterFind'];
                 if (is_callable($function)) {
@@ -150,7 +158,7 @@ class CRUDComponent extends Component
                     return $template['enabled'];
                 }));
             }
-            if (true) { // check if stats are requested
+            if (empty($excludeStats)) { // check if stats are requested
                 $modelStatistics = [];
                 if ($this->Table->hasBehavior('Timestamp')) {
                     $modelStatistics = $this->Table->getActivityStatisticsForModel(
@@ -191,6 +199,8 @@ class CRUDComponent extends Component
             }
             $this->Controller->set('model', $this->Table);
             $this->Controller->set('data', $data);
+            $this->Controller->set('embedInModal', $embedInModal);
+            $this->Controller->set('skipTableToolbar', $skipTableToolbar);
         }
     }
 
@@ -439,6 +449,7 @@ class CRUDComponent extends Component
                                     'field' => $rawMetaTemplateField->field,
                                     'meta_template_id' => $rawMetaTemplateField->meta_template_id,
                                     'meta_template_field_id' => $rawMetaTemplateField->id,
+                                    'meta_template_directory_id' => $allMetaTemplates[$template_id]->meta_template_directory_id,
                                     'parent_id' => $entity->id,
                                     'uuid' => Text::uuid(),
                                 ]);
@@ -469,6 +480,7 @@ class CRUDComponent extends Component
                                     'field' => $rawMetaTemplateField->field,
                                     'meta_template_id' => $rawMetaTemplateField->meta_template_id,
                                     'meta_template_field_id' => $rawMetaTemplateField->id,
+                                    'meta_template_directory_id' => $template->meta_template_directory_id,
                                     'parent_id' => $entity->id,
                                     'uuid' => Text::uuid(),
                                 ]);
@@ -1126,17 +1138,9 @@ class CRUDComponent extends Component
 
     public function setQuickFilters(array $params, \Cake\ORM\Query $query, array $options): \Cake\ORM\Query
     {
+        $this->setQuickFilterForView($params, $options);
         $quickFilterFields = $options['quickFilters'];
-        $queryConditions = [];
-        $this->Controller->set('quickFilter', empty($quickFilterFields) ? [] : $quickFilterFields);
-        if ($this->metaFieldsSupported() && !empty($options['quickFilterForMetaField']['enabled'])) {
-            $this->Controller->set('quickFilterForMetaField', [
-                'enabled' => $options['quickFilterForMetaField']['enabled'] ?? false,
-                'wildcard_search' => $options['quickFilterForMetaField']['enabled'] ?? false,
-            ]);
-        }
         if (!empty($params['quickFilter']) && !empty($quickFilterFields)) {
-            $this->Controller->set('quickFilterValue', $params['quickFilter']);
             $queryConditions = $this->genQuickFilterConditions($params, $quickFilterFields);
 
             if ($this->metaFieldsSupported() && !empty($options['quickFilterForMetaField']['enabled'])) {
@@ -1146,10 +1150,25 @@ class CRUDComponent extends Component
             }
 
             $query->where(['OR' => $queryConditions]);
+        }
+        return $query;
+    }
+
+    public function setQuickFilterForView(array $params, array $options): void
+    {
+        $quickFilterFields = $options['quickFilters'];
+        $this->Controller->set('quickFilter', empty($quickFilterFields) ? [] : $quickFilterFields);
+        if ($this->metaFieldsSupported() && !empty($options['quickFilterForMetaField']['enabled'])) {
+            $this->Controller->set('quickFilterForMetaField', [
+                'enabled' => $options['quickFilterForMetaField']['enabled'] ?? false,
+                'wildcard_search' => $options['quickFilterForMetaField']['enabled'] ?? false,
+            ]);
+        }
+        if (!empty($params['quickFilter']) && !empty($quickFilterFields)) {
+            $this->Controller->set('quickFilterValue', $params['quickFilter']);
         } else {
             $this->Controller->set('quickFilterValue', '');
         }
-        return $query;
     }
 
     public function genQuickFilterConditions(array $params, array $quickFilterFields): array
@@ -1561,8 +1580,11 @@ class CRUDComponent extends Component
     private function renderViewInVariable($templateRelativeName, $data)
     {
         $builder = new ViewBuilder();
-        $builder->disableAutoLayout()->setTemplate("{$this->TableAlias}/{$templateRelativeName}");
-        $view = $builder->build($data);
+        $builder->disableAutoLayout()
+            ->setClassName('Monad')
+            ->setTemplate("{$this->TableAlias}/{$templateRelativeName}")
+            ->setVars($data);
+        $view = $builder->build();
         return $view->render();
     }
 

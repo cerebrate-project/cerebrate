@@ -20,7 +20,7 @@ use Cake\Core\Configure;
     $this->Form->setTemplates($template);
     if (!Configure::check('password_auth.enabled') || Configure::read('password_auth.enabled')) {
         echo sprintf('<h4 class="text-uppercase fw-light mb-3">%s</h4>', __('Sign In'));
-        echo $this->Form->create(null, ['url' => ['controller' => 'users', 'action' => 'login']]);
+        echo $this->Form->create(null, ['url' => ['controller' => 'users', 'action' => 'login', '?' => ['redirect' => $this->request->getQuery('redirect')],]]);
         echo $this->Form->control('username', ['label' => 'Username', 'class' => 'form-control mb-2', 'placeholder' => __('Username')]);
         echo $this->Form->control('password', ['type' => 'password', 'label' => 'Password', 'class' => 'form-control mb-3', 'placeholder' => __('Password')]);
         echo $this->Form->control(__('Login'), ['type' => 'submit', 'class' => 'btn btn-primary']);
@@ -52,8 +52,8 @@ use Cake\Core\Configure;
             'class' => ['d-block', 'w-100'],
             'image' => [
                 'path' => '/img/keycloak_logo.png',
-                'alt' => 'Keycloak'
-            ]
+                'alt' => 'Keycloak',
+            ],
         ]);
         echo $this->Form->end();
     }

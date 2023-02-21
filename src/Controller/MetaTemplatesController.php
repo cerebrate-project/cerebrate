@@ -226,13 +226,16 @@ class MetaTemplatesController extends AppController
             foreach ($newestMetaTemplate->meta_template_fields as $i => $newMetaTemplateField) {
                 if ($metaTemplateField->field == $newMetaTemplateField->field && empty($newMetaTemplateField->metaFields)) {
                     $movedMetaTemplateFields[] = $metaTemplateField->id;
+                    $nonEmptyMetaFields = array_filter($metaTemplateField->metaFields, function ($e) {
+                        return $e->value !== '';
+                    });
                     $copiedMetaFields = array_map(function ($e) use ($newMetaTemplateField) {
                         $e = $e->toArray();
                         $e['meta_template_id'] = $newMetaTemplateField->meta_template_id;
                         $e['meta_template_field_id'] = $newMetaTemplateField->id;
                         unset($e['id']);
                         return $e;
-                    }, $metaTemplateField->metaFields);
+                    }, $nonEmptyMetaFields);
                     $newMetaTemplateField->metaFields = $this->MetaTemplates->MetaTemplateFields->MetaFields->newEntities($copiedMetaFields);
                 }
             }
@@ -242,6 +245,55 @@ class MetaTemplatesController extends AppController
         $this->set('entity', $entity);
         $this->set('conflicts', $conflicts);
         $this->set('movedMetaTemplateFields', $movedMetaTemplateFields);
+    }
+
+    public function migrateMetafieldsToNewestTemplate(int $template_id, $forceMigration=false)
+    {
+        $oldMetaTemplate = $this->MetaTemplates->find()->where([
+            'id' => $template_id
+        ])->contain(['MetaTemplateFields'])->first();
+
+        if (empty($oldMetaTemplate)) {
+            throw new NotFoundException(__('Invalid {0} {1}.', $this->MetaTemplates->getAlias(), $template_id));
+        }
+        $newestMetaTemplate = $this->MetaTemplates->getNewestVersion($oldMetaTemplate, true);
+        if ($oldMetaTemplate->id == $newestMetaTemplate->id) {
+            throw new NotFoundException(__('Invalid {0} {1}. Template already the newest version', $this->MetaTemplates->getAlias(), $template_id));
+        }
+
+        if ($this->request->is('post')) {
+            $result = $this->MetaTemplates->migrateMetafieldsToNewestTemplate($oldMetaTemplate, $newestMetaTemplate, !empty($forceMigration));
+            if ($this->ParamHandler->isRest()) {
+                return $this->RestResponse->viewData($result, 'json');
+            } else {
+                if ($result['success']) {
+                    $message = __('{0} entities updated. {1} entities could not be automatically migrated.', $result['migrated_count'], $result['conflicting_entities']);
+                } else {
+                    $message = __('{0} entities updated. {1} entities could not be automatically migrated. {2} entities could not be updated due to errors', $result['migrated_count'], $result['conflicting_entities'], $result['migration_errors']);
+                }
+                $this->CRUD->setResponseForController('update', $result['success'], $message, $result, $result['migration_errors'], ['redirect' => $this->referer()]);
+                $responsePayload = $this->CRUD->getResponsePayload();
+                if (!empty($responsePayload)) {
+                    return $responsePayload;
+                }
+            }
+        } else {
+            $entities = $this->MetaTemplates->getEntitiesHavingMetaFieldsFromTemplate($oldMetaTemplate->id, null);
+            $conflictingEntities = [];
+            foreach ($entities as $entity) {
+                $conflicts = $this->MetaTemplates->getMetaFieldsConflictsUnderTemplate($entity->meta_fields, $newestMetaTemplate);
+                if (!empty($conflicts)) {
+                    $conflictingEntities[] = $entity;
+                }
+            }
+
+            if (!$this->ParamHandler->isRest()) {
+                $this->set('oldMetaTemplate', $oldMetaTemplate);
+                $this->set('newestMetaTemplate', $newestMetaTemplate);
+                $this->set('conflictingEntities', $conflictingEntities);
+                $this->set('entityCount', count($entities));
+            }
+        }
     }
 
     public function index()

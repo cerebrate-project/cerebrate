@@ -79,10 +79,15 @@ if (!empty($breadcrumb)) {
             if (!empty($actionEntry['badge'])) {
                 $badgeNumber += 1;
             }
+            if (!empty($actionEntry['isPOST'])) {
+                $onclickFunction = sprintf('UI.overlayUntilResolve(this, UI.submissionModalAutoGuess(\'%s\'))', h(Router::url($actionEntry['url'])));
+            } else {
+                $onclickFunction = sprintf('UI.overlayUntilResolve(this, UI.modalFromUrl(\'%s\'))', h(Router::url($actionEntry['url'])));
+            }
             $breadcrumbAction .= sprintf(
                 '<a class="dropdown-item %s" href="#" onclick="%s"><i class="me-1 %s"></i>%s%s</a>',
                 !empty($actionEntry['variant']) ? sprintf('dropdown-item-%s', $actionEntry['variant']) : '',
-                sprintf('UI.overlayUntilResolve(this, UI.submissionModalAutoGuess(\'%s\'))', h(Router::url($actionEntry['url']))),
+                $onclickFunction,
                 !empty($actionEntry['icon']) ? $this->FontAwesome->getClass(h($actionEntry['icon'])) : '',
                 h($actionEntry['label']),
                 !empty($actionEntry['badge']) ? $this->Bootstrap->badge($actionEntry['badge']) : ''

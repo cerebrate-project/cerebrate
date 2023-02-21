@@ -26,8 +26,13 @@ class UsersController extends AppController
         if (!empty(Configure::read('keycloak.enabled'))) {
             // $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
         }
+        $additionalContainFields = [];
+        if ($this->ParamHandler->isRest()) {
+            $additionalContainFields[] = 'MetaFields';
+        }
+        $containFields = array_merge($this->containFields, $additionalContainFields);
         $this->CRUD->index([
-            'contain' => $this->containFields,
+            'contain' => $containFields,
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'conditions' => $conditions,
@@ -154,7 +159,12 @@ class UsersController extends AppController
         }
         $keycloakUsersParsed = null;
         if (!empty(Configure::read('keycloak.enabled'))) {
-            $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
+            try {
+                $keycloakUsersParsed = $this->Users->getParsedKeycloakUser();
+            } catch (\Exception $e) {
+                $keycloakUsersParsed = [];
+                $this->Flash->error(__('Issue while connecting to keycloak. {0}', $e->getMessage()));
+            }
         }
         $this->CRUD->view($id, [
             'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations'],
@@ -298,6 +308,9 @@ class UsersController extends AppController
         }
         $params = [
             'beforeSave' => function($data) use ($currentUser, $validRoles) {
+                if (empty(Configure::read('user.allow-user-deletion'))) {
+                    throw new MethodNotAllowedException(__('User deletion is disabled on this instance.'));
+                }
                 if (!$currentUser['role']['perm_admin']) {
                     if ($data['organisation_id'] !== $currentUser['organisation_id']) {
                         throw new MethodNotAllowedException(__('You do not have permission to delete the given user.'));

@@ -66,7 +66,7 @@ class AuditLog extends AppModel
         return $title;
     }
 
-    public function rearrangeForAPI(): void
+    public function rearrangeForAPI(array $options = []): void
     {
         if (!empty($this->user)) {
             $this->user = $this->user->toArray();
