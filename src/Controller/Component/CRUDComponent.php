@@ -10,6 +10,7 @@ use Cake\Utility\Text;
 use Cake\View\ViewBuilder;
 use Cake\ORM\TableRegistry;
 use Cake\ORM\Query;
+use Cake\Database\Expression\QueryExpression;
 use Cake\Routing\Router;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
@@ -1225,7 +1226,7 @@ class CRUDComponent extends Component
                     }
                     $activeFilters[$filter] = $filterValue;
                     if (is_array($filterValue)) {
-                        $query->where([($filter . ' IN') => $filterValue]);
+                        $query = $this->setInCondition($query, $filter, $filterValue);
                     } else {
                         $query = $this->setValueCondition($query, $filter, $filterValue);
                     }
@@ -1307,6 +1308,27 @@ class CRUDComponent extends Component
         } else {
             return $query->where(function ($exp, \Cake\ORM\Query $q) use ($fieldName, $value) {
                 return $exp->like($fieldName, $value);
+            });
+        }
+    }
+
+    protected function setInCondition($query, $fieldName, $values)
+    {
+        $split = explode(' ', $fieldName);
+        if (count($split) == 1) {
+            $field = $fieldName;
+            $operator = '=';
+        } else {
+            $field = $split[0];
+            $operator = $split[1];
+        }
+        if ($operator == '=') {
+            return $query->where(function (QueryExpression $exp, Query $q) use ($field, $values) {
+                return $exp->in($field, $values);
+            });
+        } else if ($operator == '!=') {
+            return $query->where(function (QueryExpression $exp, Query $q) use ($field, $values) {
+                return $exp->notIn($field, $values);
             });
         }
     }
