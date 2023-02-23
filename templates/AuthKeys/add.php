@@ -14,7 +14,8 @@ echo $this->element('genericElements/Form/genericForm', [
             ],
             [
                 'field' => 'expiration',
-                'label' => 'Expiration'
+                'label' => __('Expiration'),
+                'type' => 'datetime',
             ]
         ],
         'submit' => [
