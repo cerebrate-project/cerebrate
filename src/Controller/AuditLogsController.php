@@ -11,7 +11,7 @@ use Cake\Core\Configure;
 
 class AuditLogsController extends AppController
 {
-    public $filterFields = ['model_id', 'model', 'request_action', 'user_id', 'model_title', 'AuditLogs.created'];
+    public $filterFields = ['model_id', 'model', ['name' => 'request_action', 'multiple' => true, ], 'user_id', 'model_title', 'AuditLogs.created'];
     public $quickFilterFields = ['model', 'request_action', 'model_title'];
     public $containFields = ['Users'];
 
@@ -20,7 +20,7 @@ class AuditLogsController extends AppController
         $this->CRUD->index([
             'contain' => $this->containFields,
             'order' => ['AuditLogs.id' => 'DESC'],
-            'filters' => $this->filterFields,
+            'filters' => $this->CRUD->getFilterFieldsName($this->filterFields),
             'quickFilters' => $this->quickFilterFields,
             'afterFind' => function($data) {
                 $request_ip = is_resource($data['request_ip']) ? stream_get_contents($data['request_ip']) : $data['request_ip'];
