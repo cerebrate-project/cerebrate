@@ -103,6 +103,7 @@ class AuthKeysController extends AppController
         $dropdownData = [
             'user' => $users
         ];
+        $this->entity->user_id = $currentUser['id'];
         $this->set(compact('dropdownData'));
     }
 }
