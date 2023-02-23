@@ -226,20 +226,39 @@ class CRUDComponent extends Component
         } else {
             $this->Controller->set('metaFieldsEnabled', false);
         }
-        $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
+        $filtersConfigRaw= !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
+        $filtersConfig = [];
+        foreach ($filtersConfigRaw as $fieldConfig) {
+            if (is_array($fieldConfig)) {
+                $filtersConfig[$fieldConfig['name']] = $fieldConfig;
+            } else {
+                $filtersConfig[$fieldConfig] = ['name' => $fieldConfig];
+            }
+        }
+        $filtersName = $this->getFilterFieldsName();
         $typeMap = $this->Table->getSchema()->typeMap();
-        $associatedtypeMap = !empty($this->Controller->filterFields) ? $this->_getAssociatedTypeMap() : [];
+        $associatedtypeMap = !empty($filtersName) ? $this->_getAssociatedTypeMap() : [];
         $typeMap = array_merge(
             $this->Table->getSchema()->typeMap(),
             $associatedtypeMap
         );
-        $typeMap = array_filter($typeMap, function ($field) use ($filters) {
-            return in_array($field, $filters);
+        $typeMap = array_filter($typeMap, function ($field) use ($filtersName) {
+            return in_array($field, $filtersName);
         }, ARRAY_FILTER_USE_KEY);
         $this->Controller->set('typeMap', $typeMap);
-        $this->Controller->set('filters', $filters);
+        $this->Controller->set('filters', $filtersName);
+        $this->Controller->set('filtersConfig', $filtersConfig);
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/filters');
+    }
+
+    public function getFilterFieldsName(): array
+    {
+        $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
+        $filters = array_map(function($item) {
+            return is_array($item) ? $item['name'] : $item;
+        }, $filters);
+        return $filters;
     }
 
     /**
@@ -1613,7 +1632,7 @@ class CRUDComponent extends Component
     protected function _getAssociatedTypeMap(): array
     {
         $typeMap = [];
-        foreach ($this->Controller->filterFields as $filter) {
+        foreach ($this->getFilterFieldsName() as $filter) {
             $exploded = explode('.', $filter);
             if (count($exploded) > 1) {
                 $model = $exploded[0];
