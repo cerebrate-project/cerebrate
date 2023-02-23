@@ -57,7 +57,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'url',
             ],
             [
-                'name' => __('Nationality'),
+                'name' => __('Country'),
                 'data_path' => 'nationality',
             ],
             [

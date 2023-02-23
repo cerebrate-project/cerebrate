@@ -16,6 +16,7 @@
                     'field' => 'url'
                 ),
                 array(
+                    'label' => __('Country'),
                     'field' => 'nationality'
                 ),
                 array(
