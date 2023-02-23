@@ -1,28 +1,31 @@
 <?php
+$topbarChildren = [];
+if (!empty($loggedUser->role->perm_admin)) {
+    $topbarChildren[] =  [
+        'type' => 'simple',
+        'children' => [
+            'data' => [
+                'type' => 'simple',
+                'text' => __('Add role'),
+                'class' => 'btn btn-primary',
+                'popover_url' => '/roles/add'
+            ]
+        ]
+    ];
+}
+$topbarChildren[] = [
+    'type' => 'search',
+    'button' => __('Search'),
+    'placeholder' => __('Enter value to search'),
+    'data' => '',
+    'searchKey' => 'value'
+];
+
 echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $data,
         'top_bar' => [
-            'children' => [
-                [
-                    'type' => 'simple',
-                    'children' => [
-                        'data' => [
-                            'type' => 'simple',
-                            'text' => __('Add role'),
-                            'class' => 'btn btn-primary',
-                            'popover_url' => '/roles/add'
-                        ]
-                    ]
-                ],
-                [
-                    'type' => 'search',
-                    'button' => __('Search'),
-                    'placeholder' => __('Enter value to search'),
-                    'data' => '',
-                    'searchKey' => 'value'
-                ]
-            ]
+            'children' => $topbarChildren,
         ],
         'fields' => [
             [
