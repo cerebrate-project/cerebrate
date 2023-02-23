@@ -71,8 +71,12 @@ class AuthKeysController extends AppController
             if (empty($currentUser['role']['perm_org_admin'])) {
                 $userConditions['id'] = $currentUser['id'];
             } else {
-                $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0])->all()->extract('id')->toList();
-                $userConditions['role_id IN'] = $role_ids;
+                $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->extract('id')->toList();
+                $userConditions['organisation_id'] = $currentUser['organisation_id'];
+                $userConditions['OR'] = [
+                    ['role_id IN' => $role_ids],
+                    ['id' => $currentUser['id']],
+                ];
             }
         }
         $users = $this->Users->find('list');
