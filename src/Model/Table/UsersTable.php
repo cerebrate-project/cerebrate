@@ -73,13 +73,6 @@ class UsersTable extends AppTable
         if (!$entity->isNew()) {
             $success = $this->handleUserUpdateRouter($entity);
         }
-        $permissionRestrictionCheck = $this->checkPermissionRestrictions($entity);
-        if ($permissionRestrictionCheck !== true) {
-            $entity->setErrors($permissionRestrictionCheck);
-            $event->stopPropagation();
-            $event->setResult(false);
-            return false;
-        }
         return $success;
     }
 
@@ -187,10 +180,24 @@ class UsersTable extends AppTable
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->isUnique(['username']));
-        $allowDuplicateIndividuals = false;
         if (empty(Configure::read('user.multiple-users-per-individual')) || !empty(Configure::read('keycloak.enabled'))) {
             $rules->add($rules->isUnique(['individual_id']));
         }
+
+        $rules->add(function($entity, $options) {
+            $permissionRestrictionCheck = $this->checkPermissionRestrictions($entity);
+            if ($permissionRestrictionCheck !== true) {
+                foreach ($permissionRestrictionCheck as $permission_name => $errors) {
+                    foreach ($entity->meta_fields as $i => $metaField) {
+                        if ($metaField['field'] === $permission_name) {
+                            $entity->meta_fields[$i]->setErrors(['value' => $errors]);
+                        }
+                    }
+                }
+                return false;
+            }
+            return true;
+        }, 'permissionLimitations');
         return $rules;
     }
 
