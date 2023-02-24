@@ -120,6 +120,12 @@ class UsersController extends AppController
                 if (Configure::read('keycloak.enabled')) {
                     $this->Users->enrollUserRouter($data);
                 }
+            },
+            'afterFind' => function ($user, &$params) use ($currentUser) {
+                if (!empty($user)) { // We don't have a 404
+                    $user = $this->fetchTable('PermissionLimitations')->attachLimitations($user);
+                }
+                return $user;
             }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
@@ -227,6 +233,14 @@ class UsersController extends AppController
                         if (!$this->ACL->canEditUser($currentUser, $user)) {
                             throw new MethodNotAllowedException(__('You cannot edit the given user.'));
                         }
+                        $user = $this->fetchTable('PermissionLimitations')->attachLimitations($user);
+                    }
+                    return $user;
+                };
+            } else {
+                $params['afterFind'] = function ($user, &$params) use ($currentUser) {
+                    if (!empty($user)) { // We don't have a 404
+                        $user = $this->fetchTable('PermissionLimitations')->attachLimitations($user);
                     }
                     return $user;
                 };

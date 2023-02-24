@@ -30,13 +30,17 @@ class PermissionLimitationsTable extends AppTable
     public function getListOfLimitations(\App\Model\Entity\User $data)
     {
         $Users = TableRegistry::getTableLocator()->get('Users');
-        $ownOrgUserIds = $Users->find('list', [
-            'keyField' => 'id',
-            'valueField' => 'id',
-            'conditions' => [
-                'organisation_id' => $data['organisation_id']
-            ]
-        ])->all()->toList();
+        $includeOrganisationPermissions = !empty($data['organisation_id']);
+        $ownOrgUserIds = [];
+        if ($includeOrganisationPermissions) {
+            $ownOrgUserIds = $Users->find('list', [
+                'keyField' => 'id',
+                'valueField' => 'id',
+                'conditions' => [
+                    'organisation_id' => $data['organisation_id']
+                ]
+            ])->all()->toList();
+        }
         $MetaFields = TableRegistry::getTableLocator()->get('MetaFields');
         $raw = $this->find()->select(['scope', 'permission', 'max_occurrence'])->disableHydration()->toArray();
         $limitations = [];
@@ -70,9 +74,12 @@ class PermissionLimitationsTable extends AppTable
                 if (!empty($ownOrgUserIds)) {
                     $conditions['parent_id IN'] = array_values($ownOrgUserIds);
                 }
-                $limitations[$field]['organisation']['current'] = $MetaFields->find('all', [
-                    'conditions' => $conditions,
-                ])->count();
+                $limitations[$field]['organisation']['current'] = '?';
+                if ($includeOrganisationPermissions) {
+                    $limitations[$field]['organisation']['current'] = $MetaFields->find('all', [
+                        'conditions' => $conditions,
+                    ])->count();
+                }
             }
         }
         return $limitations;
@@ -89,34 +96,35 @@ class PermissionLimitationsTable extends AppTable
         if (!empty($data['MetaTemplates'])) {
             foreach ($data['MetaTemplates'] as &$metaTemplate) {
                 foreach ($metaTemplate['meta_template_fields'] as &$meta_template_field) {
-                    $boolean = $meta_template_field['type'] === 'boolean';
-                    foreach ($meta_template_field['metaFields'] as &$metaField) {
-                        if (isset($permissionLimitations[$metaField['field']])) {
-                            foreach ($permissionLimitations[$metaField['field']] as $scope => $value) {
-                                $messageType = 'warning';
+                    if (isset($permissionLimitations[$meta_template_field['field']])) {
+                        foreach ($permissionLimitations[$meta_template_field['field']] as $scope => $value) {
+                            $messageType = 'warning';
+                            if ($value['current'] == '?') {
+                                $messageType = 'info';
+                            } else {
                                 if ($value['limit'] > $value['current']) {
                                     $messageType = 'info';
                                 }
                                 if ($value['limit'] < $value['current']) {
                                     $messageType = 'danger';
                                 }
-                                if (empty($metaField[$messageType])) {
-                                    $metaField[$messageType] = '';
-                                }
-                                $altText = __(
-                                    'There is a limitation enforced on the number of users with this permission {0}. Currently {1} slot(s) are used up of a maximum of {2} slot(s).',
-                                    $scope === 'global' ? __('instance wide') : __('for your organisation'),
-                                    $value['current'],
-                                    $value['limit']
-                                );
-                                $metaField[$messageType] .= sprintf(
-                                    ' <span title="%s"><span class="text-dark"><i class="fas fa-%s"></i>: </span>%s/%s</span>',
-                                    $altText,
-                                    $icons[$scope],
-                                    $value['current'],
-                                    $value['limit']
-                                );
                             }
+                            if (empty($metaField[$messageType])) {
+                                $metaField[$messageType] = '';
+                            }
+                            $altText = __(
+                                'There is a limitation enforced on the number of users with this permission {0}. Currently {1} slot(s) are used up of a maximum of {2} slot(s).',
+                                $scope === 'global' ? __('instance wide') : __('for your organisation'),
+                                $value['current'],
+                                $value['limit']
+                            );
+                            $meta_template_field[$messageType] .= sprintf(
+                                ' <span title="%s"><span class="text-dark"><i class="fas fa-%s"></i>: </span>%s/%s</span>',
+                                $altText,
+                                $icons[$scope],
+                                $value['current'],
+                                $value['limit']
+                            );
                         }
                     }
                 }
