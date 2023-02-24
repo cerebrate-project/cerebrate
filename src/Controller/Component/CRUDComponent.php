@@ -309,6 +309,9 @@ class CRUDComponent extends Component
         if ($this->metaFieldsSupported()) {
             $metaTemplates = $this->getMetaTemplates();
             $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
+            if (isset($params['afterFind'])) {
+                $data = $params['afterFind']($data, $params);
+            }
         }
         if ($this->request->is('post')) {
             $patchEntityParams = [
