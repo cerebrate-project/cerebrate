@@ -83,6 +83,9 @@ class EncryptionKeysController extends AppController
                 $individualConditions = [
                     'id' => $currentUser['individual_id']
                 ];
+                $orgConditions = [
+                    'id' => -1, // Only org_admins are allowed to manage their org's encryption keys
+                ];
             } else {
                 $this->loadModel('Alignments');
                 $individualConditions = ['id IN' => $this->Alignments->find('list', [
@@ -122,6 +125,11 @@ class EncryptionKeysController extends AppController
             'organisation' => $this->Organisations->find('list')->order(['name' => 'asc'])->where($orgConditions)->all()->toArray(),
             'individual' => $this->Individuals->find('list')->order(['email' => 'asc'])->where($individualConditions)->all()->toArray()
         ];
+        foreach ($dropdownData as $modelName => $list) {
+            if (empty($list)) {
+                unset($dropdownData[$modelName]);
+            }
+        }
         return $params;
     }
 
