@@ -11,11 +11,12 @@
                 $fieldData['label'] = \Cake\Utility\Inflector::humanize($fieldData['field']);
             }
         }
-        if (!empty($fieldDesc[$fieldData['field']])) {
-            $fieldData['label'] .= $this->element(
+        $fieldDescription = $fieldData['tooltip'] ?? ($fieldDesc[$fieldData['field']] ?? false);
+        if (!empty($fieldDescription)) {
+            $fieldData['tooltip'] = $this->element(
                 'genericElements/Form/formInfo', array(
                     'field' => $fieldData,
-                    'fieldDesc' => $fieldDesc[$fieldData['field']],
+                    'fieldDesc' => $fieldDescription,
                     'modelForForm' => $modelForForm
                 )
             );
