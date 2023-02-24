@@ -568,15 +568,15 @@ class CRUDComponent extends Component
              $query->where($params['conditions']);
         }
         $data = $query->first();
+        if ($this->metaFieldsSupported()) {
+            $metaTemplates = $this->getMetaTemplates();
+            $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
+        }
         if (isset($params['afterFind'])) {
             $data = $params['afterFind']($data, $params);
         }
         if (empty($data)) {
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
-        }
-        if ($this->metaFieldsSupported()) {
-            $metaTemplates = $this->getMetaTemplates();
-            $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
         }
         if ($this->request->is(['post', 'put'])) {
             $patchEntityParams = [
