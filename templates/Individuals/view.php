@@ -31,6 +31,7 @@ echo $this->element(
             [
                 'key' => __('Tags'),
                 'type' => 'tags',
+                'editable' => $canEdit,
             ],
             [
                 'key' => __('Alignments'),

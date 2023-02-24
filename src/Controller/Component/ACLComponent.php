@@ -90,8 +90,8 @@ class ACLComponent extends Component
             'edit' => ['perm_admin', 'perm_org_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
-            'tag' => ['perm_tagger'],
-            'untag' => ['perm_tagger'],
+            'tag' => ['*'],
+            'untag' => ['*'],
             'view' => ['*'],
             'viewTags' => ['*']
         ],
@@ -152,8 +152,8 @@ class ACLComponent extends Component
             'edit' => ['perm_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
-            'tag' => ['perm_tagger'],
-            'untag' => ['perm_tagger'],
+            'tag' => ['perm_org_admin'],
+            'untag' => ['perm_org_admin'],
             'view' => ['*'],
             'viewTags' => ['*']
         ],

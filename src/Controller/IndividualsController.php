@@ -68,25 +68,15 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        $this->set('canEdit', $this->canEdit($id));
     }
 
     public function edit($id)
     {
-        $currentUser = $this->ACL->getUser();
-        if (!$currentUser['role']['perm_admin']) {
-            $validIndividuals = $this->Individuals->getValidIndividualsToEdit($currentUser);
-            if (!in_array($id, $validIndividuals)) {
-                throw new MethodNotAllowedException(__('You cannot modify that individual.'));    
-            }
+        if (!$this->canEdit($id)) {
+            throw new MethodNotAllowedException(__('You cannot modify that individual.'));
         }
         $currentUser = $this->ACL->getUser();
-        $validIndividualIds = [];
-        if (!$currentUser['role']['perm_admin']) {
-            $validIndividualIds = $this->Individuals->getValidIndividualsToEdit($currentUser);
-            if (!in_array($id, $validIndividualIds)) {
-                throw new NotFoundException(__('Invalid individual.'));
-            }
-        }
         $this->CRUD->edit($id, [
             'beforeSave' => function($data) use ($currentUser) {
                 if ($currentUser['role']['perm_admin'] && isset($data['uuid'])) {
@@ -113,6 +103,9 @@ class IndividualsController extends AppController
 
     public function tag($id)
     {
+        if (!$this->canEdit($id)) {
+            throw new MethodNotAllowedException(__('You cannot tag that individual.'));
+        }
         $this->CRUD->tag($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -122,6 +115,9 @@ class IndividualsController extends AppController
 
     public function untag($id)
     {
+        if (!$this->canEdit($id)) {
+            throw new MethodNotAllowedException(__('You cannot untag that individual.'));
+        }
         $this->CRUD->untag($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -136,5 +132,18 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+    }
+
+    public function canEdit($indId): bool
+    {
+        $currentUser = $this->ACL->getUser();
+        if ($currentUser['role']['perm_admin']) {
+            return true;
+        }
+        $validIndividuals = $this->Individuals->getValidIndividualsToEdit($currentUser);
+        if (in_array($indId, $validIndividuals)) {
+            return true;
+        }
+        return false;
     }
 }
