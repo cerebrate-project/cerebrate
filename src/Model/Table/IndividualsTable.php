@@ -124,12 +124,15 @@ class IndividualsTable extends AppTable
 
     public function getValidIndividualsToEdit(object $currentUser): array
     {
-        $adminRoles = $this->Users->Roles->find('list')->select(['id'])->where(['perm_admin' => 1])->all()->toArray();
+        $validRoles = $this->Users->Roles->find('list')->select(['id'])->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->toArray();
         $validIndividualIds = $this->Users->find('list')->select(['individual_id'])->where(
             [
                 'organisation_id' => $currentUser['organisation_id'],
                 'disabled' => 0,
-                'role_id NOT IN' => array_keys($adminRoles)
+                'OR' => [
+                    ['role_id IN' => array_keys($validRoles)],
+                    ['id' => $currentUser['id']],
+                ]
             ]
         )->all()->toArray();
         return array_keys($validIndividualIds);
