@@ -28,9 +28,9 @@ foreach($data['MetaTemplates'] as $metaTemplate) {
                             ]
                         ]),
                         'rawNoEscaping' => true,
-                        'warning' => $metaField->warning ?? null,
-                        'info' => $metaField->info ?? null,
-                        'danger' => $metaField->danger ?? null
+                        'notice_warning' => $metaTemplateField->warning ?? null,
+                        'notice_info' => $metaTemplateField->info ?? null,
+                        'notice_danger' => $metaTemplateField->danger ?? null
                     ];
                     $labelPrintedOnce = true;
                 }
