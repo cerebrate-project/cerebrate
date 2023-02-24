@@ -10,7 +10,8 @@
                 array(
                     'field' => 'uuid',
                     'label' => 'UUID',
-                    'type' => 'uuid'
+                    'type' => 'uuid',
+                    'tooltip' => __('If the Organisation already has a known UUID in another application such as MISP or another Cerebrate, please re-use this one.'),
                 ),
                 array(
                     'field' => 'url'
