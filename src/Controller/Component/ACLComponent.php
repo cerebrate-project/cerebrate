@@ -146,6 +146,9 @@ class ACLComponent extends Component
             'toggle' => ['perm_admin'],
             'view' => ['perm_admin'],
         ],
+        'MetaTemplateNameDirectory' => [
+            'index' => ['perm_admin'],
+        ],
         'Organisations' => [
             'add' => ['perm_admin'],
             'delete' => ['perm_admin'],
