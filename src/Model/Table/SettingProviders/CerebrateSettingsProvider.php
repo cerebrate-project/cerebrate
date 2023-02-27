@@ -321,7 +321,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                                 2 => __('Debug On + SQL Dump'),
                             ],
                             'test' => function ($value, $setting, $validator) {
-                                $validator->range('value', [0, 3]);
+                                $validator->range('value', [0, 2]);
                                 return testValidator($value, $validator);
                             },
                         ],
