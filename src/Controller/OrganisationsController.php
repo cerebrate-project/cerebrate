@@ -170,7 +170,7 @@ class OrganisationsController extends AppController
         }
     }
 
-    public function canEdit($orgId): bool
+    private function canEdit($orgId): bool
     {
         $currentUser = $this->ACL->getUser();
         if ($currentUser['role']['perm_admin']) {

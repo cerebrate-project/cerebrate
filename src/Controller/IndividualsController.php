@@ -134,7 +134,7 @@ class IndividualsController extends AppController
         }
     }
 
-    public function canEdit($indId): bool
+    private function canEdit($indId): bool
     {
         $currentUser = $this->ACL->getUser();
         if ($currentUser['role']['perm_admin']) {
