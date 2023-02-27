@@ -140,6 +140,7 @@ class ACLComponent extends Component
             'enable' => ['perm_admin'],
             'getMetaFieldsToUpdate' => ['perm_admin'],
             'index' => ['perm_admin'],
+            'migrateMetafieldsToNewestTemplate' => ['perm_admin'],
             'migrateOldMetaTemplateToNewestVersionForEntity' => ['perm_admin'],
             'update' => ['perm_admin'],
             'updateAllTemplates' => ['perm_admin'],
