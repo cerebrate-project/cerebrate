@@ -19,7 +19,9 @@ if (!empty($fieldData['label'])) {
 if ($controlParams['options'] instanceof \Cake\ORM\Query) {
     $controlParams['options'] = $controlParams['options']->all()->toList();
 }
-if (!empty($fieldData['select2'])) {
+$initSelect2 = false;
+if (isset($fieldData['select2']) && $fieldData['select2'] == true) {
+    $initSelect2 = true;
     $fieldData['select2'] = $fieldData['select2'] === true ? [] : $fieldData['select2'];
     $controlParams['class'] .= ' select2-input';
 }
@@ -53,8 +55,9 @@ echo $this->FormFieldMassage->prepareFormElement($this->Form, $controlParams, $f
             $select.attr('onclick', 'toggleFreetextSelectField(this)')
             $select.parent().find('input.custom-value').attr('oninput', 'updateAssociatedSelect(this)')
             updateAssociatedSelect($select.parent().find('input.custom-value')[0])
-            <?php if (!empty($fieldData['select2'])) : ?>
-                let $container = $select.closest('.modal-dialog')
+            <?php if ($initSelect2) : ?>
+                // let $container = $select.closest('.modal-dialog .modal-body')
+                let $container = []
                 if ($container.length == 0) {
                     $container = $(document.body)
                 }

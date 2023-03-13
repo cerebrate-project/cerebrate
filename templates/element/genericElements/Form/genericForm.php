@@ -155,14 +155,5 @@
         $('.formDropdown').on('change', function() {
             executeStateDependencyChecks('#' + this.id);
         })
-        <?php if (!empty($initSelect2)): ?>
-            <?php
-                $dropdownParent = !empty($seedModal) ? sprintf("$('.modal-dialog.%s .modal-body')", $seedModal) : "$(document.body)";
-            ?>
-            $('select.select2-input').select2({
-                dropdownParent: <?= $dropdownParent ?>,
-                width: '100%',
-            })
-        <?php endif; ?>
     });
 </script>
