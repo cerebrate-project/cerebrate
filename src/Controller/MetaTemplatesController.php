@@ -404,8 +404,18 @@ class MetaTemplatesController extends AppController
         $metaTemplate = $this->MetaTemplates->get($template_id, [
             'contain' => ['MetaTemplateFields']
         ]);
-        $templateOnDisk = $this->MetaTemplates->readTemplateFromDisk($metaTemplate->uuid);
+        $error = '';
+        $errorMessage = '';
+        $templateOnDisk = $this->MetaTemplates->readTemplateFromDisk($metaTemplate->uuid, $error);
+        if (is_null($templateOnDisk)) {
+            $errorMessage = __('Could not retreive template\'s status. Reason: {0}', $error);
+            $this->Flash->error($errorMessage);
+            $templateOnDisk = [];
+        }
         $templateStatus = $this->MetaTemplates->getStatusForMetaTemplate($templateOnDisk, $metaTemplate);
+        if (!empty($errorMessage)) {
+            $templateStatus['error'] = $errorMessage;
+        }
         $this->set('templateOnDisk', $templateOnDisk);
         $this->set('templateStatus', $templateStatus);
         return [

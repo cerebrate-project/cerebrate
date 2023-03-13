@@ -11,6 +11,14 @@ if ($updateStatus['up-to-date']) {
         'dismissible' => false,
     ]);
     $modalType = 'ok-only';
+} else if (empty($updateStatus['templateOnDisk'])) {
+    $diskTemplateError = $templateStatus['error'] ?? __('Unknown');
+    $bodyHtml .= $this->Bootstrap->alert([
+        'variant' => 'danger',
+        'html' => sprintf('<strong>%s</strong> %s<p>%s</p>', __('Could not get template on disk.'), __('Reason:'), h($diskTemplateError)),
+        'dismissible' => false,
+    ]);
+    $modalType = 'ok-only';
 } else {
     if ($updateStatus['automatically-updateable']) {
         $bodyHtml .= $this->Bootstrap->alert([
