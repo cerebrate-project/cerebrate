@@ -94,7 +94,16 @@ class IndividualsController extends AppController
 
     public function delete($id)
     {
-        $this->CRUD->delete($id);
+        $params = [
+            'contain' => ['Users'],
+            'afterFind' => function($data, $params) {
+                if (!empty($data['user'])) {
+                    throw new ForbiddenException(__('Individual associated to a user cannot be deleted.'));
+                }
+                return $data;
+            }
+        ];
+        $this->CRUD->delete($id, $params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;

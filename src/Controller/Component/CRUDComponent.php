@@ -851,6 +851,9 @@ class CRUDComponent extends Component
                     $query->contain($params['contain']);
                 }
                 $data = $query->first();
+                if (isset($params['afterFind'])) {
+                    $data = $params['afterFind']($data, $params);
+                }
                 if (empty($data)) {
                     throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
                 }
@@ -873,6 +876,9 @@ class CRUDComponent extends Component
                     $query->contain($params['contain']);
                 }
                 $data = $query->first();
+                if (isset($params['afterFind'])) {
+                    $data = $params['afterFind']($data, $params);
+                }
                 if (isset($params['beforeSave'])) {
                     try {
                         $data = $params['beforeSave']($data);
