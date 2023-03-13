@@ -11,7 +11,7 @@ if ($updateStatus['up-to-date']) {
         'dismissible' => false,
     ]);
     $modalType = 'ok-only';
-} else if (empty($updateStatus['templateOnDisk'])) {
+} else if (empty($templateOnDisk)) {
     $diskTemplateError = $templateStatus['error'] ?? __('Unknown');
     $bodyHtml .= $this->Bootstrap->alert([
         'variant' => 'danger',
