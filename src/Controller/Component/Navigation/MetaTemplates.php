@@ -56,6 +56,12 @@ class MetaTemplatesNavigation extends BaseNavigation
             'url' => '/metaTemplates/prune_outdated_template',
             'isPOST' => true,
         ]);
+        $this->bcf->addRoute('MetaTemplates', 'view_template_directory', [
+            'label' => __('View all known templates'),
+            'icon' => 'list',
+            'url' => '/metaTemplateNameDirectory/index',
+            'isRedirect' => true,
+        ]);
     }
 
     public function addParents()
@@ -78,7 +84,7 @@ class MetaTemplatesNavigation extends BaseNavigation
             $totalUpdateCount = $udpateCount + $newCount;
         }
         $updateAllActionConfig = [
-            'label' => __('Update all template'),
+            'label' => __('Update all templates'),
             'url' => '/metaTemplates/updateAllTemplates',
             'url_vars' => ['id' => 'id'],
         ];
@@ -93,6 +99,9 @@ class MetaTemplatesNavigation extends BaseNavigation
         $this->bcf->addAction('MetaTemplates', 'index', 'MetaTemplates', 'prune_outdated_template', [
             'label' => __('Prune outdated templates'),
             'url' => '/metaTemplates/prune_outdated_template',
+        ]);
+        $this->bcf->addAction('MetaTemplates', 'index', 'MetaTemplates', 'view_template_directory', [
+            'isRedirect' => true,
         ]);
 
         if (empty($this->viewVars['templateStatus']['up-to-date'])) {

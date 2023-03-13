@@ -81,6 +81,8 @@ if (!empty($breadcrumb)) {
             }
             if (!empty($actionEntry['isPOST'])) {
                 $onclickFunction = sprintf('UI.overlayUntilResolve(this, UI.submissionModalAutoGuess(\'%s\'))', h(Router::url($actionEntry['url'])));
+            } else if (!empty($actionEntry['isRedirect'])) {
+                $onclickFunction = sprintf('window.location.replace(\'%s\');', h(Router::url($actionEntry['url'])));
             } else {
                 $onclickFunction = sprintf('UI.overlayUntilResolve(this, UI.modalFromUrl(\'%s\'))', h(Router::url($actionEntry['url'])));
             }
