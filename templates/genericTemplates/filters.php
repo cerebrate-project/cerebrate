@@ -47,19 +47,28 @@ $filteringForm = $this->Bootstrap->table(
                     __('Value'),
                     sprintf('<sup class="fa fa-info" title="%s"><sup>', __('Supports strict matches and LIKE matches with the `%` character.&#10;Example: `%.com`'))
                 ),
-                'formatter' => function ($field, $row) use ($typeMap, $formTypeMap) {
+                'formatter' => function ($field, $row) use ($typeMap, $formTypeMap, $filtersConfig) {
                     $fieldName = $row['fieldname'];
                     $formType = $formTypeMap[$typeMap[$fieldName]] ?? 'text';
+                    $fieldData = [
+                        'field' => $fieldName,
+                        'type' => $formType,
+                        'label' => '',
+                        'class' => 'fieldValue form-control-sm'
+                    ];
+                    if (!empty($filtersConfig[$fieldName]['multiple'])) {
+                        $fieldData['type'] = 'dropdown';
+                        $fieldData['multiple'] = true;
+                        $fieldData['select2'] = [
+                            'tags' => true,
+                            'tokenSeparators' => [',', ' '],
+                        ];
+                    }
                     $this->Form->setTemplates([
                         'formGroup' => '<div class="col-sm-10">{{input}}</div>',
                     ]);
                     return $this->element('genericElements/Form/fieldScaffold', [
-                        'fieldData' => [
-                            'field' => $fieldName,
-                            'type' => $formType,
-                            'label' => '',
-                            'class' => 'fieldValue form-control-sm'
-                        ],
+                        'fieldData' => $fieldData,
                         'params' => []
                     ]);
                 }
@@ -169,6 +178,36 @@ echo $this->Bootstrap->modal([
             }
             setFilteringValues($filteringTable, field, value, operator)
         }
+        if (tags.length > 0) {
+            setFilteringTags($filteringTable, tags)
+        }
+    }
+
+    function setFilteringValues($filteringTable, field, value, operator) {
+        $row = $filteringTable.find('td > span.fieldName').filter(function() {
+            return $(this).data('fieldname') == field
+        }).closest('tr')
+        $row.find('.fieldOperator').val(operator)
+        const $formElement = $row.find('.fieldValue');
+        if ($formElement.attr('type') === 'datetime-local') {
+            $formElement.val(moment(value).format('yyyy-MM-DDThh:mm:ss'))
+        } else if ($formElement.is('select') && Array.isArray(value)) {
+            let newOptions = [];
+            value.forEach(aValue => {
+                const existingOption = $formElement.find('option').filter(function() {
+                    return $(this).val() === aValue
+                })
+                if (existingOption.length == 0) {
+                    newOptions.push(new Option(aValue, aValue, true, true))
+                }
+            })
+            $formElement.append(newOptions).trigger('change');
+        } else {
+            $formElement.val(value)
+        }
+    }
+
+    function setFilteringTags($filteringTable, tags) {
         $select = $filteringTable.closest('.modal-body').find('select.select2-input')
         let passedTags = []
         tags.forEach(tagname => {
@@ -183,19 +222,6 @@ echo $this->Bootstrap->modal([
             .append(passedTags)
             .val(tags)
             .trigger('change')
-    }
-
-    function setFilteringValues($filteringTable, field, value, operator) {
-        $row = $filteringTable.find('td > span.fieldName').filter(function() {
-            return $(this).data('fieldname') == field
-        }).closest('tr')
-        $row.find('.fieldOperator').val(operator)
-        const $formElement = $row.find('.fieldValue');
-        if ($formElement.attr('type') === 'datetime-local') {
-            $formElement.val(moment(value).format('yyyy-MM-DDThh:mm:ss'))
-        } else {
-            $formElement.val(value)
-        }
     }
 
     function getDataFromRow($row) {

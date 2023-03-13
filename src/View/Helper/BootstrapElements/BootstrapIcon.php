@@ -21,6 +21,7 @@ class BootstrapIcon extends BootstrapGeneric
 {
     private $icon = '';
     private $defaultOptions = [
+        'id' => '',
         'class' => [],
         'title' => '',
         'attrs' => [],
@@ -48,6 +49,7 @@ class BootstrapIcon extends BootstrapGeneric
     {
         $html = $this->node('span', array_merge(
             [
+                'id' => $this->options['id'] ?? '',
                 'class' => array_merge(
                     $this->options['class'],
                     ["fa fa-{$this->icon}"]

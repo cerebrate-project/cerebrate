@@ -10,7 +10,6 @@ echo $this->element('genericElements/Form/genericForm', [
                 'multiple' => true,
                 'select2' => true,
                 'label' => __('Members'),
-                'class' => 'select2-input',
                 'options' => $dropdownData['individuals']
             ],
             [

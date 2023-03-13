@@ -555,6 +555,10 @@ class MetaTemplatesTable extends AppTable
                     if (substr($file, -5) === '.json') {
                         $errorMessage = '';
                         $template = $this->decodeTemplateFromDisk($path . $file, $errorMessage);
+                        if (!empty($errorMessage)) {
+                            $error = $errorMessage;
+                            return null;
+                        }
                         if (!empty($template) && $template['uuid'] == $uuid) {
                             return $template;
                         }
@@ -1318,6 +1322,13 @@ class MetaTemplatesTable extends AppTable
         $updateStatus['next_version'] = $template['version'];
         $updateStatus['new'] = false;
         $updateStatus['automatically-updateable'] = false;
+        $updateStatus['conflicts'] = [];
+        if (empty($template)) {
+            $updateStatus['up-to-date'] = false;
+            $updateStatus['automatically-updateable'] = false;
+            $updateStatus['can-be-removed'] = false;
+            return $updateStatus;
+        }
         if (intval($metaTemplate->version) >= intval($template['version'])) {
             $updateStatus['up-to-date'] = true;
             $updateStatus['conflicts'][] = __('Could not update the template. Local version is equal or newer.');

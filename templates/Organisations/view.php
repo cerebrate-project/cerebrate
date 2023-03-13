@@ -22,7 +22,7 @@ echo $this->element(
                 'path' => 'url'
             ],
             [
-                'key' => __('Nationality'),
+                'key' => __('Country'),
                 'path' => 'nationality'
             ],
             [
@@ -40,6 +40,7 @@ echo $this->element(
             [
                 'key' => __('Tags'),
                 'type' => 'tags',
+                'editable' => $canEdit,
             ],
             [
                 'key' => __('Alignments'),

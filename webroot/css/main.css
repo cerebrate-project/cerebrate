@@ -94,7 +94,7 @@ input[type="checkbox"]:disabled.change-cursor {
 }
 
 .select2-container {
-    z-index: 900;
+    z-index: 1060;
 }
 
 .select2-container--bootstrap-5 {

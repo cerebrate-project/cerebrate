@@ -90,8 +90,8 @@ class ACLComponent extends Component
             'edit' => ['perm_admin', 'perm_org_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
-            'tag' => ['perm_tagger'],
-            'untag' => ['perm_tagger'],
+            'tag' => ['*'],
+            'untag' => ['*'],
             'view' => ['*'],
             'viewTags' => ['*']
         ],
@@ -140,11 +140,15 @@ class ACLComponent extends Component
             'enable' => ['perm_admin'],
             'getMetaFieldsToUpdate' => ['perm_admin'],
             'index' => ['perm_admin'],
+            'migrateMetafieldsToNewestTemplate' => ['perm_admin'],
             'migrateOldMetaTemplateToNewestVersionForEntity' => ['perm_admin'],
             'update' => ['perm_admin'],
             'updateAllTemplates' => ['perm_admin'],
             'toggle' => ['perm_admin'],
             'view' => ['perm_admin'],
+        ],
+        'MetaTemplateNameDirectory' => [
+            'index' => ['perm_admin'],
         ],
         'Organisations' => [
             'add' => ['perm_admin'],
@@ -152,8 +156,8 @@ class ACLComponent extends Component
             'edit' => ['perm_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
-            'tag' => ['perm_tagger'],
-            'untag' => ['perm_tagger'],
+            'tag' => ['perm_org_admin'],
+            'untag' => ['perm_org_admin'],
             'view' => ['*'],
             'viewTags' => ['*']
         ],

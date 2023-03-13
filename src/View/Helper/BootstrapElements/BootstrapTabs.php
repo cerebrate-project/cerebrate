@@ -215,8 +215,6 @@ class BootstrapTabs extends BootstrapGeneric
             ],
             [
                 "bg-{$this->options['header-variant']}",
-                "text-{$this->options['header-text-variant']}",
-                "border-{$this->options['header-border-variant']}"
             ]
         )], $this->genNav());
         $content = $this->node('div', ['class' => array_merge(
@@ -226,7 +224,6 @@ class BootstrapTabs extends BootstrapGeneric
             ],
             [
                 "bg-{$this->options['body-variant']}",
-                "text-{$this->options['body-text-variant']}"
             ]
         )], $this->genContent());
 
@@ -238,7 +235,6 @@ class BootstrapTabs extends BootstrapGeneric
                 ($this->options['vertical-size'] == 'auto' ? 'flex-nowrap' : '')
             ],
             [
-                "border-{$this->options['header-border-variant']}"
             ]
         )], $containerContent);
         return $container;

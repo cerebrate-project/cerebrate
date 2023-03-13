@@ -103,6 +103,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'trash',
                 'complex_requirement' => [
                     'function' => function ($row, $options) use ($loggedUser) {
+                        if (!empty($row['user'])) { // cannot delete individuals with associated user(s)
+                            return false;
+                        }
                         return (bool)$loggedUser['role']['perm_admin'];
                     }
                 ]

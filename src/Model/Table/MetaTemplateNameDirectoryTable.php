@@ -7,6 +7,7 @@ use App\Model\Entity\MetaTemplateNameDirectory;
 use App\Model\Table\AppTable;
 use Cake\ORM\RulesChecker;
 use Cake\Validation\Validator;
+use Cake\Log\Log;
 
 class MetaTemplateNameDirectoryTable extends AppTable
 {
@@ -20,6 +21,9 @@ class MetaTemplateNameDirectoryTable extends AppTable
                 'foreignKey' => 'meta_template_directory_id',
             ]
         );
+        $this->hasOne('MetaTemplates', [
+            'foreignKey' => 'meta_template_directory_id',
+        ]);
         $this->setDisplayField('name');
     }
 
@@ -59,7 +63,11 @@ class MetaTemplateNameDirectoryTable extends AppTable
         if (!empty($existingTemplate)) {
             return $existingTemplate;
         }
-        $this->save($metaTemplateDirectory);
-        return $metaTemplateDirectory;
+        $savedEntity = $this->save($metaTemplateDirectory);
+        if ($savedEntity) {
+            return $metaTemplateDirectory;
+        }
+        Log::error(__('Could not save meta_template_directory. Reasons: {0}', json_encode($metaTemplateDirectory->getErrors())));
+        return false;
     }
 }

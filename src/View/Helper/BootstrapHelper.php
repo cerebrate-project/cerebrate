@@ -450,7 +450,7 @@ class BootstrapGeneric
                 return sprintf('%s="%s"', h($key), (!empty($escape) ? h($value) : $value));
             }
             return '';
-        } else if (empty($value)) {
+        } else if (!isset($value)) {
             return '';
         }
         return sprintf('%s="%s"', h($key), (!empty($escape) ? h($value) : $value));

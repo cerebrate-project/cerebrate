@@ -10,6 +10,7 @@ use Cake\Utility\Text;
 use Cake\View\ViewBuilder;
 use Cake\ORM\TableRegistry;
 use Cake\ORM\Query;
+use Cake\Database\Expression\QueryExpression;
 use Cake\Routing\Router;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
@@ -225,20 +226,39 @@ class CRUDComponent extends Component
         } else {
             $this->Controller->set('metaFieldsEnabled', false);
         }
-        $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
+        $filtersConfigRaw= !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
+        $filtersConfig = [];
+        foreach ($filtersConfigRaw as $fieldConfig) {
+            if (is_array($fieldConfig)) {
+                $filtersConfig[$fieldConfig['name']] = $fieldConfig;
+            } else {
+                $filtersConfig[$fieldConfig] = ['name' => $fieldConfig];
+            }
+        }
+        $filtersName = $this->getFilterFieldsName();
         $typeMap = $this->Table->getSchema()->typeMap();
-        $associatedtypeMap = !empty($this->Controller->filterFields) ? $this->_getAssociatedTypeMap() : [];
+        $associatedtypeMap = !empty($filtersName) ? $this->_getAssociatedTypeMap() : [];
         $typeMap = array_merge(
             $this->Table->getSchema()->typeMap(),
             $associatedtypeMap
         );
-        $typeMap = array_filter($typeMap, function ($field) use ($filters) {
-            return in_array($field, $filters);
+        $typeMap = array_filter($typeMap, function ($field) use ($filtersName) {
+            return in_array($field, $filtersName);
         }, ARRAY_FILTER_USE_KEY);
         $this->Controller->set('typeMap', $typeMap);
-        $this->Controller->set('filters', $filters);
+        $this->Controller->set('filters', $filtersName);
+        $this->Controller->set('filtersConfig', $filtersConfig);
         $this->Controller->viewBuilder()->setLayout('ajax');
         $this->Controller->render('/genericTemplates/filters');
+    }
+
+    public function getFilterFieldsName(): array
+    {
+        $filters = !empty($this->Controller->filterFields) ? $this->Controller->filterFields : [];
+        $filters = array_map(function($item) {
+            return is_array($item) ? $item['name'] : $item;
+        }, $filters);
+        return $filters;
     }
 
     /**
@@ -289,6 +309,9 @@ class CRUDComponent extends Component
         if ($this->metaFieldsSupported()) {
             $metaTemplates = $this->getMetaTemplates();
             $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
+            if (isset($params['afterFind'])) {
+                $data = $params['afterFind']($data, $params);
+            }
         }
         if ($this->request->is('post')) {
             $patchEntityParams = [
@@ -548,15 +571,15 @@ class CRUDComponent extends Component
              $query->where($params['conditions']);
         }
         $data = $query->first();
+        if ($this->metaFieldsSupported()) {
+            $metaTemplates = $this->getMetaTemplates();
+            $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
+        }
         if (isset($params['afterFind'])) {
             $data = $params['afterFind']($data, $params);
         }
         if (empty($data)) {
             throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
-        }
-        if ($this->metaFieldsSupported()) {
-            $metaTemplates = $this->getMetaTemplates();
-            $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
         }
         if ($this->request->is(['post', 'put'])) {
             $patchEntityParams = [
@@ -828,6 +851,9 @@ class CRUDComponent extends Component
                     $query->contain($params['contain']);
                 }
                 $data = $query->first();
+                if (isset($params['afterFind'])) {
+                    $data = $params['afterFind']($data, $params);
+                }
                 if (empty($data)) {
                     throw new NotFoundException(__('Invalid {0}.', $this->ObjectAlias));
                 }
@@ -850,6 +876,9 @@ class CRUDComponent extends Component
                     $query->contain($params['contain']);
                 }
                 $data = $query->first();
+                if (isset($params['afterFind'])) {
+                    $data = $params['afterFind']($data, $params);
+                }
                 if (isset($params['beforeSave'])) {
                     try {
                         $data = $params['beforeSave']($data);
@@ -1225,7 +1254,7 @@ class CRUDComponent extends Component
                     }
                     $activeFilters[$filter] = $filterValue;
                     if (is_array($filterValue)) {
-                        $query->where([($filter . ' IN') => $filterValue]);
+                        $query = $this->setInCondition($query, $filter, $filterValue);
                     } else {
                         $query = $this->setValueCondition($query, $filter, $filterValue);
                     }
@@ -1307,6 +1336,27 @@ class CRUDComponent extends Component
         } else {
             return $query->where(function ($exp, \Cake\ORM\Query $q) use ($fieldName, $value) {
                 return $exp->like($fieldName, $value);
+            });
+        }
+    }
+
+    protected function setInCondition($query, $fieldName, $values)
+    {
+        $split = explode(' ', $fieldName);
+        if (count($split) == 1) {
+            $field = $fieldName;
+            $operator = '=';
+        } else {
+            $field = $split[0];
+            $operator = $split[1];
+        }
+        if ($operator == '=') {
+            return $query->where(function (QueryExpression $exp, Query $q) use ($field, $values) {
+                return $exp->in($field, $values);
+            });
+        } else if ($operator == '!=') {
+            return $query->where(function (QueryExpression $exp, Query $q) use ($field, $values) {
+                return $exp->notIn($field, $values);
             });
         }
     }
@@ -1591,7 +1641,7 @@ class CRUDComponent extends Component
     protected function _getAssociatedTypeMap(): array
     {
         $typeMap = [];
-        foreach ($this->Controller->filterFields as $filter) {
+        foreach ($this->getFilterFieldsName() as $filter) {
             $exploded = explode('.', $filter);
             if (count($exploded) > 1) {
                 $model = $exploded[0];

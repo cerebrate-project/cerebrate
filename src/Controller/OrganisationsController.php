@@ -101,7 +101,6 @@ class OrganisationsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
     }
 
     public function view($id)
@@ -111,16 +110,12 @@ class OrganisationsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', 'ContactDB');
+        $this->set('canEdit', $this->canEdit($id));
     }
 
     public function edit($id)
     {
-        $currentUser = $this->ACL->getUser();
-        if (
-            !($currentUser['organisation']['id'] == $id && $currentUser['role']['perm_org_admin']) &&
-            !$currentUser['role']['perm_admin']
-        ) {
+        if (!$this->canEdit($id)) {
             throw new MethodNotAllowedException(__('You cannot modify that organisation.'));
         }
         $this->CRUD->edit($id);
@@ -144,6 +139,9 @@ class OrganisationsController extends AppController
 
     public function tag($id)
     {
+        if (!$this->canEdit($id)) {
+            throw new MethodNotAllowedException(__('You cannot tag that organisation.'));
+        }
         $this->CRUD->tag($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -153,6 +151,9 @@ class OrganisationsController extends AppController
 
     public function untag($id)
     {
+        if (!$this->canEdit($id)) {
+            throw new MethodNotAllowedException(__('You cannot untag that organisation.'));
+        }
         $this->CRUD->untag($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -167,5 +168,17 @@ class OrganisationsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+    }
+
+    private function canEdit($orgId): bool
+    {
+        $currentUser = $this->ACL->getUser();
+        if ($currentUser['role']['perm_admin']) {
+            return true;
+        }
+        if ($currentUser['role']['perm_org_admin'] && $currentUser['organisation']['id'] == $orgId) {
+            return true;
+        }
+        return false;
     }
 }
