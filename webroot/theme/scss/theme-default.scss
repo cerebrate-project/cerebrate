@@ -1,13 +1,18 @@
 $theme: "app-default";
 
 @import "../node_modules/bootstrap/scss/functions";
+
+$transition-collapse: height .35s cubic-bezier(0, 0.71, 0.58, 1);
+
 @import "../node_modules/bootstrap/scss/variables";
 @import "../node_modules/bootstrap/scss/mixins";
+@import "../node_modules/bootstrap/scss/root";
+@import "../node_modules/bootstrap/scss/transitions";
 
 @import "./mixins/background";
 
-$cerebrateColor: #924da6;
-$bodyBackgroundImageStopColor: tint-color($cerebrateColor, 62) !default;
+$applicationColor: #924da6;
+$bodyBackgroundImageStopColor: tint-color($applicationColor, 62) !default;
 $enabledBackgroundSVG: true !default;
 $bodyBackgroundBlendmode: normal !default;
 
@@ -26,18 +31,25 @@ $headerBreadcrumbLinksBGColor: $light !default;
 $sidebarBgColor: $light !default;
 $sidebarTextColor: $black !default;
 $sidebarActiveColor: $black !default;
-$sidebarActiveBgColor: #dbdbdb !default;
-$sidebarHoverColor: #ebebeb !default;
+
+$sidebarActiveBgColor: #dedede !default;
+$sidebarSubmenuColor: tint-color($sidebarActiveBgColor, 50%) !default;
+$sidebarHoverColor: shade-color($sidebarActiveBgColor, 5%) !default;
+$sidebarHoverActiveColor: shade-color($sidebarActiveBgColor, 10%) !default;
 $sidebarBorder: #ddd !default;
 $sidebarShadows: 0 2px 2px 0 rgba(0, 0, 0, 0.16), 0 2px 6px 0 rgba(0, 0, 0, 0.12) !default;
 $sidebarLockButton: $light !default;
-$activeSidebarLinkColor: var(--cerebrate-color) !default;
+$activeSidebarLinkColor: var(--application-color) !default;
 
 // $calloutBorderColor: $gray-200 !default;
 $calloutBgColor: $panelBgColor !default;
 $calloutShadow: $panelShadow !default;
 
 @import "additional/bootstrap-additional";
+
+:root {
+    --application-color: #{$applicationColor};
+}
 
 /* Body */
 body {
@@ -151,6 +163,10 @@ header.top-navbar .header-breadcrumb .header-breadcrumb-item > a:hover {
     background-color: $sidebarHoverColor;
 }
 
+.sidebar ul.sidebar-elements li > a.sidebar-link.active:hover {
+    background-color: $sidebarHoverActiveColor;
+    color: $sidebarActiveColor;
+}
 
 ul.sidebar-elements li > a.sidebar-link.active::after {
     background-color: $activeSidebarLinkColor;
@@ -158,4 +174,9 @@ ul.sidebar-elements li > a.sidebar-link.active::after {
 
 .lock-sidebar > a.btn {
     background-color: $sidebarLockButton;
+}
+
+.sidebar ul.sidebar-elements li ul.sub-menu {
+    background-color: $sidebarSubmenuColor;
+    box-shadow: inset #11111a1a 0px 0px 0px 1px;
 }

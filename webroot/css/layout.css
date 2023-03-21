@@ -352,10 +352,13 @@ ul.sidebar-elements > li > a.sidebar-link > i.sidebar-icon {
 .sidebar.expanded ul.sidebar-elements > li > a.sidebar-link > span.text,
 .sidebar:hover ul.sidebar-elements > li > a.sidebar-link > span.text {
     visibility: visible;
+    opacity: 1;
 }
 
 ul.sidebar-elements > li > a.sidebar-link > span.text {
     visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s linear;
     line-height: 40px;
     white-space: nowrap;
 }
@@ -363,17 +366,18 @@ ul.sidebar-elements > li > a.sidebar-link > span.text {
 /* sidebar sub-menu */
 ul.sidebar-elements li.parent > a.sidebar-link::before {
     visibility: hidden;
-    content: "\f0d7";
+    content: "\f104";
     float: right;
     font-family: 'Font Awesome 5 Free';
     font-weight: 900;
     font-size: 1rem;
     order: 6 !important;
     margin-left: auto;
+    transition: transform 0.3s ease-out;
 }
 
 ul.sidebar-elements li.parent > a.sidebar-link:not(.collapsed)::before {
-    content: "\f0d8";
+    transform: rotate(-90deg);
 }
 
 .sidebar.expanded ul.sidebar-elements li.parent > a.sidebar-link::before,
@@ -381,17 +385,20 @@ ul.sidebar-elements li.parent > a.sidebar-link:not(.collapsed)::before {
     visibility: visible;
 }
 
-.sidebar.expanded ul.sidebar-elements li ul.show,
-.sidebar.expanded ul.sidebar-elements li ul.collapsing,
-.sidebar.expanded ul.sidebar-elements li ul.in,
-.sidebar:hover ul.sidebar-elements li ul.show,
-.sidebar:hover ul.sidebar-elements li ul.collapsing,
-.sidebar:hover ul.sidebar-elements li ul.in {
+.sidebar.expanded ul.sidebar-elements li div.show,
+.sidebar.expanded ul.sidebar-elements li div.collapsing,
+.sidebar.expanded ul.sidebar-elements li div.in,
+.sidebar:hover ul.sidebar-elements li div.show,
+.sidebar:hover ul.sidebar-elements li div.collapsing,
+.sidebar:hover ul.sidebar-elements li div.in {
     display: block;
 }
 
-ul.sidebar-elements > li ul {
+.sidebar ul.sidebar-elements li div {
     display: none;
+}
+
+ul.sidebar-elements > li ul {
     padding: 10px 0;
     list-style: none;
     line-height: 20px;
