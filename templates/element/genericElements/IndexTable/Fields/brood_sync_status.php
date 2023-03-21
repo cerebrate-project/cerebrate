@@ -145,7 +145,6 @@ echo $this->Bootstrap->badge([
                 .data('sync-status', status)
                 .click(function() {
                     const syncStatusData = $(this).data('sync-status')['data']
-                    console.log(syncStatusData);
                     let rearrangedStatusData = []
                     for (const [field, values] of Object.entries(syncStatusData)) {
                         if (field !== 'meta_fields') {

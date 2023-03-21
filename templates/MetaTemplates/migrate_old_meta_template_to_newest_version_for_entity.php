@@ -97,7 +97,6 @@ echo $this->Html->scriptBlock(sprintf(
 
     function submitMigration() {
         const $form = $('.to-save-container form')
-        console.log($form.attr('action'));
         AJAXApi.quickPostForm($form[0]).then((postResult) => {
             if (postResult.additionalData.redirect.url !== undefined) {
                 window.location = postResult.additionalData.redirect.url
