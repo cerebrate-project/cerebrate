@@ -28,7 +28,7 @@ $sidebarHoverColor: #60676c;
 $sidebarBorder: none;
 $sidebarShadows: none;
 $sidebarLockButton: $secondary;
-$activeSidebarLinkColor: var(--cerebrate-color);
+$activeSidebarLinkColor: var(--application-color);
 
 @import "theme-default";
 @import "../node_modules/bootstrap/scss/buttons";

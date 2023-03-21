@@ -102,7 +102,6 @@ echo $this->element('genericElements/Form/genericForm', [
 <script>
     $(document).ready(function() {
         const entity = <?= json_encode($entity) ?>;
-        console.log(entity);
         if (entity.MetaTemplates) {
             for (const [metaTemplateId, metaTemplate] of Object.entries(entity.MetaTemplates)) {
                 for (const [metaTemplateFieldId, metaTemplateField] of Object.entries(metaTemplate.meta_template_fields)) {
