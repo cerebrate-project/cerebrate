@@ -8,7 +8,7 @@ class FormFieldMassageHelper extends Helper
 {
     public function prepareFormElement(\Cake\View\Helper\FormHelper $form, array $controlParams, array $fieldData): string
     {
-        if ($fieldData['tooltip']) {
+        if (!empty($fieldData['tooltip'])) {
             $form->setTemplates([
                 'label' => '{{text}}{{tooltip}}',
             ]);
