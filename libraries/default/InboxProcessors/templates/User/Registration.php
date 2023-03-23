@@ -89,8 +89,10 @@ echo $this->Bootstrap->modal([
         '<div class="form-container">%s</div>',
         $combinedForm
     ),
-    'confirmText' => __('Create user'),
-    'confirmFunction' => 'submitRegistration'
+    'confirmButton' => [
+        'text' =>  __('Create user'),
+        'onclick' => 'submitRegistration',
+    ],
 ]);
 ?>
 </div>
