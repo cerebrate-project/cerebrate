@@ -46,7 +46,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'sort' => 'meta_template.id',
                 'data_path' => 'meta_template.id',
                 'element' => 'function',
-                'function' => function($row, $viewContext) {
+                'function' => function($row, $viewContext) use ($baseurl) {
                     return $viewContext->Bootstrap->node('a', [
                         'href' => h($baseurl . '/metaTemplates/view/' . $row->meta_template->id ?? ''),
                     ], !empty($row->meta_template->name) ? (sprintf('%s (v%s)', h($row->meta_template->name), h($row->meta_template->version))) :'');
