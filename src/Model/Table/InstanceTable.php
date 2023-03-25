@@ -81,7 +81,7 @@ class InstanceTable extends AppTable
         return $statistics;
     }
 
-    public function searchAll($value, $user, $limit=5, $model=null)
+    public function searchAll($value, $user, int $limit=5, $model=null)
     {
         $results = [];
         $models = $this->seachAllTables;
