@@ -2,19 +2,10 @@
     $seed = mt_rand();
     if (!is_array($fieldDesc)) {
         $fieldDesc = array('info' => $fieldDesc);
-        $default = 'info';
     } else {
-        if (!empty($field['options'])) {
-            if (isset($this->request->data[$modelForForm][$field['field']])) {
-                $default = $this->request->data[$modelForForm][$field['field']];
-            } else {
-                reset($field['options']);
-                $default = key($field['options']);
-            }
-        } else {
+        if (empty($field['options'])) {
             reset($fieldDesc);
             $fieldDesc = array('info' => key($fieldDesc));
-            $default = 'info';
         }
     }
     $popoverID = sprintf("%sInfoPopover%s", h($field['field']), $seed);
@@ -39,7 +30,7 @@
                             .text('<?php echo h(\Cake\Utility\Inflector::humanize($field['field'])); ?>')
                     )
                     .append(
-                        $('<span>').text(": <?= h($fieldDesc["info"]) ?>")
+                        $('<span>').text(": <?= h($fieldDesc["info"] ?? '') ?>")
                     );
                 // var tempSelector = '#<?php echo h($modelForForm . \Cake\Utility\Inflector::camelize($field['field'])); ?>';
                 // if ($(tempSelector)[0].nodeName === "SELECT" && Object.keys(fieldDesc).length > 1) {

@@ -38,6 +38,7 @@ class InstanceController extends AppController
         $searchValue = $this->request->getQuery('search');
         $model = $this->request->getQuery('model', null);
         $limit = $this->request->getQuery('limit', 5);
+        $limit = is_numeric($limit) ? $limit : 5;
         if (!empty($this->request->getQuery('show_all', false))) {
             $limit = null;
         }
