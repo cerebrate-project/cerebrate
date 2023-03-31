@@ -158,6 +158,7 @@ class ImporterCommand extends Command
         if (!$this->noMetaTemplate) {
             $metaTemplate = $this->MetaTemplates->find()
                 ->where(['uuid' => $config['metaTemplateUUID']])
+                ->order(['version' => 'DESC'])
                 ->first();
             if (!is_null($metaTemplate)) {
                 $metaTemplateFieldsMapping = $this->MetaTemplates->MetaTemplateFields->find('list', [
@@ -192,6 +193,7 @@ class ImporterCommand extends Command
                             $metaEntity->field = $fieldName;
                             $metaEntity->scope = $table->getBehavior('MetaFields')->getScope();
                             $metaEntity->meta_template_id = $metaTemplate->id;
+                            $metaEntity->meta_template_directory_id = $metaTemplate->meta_template_directory_id;
                             if (isset($metaTemplateFieldsMapping[$fieldName])) { // a meta field template must exists
                                 $metaEntity->meta_template_field_id = $metaTemplateFieldsMapping[$fieldName];
                             } else {
