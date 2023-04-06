@@ -31,20 +31,20 @@ class MispInterConnectionTest extends TestCase
     ];
 
     /** constants related to the local Cerebrate instance */
-    private const LOCAL_CEREBRATE_URL = 'http://127.0.0.1';
+    private const LOCAL_CEREBRATE_URL = 'http://localhost';
 
     /** constants related to the local MISP instance */
-    private const LOCAL_MISP_INSTANCE_URL = 'http://localhost:8080/MISP_LOCAL';
+    private const LOCAL_MISP_INSTANCE_URL = '/MISP_LOCAL';
     private const LOCAL_MISP_ADMIN_USER_AUTHKEY = 'b17ce79ac0f05916f382ab06ea4790665dbc174c';
 
     /** constants related to the remote Cerebrate instance */
-    private const REMOTE_CEREBRATE_URL = 'http://127.0.0.1:8080/CEREBRATE_REMOTE';
+    private const REMOTE_CEREBRATE_URL = '/CEREBRATE_REMOTE';
     private const REMOTE_CEREBRATE_AUTHKEY = 'a192ba3c749b545f9cec6b6bba0643736f6c3022';
 
     /** constants related to the remote MISP instance */
     private const REMOTE_MISP_SYNC_USER_ID = 333;
     private const REMOTE_MISP_SYNC_USER_EMAIL = 'sync@misp.remote';
-    private const REMOTE_MISP_INSTANCE_URL = 'http://localhost:8080/MISP_REMOTE';
+    private const REMOTE_MISP_INSTANCE_URL = '/MISP_REMOTE';
     private const REMOTE_MISP_AUTHKEY = '19ca57ecebd2fe34c1c17d729980678eb648d541';
 
 
@@ -64,7 +64,7 @@ class MispInterConnectionTest extends TestCase
                 'name' => 'MISP_LOCAL',
                 'connector' => 'MispConnector',
                 'settings' => json_encode([
-                    'url' => self::LOCAL_MISP_INSTANCE_URL,
+                    'url' => $this->getWireMockBaseUrl() . self::LOCAL_MISP_INSTANCE_URL,
                     'authkey' => self::LOCAL_MISP_ADMIN_USER_AUTHKEY,
                     'skip_ssl' => true,
                 ]),
@@ -90,7 +90,7 @@ class MispInterConnectionTest extends TestCase
             [
                 'uuid' => $LOCAL_BROOD_UUID,
                 'name' => 'Local Brood',
-                'url' => self::REMOTE_CEREBRATE_URL,
+                'url' => $this->getWireMockBaseUrl() . self::REMOTE_CEREBRATE_URL,
                 'description' => $faker->text,
                 'organisation_id' => OrganisationsFixture::ORGANISATION_A_ID,
                 'trusted' => true,
@@ -228,10 +228,10 @@ class MispInterConnectionTest extends TestCase
             [
                 'email' => self::REMOTE_MISP_SYNC_USER_EMAIL,
                 'authkey' => self::REMOTE_MISP_AUTHKEY,
-                'url' => self::REMOTE_MISP_INSTANCE_URL,
+                'url' => $this->getWireMockBaseUrl() . self::REMOTE_MISP_INSTANCE_URL,
                 'reflected_user_id' => self::REMOTE_MISP_SYNC_USER_ID,
                 'connectorName' => 'MispConnector',
-                'cerebrateURL' => self::REMOTE_CEREBRATE_URL,
+                'cerebrateURL' => $this->getWireMockBaseUrl() . self::REMOTE_CEREBRATE_URL,
                 'local_tool_id' => 1,
                 'remote_tool_id' => 1,
                 'tool_name' => 'MISP_REMOTE'
@@ -250,7 +250,7 @@ class MispInterConnectionTest extends TestCase
             self::LOCAL_MISP_ADMIN_USER_AUTHKEY,
             [
                 'authkey' => self::REMOTE_MISP_AUTHKEY,
-                'url' => self::REMOTE_MISP_INSTANCE_URL,
+                'url' => $this->getWireMockBaseUrl() . self::REMOTE_MISP_INSTANCE_URL,
                 'name' => 'MISP_REMOTE',
                 'remote_org_id' => OrganisationsFixture::ORGANISATION_A_ID
             ]
