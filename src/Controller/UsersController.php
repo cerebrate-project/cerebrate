@@ -11,7 +11,7 @@ use Cake\Http\Exception\NotFoundException;
 
 class UsersController extends AppController
 {
-    public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name', 'Organisations.name'];
+    public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name', 'Organisations.name', 'Organisation.nationality'];
     public $quickFilterFields = ['Individuals.uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'];
     public $containFields = ['Individuals', 'Roles', 'UserSettings', 'Organisations'];
 

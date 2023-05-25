@@ -1,7 +1,6 @@
 <?php
 
 use Cake\Core\Configure;
-
 echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $data,
@@ -87,6 +86,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'role.name',
                 'url' => '/roles/view/{{0}}',
                 'url_vars' => ['role.id']
+            ],
+            [
+                'name' => __('Country'),
+                'sort' => 'organisation.nationality',
+                'data_path' => 'organisation.nationality'
             ],
             [
                 'name' => __('# User Settings'),

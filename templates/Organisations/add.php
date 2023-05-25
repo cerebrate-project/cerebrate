@@ -2,7 +2,7 @@
     echo $this->element('genericElements/Form/genericForm', array(
         'data' => array(
             'description' => __('Organisations can be equivalent to legal entities or specific individual teams within such entities. Their purpose is to relate individuals to their affiliations and for release control of information using the Trust Circles.'),
-            'model' => 'Organisations',
+            'model' => 'Organisation',
             'fields' => array(
                 array(
                     'field' => 'name'
