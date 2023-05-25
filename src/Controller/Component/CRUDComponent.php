@@ -50,7 +50,6 @@ class CRUDComponent extends Component
         if ($this->taggingSupported()) {
             $options['filters'][] = 'filteringTags';
         }
-
         $optionFilters = [];
         $optionFilters += empty($options['filters']) ? [] : $options['filters'];
         foreach ($optionFilters as $i => $filter) {
@@ -85,9 +84,22 @@ class CRUDComponent extends Component
                 $this->Controller->paginate['order'] = $options['order'];
             }
         }
+        if (!empty($this->request->getQuery('sort'))) {
+            $sort = $this->request->getQuery('sort');
+            $direction = $this->request->getQuery('direction');
+            if ($this->_validOrderFields($sort) && ($direction === 'asc' || $direction === 'desc')) {
+                $sort = explode('.', $sort);
+                if (count($sort) > 1) {
+                    $sort[0] = Inflector::camelize(Inflector::pluralize($sort[0]));
+                }
+                $sort = implode('.', $sort);
+                $query->order($sort . ' ' . $direction);
+            }
+        }
         if ($this->metaFieldsSupported() && !$this->Controller->ParamHandler->isRest()) {
             $query = $this->includeRequestedMetaFields($query);
         }
+
         if (!$this->Controller->ParamHandler->isRest()) {
             $this->setRequestedEntryAmount();
         }
@@ -1673,7 +1685,7 @@ class CRUDComponent extends Component
                         return false;
                     }
                 } else {
-                    $association = $this->Table->associations()->get($model);
+                    $association = $this->Table->associations()->get(Inflector::camelize(Inflector::pluralize($model)));
                     $associatedTable = $association->getTarget();
                     if (empty($associatedTable->getSchema()->typeMap()[$subField])) {
                         return false;
