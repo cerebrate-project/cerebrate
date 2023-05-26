@@ -399,6 +399,14 @@ class CRUDComponent extends Component
         if (!empty($params['fields'])) {
             $this->Controller->set('fields', $params['fields']);
         }
+        $EnumerationCollections = TableRegistry::getTableLocator()->get('EnumerationCollections');
+        $modelAlias = $this->Table->getAlias();
+        if (in_array($this->Table->getAlias(), $EnumerationCollections->getValidModelList())) {
+            $enumerations = $EnumerationCollections->getFieldValues($modelAlias);
+            if (!empty($enumerations)) {
+                $this->Controller->set('enumerations', $enumerations);
+            }
+        }
         $this->Controller->entity = $data;
         $this->Controller->set('entity', $data);
     }

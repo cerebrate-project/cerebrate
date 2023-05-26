@@ -26,6 +26,14 @@
     }
     $formRandomValue = Cake\Utility\Security::randomString(8);
     $initSelect2 = false;
+
+    if (!empty($enumerations)) {
+        foreach ($data['fields'] as $k => $field) {
+            if (isset($enumerations[$field['field']])) {
+                $data['fields'][$k]['options'] = $enumerations[$field['field']];
+            }
+        }
+    }
     $formCreate = $this->Form->create($entity, ['id' => 'form-' . $formRandomValue]);
     $default_template = [
         'inputContainer' => '<div class="row mb-3">{{content}}</div>',
