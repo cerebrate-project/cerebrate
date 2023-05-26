@@ -47,7 +47,8 @@ class UsersTable extends AppTable
             'Organisations',
             [
                 'dependent' => false,
-                'cascadeCallbacks' => false
+                'cascadeCallbacks' => false,
+                'strategy' => 'join'
             ]
         );
         $this->hasMany(

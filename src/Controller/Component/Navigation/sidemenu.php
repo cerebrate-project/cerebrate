@@ -128,6 +128,11 @@ class Sidemenu {
                             'url' => '/permissionLimitations/index',
                             'icon' => 'jedi',
                         ],
+                        'Enumerations' => [
+                            'label' => __('Collections'),
+                            'url' => '/enumerationCollections/index',
+                            'icon' => 'list',
+                        ],
                     ]
                 ],
                 'API' => [

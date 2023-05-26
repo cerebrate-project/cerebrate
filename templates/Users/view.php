@@ -45,6 +45,10 @@ $fields = [
         'path' => 'individual.last_name'
     ],
     [
+        'key' => __('Country'),
+        'path' => 'organisation.nationality'
+    ],
+    [
         'key' => __('Alignments'),
         'type' => 'alignment',
         'path' => 'individual',

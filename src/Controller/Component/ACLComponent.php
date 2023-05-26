@@ -75,6 +75,17 @@ class ACLComponent extends Component
             'delete' => ['*'],
             'index' => ['*']
         ],
+        'Enumerations' => [
+            'delete' => ['perm_admin'],
+            'index' => ['*']
+        ],
+        'EnumerationCollections' => [
+            'view' => ['*'],
+            'add' => ['perm_admin'],
+            'edit' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'index' => ['*']
+        ],
         'Inbox' => [
             'createEntry' => ['OR' => ['perm_admin', 'perm_sync']],
             'delete' => ['perm_admin'],

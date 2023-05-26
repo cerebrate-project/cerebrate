@@ -1,5 +1,9 @@
 <?php
     if (is_array($fieldData)) {
+        // Don't barf if the model is not explicitly passed
+        $modelForForm = empty($data['model']) ?
+        h(\Cake\Utility\Inflector::singularize(\Cake\Utility\Inflector::classify($this->request->getParam('controller')))) :
+        h($data['model']);
         $fieldTemplate = 'genericField';
         if (!empty($fieldData['type'])) {
             if (file_exists(ROOT . '/templates/element/genericElements/Form/Fields/' . $fieldData['type'] . 'Field.php')) {
