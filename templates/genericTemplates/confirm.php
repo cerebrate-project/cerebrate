@@ -36,4 +36,4 @@ $modalOptions = array_merge($defaultOptions, $modalOptions ?? []);
 $modalOptions['bodyHtml'] = $bodyHTML;
 
 echo $this->Bootstrap->modal($modalOptions);
-?>
+

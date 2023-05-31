@@ -132,8 +132,10 @@ echo $this->Bootstrap->modal([
     'bodyHtml' => $bodyHtml,
     'size' => $modalSize,
     'type' => $modalType,
-    'confirmText' => __('Update meta-templates'),
-    'confirmFunction' => 'updateMetaTemplate',
+    'confirmButton' => [
+        'text' =>  __('Update meta-templates'),
+        'onclick' => 'updateMetaTemplate',
+    ],
 ]);
 ?>
 
