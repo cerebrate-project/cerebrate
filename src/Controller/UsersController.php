@@ -75,6 +75,9 @@ class UsersController extends AppController
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
         $defaultRole = $this->Users->Roles->find()->select(['id'])->where(['is_default' => true])->first()->toArray();
+        if (empty($defaultRole)) {
+            $defaultRole = $this->Users->Roles->find()->select(['id'])->first()->toArray();
+        }
         $individuals = $this->Users->Individuals->find('list', $individuals_params)->toArray();
         $this->CRUD->add([
             'beforeMarshal' => function($data) {
