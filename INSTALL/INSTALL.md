@@ -32,13 +32,13 @@ sudo add-apt-repository ppa:ondrej/php
 - for apache
 
 ```bash
-sudo apt install apache2 mariadb-server git php8.2 php8.2-intl php8.2-mbstring php8.2-dom php8.2-xml unzip php8.2-ldap php8.2-sqlite3 ph8.2-curl sqlite libapache2-mod-php php8.2-mysql
+sudo apt install apache2 mariadb-server git php8.2 php8.2-intl php8.2-mbstring php8.2-dom php8.2-xml unzip php8.2-ldap php8.2-sqlite3 php8.2-curl sqlite libapache2-mod-php php8.2-mysql
 ```
 
 - for nginx
 
 ```bash
-sudo apt install nginx mariadb-server git php8.2 php8.2-intl php8.2-mbstring php8.2-dom php8.2-xml unzip php8.2-ldap php8.2-sqlite3 ph8.2-curl sqlite php8.2-mysql
+sudo apt install nginx mariadb-server git php8.2 php8.2-intl php8.2-mbstring php8.2-dom php8.2-xml unzip php8.2-ldap php8.2-sqlite3 php8.2-curl sqlite php8.2-mysql
 ```
 
 
