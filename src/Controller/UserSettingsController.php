@@ -100,21 +100,34 @@ class UserSettingsController extends AppController
             'id' => $id
         ])->first();
 
-        if (!$this->isLoggedUserAllowedToEdit($entity)) {
-            throw new NotFoundException(__('Invalid {0}.', 'user setting'));
+        $currentUser = $this->ACL->getUser();
+        $validUsers = [];
+        $individual_ids = [];
+        if (!$currentUser['role']['perm_admin']) {
+            if ($currentUser['role']['perm_org_admin']) {
+                $validUsers = $this->Users->find('list')->select(['id', 'username'])->order(['username' => 'asc'])->where(['organisation_id' => $currentUser['organisation']['id']])->all()->toArray();
+            } else {
+                $validUsers = [$currentUser['id'] => $currentUser['username']];
+            }
+        } else {
+            $validUsers = $this->Users->find('list')->select(['id', 'username'])->order(['username' => 'asc'])->all()->toArray();
         }
 
         $entity = $this->CRUD->edit($id, [
-            'redirect' => ['action' => 'index', $entity->user_id]
+            'redirect' => ['action' => 'index', $entity->user_id],
+            'beforeSave' => function ($data) use ($validUsers) {
+                if (!in_array($data['user_id'], array_keys($validUsers))) {
+                    throw new MethodNotAllowedException(__('You cannot edit the given user.'));
+                }
+                return $data;
+            }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
         $dropdownData = [
-            'user' => $this->UserSettings->Users->find('list', [
-                'sort' => ['username' => 'asc']
-            ]),
+            'user' => $validUsers,
         ];
         $this->set(compact('dropdownData'));
         $this->set('user_id', $this->entity->user_id);
@@ -259,8 +272,9 @@ class UserSettingsController extends AppController
                 if (empty($setting)) {
                     return false;
                 }
+            } else {
+                $isAllowed = $setting->user_id == $currentUser->id;
             }
-            $isAllowed = $setting->user_id == $currentUser->id;
         }
         return $isAllowed;
     }
