@@ -10,6 +10,7 @@ $numberOfElementSelectSeed = 'seed-' . mt_rand();
         <option value="50" <?= $numberOfElement == 50 ? 'selected' : '' ?>><?= __('50') ?></option>
         <option value="100" <?= $numberOfElement == 100 ? 'selected' : '' ?>><?= __('100') ?></option>
         <option value="200" <?= $numberOfElement == 200 ? 'selected' : '' ?>><?= __('200') ?></option>
+        <option value="all" <?= $numberOfElement == 'all' ? 'selected' : '' ?>><?= __('All') ?></option>
     </select>
 </label>
 
