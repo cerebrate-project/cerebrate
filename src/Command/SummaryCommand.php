@@ -272,6 +272,7 @@ class SummaryCommand extends Command
     {
         return array_map(function($log) use ($userByIDs) {
             $log['model'] = 'Users';
+            $log['request_action'] = 'edit';
             $log['changed'] = [
                 $log['model_title'] => [
                     $log['changed']['orig_value'] ?? '',
