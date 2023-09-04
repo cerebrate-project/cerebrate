@@ -37,6 +37,7 @@ class NavigationComponent extends Component
         'Instance' => 'server',
         'Tags' => 'tags',
         'API' => 'code',
+        'EnumerationCollections' => 'list',
     ];
 
     public function initialize(array $config): void
@@ -163,6 +164,7 @@ class NavigationComponent extends Component
             'LocalTools',
             'UserSettings',
             'MailingLists',
+            'EnumerationCollections',
         ];
         foreach ($CRUDControllers as $controller) {
             $bcf->setDefaultCRUDForModel($controller);
