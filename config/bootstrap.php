@@ -173,6 +173,14 @@ Mailer::setConfig(Configure::consume('Email'));
 Log::setConfig(Configure::consume('Log'));
 Security::setSalt(Configure::consume('Security.salt'));
 
+Configure::write('Session', [
+    'defaults' => 'php',
+    'ini' => [
+        'session.cookie_httponly' => true,
+        'session.cookie_secure' => true,
+    ]
+]);
+
 /*
  * Setup detectors for mobile and tablet.
  */
