@@ -96,17 +96,18 @@ class CRUDComponent extends Component
                 $query->order($sort . ' ' . $direction);
             }
         }
-        if ($this->metaFieldsSupported() && !$this->Controller->ParamHandler->isRest()) {
+        if ($this->metaFieldsSupported()) {
             $query = $this->includeRequestedMetaFields($query);
         }
 
         if (!$this->Controller->ParamHandler->isRest()) {
             $this->setRequestedEntryAmount();
+        } else if (!empty($this->request->getQuery('limit'))) {
+            $this->Controller->paginate['limit'] = PHP_INT_MAX; // Make sure to download the entire filtered table
         }
         $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
         $totalCount = $this->Controller->getRequest()->getAttribute('paging')[$this->TableAlias]['count'];
         if ($this->Controller->ParamHandler->isRest()) {
-            $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
             if (isset($options['hidden'])) {
                 $data->each(function($value, $key) use ($options) {
                     $hidden = is_array($options['hidden']) ? $options['hidden'] : [$options['hidden']];
@@ -795,6 +796,9 @@ class CRUDComponent extends Component
         $user = $this->Controller->ACL->getUser();
         $tableSettings = IndexSetting::getTableSetting($user, $this->Table);
         if (!empty($tableSettings['number_of_element'])) {
+            if ($tableSettings['number_of_element'] === 'all') {
+                $tableSettings['number_of_element'] = 10000; // Even with all, sure not to return too much data
+            }
             $this->Controller->paginate['limit'] = intval($tableSettings['number_of_element']);
         }
     }

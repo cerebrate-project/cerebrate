@@ -80,7 +80,14 @@ class SummaryCommand extends Command
         fwrite($file_input, $message);
         $this->io->out($message);
         $logsUsers = $this->_fetchLogsForUsers($userID, $days);
-        $modifiedUsers = $this->_formatLogsForTable($logsUsers);
+        $userByIDs = Hash::combine($userForOrg, '{n}.id', '{n}');
+        $logsUserMetaFields = $this->_fetchLogsForUserMetaFields($userID, $days);
+        $logsUserMetaFields = $this->_formatUserMetafieldLogs($logsUserMetaFields, $userByIDs);
+        $logsUsersCombined = array_merge($logsUsers, $logsUserMetaFields);
+        usort($logsUsersCombined, function($a, $b) {
+            return $a['created'] < $b['created'] ? -1 : 1;
+        });
+        $modifiedUsers = $this->_formatLogsForTable($logsUsersCombined);
         foreach ($modifiedUsers as $row) {
             fputcsv($file_input, $row);
         }
@@ -167,6 +174,45 @@ class SummaryCommand extends Command
         ]);
     }
 
+    protected function _fetchLogsForUserMetaFields(array $userIDs = [], int $days=7): array
+    {
+        if (empty($userIDs)) {
+            return [];
+        }
+        $logs = $this->_fetchLogs([
+            'contain' => ['Users'],
+            'conditions' => [
+                'model' => 'MetaFields',
+                'request_action IN' => ['add', 'edit', 'delete'],
+                'AuditLogs.created >=' => FrozenTime::now()->subDays($days),
+            ]
+        ]);
+        $metaFieldLogs = array_filter($logs, function ($log) use ($userIDs) {
+            return !empty($log['changed']['scope']) && $log['changed']['scope'] === 'user' && in_array($log['changed']['parent_id'], $userIDs);
+        });
+        $metaFieldDeletionLogs = array_filter($logs, function ($log) use ($userIDs) {
+            return $log['request_action'] === 'delete';
+        });
+        foreach ($metaFieldDeletionLogs as $i => $log) {
+            $latestAssociatedLog = $this->_fetchLogs([
+                'contain' => ['Users'],
+                'conditions' => [
+                    'model' => 'MetaFields',
+                    'request_action IN' => ['add'],
+                    'model_id' => $log['model_id'],
+                ],
+                'order' => ['AuditLogs.created' => 'DESC'],
+                'limit' => 1,
+            ]);
+            if (!empty($latestAssociatedLog)) {
+                $metaFieldDeletionLogs[$i]['changed']['orig_value'] = $latestAssociatedLog[0]['changed']['value'];
+                $metaFieldDeletionLogs[$i]['changed']['value'] = '';
+            }
+        }
+        $allLogs = array_merge($metaFieldLogs, $metaFieldDeletionLogs);
+        return $allLogs;
+    }
+
     protected function _fetchLogsForOrgs(array $orgIDs = [], int $days = 7): array
     {
         if (empty($orgIDs)) {
@@ -201,16 +247,40 @@ class SummaryCommand extends Command
 
     protected function _fetchLogs(array $options=[]): array
     {
-        $logs = $this->AuditLogs->find()
+        $query = $this->AuditLogs->find()
             ->contain($options['contain'])
-            ->where($options['conditions'])
+            ->where($options['conditions']);
+        if (!empty($options['order'])) {
+            $query = $query->order($options['order']);
+        }
+        if (!empty($options['limit'])) {
+            $query = $query
+                ->limit($options['limit'])
+                ->page(1);
+        }
+        $logs = $query
             ->enableHydration(false)
             ->all()->toList();
         return array_map(function ($log) {
             $log['changed'] = is_resource($log['changed']) ? stream_get_contents($log['changed']) : $log['changed'];
-            $log['changed'] = json_decode($log['changed']);
+            $log['changed'] = json_decode($log['changed'], true);
             return $log;
         }, $logs);
+    }
+
+    protected function _formatUserMetafieldLogs($logEntries, $userByIDs): array
+    {
+        return array_map(function($log) use ($userByIDs) {
+            $log['model'] = 'Users';
+            $log['request_action'] = 'edit';
+            $log['changed'] = [
+                $log['model_title'] => [
+                    $log['changed']['orig_value'] ?? '',
+                    $log['changed']['value']
+                ]
+            ];
+            return $log;
+        }, $logEntries);
     }
 
     protected function _formatLogsForTable($logEntries): array
