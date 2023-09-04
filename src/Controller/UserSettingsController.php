@@ -114,7 +114,7 @@ class UserSettingsController extends AppController
         $dropdownData = [
             'user' => $this->UserSettings->Users->find('list', [
                 'sort' => ['username' => 'asc']
-            ]),
+            ])->toArray(),
         ];
         $this->set(compact('dropdownData'));
         $this->set('user_id', $this->entity->user_id);
