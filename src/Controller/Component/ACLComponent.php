@@ -208,6 +208,13 @@ class ACLComponent extends Component
             'removeOrg' => ['perm_org_admin'],
             'view' => ['*']
         ],
+        'Tags' => [
+            'add' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'edit' => ['perm_admin'],
+            'index' => ['*'],
+            'view' => ['*']
+        ],
         'Users' => [
             'add' => ['perm_org_admin'],
             'delete' => ['perm_org_admin'],
