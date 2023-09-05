@@ -96,7 +96,7 @@ class ACLComponent extends Component
             'view' => ['perm_admin'],
         ],
         'Individuals' => [
-            'add' => ['perm_admin'],
+            'add' => ['perm_admin', 'perm_org_admin'],
             'delete' => ['perm_admin'],
             'edit' => ['perm_admin', 'perm_org_admin'],
             'filtering' => ['*'],
