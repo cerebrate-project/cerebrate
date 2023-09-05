@@ -70,6 +70,12 @@ class UserSettingsController extends AppController
         $this->CRUD->add([
             'redirect' => ['action' => 'index', $user_id],
             'beforeSave' => function ($data) use ($currentUser) {
+                $fakeUser = new \stdClass();
+                $fakeUser->id = $data['user_id'];
+                $existingSetting = $this->UserSettings->getSettingByName($fakeUser, $data['name']);
+                if (!empty($existingSetting)) {
+                    throw new MethodNotAllowedException(__('You cannot create a setting that already exists for the given user.'));
+                }
                 if (empty($currentUser['role']['perm_admin'])) {
                     $data['user_id'] = $currentUser->id;
                 }
