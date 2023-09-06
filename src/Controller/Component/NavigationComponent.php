@@ -125,7 +125,7 @@ class NavigationComponent extends Component
     public function genBreadcrumb(): array
     {
         $request = $this->request;
-        $bcf = new BreadcrumbFactory($this->iconToTableMapping);
+        $bcf = new BreadcrumbFactory($this->iconToTableMapping, $this->getController());
         $fullConfig = $this->getFullConfig($bcf, $this->request);
         return $fullConfig;
     }
@@ -191,9 +191,10 @@ class BreadcrumbFactory
     private $endpoints = [];
     private $iconToTableMapping = [];
 
-    public function __construct($iconToTableMapping)
+    public function __construct($iconToTableMapping, $controllerContext)
     {
         $this->iconToTableMapping = $iconToTableMapping;
+        $this->controllerContext = $controllerContext;
     }
 
     public function defaultCRUD(string $controller, string $action, array $overrides = []): array
@@ -243,7 +244,7 @@ class BreadcrumbFactory
             $item = $this->genRouteConfig($controller, $action, [
                 'label' => __('Audit changes'),
                 'icon' => 'history',
-                'url' => "/audit-logs?model={{model}}&model_id={{id}}&sort=created&direction=desc&embedInModal=1&excludeStats=1&skipTableToolbar=1",
+                'url' => "/audit-logs?model={{model}}&model_id={{id}}&sort=AuditLogs.created&direction=desc&embedInModal=1&excludeStats=1&skipTableToolbar=1",
                 'url_vars' => ['id' => 'id', 'model' => ['raw' => $table->getAlias()]],
                 'textGetter' => !empty($table->getDisplayField()) ? $table->getDisplayField() : 'id',
             ]);
@@ -288,6 +289,8 @@ class BreadcrumbFactory
 
     public function setDefaultCRUDForModel($controller)
     {
+        $loggedUser = $this->controllerContext->ACL->getUser();
+
         $this->addRoute($controller, 'index', $this->defaultCRUD($controller, 'index'));
         $this->addRoute($controller, 'view', $this->defaultCRUD($controller, 'view'));
         $this->addRoute($controller, 'add', $this->defaultCRUD($controller, 'add'));
@@ -307,10 +310,14 @@ class BreadcrumbFactory
 
         $this->addAction($controller, 'view', $controller, 'add');
         $this->addAction($controller, 'view', $controller, 'delete');
-        $this->addAction($controller, 'view', $controller, 'audit');
+        if (!empty($loggedUser['role']['perm_admin'])) {
+            $this->addAction($controller, 'view', $controller, 'audit');
+        }
         $this->addAction($controller, 'edit', $controller, 'add');
         $this->addAction($controller, 'edit', $controller, 'delete');
-        $this->addAction($controller, 'edit', $controller, 'audit');
+        if (!empty($loggedUser['role']['perm_admin'])) {
+            $this->addAction($controller, 'edit', $controller, 'audit');
+        }
     }
 
     public function get($controller, $action)
