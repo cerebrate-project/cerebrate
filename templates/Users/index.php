@@ -108,7 +108,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('User index'),
         'description' => __('The list of enrolled users in this Cerebrate instance. All of the users have or at one point had access to the system.'),
-        'pull' => 'right',
+        'includeAllPagination' => true,
         'actions' => [
             [
                 'url' => '/users/view',
