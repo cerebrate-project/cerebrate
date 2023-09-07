@@ -65,7 +65,8 @@ class SummaryCommand extends Command
         $folderPath = rtrim($folderPath, '/');
         $filename = sprintf('%s/%s.txt', $folderPath, $nationality);
         $file_input = fopen($filename, 'w');
-        $organisationIDsForNationality = $this->_fetchOrganisationsForNationality($nationality);
+        $organisationForNationality = $this->_fetchOrganisationsForNationality($nationality);
+        $organisationIDsForNationality = array_keys($organisationForNationality);
         if (empty($organisationIDsForNationality)) {
             $message = sprintf('No changes for organisations with nationality `%s`', $nationality);
             fwrite($file_input, $message);
@@ -73,6 +74,7 @@ class SummaryCommand extends Command
             return;
         }
         $userForOrg = $this->_fetchUserForOrg($organisationIDsForNationality);
+        $userEmailByID = Hash::combine($userForOrg, '{n}.id', '{n}.individual.email');
         $userID = Hash::extract($userForOrg, '{n}.id');
         $individualID = Hash::extract($userForOrg, '{n}.individual_id');
 
@@ -80,9 +82,16 @@ class SummaryCommand extends Command
         fwrite($file_input, $message);
         $this->io->out($message);
         $logsUsers = $this->_fetchLogsForUsers($userID, $days);
+        $logsUsers = array_map(function($log) use ($userEmailByID) {
+            $userID = $log['model_id'];
+            $log['element_id'] = $userID;
+            $log['element_display_field'] = $userEmailByID[$userID];
+            return $log;
+        }, $logsUsers);
+
         $userByIDs = Hash::combine($userForOrg, '{n}.id', '{n}');
         $logsUserMetaFields = $this->_fetchLogsForUserMetaFields($userID, $days);
-        $logsUserMetaFields = $this->_formatUserMetafieldLogs($logsUserMetaFields, $userByIDs);
+        $logsUserMetaFields = $this->_formatUserMetafieldLogs($logsUserMetaFields, $userEmailByID);
         $logsUsersCombined = array_merge($logsUsers, $logsUserMetaFields);
         usort($logsUsersCombined, function($a, $b) {
             return $a['created'] < $b['created'] ? -1 : 1;
@@ -97,6 +106,12 @@ class SummaryCommand extends Command
         fwrite($file_input, $message);
         $this->io->out($message);
         $logsOrgs = $this->_fetchLogsForOrgs($organisationIDsForNationality, $days);
+        $logsOrgs = array_map(function ($log) use ($organisationIDsForNationality) {
+            $orgID = $log['model_id'];
+            $log['element_id'] = $orgID;
+            $log['element_display_field'] = $organisationIDsForNationality[$orgID];
+            return $log;
+        }, $logsOrgs);
         $modifiedOrgs = $this->_formatLogsForTable($logsOrgs);
         foreach ($modifiedOrgs as $row) {
             fputcsv($file_input, $row);
@@ -107,6 +122,12 @@ class SummaryCommand extends Command
         fwrite($file_input, $message);
         $this->io->out($message);
         $logsIndividuals = $this->_fetchLogsForIndividuals($individualID, $days);
+        $logsIndividuals = array_map(function ($log) use ($userEmailByID) {
+            $individualID = $log['model_id'];
+            $log['element_id'] = $individualID;
+            $log['element_display_field'] = $userEmailByID[$individualID];
+            return $log;
+        }, $logsIndividuals);
         $modifiedIndividuals = $this->_formatLogsForTable($logsIndividuals);
         foreach ($modifiedIndividuals as $row) {
             fputcsv($file_input, $row);
@@ -125,12 +146,18 @@ class SummaryCommand extends Command
 
     protected function _fetchOrganisationsForNationality(string $nationality): array
     {
-        return array_keys($this->Organisations->find('list')
+        return $this->Organisations->find('list')
             ->where([
                 'nationality' => $nationality,
             ])
             ->all()
-            ->toArray());
+            ->toArray();
+        // return array_keys($this->Organisations->find('list')
+        //     ->where([
+        //         'nationality' => $nationality,
+        //     ])
+        //     ->all()
+        //     ->toArray());
     }
 
     protected function _fetchOrgNationalities(): array
@@ -139,6 +166,7 @@ class SummaryCommand extends Command
             ->where([
                 'nationality !=' => '',
             ])
+            ->group('nationality')
             ->all()
             ->extract('nationality')
             ->toList();
@@ -190,9 +218,14 @@ class SummaryCommand extends Command
         $metaFieldLogs = array_filter($logs, function ($log) use ($userIDs) {
             return !empty($log['changed']['scope']) && $log['changed']['scope'] === 'user' && in_array($log['changed']['parent_id'], $userIDs);
         });
-        $metaFieldDeletionLogs = array_filter($logs, function ($log) use ($userIDs) {
+        $metaFieldLogs = array_map(function ($log) {
+            $log['modified_user_id'] = $log['changed']['parent_id'];
+            return $log;
+        }, $metaFieldLogs);
+        $metaFieldDeletionLogs = array_filter($logs, function ($log) {
             return $log['request_action'] === 'delete';
         });
+        $allLogs = $metaFieldLogs;
         foreach ($metaFieldDeletionLogs as $i => $log) {
             $latestAssociatedLog = $this->_fetchLogs([
                 'contain' => ['Users'],
@@ -205,11 +238,14 @@ class SummaryCommand extends Command
                 'limit' => 1,
             ]);
             if (!empty($latestAssociatedLog)) {
-                $metaFieldDeletionLogs[$i]['changed']['orig_value'] = $latestAssociatedLog[0]['changed']['value'];
-                $metaFieldDeletionLogs[$i]['changed']['value'] = '';
+                if (in_array($latestAssociatedLog[0]['changed']['parent_id'], $userIDs)) {
+                    $log['changed']['orig_value'] = $latestAssociatedLog[0]['changed']['value'];
+                    $log['changed']['value'] = '';
+                    $log['modified_user_id'] = $latestAssociatedLog[0]['changed']['parent_id'];
+                    $allLogs[] = $log;
+                }
             }
         }
-        $allLogs = array_merge($metaFieldLogs, $metaFieldDeletionLogs);
         return $allLogs;
     }
 
@@ -268,9 +304,9 @@ class SummaryCommand extends Command
         }, $logs);
     }
 
-    protected function _formatUserMetafieldLogs($logEntries, $userByIDs): array
+    protected function _formatUserMetafieldLogs($logEntries, $userEmailByID): array
     {
-        return array_map(function($log) use ($userByIDs) {
+        return array_map(function($log) use ($userEmailByID) {
             $log['model'] = 'Users';
             $log['request_action'] = 'edit';
             $log['changed'] = [
@@ -279,13 +315,15 @@ class SummaryCommand extends Command
                     $log['changed']['value']
                 ]
             ];
+            $log['element_id'] = $log['modified_user_id'];
+            $log['element_display_field'] = $userEmailByID[$log['modified_user_id']];
             return $log;
         }, $logEntries);
     }
 
     protected function _formatLogsForTable($logEntries): array
     {
-        $header = ['Model', 'Action', 'Editor user', 'Log ID', 'Datetime', 'Change'];
+        $header = ['Model', 'Action', 'Editor user', 'Log ID', 'Datetime', 'Modified  element ID', 'Modified element', 'Change'];
         $data = [$header];
         foreach ($logEntries as $logEntry) {
             $formatted = [
@@ -294,6 +332,8 @@ class SummaryCommand extends Command
                 sprintf('%s (%s)', $logEntry['user']['username'], $logEntry['user_id']),
                 $logEntry['id'],
                 $logEntry['created']->i18nFormat('yyyy-MM-dd HH:mm:ss'),
+                $logEntry['element_id'] ?? '-',
+                $logEntry['element_display_field'] ?? '-',
             ];
             if ($logEntry['request_action'] == 'edit') {
                 $formatted[] = json_encode($logEntry['changed'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
