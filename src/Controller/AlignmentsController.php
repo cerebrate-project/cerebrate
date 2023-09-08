@@ -49,6 +49,9 @@ class AlignmentsController extends AppController
             throw new NotFoundException(__('Invalid alignment.'));
         }
         $alignment = $this->Alignments->get($id);
+        if (!$this->canEditIndividual($alignment->individual_id) || !$this->canEditOrganisation($alignment->organisation_id)) {
+            throw new MethodNotAllowedException(__('You cannot delete this alignments.'));
+        }
         if ($this->request->is('post') || $this->request->is('delete')) {
             if ($this->Alignments->delete($alignment)) {
                 $message = __('Alignments deleted.');
@@ -73,8 +76,21 @@ class AlignmentsController extends AppController
         if (empty($scope) || empty($source_id)) {
             throw new NotAcceptableException(__('Invalid input. scope and source_id expected as URL parameters in the format /alignments/add/[scope]/[source_id].'));
         }
+        if (!in_array($scope, ['individuals', 'organisations'])) {
+            throw new MethodNotAllowedException(__('Invalid scope. Should be `individuals` or `organisations`.'));
+        }
         $this->loadModel('Individuals');
         $this->loadModel('Organisations');
+
+        $validIndividualIDs = $this->Individuals->getValidIndividualsToEdit($this->ACL->getUser());
+        $validOrgs = $this->Organisations->getEditableOrganisationsForUser($this->ACL->getUser());
+
+        if ($scope == 'individuals' && !$this->canEditIndividual($source_id)) {
+            throw new MethodNotAllowedException(__('You cannot modify that individual.'));
+        } else if ($scope == 'organisations' && !$this->canEditOrganisation($source_id)) {
+            throw new MethodNotAllowedException(__('You cannot modify that organisation.'));
+        }
+
         $alignment = $this->Alignments->newEmptyEntity();
         if ($this->request->is('post')) {
             $this->Alignments->patchEntity($alignment, $this->request->getData());
@@ -82,6 +98,11 @@ class AlignmentsController extends AppController
                 $alignment['individual_id'] = $source_id;
             } else {
                 $alignment['organisation_id'] = $source_id;
+            }
+            if ($scope == 'individuals' && !$this->canEditOrganisation($alignment['organisation_id'])) {
+                throw new MethodNotAllowedException(__('You cannot use that organisation.'));
+            } else if ($scope == 'organisations' && !$this->canEditIndividual($alignment['individual_id'])) {
+                throw new MethodNotAllowedException(__('You cannot assign that individual.'));
             }
             $alignment = $this->Alignments->save($alignment);
             if ($alignment) {
@@ -105,7 +126,7 @@ class AlignmentsController extends AppController
             }
         }
         if ($scope === 'organisations') {
-            $individuals = $this->Individuals->find('list', ['valueField' => 'email'])->toArray();
+            $individuals = $this->Individuals->find('list', ['valueField' => 'email'])->where(['id IN' => $validIndividualIDs])->toArray();
             $this->set('individuals', $individuals);
             $organisation = $this->Organisations->find()->where(['id' => $source_id])->first();
             if (empty($organisation)) {
@@ -113,7 +134,7 @@ class AlignmentsController extends AppController
             }
             $this->set(compact('organisation'));
         } else {
-            $organisations = $this->Organisations->find('list', ['valueField' => 'name'])->toArray();
+            $organisations = Hash::combine($validOrgs, '{n}.id', '{n}.name');
             $this->set('organisations', $organisations);
             $individual = $this->Individuals->find()->where(['id' => $source_id])->first();
             if (empty($individual)) {
@@ -124,6 +145,31 @@ class AlignmentsController extends AppController
         $this->set(compact('alignment'));
         $this->set('scope', $scope);
         $this->set('source_id', $source_id);
-        $this->set('metaGroup', 'ContactDB');
+    }
+
+    private function canEditIndividual($indId): bool
+    {
+        $currentUser = $this->ACL->getUser();
+        if ($currentUser['role']['perm_admin']) {
+            return true;
+        }
+        $this->loadModel('Individuals');
+        $validIndividuals = $this->Individuals->getValidIndividualsToEdit($currentUser);
+        if (in_array($indId, $validIndividuals)) {
+            return true;
+        }
+        return false;
+    }
+
+    private function canEditOrganisation($orgId): bool
+    {
+        $currentUser = $this->ACL->getUser();
+        if ($currentUser['role']['perm_admin']) {
+            return true;
+        }
+        if ($currentUser['role']['perm_org_admin'] && $currentUser['organisation']['id'] == $orgId) {
+            return true;
+        }
+        return false;
     }
 }

@@ -41,8 +41,8 @@ class ACLComponent extends Component
             'queryACL' => ['perm_admin']
         ],
         'Alignments' => [
-            'add' => ['perm_admin'],
-            'delete' => ['perm_admin'],
+            'add' => ['perm_admin', 'perm_org_admin'],
+            'delete' => ['perm_admin', 'perm_org_admin'],
             'index' => ['*'],
             'view' => ['*']
         ],
