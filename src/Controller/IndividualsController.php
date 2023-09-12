@@ -39,7 +39,7 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $editableIds = null;
+        $editableIds = [];
         if ($orgAdmin) {
             $editableIds = $this->Individuals->getValidIndividualsToEdit($currentUser);
         }

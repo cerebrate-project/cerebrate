@@ -11,7 +11,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'type' => 'simple',
                             'text' => __('Add organisation'),
                             'class' => 'btn btn-primary',
-                            'popover_url' => '/organisations/add'
+                            'popover_url' => '/organisations/add',
+                            'requirement' => !empty($loggedUser['role']['perm_admin']),
                         ]
                     ]
                 ],
