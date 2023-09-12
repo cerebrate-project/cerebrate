@@ -83,4 +83,17 @@ class OrganisationsTable extends AppTable
             $this->saveMetaFields($id, $org);
         }
     }
+
+    public function getEditableOrganisationsForUser($user): array
+    {
+        $query = $this->find();
+        if (empty($user['role']['perm_admin'])) {
+            if (!empty($user['role']['perm_org_admin'])) {
+                $query->where(['Organisations.id' => $user['organisation']['id']]);
+            } else {
+                return []; // User not an org_admin. Cannot edit orgs
+            }
+        }
+        return $query->all()->toList();
+    }
 }

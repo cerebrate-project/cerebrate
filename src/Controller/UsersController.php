@@ -51,7 +51,7 @@ class UsersController extends AppController
         }
         $this->set(
             'validRoles',
-            $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0])->all()->toArray()
+            $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->toArray()
         );
         $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
@@ -259,7 +259,7 @@ class UsersController extends AppController
             $params['fields'][] = 'disabled';
             if (!$currentUser['role']['perm_admin']) {
                 $params['afterFind'] = function ($data, &$params) use ($currentUser, $validRoles) {
-                    if (!in_array($data['role_id'], array_keys($validRoles))) {
+                    if (!in_array($data['role_id'], array_keys($validRoles)) && $this->ACL->getUser()['id'] != $data['id']) {
                         throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
                     }
                     if (!$this->ACL->canEditUser($currentUser, $data)) {
@@ -268,7 +268,7 @@ class UsersController extends AppController
                     return $data;
                 };
                 $params['beforeSave'] = function ($data) use ($currentUser, $validRoles) {
-                    if (!in_array($data['role_id'], array_keys($validRoles))) {
+                    if (!in_array($data['role_id'], array_keys($validRoles)) && $this->ACL->getUser()['id'] != $data['id']) {
                         throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
                     }
                     return $data;
@@ -283,6 +283,9 @@ class UsersController extends AppController
         $org_conditions = [];
         if (empty($currentUser['role']['perm_admin'])) {
             $org_conditions = ['id' => $currentUser['organisation_id']];
+        }
+        if ($this->ACL->getUser()['id'] == $id) {
+            $validRoles[$this->ACL->getUser()['role']['id']] = $this->ACL->getUser()['role']['name']; // include the current role of the user
         }
         $dropdownData = [
             'role' => $validRoles,
