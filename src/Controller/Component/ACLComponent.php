@@ -181,7 +181,7 @@ class ACLComponent extends Component
         'Organisations' => [
             'add' => ['perm_admin'],
             'delete' => ['perm_admin'],
-            'edit' => ['perm_admin'],
+            'edit' => ['perm_admin', 'perm_org_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
             'tag' => ['perm_org_admin'],
