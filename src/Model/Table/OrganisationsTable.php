@@ -34,6 +34,9 @@ class OrganisationsTable extends AppTable
                 'conditions' => ['owner_model' => 'organisation']
             ]
         );
+        $this->belongsToMany('OrgGroups', [
+            'joinTable' => 'org_groups_organisations',
+        ]);
         $this->addBehavior('MetaFields');
         $this->setDisplayField('name');
     }
@@ -79,5 +82,18 @@ class OrganisationsTable extends AppTable
         if (!empty($org['metaFields'])) {
             $this->saveMetaFields($id, $org);
         }
+    }
+
+    public function getEditableOrganisationsForUser($user): array
+    {
+        $query = $this->find();
+        if (empty($user['role']['perm_admin'])) {
+            if (!empty($user['role']['perm_org_admin'])) {
+                $query->where(['Organisations.id' => $user['organisation']['id']]);
+            } else {
+                return []; // User not an org_admin. Cannot edit orgs
+            }
+        }
+        return $query->all()->toList();
     }
 }

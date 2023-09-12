@@ -10,6 +10,7 @@
                     'label' => __('User'),
                     'options' => $dropdownData['user'],
                     'value' => !is_null($user_id) ? $user_id : '',
+                    'disabled' => !empty($is_edit),
                 ],
                 [
                     'field' => 'name',

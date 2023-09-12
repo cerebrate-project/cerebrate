@@ -51,6 +51,9 @@ class UsersTable extends AppTable
                 'strategy' => 'join'
             ]
         );
+        $this->belongsToMany('OrgGroups', [
+            'joinTable' => 'org_groups_admins',
+        ]);
         $this->hasMany(
             'UserSettings',
             [

@@ -70,6 +70,12 @@ class UserSettingsController extends AppController
         $this->CRUD->add([
             'redirect' => ['action' => 'index', $user_id],
             'beforeSave' => function ($data) use ($currentUser) {
+                $fakeUser = new \stdClass();
+                $fakeUser->id = $data['user_id'];
+                $existingSetting = $this->UserSettings->getSettingByName($fakeUser, $data['name']);
+                if (!empty($existingSetting)) {
+                    throw new MethodNotAllowedException(__('You cannot create a setting that already exists for the given user.'));
+                }
                 if (empty($currentUser['role']['perm_admin'])) {
                     $data['user_id'] = $currentUser->id;
                 }
@@ -112,12 +118,18 @@ class UserSettingsController extends AppController
         } else {
             $validUsers = $this->Users->find('list')->select(['id', 'username'])->order(['username' => 'asc'])->all()->toArray();
         }
+        $dropdownData = [
+            'user' => [$entity->user_id => $validUsers[$entity->user_id]],
+        ];
 
         $entity = $this->CRUD->edit($id, [
             'redirect' => ['action' => 'index', $entity->user_id],
-            'beforeSave' => function ($data) use ($validUsers) {
+            'beforeSave' => function ($data) use ($validUsers, $entity) {
                 if (!in_array($data['user_id'], array_keys($validUsers))) {
                     throw new MethodNotAllowedException(__('You cannot edit the given user.'));
+                }
+                if ($data['user_id'] != $entity->user_id) {
+                    throw new MethodNotAllowedException(__('You cannot assign the setting to a different user.'));
                 }
                 return $data;
             }
@@ -126,11 +138,9 @@ class UserSettingsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $dropdownData = [
-            'user' => $validUsers,
-        ];
         $this->set(compact('dropdownData'));
         $this->set('user_id', $this->entity->user_id);
+        $this->set('is_edit', true);
         $this->render('add');
     }
 

@@ -60,6 +60,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url_data_path' => 'id'
             ],
             [
+                'name' => __('Group memberships'),
+                'data_path' => 'org_groups',
+                'data_id_sub_path' => 'id',
+                'data_value_sub_path' => 'name',
+                'element' =>  'link_list',
+                'url_pattern' => '/orgGroups/view/{{data_id}}'
+            ],
+            [
                 'name' => __('URL'),
                 'sort' => 'url',
                 'class' => 'short',
@@ -98,7 +106,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'open_modal' => '/organisations/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'edit',
-                'requirement' => $loggedUser['role']['perm_admin']
+                'complex_requirement' => [
+                    'function' => function ($row, $options) use ($loggedUser) {
+                        if ($loggedUser['role']['perm_admin'] || ($loggedUser['role']['perm_org_admin'] && $row['id'] == $loggedUser['organisation']['id'])) {
+                            return true;
+                        }
+                        return false;
+                    }
+                ]
             ],
             [
                 'open_modal' => '/organisations/delete/[onclick_params_data_path]',

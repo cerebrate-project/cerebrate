@@ -63,6 +63,7 @@ $numberOfElementHtml = $this->element('/genericElements/ListTopBar/group_table_a
     'tableSettings' => $tableSettings,
     'table_setting_id' => $data['table_setting_id'],
     'numberOfElement' => $numberOfElement,
+    'includeAll' =>  !empty($table_data['includeAllPagination']),
 ]);
 ?>
 <?php if (!isset($data['requirement']) || $data['requirement']) : ?>

@@ -10,7 +10,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         'data' => [
                             'type' => 'simple',
                             'text' => __('Add tag'),
-                            'popover_url' => '/tags/add'
+                            'popover_url' => '/tags/add',
+                            'requirement' => !empty($loggedUser['role']['perm_admin']),
                         ]
                     ]
                 ],
@@ -65,12 +66,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'open_modal' => '/tags/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'edit'
+                'icon' => 'edit',
+                'requirement' => !empty($loggedUser['role']['perm_admin']),
             ],
             [
                 'open_modal' => '/tags/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'trash'
+                'icon' => 'trash',
+                'requirement' => !empty($loggedUser['role']['perm_admin']),
             ],
         ]
     ]

@@ -27,6 +27,11 @@ class Sidemenu {
                     'icon' => $this->iconTable['Organisations'],
                     'url' => '/organisations/index',
                 ],
+                'OrgGroups' => [
+                    'label' => __('Organisation Groups'),
+                    'icon' => $this->iconTable['OrgGroups'],
+                    'url' => '/orgGroups/index',
+                ],
                 'EncryptionKeys' => [
                     'label' => __('Encryption keys'),
                     'icon' => $this->iconTable['EncryptionKeys'],

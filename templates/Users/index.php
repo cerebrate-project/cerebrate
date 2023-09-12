@@ -64,6 +64,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url_vars' => ['organisation.id']
             ],
             [
+                'name' => __('Administered Groups'),
+                'data_path' => 'org_groups',
+                'data_id_sub_path' => 'id',
+                'data_value_sub_path' => 'name',
+                'element' =>  'link_list',
+                'url_pattern' => '/orgGroups/view/{{data_id}}'
+            ],
+            [
                 'name' => __('Email'),
                 'sort' => 'individual.email',
                 'data_path' => 'individual.email',
@@ -108,7 +116,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('User index'),
         'description' => __('The list of enrolled users in this Cerebrate instance. All of the users have or at one point had access to the system.'),
-        'pull' => 'right',
+        'includeAllPagination' => true,
         'actions' => [
             [
                 'url' => '/users/view',
@@ -127,6 +135,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     ],
                     'function' => function ($row, $options)  use ($loggedUser, $validRoles) {
                         if (empty($loggedUser['role']['perm_admin'])) {
+                            if ($row['id'] == $loggedUser['id']) {
+                                return true;
+                            }
                             if (empty($loggedUser['role']['perm_org_admin'])) {
                                 return false;
                             }

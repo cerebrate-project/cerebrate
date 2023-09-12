@@ -15,7 +15,7 @@ class OrganisationsController extends AppController
 
     public $quickFilterFields = [['name' => true], 'uuid', 'nationality', 'sector', 'type', 'url'];
     public $filterFields = ['name', 'uuid', 'nationality', 'sector', 'type', 'url', 'Alignments.id', 'MetaFields.field', 'MetaFields.value', 'MetaFields.MetaTemplates.name'];
-    public $containFields = ['Alignments' => 'Individuals'];
+    public $containFields = ['Alignments' => 'Individuals', 'OrgGroups'];
     public $statisticsFields = ['nationality', 'sector'];
 
     public function index()
@@ -105,7 +105,7 @@ class OrganisationsController extends AppController
 
     public function view($id)
     {
-        $this->CRUD->view($id, ['contain' => ['Alignments' => 'Individuals']]);
+        $this->CRUD->view($id, ['contain' => ['Alignments' => 'Individuals', 'OrgGroups']]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -118,7 +118,15 @@ class OrganisationsController extends AppController
         if (!$this->canEdit($id)) {
             throw new MethodNotAllowedException(__('You cannot modify that organisation.'));
         }
-        $this->CRUD->edit($id);
+        $currentUser = $this->ACL->getUser();
+        $this->CRUD->edit($id, [
+            'beforeSave' => function($data) use ($currentUser) {
+                if (!$currentUser['role']['perm_admin']) {
+                    unset($data['uuid']);
+                }
+                return $data;
+            }
+        ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;

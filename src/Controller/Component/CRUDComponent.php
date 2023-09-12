@@ -1711,4 +1711,132 @@ class CRUDComponent extends Component
         }
         return true;
     }
+
+    public function linkObjects(string $functionName, int $id1, string $model1, string $model2, array $params = []): void
+    {
+        $this->Controller->loadModel($model1);
+        $this->Controller->loadModel($model2);
+        if ($this->request->is(['post', 'put'])) {
+            $input = $this->request->getData();
+            if (empty($input['id'])) {
+                throw new MethodNotAllowedException(__('No ID of target to attach defined.'));
+            }
+            $id2 = $input['id'];
+            $obj1 = $this->Table->get($id1);
+            $obj2 = $this->Table->$model2->get($id2);
+            $data = [
+                [
+                    'id' => $id1,
+                    'model' => $model1
+                ],
+                [
+                    'id' => $id2,
+                    'model' => $model2
+                ]
+            ];
+
+            try {
+                $savedData = $this->Table->$model2->link($obj1, [$obj2]);
+            } catch (Exception $e) {
+                $savedData = null;
+            }
+            
+            if (!empty($savedData)) {
+                $message = __('{0} attached to {1}.', $model1, $model2);
+                if ($this->Controller->ParamHandler->isRest()) {
+                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($message, 'json');
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    if (!empty($params['displayOnSuccess'])) {
+                        $displayOnSuccess = $this->renderViewInVariable($params['displayOnSuccess'], ['entity' => $data]);
+                        $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($model1, 'index', $obj1, $message, ['displayOnSuccess' => $displayOnSuccess]);
+                    } else {
+                        $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($model1, 'index', $obj1, $message);
+                    }
+                } else {
+                    $this->Controller->Flash->success($message);
+                    if (empty($params['redirect'])) {
+                        $this->Controller->redirect(['action' => 'view', $id1]);
+                    } else {
+                        $this->Controller->redirect($params['redirect']);
+                    }
+                }
+            } else {
+                $this->Controller->isFailResponse = true;
+                $message = __(
+                    '{0} could not be attached to {1}.',
+                    $model1,
+                    $model2
+                );
+                if ($this->Controller->ParamHandler->isRest()) {
+                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($message, 'json');
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($model1, $functionName, $data, $message, []);
+                } else {
+                    $this->Controller->Flash->error($message);
+                }
+            }
+        }
+    }
+
+    public function unlinkObjects(string $functionName, int $id1, int $id2, string $model1, string $model2, array $params = []): void
+    {
+        $this->Controller->loadModel($model1);
+        $this->Controller->loadModel($model2);
+        $obj1 = $this->Table->get($id1);
+        $obj2 = $this->Table->$model2->get($id2);
+        $data = [
+            [
+                'id' => $id1,
+                'model' => $model1
+            ],
+            [
+                'id' => $id2,
+                'model' => $model2
+            ]
+        ];
+        $this->Controller->set('data', $data);
+        if ($this->request->is(['post', 'put'])) {
+            $input = $this->request->getData();
+            try {
+                $savedData = $this->Table->$model2->unlink($obj1, [$obj2]);
+            } catch (Exception $e) {
+                $savedData = null;
+            }
+            
+            if (!empty($savedData)) {
+                $message = __('{0} detached from {1}.', $model1, $model2);
+                if ($this->Controller->ParamHandler->isRest()) {
+                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($message, 'json');
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    if (!empty($params['displayOnSuccess'])) {
+                        $displayOnSuccess = $this->renderViewInVariable($params['displayOnSuccess'], ['entity' => $data]);
+                        $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($model1, 'index', $obj1, $message, ['displayOnSuccess' => $displayOnSuccess]);
+                    } else {
+                        $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($model1, 'index', $obj1, $message);
+                    }
+                } else {
+                    $this->Controller->Flash->success($message);
+                    if (empty($params['redirect'])) {
+                        $this->Controller->redirect(['action' => 'view', $id1]);
+                    } else {
+                        $this->Controller->redirect($params['redirect']);
+                    }
+                }
+            } else {
+                $this->Controller->isFailResponse = true;
+                $message = __(
+                    '{0} could not be detached from {1}.',
+                    $model1,
+                    $model2
+                );
+                if ($this->Controller->ParamHandler->isRest()) {
+                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($message, 'json');
+                } else if ($this->Controller->ParamHandler->isAjax()) {
+                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($model1, $functionName, $data, $message, []);
+                } else {
+                    $this->Controller->Flash->error($message);
+                }
+            }
+        }
+    }
 }

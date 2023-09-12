@@ -41,8 +41,8 @@ class ACLComponent extends Component
             'queryACL' => ['perm_admin']
         ],
         'Alignments' => [
-            'add' => ['perm_admin'],
-            'delete' => ['perm_admin'],
+            'add' => ['perm_admin', 'perm_org_admin'],
+            'delete' => ['perm_admin', 'perm_org_admin'],
             'index' => ['*'],
             'view' => ['*']
         ],
@@ -96,7 +96,7 @@ class ACLComponent extends Component
             'view' => ['perm_admin'],
         ],
         'Individuals' => [
-            'add' => ['perm_admin'],
+            'add' => ['perm_admin', 'perm_org_admin'],
             'delete' => ['perm_admin'],
             'edit' => ['perm_admin', 'perm_org_admin'],
             'filtering' => ['*'],
@@ -161,10 +161,27 @@ class ACLComponent extends Component
         'MetaTemplateNameDirectory' => [
             'index' => ['perm_admin'],
         ],
-        'Organisations' => [
+        'OrgGroups' => [
             'add' => ['perm_admin'],
             'delete' => ['perm_admin'],
             'edit' => ['perm_admin'],
+            'index' => ['*'],
+            'view' => ['*'],
+            'filtering' => ['*'],
+            'tag' => ['perm_admin'],
+            'untag' => ['perm_admin'],
+            'viewTags' => ['*'],
+            'listAdmins' => ['*'],
+            'listOrgs' => ['*'],
+            'assignAdmin' => ['perm_admin'],
+            'removeAdmin' => ['perm_admin'],
+            'attachOrg' => ['perm_group_admin'],
+            'detachOrg' => ['perm_group_admin']
+        ],
+        'Organisations' => [
+            'add' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'edit' => ['perm_admin', 'perm_org_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
             'tag' => ['perm_org_admin'],
@@ -206,6 +223,13 @@ class ACLComponent extends Component
             'index' => ['*'],
             'listOrgs' => ['*'],
             'removeOrg' => ['perm_org_admin'],
+            'view' => ['*']
+        ],
+        'Tags' => [
+            'add' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'edit' => ['perm_admin'],
+            'index' => ['*'],
             'view' => ['*']
         ],
         'Users' => [
@@ -328,13 +352,25 @@ class ACLComponent extends Component
         if (empty($user) || empty($currentUser)) {
             return false;
         }
+        if ($user['id'] === $currentUser['id']) {
+            return true;
+        }
         if (!$currentUser['role']['perm_admin']) {
             if ($user['role']['perm_admin']) {
                 return false; // org_admins cannot edit admins
             }
+            if ($currentUser['role']['perm_group_admin']) {
+                $this->OrgGroup = TableRegistry::get('OrgGroup');
+                if ($this->OrgGroup->checkIfUserBelongsToGroupAdminsGroup($currentUser, $user)) {
+                    return true;
+                }
+            }
             if (!$currentUser['role']['perm_org_admin']) {
                 return false;
             } else {
+                if ($currentUser['id'] == $user['id']) {
+                    return true;
+                }
                 if ($currentUser['organisation_id'] !== $user['organisation_id']) {
                     return false;
                 }

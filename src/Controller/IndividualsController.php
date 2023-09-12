@@ -69,6 +69,7 @@ class IndividualsController extends AppController
             return $responsePayload;
         }
         $this->set('canEdit', $this->canEdit($id));
+        $this->set('canDelete', $this->canDelete($id));
     }
 
     public function edit($id)
@@ -89,6 +90,8 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        $this->set('canEdit', $this->canEdit($id));
+        $this->set('canDelete', $this->canDelete($id));
         $this->render('add');
     }
 
@@ -151,6 +154,19 @@ class IndividualsController extends AppController
         }
         $validIndividuals = $this->Individuals->getValidIndividualsToEdit($currentUser);
         if (in_array($indId, $validIndividuals)) {
+            return true;
+        }
+        return false;
+    }
+
+    private function canDelete($indId): bool
+    {
+        $associatedUsersCount = $this->Individuals->Users->find()->select(['id'])->where(['individual_id' => $indId])->count();
+        if ($associatedUsersCount > 0) {
+            return false;
+        }
+        $currentUser = $this->ACL->getUser();
+        if ($currentUser['role']['perm_admin']) {
             return true;
         }
         return false;
