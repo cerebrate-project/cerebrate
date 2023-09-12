@@ -118,7 +118,15 @@ class OrganisationsController extends AppController
         if (!$this->canEdit($id)) {
             throw new MethodNotAllowedException(__('You cannot modify that organisation.'));
         }
-        $this->CRUD->edit($id);
+        $currentUser = $this->ACL->getUser();
+        $this->CRUD->edit($id, [
+            'beforeSave' => function($data) use ($currentUser) {
+                if (!$currentUser['role']['perm_admin']) {
+                    unset($data['uuid']);
+                }
+                return $data;
+            }
+        ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
