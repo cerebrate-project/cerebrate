@@ -37,6 +37,9 @@ class OrgGroupsTable extends AppTable
     
     public function checkIfGroupAdmin(int $groupId, User $user): bool
     {
+        if (!empty($user['role']['perm_admin'])) {
+            return true;
+        }
         $orgGroup = $this->get($groupId, ['contain' => 'Users']);
         if (empty($orgGroup)) {
             return false;
