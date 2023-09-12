@@ -37,7 +37,16 @@ class OrgGroupsTable extends AppTable
     
     public function checkIfGroupAdmin(int $groupId, mixed $user): bool
     {
-        return true;
+        $orgGroup = $this->get($groupId, ['contain' => 'Users']);
+        if (empty($orgGroup)) {
+            return false;
+        }
+        foreach ($orgGroup['users'] as $u) {
+            if ($user['id'] == $u['id']) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function checkIfUserBelongsToGroupAdminsGroup(User $currentUser, User $userToCheck): bool
