@@ -35,7 +35,7 @@ class OrgGroupsTable extends AppTable
         return $validator;
     }
     
-    public function checkIfGroupAdmin(int $groupId, mixed $user): bool
+    public function checkIfGroupAdmin(int $groupId, User $user): bool
     {
         $orgGroup = $this->get($groupId, ['contain' => 'Users']);
         if (empty($orgGroup)) {
