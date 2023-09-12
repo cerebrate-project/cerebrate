@@ -23,6 +23,7 @@ class NavigationComponent extends Component
     public $iconToTableMapping = [
         'Individuals' => 'address-book',
         'Organisations' => 'building',
+        'OrgGroups' => 'city',
         'EncryptionKeys' => 'key',
         'SharingGroups' => 'user-friends',
         'MailingLists' => 'mail-bulk',

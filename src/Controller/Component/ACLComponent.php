@@ -161,6 +161,23 @@ class ACLComponent extends Component
         'MetaTemplateNameDirectory' => [
             'index' => ['perm_admin'],
         ],
+        'OrgGroups' => [
+            'add' => ['perm_admin'],
+            'delete' => ['perm_admin'],
+            'edit' => ['perm_admin'],
+            'index' => ['*'],
+            'view' => ['*'],
+            'filtering' => ['*'],
+            'tag' => ['perm_admin'],
+            'untag' => ['perm_admin'],
+            'viewTags' => ['*'],
+            'listAdmins' => ['*'],
+            'listOrgs' => ['*'],
+            'assignAdmin' => ['perm_admin'],
+            'removeAdmin' => ['perm_admin'],
+            'attachOrg' => ['perm_group_admin'],
+            'detachOrg' => ['perm_group_admin']
+        ],
         'Organisations' => [
             'add' => ['perm_admin'],
             'delete' => ['perm_admin'],
@@ -335,9 +352,18 @@ class ACLComponent extends Component
         if (empty($user) || empty($currentUser)) {
             return false;
         }
+        if ($user['id'] === $currentUser['id']) {
+            return true;
+        }
         if (!$currentUser['role']['perm_admin']) {
             if ($user['role']['perm_admin']) {
                 return false; // org_admins cannot edit admins
+            }
+            if ($currentUser['role']['perm_group_admin']) {
+                $this->OrgGroup = TableRegistry::get('OrgGroup');
+                if ($this->OrgGroup->checkIfUserBelongsToGroupAdminsGroup($currentUser, $user)) {
+                    return true;
+                }
             }
             if (!$currentUser['role']['perm_org_admin']) {
                 return false;

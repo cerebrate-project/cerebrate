@@ -13,7 +13,7 @@ class UsersController extends AppController
 {
     public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name', 'Organisations.name', 'Organisation.nationality'];
     public $quickFilterFields = ['Individuals.uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'];
-    public $containFields = ['Individuals', 'Roles', 'UserSettings', 'Organisations'];
+    public $containFields = ['Individuals', 'Roles', 'UserSettings', 'Organisations', 'OrgGroups'];
 
     public function index()
     {
@@ -177,7 +177,7 @@ class UsersController extends AppController
             }
         }
         $this->CRUD->view($id, [
-            'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations'],
+            'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations', 'OrgGroups'],
             'afterFind' => function($data) use ($keycloakUsersParsed, $currentUser) {
                 if (empty($currentUser['role']['perm_admin']) && $currentUser['organisation_id'] != $data['organisation_id']) {
                     throw new NotFoundException(__('Invalid User.'));
@@ -328,6 +328,9 @@ class UsersController extends AppController
             'beforeSave' => function($data) use ($currentUser, $validRoles) {
                 if (empty(Configure::read('user.allow-user-deletion'))) {
                     throw new MethodNotAllowedException(__('User deletion is disabled on this instance.'));
+                }
+                if (!$this->ACL->canEditUser($currentUser, $data)) {
+                    throw new MethodNotAllowedException(__('You cannot edit the given user.'));
                 }
                 if (!$currentUser['role']['perm_admin']) {
                     if ($data['organisation_id'] !== $currentUser['organisation_id']) {

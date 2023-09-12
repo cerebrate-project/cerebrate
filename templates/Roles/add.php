@@ -13,6 +13,11 @@
                     'label' => 'Full admin privilege'
                 ],
                 [
+                    'field' => 'perm_group_admin',
+                    'type' => 'checkbox',
+                    'label' => 'Organisation Group admin privilege'
+                ],
+                [
                     'field' => 'perm_org_admin',
                     'type' => 'checkbox',
                     'label' => 'Organisation admin privilege'

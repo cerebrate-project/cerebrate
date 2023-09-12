@@ -55,6 +55,16 @@ $fields = [
         'scope' => 'individuals'
     ]
 ];
+if (!empty($entity['org_groups'])) {
+    $fields[] = [
+        'type' => 'link_list',
+        'key' => __('Administered Groups'),
+        'path' => 'org_groups',
+        'data_id_sub_path' => 'id',
+        'data_value_sub_path' => 'name',
+        'url_pattern' => '/orgGroups/view/{{data_id}}'
+    ];
+}
 if ($keycloakConfig['enabled']) {
     $fields[] = [
         'key' => __('Keycloak status'),

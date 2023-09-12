@@ -9,15 +9,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     'children' => [
                         'data' => [
                             'type' => 'simple',
-                            'text' => __('Add organisation'),
+                            'text' => __('Add group'),
                             'class' => 'btn btn-primary',
-                            'popover_url' => '/organisations/add'
+                            'popover_url' => '/orgGroups/add'
                         ]
                     ]
-                ],
-                [
-                    'type' => 'context_filters',
-                    'context_filters' => $filteringContexts
                 ],
                 [
                     'type' => 'search',
@@ -29,7 +25,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 ],
                 [
                     'type' => 'table_action',
-                    'table_setting_id' => 'organisation_index',
+                    'table_setting_id' => 'org_groups_index',
                 ]
             ]
         ],
@@ -53,40 +49,9 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'uuid',
             ],
             [
-                'name' => __('Members'),
-                'data_path' => 'alignments',
-                'element' =>  'count_summary',
-                'url' => '/individuals/index/?Organisations.id={{url_data}}',
-                'url_data_path' => 'id'
-            ],
-            [
-                'name' => __('Group memberships'),
-                'data_path' => 'org_groups',
-                'data_id_sub_path' => 'id',
-                'data_value_sub_path' => 'name',
-                'element' =>  'link_list',
-                'url_pattern' => '/orgGroups/view/{{data_id}}'
-            ],
-            [
-                'name' => __('URL'),
-                'sort' => 'url',
-                'class' => 'short',
-                'data_path' => 'url',
-            ],
-            [
-                'name' => __('Country'),
-                'data_path' => 'nationality',
-                'sort' => 'nationality',
-            ],
-            [
-                'name' => __('Sector'),
-                'data_path' => 'sector',
-                'sort' => 'sector',
-            ],
-            [
-                'name' => __('Type'),
-                'data_path' => 'type',
-                'sort' => 'type',
+                'name' => __('Description'),
+                'data_path' => 'description',
+                'sort' => 'description',
             ],
             [
                 'name' => __('Tags'),
@@ -94,22 +59,22 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'tags',
             ],
         ],
-        'title' => __('ContactDB Organisation Index'),
-        'description' => __('A list of organisations known by your Cerebrate instance. This list can get populated either directly, by adding new organisations or by fetching them from trusted remote sources.'),
+        'title' => __('Organisation Groups Index'),
+        'description' => __('OrgGroups are an administrative concept, multiple organisations can belong to a grouping that allows common management by so called "GroupAdmins". This helps grouping organisations by sector, country or other commonalities into co-managed sub-communities.'),
         'actions' => [
             [
-                'url' => '/organisations/view',
+                'url' => '/orgGroups/view',
                 'url_params_data_paths' => ['id'],
                 'icon' => 'eye'
             ],
             [
-                'open_modal' => '/organisations/edit/[onclick_params_data_path]',
+                'open_modal' => '/orgGroups/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'edit',
                 'requirement' => $loggedUser['role']['perm_admin']
             ],
             [
-                'open_modal' => '/organisations/delete/[onclick_params_data_path]',
+                'open_modal' => '/orgGroups/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash',
                 'requirement' => $loggedUser['role']['perm_admin']

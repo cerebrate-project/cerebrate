@@ -34,6 +34,9 @@ class OrganisationsTable extends AppTable
                 'conditions' => ['owner_model' => 'organisation']
             ]
         );
+        $this->belongsToMany('OrgGroups', [
+            'joinTable' => 'org_groups_organisations',
+        ]);
         $this->addBehavior('MetaFields');
         $this->setDisplayField('name');
     }

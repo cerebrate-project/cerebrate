@@ -64,6 +64,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url_vars' => ['organisation.id']
             ],
             [
+                'name' => __('Administered Groups'),
+                'data_path' => 'org_groups',
+                'data_id_sub_path' => 'id',
+                'data_value_sub_path' => 'name',
+                'element' =>  'link_list',
+                'url_pattern' => '/orgGroups/view/{{data_id}}'
+            ],
+            [
                 'name' => __('Email'),
                 'sort' => 'individual.email',
                 'data_path' => 'individual.email',

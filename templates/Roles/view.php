@@ -18,6 +18,11 @@ echo $this->element(
                 'type' => 'boolean'
             ],
             [
+                'key' => __('Organisation Group admin permission'),
+                'path' => 'perm_group_admin',
+                'type' => 'boolean'
+            ],
+            [
                 'key' => __('Organisation admin permission'),
                 'path' => 'perm_org_admin',
                 'type' => 'boolean'
