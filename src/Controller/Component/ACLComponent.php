@@ -175,8 +175,8 @@ class ACLComponent extends Component
             'listOrgs' => ['*'],
             'assignAdmin' => ['perm_admin'],
             'removeAdmin' => ['perm_admin'],
-            'attachOrg' => ['perm_group_admin'],
-            'detachOrg' => ['perm_group_admin']
+            'attachOrg' => ['perm_admin', 'perm_group_admin'],
+            'detachOrg' => ['perm_admin', 'perm_group_admin']
         ],
         'Organisations' => [
             'add' => ['perm_admin'],
@@ -360,8 +360,8 @@ class ACLComponent extends Component
                 return false; // org_admins cannot edit admins
             }
             if ($currentUser['role']['perm_group_admin']) {
-                $this->OrgGroup = TableRegistry::get('OrgGroup');
-                if ($this->OrgGroup->checkIfUserBelongsToGroupAdminsGroup($currentUser, $user)) {
+                $this->OrgGroups = TableRegistry::get('OrgGroups');
+                if ($this->OrgGroups->checkIfUserBelongsToGroupAdminsGroup($currentUser, $user)) {
                     return true;
                 }
             }

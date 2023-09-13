@@ -156,6 +156,7 @@ class NavigationComponent extends Component
         $CRUDControllers = [
             'Individuals',
             'Organisations',
+            'OrgGroups',
             'EncryptionKeys',
             'SharingGroups',
             'Broods',
