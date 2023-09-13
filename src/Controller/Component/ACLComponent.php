@@ -352,31 +352,36 @@ class ACLComponent extends Component
         if (empty($user) || empty($currentUser)) {
             return false;
         }
+        if ($currentUser['role']['perm_admin']) {
+            return true;
+        }
         if ($user['id'] === $currentUser['id']) {
             return true;
         }
-        if (!$currentUser['role']['perm_admin']) {
-            if ($user['role']['perm_admin']) {
-                return false; // org_admins cannot edit admins
-            }
-            if ($currentUser['role']['perm_group_admin']) {
-                $this->OrgGroups = TableRegistry::get('OrgGroups');
-                if ($this->OrgGroups->checkIfUserBelongsToGroupAdminsGroup($currentUser, $user)) {
-                    return true;
-                }
-            }
-            if (!$currentUser['role']['perm_org_admin']) {
-                return false;
-            } else {
-                if ($currentUser['id'] == $user['id']) {
-                    return true;
-                }
-                if ($currentUser['organisation_id'] !== $user['organisation_id']) {
-                    return false;
-                }
+
+        if ($user['role']['perm_admin']) {
+            return false; // org_admins cannot edit admins
+        }
+        if ($currentUser['role']['perm_org_admin'] && $user['role']['perm_group_admin']) {
+            return false; // org_admins cannot edit group_admin
+        }
+        if ($currentUser['role']['perm_group_admin']) {
+            $this->OrgGroups = TableRegistry::get('OrgGroups');
+            if ($this->OrgGroups->checkIfUserBelongsToGroupAdminsGroup($currentUser, $user)) {
+                return true;
             }
         }
-        return true;
+        if (!$currentUser['role']['perm_org_admin']) {
+            return false;
+        } else {
+            if ($currentUser['id'] == $user['id']) {
+                return true;
+            }
+            if ($currentUser['organisation_id'] === $user['organisation_id']) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /*

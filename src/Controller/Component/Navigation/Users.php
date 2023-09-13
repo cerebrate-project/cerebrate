@@ -103,5 +103,23 @@ class UsersNavigation extends BaseNavigation
         $this->bcf->addSelfLink('Users', 'settings', [
             'label' => __('Account settings')
         ]);
+
+        $controller = 'Users';
+        if (empty($this->viewVars['canEdit'])) {
+            $this->bcf->removeLink($controller, 'view', $controller, 'edit');
+            $this->bcf->removeLink($controller, 'edit', $controller, 'edit');
+        }
+    }
+
+    public function addActions()
+    {
+        $controller = 'Users';
+        if (
+            empty($this->viewVars['canEdit']) ||
+            (!empty($this->viewVars['entity']) && $this->viewVars['loggedUser']['id'] == $this->viewVars['entity']['id'])
+        ) {
+            $this->bcf->removeAction($controller, 'view', $controller, 'delete');
+            $this->bcf->removeAction($controller, 'edit', $controller, 'delete');
+        }
     }
 }
