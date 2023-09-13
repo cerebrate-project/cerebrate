@@ -7,6 +7,7 @@ use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\Error\Debugger;
 use App\Model\Entity\User;
+use Cake\Utility\Hash;
 
 class OrgGroupsTable extends AppTable
 {
@@ -54,7 +55,38 @@ class OrgGroupsTable extends AppTable
 
     public function checkIfUserBelongsToGroupAdminsGroup(User $currentUser, User $userToCheck): bool
     {
-        $managedGroups = $this->find('list')->where(['Users.id' => $currentUser['id']])->select(['id', 'uuid'])->disableHydration()->toArray();
-        return isset($managedGroups[$userToCheck['org_id']]);
+        $managedGroups = $this->find('all')
+            ->matching(
+                'Users',
+                function ($q) use ($currentUser) {
+                    return $q->where(
+                        [
+                            'Users.id' => $currentUser['id']
+                        ]
+                    );
+                }
+            )
+            ->contain(['Organisations'])
+            ->toArray();
+        $org_ids = Hash::extract($managedGroups, '{n}.organisations.{n}.id');
+        return in_array($userToCheck['organisation_id'], $org_ids);
+    }
+
+    public function getGroupOrgIdsForUser(User $user): array
+    {
+        $managedGroups = $this->find('all')
+            ->matching(
+                'Users',
+                function ($q) use ($user) {
+                    return $q->where(
+                        [
+                            'Users.id' => $user['id']
+                        ]
+                    );
+                }
+            )
+            ->contain(['Organisations'])
+            ->toArray();
+        return array_unique(Hash::extract($managedGroups, '{n}.organisations.{n}.id'));
     }
 }
