@@ -133,19 +133,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'role_id' => 'role_id'
                         ]
                     ],
-                    'function' => function ($row, $options)  use ($loggedUser, $validRoles) {
-                        if (empty($loggedUser['role']['perm_admin'])) {
-                            if ($row['id'] == $loggedUser['id']) {
-                                return true;
-                            }
-                            if (empty($loggedUser['role']['perm_org_admin'])) {
-                                return false;
-                            }
-                            if (!isset($validRoles[$options['datapath']['role_id']])) {
-                                return false;
-                            }
-                        }
-                        return true;
+                    'function' => function ($row, $options)  use ($loggedUser, $validRoles, $validOrgIDsFOrEdition) {
+                        return $row['_canBeEdited'];
                     }
                 ]
             ],
@@ -159,22 +148,14 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'role_id' => 'role_id'
                         ]
                     ],
-                    'function' => function ($row, $options)  use ($loggedUser, $validRoles) {
+                    'function' => function ($row, $options) use ($loggedUser, $validRoles, $validOrgIDsFOrEdition) {
                         if (empty(Configure::read('user.allow-user-deletion'))) {
                             return false;
                         }
                         if ($row['id'] == $loggedUser['id']) {
                             return false;
                         }
-                        if (empty($loggedUser['role']['perm_admin'])) {
-                            if (empty($loggedUser['role']['perm_org_admin'])) {
-                                return false;
-                            }
-                            if (!isset($validRoles[$options['datapath']['role_id']])) {
-                                return false;
-                            }
-                        }
-                        return true;
+                        return $row['_canBeEdited'];
                     }
                 ]
             ],

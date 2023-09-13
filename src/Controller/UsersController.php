@@ -19,11 +19,13 @@ class UsersController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $conditions = [];
+        $validOrgIDsFOrEdition = [];
         if (empty($currentUser['role']['perm_admin'])) {
             $conditions['organisation_id IN'] = [$currentUser['organisation_id']];
             if (!empty($currentUser['role']['perm_group_admin'])) {
                 $this->loadModel('OrgGroups');
-                $conditions['organisation_id IN'] = array_merge($conditions['organisation_id IN'], $this->OrgGroups->getGroupOrgIdsForUser($currentUser));
+                $validOrgIDsFOrEdition = array_merge($conditions['organisation_id IN'], $this->OrgGroups->getGroupOrgIdsForUser($currentUser));
+                $conditions['organisation_id IN'] = $validOrgIDsFOrEdition;
             }
         }
         $keycloakUsersParsed = null;
@@ -40,7 +42,8 @@ class UsersController extends AppController
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'conditions' => $conditions,
-            'afterFind' => function($data) use ($keycloakUsersParsed) {
+            'afterFind' => function($data) use ($keycloakUsersParsed, $currentUser) {
+                $data->_canBeEdited = $this->ACL->canEditUser($currentUser, $data);
                 // TODO: We might want to uncomment this at some point Still need to evaluate the impact
                 // if (!empty(Configure::read('keycloak.enabled'))) {
                 //     $keycloakUser = $keycloakUsersParsed[$data->username];
@@ -57,7 +60,7 @@ class UsersController extends AppController
             'validRoles',
             $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->toArray()
         );
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $this->set('validOrgIDsFOrEdition', $validOrgIDsFOrEdition);
     }
 
     public function add()
@@ -207,8 +210,9 @@ class UsersController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+        $userToEdit = $this->Users->find()->where(['Users.id' => $id])->contain('Roles')->first();
+        $this->set('canEdit', $this->ACL->canEditUser($this->ACL->getUser(), $userToEdit));
         $this->set('keycloakConfig', Configure::read('keycloak', ['enabled' => false]));
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
     }
 
     public function edit($id = false)
@@ -308,7 +312,8 @@ class UsersController extends AppController
             ])->toArray()
         ];
         $this->set(compact('dropdownData'));
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $userToEdit = $this->Users->find()->where(['Users.id' => $id])->contain('Roles')->first();
+        $this->set('canEdit', $this->ACL->canEditUser($this->ACL->getUser(), $userToEdit));
         $this->render('add');
     }
 
