@@ -20,7 +20,11 @@ class UsersController extends AppController
         $currentUser = $this->ACL->getUser();
         $conditions = [];
         if (empty($currentUser['role']['perm_admin'])) {
-            $conditions['organisation_id'] = $currentUser['organisation_id'];
+            $conditions['organisation_id IN'] = [$currentUser['organisation_id']];
+            if (!empty($currentUser['role']['perm_group_admin'])) {
+                $this->loadModel('OrgGroups');
+                $conditions['organisation_id IN'] = array_merge($conditions['organisation_id IN'], $this->OrgGroups->getGroupOrgIdsForUser($currentUser));
+            }
         }
         $keycloakUsersParsed = null;
         if (!empty(Configure::read('keycloak.enabled'))) {
@@ -184,7 +188,11 @@ class UsersController extends AppController
         $this->CRUD->view($id, [
             'contain' => ['Individuals' => ['Alignments' => 'Organisations'], 'Roles', 'Organisations', 'OrgGroups'],
             'afterFind' => function($data) use ($keycloakUsersParsed, $currentUser) {
-                if (empty($currentUser['role']['perm_admin']) && $currentUser['organisation_id'] != $data['organisation_id']) {
+                if (
+                    empty($currentUser['role']['perm_admin']) && 
+                    ($currentUser['organisation_id'] != $data['organisation_id']) &&
+                    (empty($currentUser['role']['perm_group_admin']) || !$this->ACL->canEditUser($currentUser, $data))
+                ) {
                     throw new NotFoundException(__('Invalid User.'));
                 }
                 $data = $this->fetchTable('PermissionLimitations')->attachLimitations($data);
