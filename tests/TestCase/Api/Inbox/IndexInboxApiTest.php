@@ -30,7 +30,7 @@ class IndexInboxApiTest extends TestCase
         $this->get(self::ENDPOINT);
 
         $this->assertResponseOk();
-        $this->assertResponseContains(sprintf('"id": %d', InboxFixture::INBOX_USER_REGISTRATION_ID));
-        $this->assertResponseContains(sprintf('"id": %d', InboxFixture::INBOX_INCOMING_CONNECTION_REQUEST_ID));
+        $this->assertResponseContains(sprintf('"uuid": "%s"', InboxFixture::INBOX_USER_REGISTRATION_UUID));
+        $this->assertResponseContains(sprintf('"uuid": "%s"', InboxFixture::INBOX_INCOMING_CONNECTION_REQUEST_UUID));
     }
 }
