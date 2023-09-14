@@ -45,7 +45,7 @@ class InboxFixture extends TestFixture
                 'origin' => 'http://127.0.0.1',
                 'comment' => null,
                 'description' => 'Handle Phase I of inter-connection when another cerebrate instance performs the request.',
-                'user_id' => UsersFixture::USER_ORG_ADMIN_ID,
+                'user_id' => UsersFixture::USER_ADMIN_ID,
                 'data' => [
                     'connectorName' => 'MispConnector',
                     'cerebrateURL' => 'http://127.0.0.1',
