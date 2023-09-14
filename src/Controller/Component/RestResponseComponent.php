@@ -390,7 +390,7 @@ class RestResponseComponent extends Component
         return '[]';
     }
 
-    public function saveFailResponse($controller, $action, $id = false, $validationErrors, $format = false)
+    public function saveFailResponse($controller, $action, $id, $validationErrors, $format = false)
     {
         $this->autoRender = false;
         $response = array();

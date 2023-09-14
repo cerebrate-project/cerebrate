@@ -56,7 +56,7 @@ class BroodsFixture extends TestFixture
                 'id' => self::BROOD_WIREMOCK_ID,
                 'uuid' => $faker->uuid(),
                 'name' => 'wiremock',
-                'url' => 'http://localhost:8080',
+                'url' => sprintf('http://%s:%s', $_ENV['WIREMOCK_HOST'] ?? 'localhost', $_ENV['WIREMOCK_PORT'] ?? '8080'),
                 'description' => $faker->text,
                 'organisation_id' => OrganisationsFixture::ORGANISATION_B_ID,
                 'trusted' => true,

@@ -44,6 +44,7 @@ class MetaTemplatesFixture extends TestFixture
         $this->records = [
             [
                 'id' => self::ENABLED_TEST_ORG_META_TEMPLATE_ID,
+                'meta_template_directory_id' => MetaTemplateDirectoryFixture::META_TEMPLATE_DIRECTORY_ID,
                 'scope' => 'organisation',
                 'name' => 'Test Meta Template (enabled)',
                 'namespace' => 'cerebrate',
@@ -58,6 +59,7 @@ class MetaTemplatesFixture extends TestFixture
             ],
             [
                 'id' => self::DISABLED_TEST_ORG_META_TEMPLATE_ID,
+                'meta_template_directory_id' => MetaTemplateDirectoryFixture::META_TEMPLATE_DIRECTORY_ID,
                 'scope' => 'organisation',
                 'name' => 'Test Meta Template (disabled)',
                 'namespace' => 'cerebrate',
