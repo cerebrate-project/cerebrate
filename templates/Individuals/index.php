@@ -78,6 +78,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('ContactDB Individuals Index'),
         'description' => __('A list of individuals known by your Cerebrate instance. This list can get populated either directly, by adding new individuals or by fetching them from trusted remote sources. Additionally, users created for the platform will always have an individual identity.'),
+        'includeAllPagination' => true,
         'actions' => [
             [
                 'url' => '/individuals/view',

@@ -77,6 +77,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('Roles Index'),
         'description' => __('A list of configurable user roles. Create or modify user access roles based on the settings below.'),
+        'includeAllPagination' => true,
         'pull' => 'right',
         'actions' => [
             [
