@@ -20,6 +20,9 @@
         <testsuite name="api">
             <directory>./tests/TestCase/Api</directory>
         </testsuite>
+        <testsuite name="e2e">
+            <directory>./tests/TestCase/Integration</directory>
+        </testsuite>
     </testsuites>
 
     <extensions>

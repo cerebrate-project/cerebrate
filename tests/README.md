@@ -59,6 +59,7 @@ $ vendor/bin/phpunit --testsuite=api --testdox
 Available suites:
 * `app`: runs all test suites
 * `api`: runs only api tests
+* `e2e`: runs only integration tests (requires wiremock running)
 * `controller`: runs only controller tests
 * _to be continued ..._
 

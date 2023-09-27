@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Api\Users;
 
+use Cake\Core\Configure;
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
 use App\Test\Fixture\UsersFixture;
@@ -25,6 +26,7 @@ class DeleteUserApiTest extends TestCase
 
     public function testDeleteUser(): void
     {
+        Configure::write('user.allow-user-deletion', true);
         $this->setAuthToken(AuthKeysFixture::ADMIN_API_KEY);
         $url = sprintf('%s/%d', self::ENDPOINT, UsersFixture::USER_REGULAR_USER_ID);
         $this->delete($url);
