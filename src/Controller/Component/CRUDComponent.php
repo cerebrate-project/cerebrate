@@ -102,7 +102,7 @@ class CRUDComponent extends Component
 
         if (!$this->Controller->ParamHandler->isRest()) {
             $this->setRequestedEntryAmount();
-        } else if (!empty($this->request->getQuery('limit'))) {
+        } else if (empty($this->request->getQuery('limit'))) {
             $this->Controller->paginate['limit'] = PHP_INT_MAX; // Make sure to download the entire filtered table
         }
         $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
