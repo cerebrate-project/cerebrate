@@ -4,6 +4,8 @@ namespace CommonConnectorTools;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\Log\Log;
 use Cake\Log\Engine\FileLog;
+use Cake\Utility\Hash;
+
 
 class CommonConnectorTools
 {
@@ -86,6 +88,74 @@ class CommonConnectorTools
         $organisations = \Cake\ORM\TableRegistry::getTableLocator()->get('Organisations');
         $organisations->captureOrg($input);
         return true;
+    }
+
+    public function getOrganisation(string $uuid): ?array
+    {
+        $organisations = \Cake\ORM\TableRegistry::getTableLocator()->get('Organisations');
+        $org = $organisations->find()->where(['Organisations.uuid' => $uuid])->disableHydration()->first();
+        return $org;
+    }
+
+    public function getOrganisations(): array
+    {
+        $organisations = \Cake\ORM\TableRegistry::getTableLocator()->get('Organisations');
+        $orgs = $organisations->find()->disableHydration()->toArray();
+        return $orgs;
+    }
+
+    public function getFilteredOrganisations($filters, $returnObjects = false): array
+    {
+        $organisations = \Cake\ORM\TableRegistry::getTableLocator()->get('Organisations');
+        $orgs = $organisations->find();
+        $filterFields = ['type', 'nationality', 'sector'];
+        foreach ($filterFields as $fieldField) {
+            if (!empty($filters[$fieldField]) && $filters[$fieldField] !== 'ALL') {
+                $orgs = $orgs->where([$fieldField => $filters[$fieldField]]);
+            }
+        }
+        if (!empty($filters['local']) && $filters['local'] !== '0') {
+            $users = \Cake\ORM\TableRegistry::getTableLocator()->get('users');
+            $org_ids = array_values(array_unique($users->find('list', [
+                'valueField' => 'organisation_id'
+            ])->toArray()));
+            $orgs = $orgs->where(['id IN' => $org_ids]);
+        }
+        if ($returnObjects) {
+            $orgs = $orgs->toArray();
+        } else {
+            $orgs = $orgs->disableHydration()->all();
+        }
+        return $orgs;
+    }
+
+    public function getOrganisationSelectorValues(): array
+    {
+        $results = [];
+        $orgTable = \Cake\ORM\TableRegistry::getTableLocator()->get('Organisations');
+        $fields = [
+            'nationality' => 'nat',
+            'sector' => 'sect',
+            'type' => 'typ'
+        ];
+        foreach ($fields as $field => $temp_field) {
+            $temp = Hash::extract(
+                $orgTable->find()
+                    ->select([$temp_field => 'DISTINCT (' . $field . ')'])
+                    ->order([$temp_field => 'DESC'])
+                    ->disableHydration()->toArray(),
+                '{n}.' . $temp_field
+            );
+            foreach ($temp as $k => $v) {
+                if (empty($v)) {
+                    unset($temp[$k]);
+                }
+            }
+            asort($temp, SORT_FLAG_CASE | SORT_NATURAL);
+            $temp = array_merge(['ALL' => 'ALL'], $temp);
+            $results[$field] = array_combine($temp, $temp);    
+        }
+        return $results;
     }
 
     public function captureSharingGroup($input): bool

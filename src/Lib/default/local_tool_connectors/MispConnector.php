@@ -56,6 +56,30 @@ class MispConnector extends CommonConnectorTools
             ],
             'redirect' => 'organisationsAction'
         ],
+        'fetchSelectedOrganisationsAction' => [
+            'type' => 'formAction',
+            'scope' => 'childAction',
+            'params' => [
+                'uuid'
+            ],
+            'redirect' => 'organisationsAction'
+        ],
+        'pushOrganisationAction' => [
+            'type' => 'formAction',
+            'scope' => 'childAction',
+            'params' => [
+                'uuid'
+            ],
+            'redirect' => 'organisationsAction'
+        ],
+        'pushOrganisationsAction' => [
+            'type' => 'formAction',
+            'scope' => 'childAction',
+            'params' => [
+                'uuid'
+            ],
+            'redirect' => 'organisationsAction'
+        ],
         'fetchSharingGroupAction' => [
             'type' => 'formAction',
             'scope' => 'childAction',
@@ -229,9 +253,6 @@ class MispConnector extends CommonConnectorTools
             $list = explode('.', $params['sort']);
             $params['sort'] = end($list);
         }
-        if (!isset($params['limit'])) {
-            $params['limit'] = 50;
-        }
         $url = $this->urlAppendParams($url, $params);
         $response = $this->HTTPClientGET($url, $params['connection']);
         if ($response->isOk()) {
@@ -261,6 +282,9 @@ class MispConnector extends CommonConnectorTools
         if ($response->isOk()) {
             return $response;
         } else {
+            if (!empty($params['softError'])) {
+                return $response;
+            }
             $errorMsg = __('Could not post to the requested resource for `{0}`. Remote returned:', $url) . PHP_EOL . $response->getStringBody();
             $this->logError($errorMsg);
             throw new NotFoundException($errorMsg);
@@ -563,6 +587,48 @@ class MispConnector extends CommonConnectorTools
         $urlParams = h($params['connection']['id']) . '/organisationsAction';
         $response = $this->getData('/organisations/index', $params);
         $data = $response->getJson();
+        $temp = $this->getOrganisations();
+        $existingOrgs = [];
+        foreach ($temp as $k => $v) {
+            $existingOrgs[$v['uuid']] = $v;
+            unset($temp[$k]);
+        }
+        $statusLevels = [
+            'same' => [
+                'colour' => 'success',
+                'message' => __('Remote organisation is the same as local copy'),
+                'icon' => 'check-circle'
+            ],
+            'different' => [
+                'colour' => 'warning',
+                'message' => __('Local and remote versions of the organisations are different.'),
+                'icon' => 'exclamation-circle'
+            ],
+            'not_found' => [
+                'colour' => 'danger',
+                'message' => __('Local organisation not found'),
+                'icon' => 'exclamation-triangle'
+            ]
+        ];
+        foreach ($data as $k => $v) {
+            $data[$k]['Organisation']['local_copy'] = false;
+            if (!empty($existingOrgs[$v['Organisation']['uuid']])) {
+                $remoteOrg = $existingOrgs[$v['Organisation']['uuid']];
+                $localOrg = $v['Organisation'];
+                $same = true;
+                $fieldsToCheck = [
+                    'nationality', 'sector', 'type', 'name'
+                ];
+                foreach (['nationality', 'sector', 'type', 'name'] as $fieldToCheck) {
+                    if ($remoteOrg[$fieldToCheck] != $localOrg[$fieldToCheck]) {
+                        $same = false;
+                    }
+                }
+                $data[$k]['Organisation']['local_copy'] = $same ? 'same' : 'different';
+            } else {
+                $data[$k]['Organisation']['local_copy'] = 'not_found';
+            }
+        }
         if (!empty($data)) {
             return [
                 'type' => 'index',
@@ -571,6 +637,25 @@ class MispConnector extends CommonConnectorTools
                     'skip_pagination' => 1,
                     'top_bar' => [
                         'children' => [
+                            [
+                                'type' => 'simple',
+                                'children' => [
+                                    [
+                                        'class' => 'hidden mass-select',
+                                        'text' => __('Fetch selected organisations'),
+                                        'html' => '<i class="fas fa-download"></i> ',
+                                        'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction',
+                                        'popover_url' => '/localTools/action/' . h($params['connection']['id']) . '/fetchSelectedOrganisationsAction'
+                                    ],
+                                    [
+                                        'text' => __('Push organisations'),
+                                        'html' => '<i class="fas fa-upload"></i> ',
+                                        'class' => 'btn btn-primary',
+                                        'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction',
+                                        'popover_url' => '/localTools/action/' . h($params['connection']['id']) . '/pushOrganisationsAction'
+                                    ]
+                                ]
+                            ],
                             [
                                 'type' => 'search',
                                 'button' => __('Search'),
@@ -583,9 +668,30 @@ class MispConnector extends CommonConnectorTools
                     ],
                     'fields' => [
                         [
+                            'element' => 'selector',
+                            'class' => 'short',
+                            'data' => [
+                                'id' => [
+                                    'value_path' => 'Organisation.uuid'
+                                ]
+                            ]
+                        ],
+                        [
                             'name' => 'Name',
                             'sort' => 'Organisation.name',
                             'data_path' => 'Organisation.name',
+                        ],
+                        [
+                            'name' => 'Status',
+                            'sort' => 'Organisation.local_copy',
+                            'data_path' => 'Organisation.local_copy',
+                            'element' => 'status',
+                            'status_levels' => $statusLevels
+                        ],
+                        [
+                            'name' => 'uuid',
+                            'sort' => 'Organisation.uuid',
+                            'data_path' => 'Organisation.uuid'
                         ],
                         [
                             'name' => 'uuid',
@@ -598,6 +704,11 @@ class MispConnector extends CommonConnectorTools
                             'data_path' => 'Organisation.nationality'
                         ],
                         [
+                            'name' => 'local',
+                            'sort' => 'Organisation.local',
+                            'data_path' => 'Organisation.local'
+                        ],
+                        [
                             'name' => 'sector',
                             'sort' => 'Organisation.sector',
                             'data_path' => 'Organisation.sector'
@@ -608,10 +719,32 @@ class MispConnector extends CommonConnectorTools
                     'pull' => 'right',
                     'actions' => [
                         [
+                            'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/pushOrganisationAction?uuid={{0}}',
+                            'modal_params_data_path' => ['Organisation.uuid'],
+                            'icon' => 'upload',
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction',
+                            'complex_requirement' => [
+                                'function' => function ($row, $options) {
+                                    if ($row['Organisation']['local_copy'] === 'different') {
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            ]
+                        ],
+                        [
                             'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/fetchOrganisationAction?uuid={{0}}',
                             'modal_params_data_path' => ['Organisation.uuid'],
                             'icon' => 'download',
-                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction'
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction',
+                            'complex_requirement' => [
+                                'function' => function ($row, $options) {
+                                    if ($row['Organisation']['local_copy'] === 'different' || $row['Organisation']['local_copy'] === 'not_found') {
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            ]
                         ]
                     ]
                 ]
@@ -703,7 +836,7 @@ class MispConnector extends CommonConnectorTools
             return [
                 'data' => [
                     'title' => __('Fetch organisation'),
-                    'description' => __('Fetch and create/update organisation ({0}) from MISP.', $params['uuid']),
+                    'description' => __('Fetch and create/update organisation ({0}) from MISP?', $params['uuid']),
                     'submit' => [
                         'action' => $params['request']->getParam('action')
                     ],
@@ -721,6 +854,164 @@ class MispConnector extends CommonConnectorTools
                 }
             } else {
                 return ['success' => 0, 'message' => __('Could not fetch the remote organisation.')];
+            }
+        }
+        throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
+    }
+
+    public function fetchSelectedOrganisationsAction(array $params): array
+    {
+        $ids = $params['request']->getQuery('ids');
+        if ($params['request']->is(['get'])) {
+            return [
+                'data' => [
+                    'title' => __('Fetch organisations'),
+                    'description' => __('Fetch and create/update the selected {0} organisations from MISP?', count($ids)),
+                    'submit' => [
+                        'action' => $params['request']->getParam('action')
+                    ],
+                    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'fetchSelectedOrganisationsAction']
+                ]
+            ];
+        } elseif ($params['request']->is(['post'])) {
+            $successes = 0;
+            $errors = 0;
+            foreach ($ids as $id) {
+                $response = $this->getData('/organisations/view/' . $id, $params);
+                $result = $this->captureOrganisation($response->getJson()['Organisation']);
+                if ($response->getStatusCode() == 200) {
+                    $successes++;
+                } else {
+                    $errors++;
+                }
+            }
+            if ($successes) {
+                return ['success' => 1, 'message' => __('The fetching of organisations has succeeded. {0} organisations created/modified and {1} organisations could not be created/modified.', $successes, $errors)];
+            } else {
+                return ['success' => 0, 'message' => __('The fetching of organisations has failed. {0} organisations could not be created/modified.', $errors)];
+            }
+        }
+        throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
+    }
+
+    public function pushOrganisationAction(array $params): array
+    {
+        if ($params['request']->is(['get'])) {
+            return [
+                'data' => [
+                    'title' => __('Push organisation'),
+                    'description' => __('Push or update organisation ({0}) on MISP.', $params['uuid']),
+                    'submit' => [
+                        'action' => $params['request']->getParam('action')
+                    ],
+                    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'pushOrganisationAction', $params['uuid']]
+                ]
+            ];
+        } elseif ($params['request']->is(['post'])) {
+            $org = $this->getOrganisation($params['uuid']);
+            if (empty($org)) {
+                return ['success' => 0, 'message' => __('Could not find the organisation.')];
+            }
+            $params['body'] = json_encode($org);
+            $response = $this->getData('/organisations/view/' . $params['uuid'], $params);
+            if ($response->getStatusCode() == 200) {
+                $response = $this->postData('/admin/organisations/edit/' . $params['uuid'], $params);
+                $result = $this->captureOrganisation($response->getJson()['Organisation']);
+                if ($response->getStatusCode() == 200 && $result) {
+                    return ['success' => 1, 'message' => __('Organisation modified.')];
+                } else {
+                    return ['success' => 0, 'message' => __('Could not save the changes to the organisation.')];
+                }
+            } else {
+                $response = $this->postData('/admin/organisations/add/', $params);
+                $result = $this->captureOrganisation($response->getJson()['Organisation']);
+                if ($response->getStatusCode() == 200 && $result) {
+                    return ['success' => 1, 'message' => __('Organisation created.')];
+                } else {
+                    return ['success' => 0, 'message' => __('Could not create the organisation.')];
+                }
+            }
+        }
+        throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
+    }
+
+    public function pushOrganisationsAction(array $params): array
+    {
+        $orgSelectorValues = $this->getOrganisationSelectorValues();
+        if ($params['request']->is(['get'])) {
+            return [
+                'data' => [
+                    'title' => __('Push organisation'),
+                    'description' => __('Push or update organisations on MISP.'),
+                    'fields' => [
+                        [
+                            'field' => 'local',
+                            'label' => __('Only organisations with users'),
+                            'type' => 'checkbox'
+                        ],
+                        [
+                            'field' => 'type',
+                            'label' => __('Type'),
+                            'type' => 'select',
+                            'options' => $orgSelectorValues['type']
+
+                        ],
+                        [
+                            'field' => 'sector',
+                            'label' => __('Sector'),
+                            'type' => 'select',
+                            'options' => $orgSelectorValues['sector']
+
+                        ],
+                        [
+                            'field' => 'nationality',
+                            'label' => __('Country'),
+                            'type' => 'select',
+                            'options' => $orgSelectorValues['nationality']
+
+                        ]
+                    ],
+                    'submit' => [
+                        'action' => $params['request']->getParam('action')
+                    ],
+                    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'pushOrganisationAction']
+                ]
+            ];
+        } elseif ($params['request']->is(['post'])) {
+            $filters = $params['request']->getData();
+            $orgs = $this->getFilteredOrganisations($filters, true);
+            $created = 0;
+            $modified = 0;
+            $errors = 0;
+            $params['softError'] = 1;
+            if (empty($orgs)) {
+                return ['success' => 0, 'message' => __('Could not find any organisations matching the criteria.')];
+            }
+            foreach ($orgs as $org) {
+                $params['body'] = null;
+                $response = $this->getData('/organisations/view/' . $org->uuid, $params);
+                if ($response->getStatusCode() == 200) {
+                    $params['body'] = json_encode($org);
+                    $response = $this->postData('/admin/organisations/edit/' . $org->uuid, $params);
+                    if ($response->getStatusCode() == 200) {
+                        $modified++;
+                    } else {
+                        $errors++;
+                    }
+                } else {
+                    $params['body'] = json_encode($org);
+                    $response = $this->postData('/admin/organisations/add', $params);
+                    if ($response->getStatusCode() == 200) {
+                        $created++;
+                    } else {
+                        $errors++;
+                    }
+                }
+            }
+            if ($created || $modified) {
+                return ['success' => 1, 'message' => __('Organisations created: {0}, modified: {1}, errors: {2}', $created, $modified, $errors)];
+            } else {
+                return ['success' => 0, 'message' => __('Organisations could not be pushed. Errors: {0}', $errors)];
             }
         }
         throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));

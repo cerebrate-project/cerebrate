@@ -40,5 +40,4 @@ class AuditLogsController extends AppController
     {
         $this->CRUD->filtering();
     }
-
 }

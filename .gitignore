@@ -6,6 +6,8 @@ tmp
 vendor
 webroot/theme/node_modules
 webroot/scss/*.css
+webroot/js/node_modules/
+!webroot/js/node_modules/mermaid/dist/
 .vscode
 docker/run/
 .phpunit.result.cache

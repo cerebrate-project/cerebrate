@@ -181,4 +181,11 @@ class InstanceController extends AppController
             }
         }
     }
+
+    public function topology()
+    {
+        $this->set('title', __('Topology'));
+        $this->set('description', __('A list of all instances and local tools connected .'));
+        $this->set('data', $this->Instance->getTopology());
+    }
 }

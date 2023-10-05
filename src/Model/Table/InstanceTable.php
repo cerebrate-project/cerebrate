@@ -236,4 +236,128 @@ class InstanceTable extends AppTable
         }
         return $themes;
     }
+
+    public function getTopology($mermaid = true): mixed
+    {
+        $BroodsModel = TableRegistry::getTableLocator()->get('Broods');
+        $LocalToolsModel = TableRegistry::getTableLocator()->get('LocalTools');
+        $connectors = $LocalToolsModel->getConnectors();
+        $connections = $LocalToolsModel->extractMeta($connectors, true);
+        $broods = $BroodsModel->find()->select(['id', 'uuid', 'url', 'name', 'pull'])->disableHydration()->toArray();
+        foreach ($broods as $k => $brood) {
+            $broods[$k]['status'] = $BroodsModel->queryStatus($brood['id']);
+        }
+        $data = [
+            'broods' => $broods,
+            'tools' => $LocalToolsModel->extractMeta($connectors, true)
+        ];
+        if ($mermaid) {
+            return $this->generateTopologyMermaid($data);
+        }
+        return $data;
+    }
+
+    public function generateTopologyMermaid($data)
+    {
+        $version = json_decode(file_get_contents(APP . 'VERSION.json'), true)["version"];
+        $newest = $version;
+        $broods = '';
+        $edges = '';
+        // pre-run the loop to get the latest version
+        foreach ($data['broods'] as $brood) {
+            if ($brood['status']['code'] === 200) {
+                if (version_compare($brood['status']['response']['version'], $newest) > 0) {
+                    $newest = $brood['status']['response']['version'];
+                }
+            }
+        }
+        foreach ($data['broods'] as $brood) {
+            $status = '';
+            if ($brood['status']['code'] === 200) {
+                $status = sprintf(
+                    '<br />Ping: %sms<br />Version: <span class="%s">v%s</span><br />Role: %s<br />',
+                    h($brood['status']['ping']),
+                    $brood['status']['response']['version'] === $newest ? 'text-success' : 'text-danger',
+                    h($brood['status']['response']['version']) . ($brood['status']['response']['version'] !== $newest ? ' - outdated' : ''),
+                    h($brood['status']['response']['role']['name'])
+                );
+            }
+            $broods .= sprintf(
+                "%s%s    end" . PHP_EOL,
+                sprintf(
+                    '    subgraph brood_%s[fas:fa-network-wired Brood #%s]' . PHP_EOL,
+                    h($brood['id']),
+                    h($brood['id'])    
+                ),
+                sprintf(
+                    "        cerebrate_%s[%s<br />%s<a href='/broods/view/%s'>fas:fa-eye</a>]" . PHP_EOL,
+                    h($brood['id']),
+                    '<span class="font-weight-bold">' . h($brood['name']) . '</span>',
+                    sprintf(
+                        "Connected: <span class='%s' title='%s'>%s</span>%s",
+                        $brood['status']['code'] === 200 ? 'text-success' : 'text-danger',
+                        h($brood['status']['code']),
+                        $brood['status']['code'] === 200 ? 'fas:fa-check' : 'fas:fa-times',
+                        $status
+                    ),
+                    h($brood['id']),
+                )
+                
+            );
+            $edges .= sprintf(
+                '    C1%s---cerebrate_%s' . PHP_EOL,
+                $brood['pull'] ? '<' : '',
+                h($brood['id'])
+            );
+        }
+        $tools = '';
+        foreach ($data['tools'] as $tool) {
+            $tools .= sprintf(
+                '            subgraph instance_local_tools_%s[%s %s connector]' . PHP_EOL . '                direction TB' . PHP_EOL,
+                h($tool['name']),
+                isset($tool['logo']) ? '<img src="/img/local_tools/' . h($tool['logo']) . '" style="width: 50px; height:50px;" />' : 'fas:fa-wrench',
+                h($tool['name'])
+            );
+            foreach ($tool['connections'] as $connection) {
+                $tools .= sprintf(
+                    "                %s[%s<br />%s<br />%s]" . PHP_EOL,
+                    h($connection['name']),
+                    h($connection['name']),
+                    sprintf(
+                        __('Health') . ': <span title="%s" class="%s">%s</span>',
+                        h($connection['message']),
+                        $connection['health'] === 1 ? 'text-success' : 'text-danger',
+                        $connection['health'] === 1 ? 'fas:fa-check' : 'fas:fa-times'
+                    ),
+                    sprintf(
+                        "<a href='%s'>fas:fa-eye</a>",
+                        h($connection['url'])
+                    )
+                );
+            }
+            $tools .= '            end' . PHP_EOL;
+        }
+        $this_cerebrate = sprintf(
+            'C1[My Cerebrate<br />Version: <span class="%s">v%s</span>]',
+            $version === $newest ? 'text-success' : 'text-danger',
+            $version
+        );
+        $md = sprintf(
+'flowchart TB
+    subgraph instance[fas:fa-network-wired My Brood]
+        direction TB
+        %s
+        subgraph instance_local_tools[fa:fa-tools Local Tools]
+            direction LR
+%s
+        end
+    end
+%s%s',    
+            $this_cerebrate,
+            $tools,
+            $broods,
+            $edges
+        );
+        return $md;
+    }
 }

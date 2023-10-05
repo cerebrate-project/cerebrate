@@ -73,6 +73,25 @@
 
 <script>
     function openModalForButton<?= $seed ?>(clicked, url, reloadUrl='') {
+        var selected_ids = [];
+        $('.selectable_row:checkbox:checked').each(function () {
+            selected_ids.push($(this).data('id'));
+        });
+        if (selected_ids.length > 0) {
+            if (url.includes('?')) {
+                url += '&';
+            } else {
+                url += '?';
+            }
+            var first = true;
+            selected_ids.forEach(function (id) {
+                if (!first) {
+                    url += '&';
+                }
+                url += 'ids[]=' + id;
+                first = false;
+            });
+        }
         const fallbackReloadUrl = '<?= $this->Url->build(['action' => 'index']); ?>'
         reloadUrl = reloadUrl != '' ? reloadUrl : fallbackReloadUrl
         UI.overlayUntilResolve(clicked, UI.submissionModalForIndex(url, reloadUrl, '<?= $tableRandomValue ?>'))
