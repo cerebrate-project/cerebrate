@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Test\TestCase\Api\LocalTools;
+namespace App\Test\TestCase\Integration\LocalTools;
 
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\OrganisationsFixture;

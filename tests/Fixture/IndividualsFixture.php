@@ -15,6 +15,7 @@ class IndividualsFixture extends TestFixture
     public const INDIVIDUAL_ORG_ADMIN_ID = 3;
     public const INDIVIDUAL_REGULAR_USER_ID = 4;
     public const INDIVIDUAL_A_ID = 5;
+    public const INDIVIDUAL_B_ID = 6;
 
     public function init(): void
     {
@@ -63,6 +64,16 @@ class IndividualsFixture extends TestFixture
             ],
             [
                 'id' => self::INDIVIDUAL_A_ID,
+                'uuid' => $faker->uuid(),
+                'email' => $faker->email(),
+                'first_name' => $faker->firstName,
+                'last_name' => $faker->lastName,
+                'position' => 'user',
+                'created' => $faker->dateTime()->getTimestamp(),
+                'modified' => $faker->dateTime()->getTimestamp()
+            ],
+            [
+                'id' => self::INDIVIDUAL_B_ID,
                 'uuid' => $faker->uuid(),
                 'email' => $faker->email(),
                 'first_name' => $faker->firstName,

@@ -57,6 +57,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('Sharing Groups Index'),
         'description' => __('Sharing groups are distribution lists usable by tools that can exchange information with a list of trusted partners. Create recurring or ad hoc sharing groups and share them with the members of the sharing group.'),
+        'includeAllPagination' => true,
         'pull' => 'right',
         'actions' => [
             [

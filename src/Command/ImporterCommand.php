@@ -136,7 +136,7 @@ class ImporterCommand extends Command
                 $entity = null;
                 if (isset($item[$primary_key])) {
                     $query = $table->find('all')
-                        ->where(["${primary_key}" => $item[$primary_key]]);
+                        ->where(["$primary_key" => $item[$primary_key]]);
                     $entity = $query->first();
                 }
                 if (is_null($entity)) {

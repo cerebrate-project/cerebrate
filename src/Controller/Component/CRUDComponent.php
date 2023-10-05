@@ -102,7 +102,7 @@ class CRUDComponent extends Component
 
         if (!$this->Controller->ParamHandler->isRest()) {
             $this->setRequestedEntryAmount();
-        } else if (!empty($this->request->getQuery('limit'))) {
+        } else if (empty($this->request->getQuery('limit'))) {
             $this->Controller->paginate['limit'] = PHP_INT_MAX; // Make sure to download the entire filtered table
         }
         $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
@@ -1489,7 +1489,7 @@ class CRUDComponent extends Component
     {
         $prefixedConditions = [];
         foreach ($conditions as $condField => $condValue) {
-            $prefixedConditions["${prefix}.${condField}"] = $condValue;
+            $prefixedConditions["$prefix.$condField"] = $condValue;
         }
         return $prefixedConditions;
     }
@@ -1613,13 +1613,13 @@ class CRUDComponent extends Component
                     [sprintf('%s.id = %s.%s', $this->Table->getAlias(), $associatedTable->getAlias(), $association->getForeignKey())]
                 )
                     ->where([
-                        ["${field} IS NOT" => NULL]
+                        ["$field IS NOT" => NULL]
                     ]);
             } else if ($associationType == 'manyToOne') {
                 $fieldToExtract = sprintf('%s.%s', Inflector::singularize(strtolower($model)), $subField);
                 $query = $this->Table->find()->contain($model);
             } else {
-                throw new Exception("Association ${associationType} not supported in CRUD Component");
+                throw new Exception("Association $associationType not supported in CRUD Component");
             }
         } else {
             $fieldToExtract = $field;

@@ -17,6 +17,7 @@ class MetaTemplateFieldsFixture extends TestFixture
                 'field' => 'test_field_1',
                 'type' => 'text',
                 'meta_template_id' => MetaTemplatesFixture::ENABLED_TEST_ORG_META_TEMPLATE_ID,
+                'meta_template_directory_id' => MetaTemplateDirectoryFixture::META_TEMPLATE_DIRECTORY_ID,
                 'regex' => null,
                 'multiple' => 1,
                 'enabled' => 1,

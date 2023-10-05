@@ -169,6 +169,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('Meta Field Templates'),
         'description' => __('The various templates used to enrich certain objects by a set of standardised fields.'),
+        'includeAllPagination' => true,
         'actions' => [
             [
                 'url' => '/metaTemplates/view',

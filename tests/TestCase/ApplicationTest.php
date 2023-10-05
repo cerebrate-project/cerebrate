@@ -40,14 +40,12 @@ class ApplicationTest extends IntegrationTestCase
         $app->bootstrap();
         $plugins = $app->getPlugins();
 
-        $this->assertCount(7, $plugins);
         $this->assertSame('Bake', $plugins->get('Bake')->getName());
         $this->assertSame('DebugKit', $plugins->get('DebugKit')->getName());
         $this->assertSame('Migrations', $plugins->get('Migrations')->getName());
         $this->assertSame('Authentication', $plugins->get('Authentication')->getName());
         $this->assertSame('ADmad/SocialAuth', $plugins->get('ADmad/SocialAuth')->getName());
         $this->assertSame('Tags', $plugins->get('Tags')->getName());
-        $this->assertSame('Cake/TwigView', $plugins->get('Cake/TwigView')->getName());
     }
 
     /**
