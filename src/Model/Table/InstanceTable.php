@@ -275,7 +275,7 @@ class InstanceTable extends AppTable
             $status = '';
             if ($brood['status']['code'] === 200) {
                 $status = sprintf(
-                    '<br />Ping: %sms<br />Version: <span class="%s">v%s</span><br />Role: %s<br />',
+                    "<br />Ping: %sms<br />Version: <span class='%s'>v%s</span><br />Role: %s<br />",
                     h($brood['status']['ping']),
                     $brood['status']['response']['version'] === $newest ? 'text-success' : 'text-danger',
                     h($brood['status']['response']['version']) . ($brood['status']['response']['version'] !== $newest ? ' - outdated' : ''),
@@ -292,7 +292,7 @@ class InstanceTable extends AppTable
                 sprintf(
                     "        cerebrate_%s[%s<br />%s<a href='/broods/view/%s'>fas:fa-eye</a>]" . PHP_EOL,
                     h($brood['id']),
-                    '<span class="font-weight-bold">' . h($brood['name']) . '</span>',
+                    "<span class='font-weight-bold'>" . h($brood['name']) . '</span>',
                     sprintf(
                         "Connected: <span class='%s' title='%s'>%s</span>%s",
                         $brood['status']['code'] === 200 ? 'text-success' : 'text-danger',
@@ -311,20 +311,20 @@ class InstanceTable extends AppTable
             );
         }
         $tools = '';
-        foreach ($data['tools'] as $tool) {
+        foreach ($data['tools'] as $k => $tool) {
             $tools .= sprintf(
                 '            subgraph instance_local_tools_%s[%s %s connector]' . PHP_EOL . '                direction TB' . PHP_EOL,
-                h($tool['name']),
-                isset($tool['logo']) ? '<img src="/img/local_tools/' . h($tool['logo']) . '" style="width: 50px; height:50px;" />' : 'fas:fa-wrench',
+                h($k),
+                isset($tool['logo']) ? "<img src='/img/local_tools/" . h($tool['logo']) . "' style='width: 50px; height:50px;' />" : 'fas:fa-wrench',
                 h($tool['name'])
             );
-            foreach ($tool['connections'] as $connection) {
+            foreach ($tool['connections'] as $k2 => $connection) {
                 $tools .= sprintf(
-                    "                %s[%s<br />%s<br />%s]" . PHP_EOL,
-                    h($connection['name']),
+                    "                connection%s[%s<br />%s<br />%s]" . PHP_EOL,
+                    h($k2),
                     h($connection['name']),
                     sprintf(
-                        __('Health') . ': <span title="%s" class="%s">%s</span>',
+                        __('Health') . ": <span title='%s' class='%s'>%s</span>",
                         h($connection['message']),
                         $connection['health'] === 1 ? 'text-success' : 'text-danger',
                         $connection['health'] === 1 ? 'fas:fa-check' : 'fas:fa-times'
@@ -338,7 +338,7 @@ class InstanceTable extends AppTable
             $tools .= '            end' . PHP_EOL;
         }
         $this_cerebrate = sprintf(
-            'C1[My Cerebrate<br />Version: <span class="%s">v%s</span>]',
+            "C1[My Cerebrate<br />Version: <span class='%s'>v%s</span>]",
             $version === $newest ? 'text-success' : 'text-danger',
             $version
         );
