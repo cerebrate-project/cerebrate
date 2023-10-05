@@ -107,6 +107,7 @@ class ACLComponent extends Component
             'viewTags' => ['*']
         ],
         'Instance' => [
+            'downloadTopology' => ['perm_admin'],
             'home' => ['*'],
             'migrate' => ['perm_admin'],
             'migrationIndex' => ['perm_admin'],
@@ -114,7 +115,8 @@ class ACLComponent extends Component
             'saveSetting' => ['perm_admin'],
             'searchAll' => ['*'],
             'settings' => ['perm_admin'],
-            'status' => ['*']
+            'status' => ['*'],
+            'topology' => ['perm_admin'],
         ],
         'LocalTools' => [
             'action' => ['perm_admin'],
