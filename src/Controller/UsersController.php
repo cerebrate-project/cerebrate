@@ -448,13 +448,17 @@ class UsersController extends AppController
     {
         $editingAnotherUser = false;
         $currentUser = $this->ACL->getUser();
-        if (empty($currentUser['role']['perm_admin']) || $user_id == $currentUser->id) {
+        if ((empty($currentUser['role']['perm_admin']) && empty($currentUser['role']['perm_group_admin'])) || $user_id == $currentUser->id) {
             $user = $currentUser;
         } else {
             $user = $this->Users->get($user_id, [
                 'contain' => ['Roles', 'Individuals' => 'Organisations', 'Organisations', 'UserSettings']
             ]);
             $editingAnotherUser = true;
+            if (!empty($currentUser['role']['perm_group_admin']) && !$this->ACL->canEditUser($currentUser, $user)) {
+                $user = $currentUser;
+                $editingAnotherUser = false;
+            }
         }
         $this->set('editingAnotherUser', $editingAnotherUser);
         $this->set('user', $user);
