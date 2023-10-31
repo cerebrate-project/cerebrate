@@ -58,6 +58,7 @@ class OrgGroupsController extends AppController
             return $responsePayload;
         }
         $this->set('canEdit', $this->canEdit($id));
+        $this->set('canEditDefinition', $this->canEditDefinition($id));
     }
 
     public function edit($id)
@@ -132,6 +133,15 @@ class OrgGroupsController extends AppController
                 }
             }
             return $found;
+        }
+        return false;
+    }
+
+    private function canEditDefinition($groupId): bool
+    {
+        $currentUser = $this->ACL->getUser();
+        if ($currentUser['role']['perm_admin']) {
+            return true;
         }
         return false;
     }

@@ -37,7 +37,7 @@ if ($field['scope'] === 'individuals') {
     foreach ($extracted['alignments'] as $alignment) {
         $alignmentEntryHtml = '[' .  $this->Bootstrap->node('span', ['class' => ['fw-bold']], h($alignment['type'])) . ']';
         $alignmentEntryHtml .= $this->Bootstrap->node('span', ['class' => ['ms-1']], sprintf(
-            '<a href="%s/organisations/view/%s">%s</a>',
+            '<a href="%s/individuals/view/%s">%s</a>',
             $baseurl,
             h($alignment['individual']['id']),
             h($alignment['individual']['email'])
