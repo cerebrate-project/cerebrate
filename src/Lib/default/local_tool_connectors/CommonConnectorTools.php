@@ -104,6 +104,16 @@ class CommonConnectorTools
         return $orgs;
     }
 
+    public function getSharingGroups(): array
+    {
+        $sgs = \Cake\ORM\TableRegistry::getTableLocator()->get('SharingGroups');
+        $sgs = $sgs->find()
+            ->contain(['Organisations' => ['fields' => ['uuid']], 'SharingGroupOrgs' => ['fields' => ['uuid']]])
+            ->disableHydration()
+            ->toArray();
+        return $sgs;
+    }
+
     public function getFilteredOrganisations($filters, $returnObjects = false): array
     {
         $organisations = \Cake\ORM\TableRegistry::getTableLocator()->get('Organisations');
@@ -218,6 +228,11 @@ class CommonConnectorTools
         $result = $this->finaliseConnection($params);
         $this->remoteToolConnectionStatus($params, self::STATE_CONNECTED);
         return false;
+    }
+
+    public function diagnostics(array $params): array
+    {
+        return [];
     }
 }
 

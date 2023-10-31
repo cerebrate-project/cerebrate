@@ -25,11 +25,11 @@ class SharingGroupsTable extends AppTable
         $this->belongsToMany(
             'SharingGroupOrgs',
             [
+                'through' => 'SGOs',
                 'className' => 'Organisations',
                 'foreignKey' => 'sharing_group_id',
-                'joinTable' => 'sgo',
                 'targetForeignKey' => 'organisation_id'
-            ]
+            ],
         );
         $this->setDisplayField('name');
     }
@@ -77,11 +77,14 @@ class SharingGroupsTable extends AppTable
 
     public function postCaptureActions($savedEntity, $input): void
     {
-        $orgs = [];
+        $additional_data = [];
+        if (!empty($input['extend'])) {
+            $additional_data['extend'] = $input['extend'];
+        }
+        $this->SGO = TableRegistry::getTableLocator()->get('SGOs');
         foreach ($input['sharing_group_orgs'] as $sgo) {
             $organisation_id = $this->Organisations->captureOrg($sgo);
-            $orgs[] = $this->SharingGroupOrgs->get($organisation_id);
+            $this->SGO->attach($savedEntity->id, $organisation_id, $additional_data);
         }
-        $this->SharingGroupOrgs->link($savedEntity, $orgs);
     }
 }
