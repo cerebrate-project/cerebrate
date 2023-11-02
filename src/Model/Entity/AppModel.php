@@ -78,6 +78,15 @@ class AppModel extends Entity
                 $this->meta_fields[$i]['template_namespace'] = $templates[$templateDirectoryId]['namespace'];
             }
         }
+        if (!empty($options['smartFlattenMetafields'])) {
+            $smartFlatten = [];
+            foreach ($this->meta_fields as $metafield) {
+                $key = "{$metafield['template_name']}_v{$metafield['template_version']}:{$metafield['field']}";
+                $value = $metafield['value'];
+                $smartFlatten[$key] = $value;
+            }
+            $this->meta_fields = $smartFlatten;
+        }
         // if ((!isset($options['includeMetatemplate']) || empty($options['includeMetatemplate'])) && !empty($this->MetaTemplates)) {
         if ((!isset($options['includeMetatemplate']) || empty($options['includeMetatemplate']))) {
             unset($this->MetaTemplates);

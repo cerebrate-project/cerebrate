@@ -206,21 +206,34 @@ function deleteBookmark(bookmark, forSidebar=false) {
     }).catch((e) => { })
 }
 
-function downloadIndexTable(downloadButton, filename) {
+function downloadIndexTable(downloadButton, filename, filtered) {
     const $dropdownMenu = $(downloadButton).closest('.dropdown')
     const tableRandomValue = $dropdownMenu.attr('data-table-random-value')
     const $container = $dropdownMenu.closest('div[id^="table-container-"]')
     const $table = $container.find(`table[data-table-random-value="${tableRandomValue}"]`)
     const $filterButton = $(`#toggleFilterButton-${tableRandomValue}`)
     const activeFilters = $filterButton.data('activeFilters')
-    const additionalUrlParams = $filterButton.data('additionalUrlParams') ? $filterButton.data('additionalUrlParams') : ''
-    const searchParam = jQuery.param(activeFilters);
-    const url = $table.data('reload-url') + additionalUrlParams + '?' + searchParam
+    // const additionalUrlParams = $filterButton.data('additionalUrlParams') ? $filterButton.data('additionalUrlParams') : ''
+    // const searchParam = jQuery.param(activeFilters);
+    // const url = $table.data('reload-url') + additionalUrlParams + '?' + searchParam
+    let url = $table.data('reload-url')
+    if (filtered) {
+        url = activeFilters._here
+    }
     let options = {}
-    const downloadPromise = AJAXApi.quickFetchJSON(url, options)
+    let downloadPromise;
+    if (filename.endsWith('.csv')) {
+        downloadPromise = AJAXApi.quickFetchCSV(url, options)
+    } else {
+        downloadPromise = AJAXApi.quickFetchJSON(url, options)
+    }
     UI.overlayUntilResolve($dropdownMenu, downloadPromise)
     downloadPromise.then((data) => {
-        download(filename, JSON.stringify(data, undefined, 4))
+        if (filename.endsWith('.csv')) {
+            download(filename, data)
+        } else {
+            download(filename, JSON.stringify(data, undefined, 4))
+        }
     })
 }
 

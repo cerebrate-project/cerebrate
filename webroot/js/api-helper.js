@@ -14,6 +14,9 @@ class AJAXApi {
     static genericRequestConfigGETJSON = {
         headers: new Headers(Object.assign({}, AJAXApi.genericRequestHeaders, {Accept: 'application/json'}))
     }
+    static genericRequestConfigGETCSV = {
+        headers: new Headers(Object.assign({}, AJAXApi.genericRequestHeaders, {Accept: 'text/csv'}))
+    }
 
     /**
      * @namespace
@@ -32,6 +35,7 @@ class AJAXApi {
         },
         successToastOptions: {
         },
+        fetchOptions: {},
     }
     options = {}
     loadingOverlay = false
@@ -43,6 +47,13 @@ class AJAXApi {
     constructor(options) {
         this.mergeOptions(AJAXApi.defaultOptions)
         this.mergeOptions(options)
+    }
+
+    /**
+     * Merge the configuration object to be used by fetch based on the options passed in the constructor
+     */
+    mergeFetchConfig(base) {
+        return Object.assign({}, base, this.options.fetchOptions)
     }
 
     /**
@@ -149,9 +160,23 @@ class AJAXApi {
      * @return {Promise<Object>} Promise object resolving to the fetched HTML
      */
     static async quickFetchJSON(url, options={}) {
-        const constAlteredOptions = Object.assign({}, {provideFeedback: false}, options)
+        const constAlteredOptions = Object.assign({}, { provideFeedback: false, }, options)
         const tmpApi = new AJAXApi(constAlteredOptions)
         return tmpApi.fetchJSON(url, constAlteredOptions.skipRequestHooks)
+    }
+
+    /**
+     * @param {string} url           - The URL to fetch
+     * @param {Object} [options={}]  - The options supported by AJAXApi#defaultOptions
+     * @return {Promise<Object>} Promise object resolving to the fetched CSV
+     */
+    static async quickFetchCSV(url, options={}) {
+        const constAlteredOptions = Object.assign({}, {
+            provideFeedback: false,
+            fetchOptions: AJAXApi.genericRequestConfigGETCSV
+        }, options)
+        const tmpApi = new AJAXApi(constAlteredOptions)
+        return tmpApi.fetchURL(url, constAlteredOptions.skipRequestHooks)
     }
 
     /**
@@ -213,7 +238,7 @@ class AJAXApi {
         }
         let toReturn
         try {
-            const response = await fetch(url, AJAXApi.genericRequestConfigGET);
+            const response = await fetch(url, this.mergeFetchConfig(AJAXApi.genericRequestConfigGET));
             if (!response.ok) {
                 throw new Error(`Network response was not ok. \`${response.statusText}\``)
             }

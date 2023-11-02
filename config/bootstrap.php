@@ -194,6 +194,11 @@ ServerRequest::addDetector('tablet', function ($request) {
 
     return $detector->isTablet();
 });
+ServerRequest::addDetector('csv', [
+    'accept' => ['text/csv',],
+    'param' => '_ext',
+    'value' => 'csv',
+]);
 
 /*
  * You can set whether the ORM uses immutable or mutable Time types.
