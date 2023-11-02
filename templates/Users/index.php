@@ -18,14 +18,20 @@ echo $this->element('genericElements/IndexTable/index_table', [
                     ]
                 ],
                 [
+                    'type' => 'context_filters',
+                    'context_filters' => $filteringContexts
+                ],
+                [
                     'type' => 'search',
                     'button' => __('Search'),
                     'placeholder' => __('Enter value to search'),
                     'data' => '',
-                    'searchKey' => 'value'
+                    'searchKey' => 'value',
+                    'allowFilering' => true
                 ],
                 [
                     'type' => 'table_action',
+                    'table_setting_id' => 'user_index',
                 ]
             ]
         ],
