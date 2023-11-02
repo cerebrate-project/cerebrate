@@ -147,14 +147,14 @@ class LocalToolsTable extends AppTable
                 'connector_settings_placeholder' => $connector_class->settingsPlaceholder ?? [],
             ];
             if ($includeConnections) {
-                $connector['connections'] = $this->healthCheck($connector_type, $connector_class);
+                $connector['connections'] = $this->healthCheck($connector_type, $connector_class, true);
             }
             $connectors[] = $connector;
         }
         return $connectors;
     }
 
-    public function healthCheck(string $connector_type, Object $connector_class): array
+    public function healthCheck(string $connector_type, Object $connector_class, bool $includeDiagnostics = false): array
     {
         $query = $this->find();
         $query->where([
@@ -162,9 +162,26 @@ class LocalToolsTable extends AppTable
         ]);
         $connections = $query->all()->toList();
         foreach ($connections as &$connection) {
-            $connection = $this->healthCheckIndividual($connection);
+            $temp = $this->healthCheckIndividual($connection);
+            if ($includeDiagnostics && !empty($temp['health']) && $temp['health'] === 1) {
+                $temp['diagnostics'] = $this->diagnosticCheckIndividual($connection);
+            }
+            $connection = $temp;
         }
         return $connections;
+    }
+
+    public function diagnosticCheckIndividual(Object $connection): array
+    {
+        $connector_class = $this->getConnectors($connection->connector);
+        if (empty($connector_class[$connection->connector])) {
+            return [];
+        }
+        $connector_class = $connector_class[$connection->connector];
+        return $connector_class->diagnostics([
+            'connection' => $connection,
+            'softError' => 1
+        ]);
     }
 
     public function healthCheckIndividual(Object $connection): array

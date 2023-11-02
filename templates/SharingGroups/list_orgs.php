@@ -42,6 +42,13 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'sort' => 'uuid',
                 'class' => 'short',
                 'data_path' => 'uuid',
+            ],
+            [
+                'name' => __('Can extend/administer'),
+                'sort' => 'extend',
+                'element' => 'boolean',
+                'class' => 'short',
+                'data_path' => 'extend',
             ]
         ],
         'pull' => 'right',

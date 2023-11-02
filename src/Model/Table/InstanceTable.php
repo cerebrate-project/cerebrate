@@ -249,7 +249,7 @@ class InstanceTable extends AppTable
         }
         $data = [
             'broods' => $broods,
-            'tools' => $LocalToolsModel->extractMeta($connectors, true)
+            'tools' => $connections
         ];
         if ($mermaid) {
             return $this->generateTopologyMermaid($data);
@@ -319,8 +319,19 @@ class InstanceTable extends AppTable
                 h($tool['name'])
             );
             foreach ($tool['connections'] as $k2 => $connection) {
+                $diagnostic_output = '';
+                if (!empty($connection['diagnostics'])) {
+                    foreach ($connection['diagnostics'] as $diagnostic => $diagnostic_data) {
+                        $diagnostic_output .= sprintf(
+                            "%s: <span class='text-%s'>%s</span><br />",
+                            h($diagnostic),
+                            h($diagnostic_data['type']),
+                            h($diagnostic_data['message'])
+                        );
+                    }
+                }
                 $tools .= sprintf(
-                    "                connection%s[%s<br />%s<br />%s]" . PHP_EOL,
+                    "                connection%s[\"%s<br />%s<br />%s%s\"]" . PHP_EOL,
                     h($k2),
                     h($connection['name']),
                     sprintf(
@@ -329,6 +340,7 @@ class InstanceTable extends AppTable
                         $connection['health'] === 1 ? 'text-success' : 'text-danger',
                         $connection['health'] === 1 ? 'fas:fa-check' : 'fas:fa-times'
                     ),
+                    empty($diagnostic_data) ? '' : 'Diagnostics:<br />' . $diagnostic_output,
                     sprintf(
                         "<a href='%s'>fas:fa-eye</a>",
                         h($connection['url'])
