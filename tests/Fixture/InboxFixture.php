@@ -11,8 +11,8 @@ class InboxFixture extends TestFixture
     public $connection = 'test';
     public $table = 'inbox';
 
-    public const INBOX_USER_REGISTRATION_ID = 1;
-    public const INBOX_INCOMING_CONNECTION_REQUEST_ID = 2;
+    public const INBOX_USER_REGISTRATION_UUID = 'e783b13a-7019-48f5-848e-582bb930a833';
+    public const INBOX_INCOMING_CONNECTION_REQUEST_UUID = '9810bd94-16f9-42e0-b364-af59dba50a34';
 
     public function init(): void
     {
@@ -20,8 +20,7 @@ class InboxFixture extends TestFixture
 
         $this->records = [
             [
-                'id' => self::INBOX_USER_REGISTRATION_ID,
-                'uuid' => $faker->uuid(),
+                'uuid' => self::INBOX_USER_REGISTRATION_UUID,
                 'scope' => 'User',
                 'action' => 'Registration',
                 'title' => 'User account creation requested for foo@bar.com',
@@ -37,15 +36,14 @@ class InboxFixture extends TestFixture
                 'modified' => $faker->dateTime()->getTimestamp()
             ],
             [
-                'id' => self::INBOX_INCOMING_CONNECTION_REQUEST_ID,
-                'uuid' => $faker->uuid(),
+                'uuid' => self::INBOX_INCOMING_CONNECTION_REQUEST_UUID,
                 'scope' => 'LocalTool',
                 'action' => 'IncomingConnectionRequest',
                 'title' => 'Request for MISP Inter-connection',
                 'origin' => 'http://127.0.0.1',
                 'comment' => null,
                 'description' => 'Handle Phase I of inter-connection when another cerebrate instance performs the request.',
-                'user_id' => UsersFixture::USER_ORG_ADMIN_ID,
+                'user_id' => UsersFixture::USER_ADMIN_ID,
                 'data' => [
                     'connectorName' => 'MispConnector',
                     'cerebrateURL' => 'http://127.0.0.1',

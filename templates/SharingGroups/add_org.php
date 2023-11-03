@@ -9,6 +9,11 @@
                     'label' => __('Owner organisation'),
                     'options' => $dropdownData['organisation']
                 ],
+                [
+                    'field' => 'extend',
+                    'type' => 'checkbox',
+                    'label' => __('Can extend/administer')
+                ],
             ],
             'submit' => [
                 'action' => $this->request->getParam('action')

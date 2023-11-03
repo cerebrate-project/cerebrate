@@ -61,6 +61,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('Broods Index'),
         'description' => __('Cerebrate can connect to other Cerebrate instances to exchange trust information and to instrument interconnectivity between connected local tools. Each such Cerebrate instance with its connected tools is considered to be a brood.'),
+        'includeAllPagination' => true,
         'pull' => 'right',
         'actions' => [
             [

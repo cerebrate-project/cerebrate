@@ -62,6 +62,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ],
         'title' => __('Organisation Groups Index'),
         'description' => __('OrgGroups are an administrative concept, multiple organisations can belong to a grouping that allows common management by so called "GroupAdmins". This helps grouping organisations by sector, country or other commonalities into co-managed sub-communities.'),
+        'includeAllPagination' => true,
         'actions' => [
             [
                 'url' => '/orgGroups/view',

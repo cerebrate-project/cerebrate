@@ -113,6 +113,11 @@ class Sidemenu {
                     'label' => __('Instance'),
                     'icon' => $this->iconTable['Instance'],
                     'children' => [
+                        'Topology' => [
+                            'label' => __('Topology'),
+                            'url' => '/instance/topology',
+                            'icon' => 'project-diagram',
+                        ],
                         'Settings' => [
                             'label' => __('Settings'),
                             'url' => '/instance/settings',

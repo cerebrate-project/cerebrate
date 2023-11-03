@@ -6,7 +6,7 @@ namespace App\Test\TestCase\Api\Users;
 
 use Cake\TestSuite\TestCase;
 use App\Test\Fixture\AuthKeysFixture;
-use App\Test\Fixture\UsersFixture;
+use App\Test\Fixture\IndividualsFixture;
 use App\Test\Fixture\OrganisationsFixture;
 use App\Test\Fixture\RolesFixture;
 use App\Test\Helper\ApiTestTrait;
@@ -31,18 +31,20 @@ class AddUserApiTest extends TestCase
         $this->post(
             self::ENDPOINT,
             [
-                'individual_id' => UsersFixture::USER_REGULAR_USER_ID,
+                'individual_id' => IndividualsFixture::INDIVIDUAL_B_ID,
                 'organisation_id' => OrganisationsFixture::ORGANISATION_A_ID,
                 'role_id' => RolesFixture::ROLE_REGULAR_USER_ID,
                 'disabled' => false,
-                'username' => 'test',
+                'username' => 'test123',
                 'password' => 'Password123456!',
             ]
         );
 
+        print_r($this->getJsonResponseAsArray());
+
         $this->assertResponseOk();
-        $this->assertResponseContains('"username": "test"');
-        $this->assertDbRecordExists('Users', ['username' => 'test']);
+        $this->assertResponseContains('"username": "test123"');
+        $this->assertDbRecordExists('Users', ['username' => 'test123']);
     }
 
     public function testAddUserNotAllowedAsRegularUser(): void
@@ -51,7 +53,7 @@ class AddUserApiTest extends TestCase
         $this->post(
             self::ENDPOINT,
             [
-                'individual_id' => UsersFixture::USER_REGULAR_USER_ID,
+                'individual_id' => IndividualsFixture::INDIVIDUAL_B_ID,
                 'organisation_id' => OrganisationsFixture::ORGANISATION_A_ID,
                 'role_id' => RolesFixture::ROLE_REGULAR_USER_ID,
                 'disabled' => false,
@@ -61,6 +63,6 @@ class AddUserApiTest extends TestCase
         );
 
         $this->assertResponseCode(405);
-        $this->assertDbRecordNotExists('Users', ['username' => 'test']);
+        $this->assertDbRecordNotExists('Users', ['username' => 'test123']);
     }
 }

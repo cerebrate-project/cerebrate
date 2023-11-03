@@ -15,16 +15,18 @@ trait WireMockTestTrait
     private $wiremock;
 
     /** @var array<mixed> */
-    private $config = [
-        'hostname' => 'localhost',
-        'port' => 8080
-    ];
+    private $config;
 
     public function initializeWireMock(): void
     {
+        $this->config = [
+            'hostname' => $_ENV['WIREMOCK_HOST'] ?? 'localhost',
+            'port' => $_ENV['WIREMOCK_PORT'] ?? 8080
+        ];
+
         $this->wiremock = WireMock::create(
-            $_ENV['WIREMOCK_HOST'] ?? $this->config['hostname'],
-            $_ENV['WIREMOCK_PORT'] ?? $this->config['port']
+            $this->config['hostname'],
+            $this->config['port']
         );
 
         if (!$this->wiremock->isAlive()) {

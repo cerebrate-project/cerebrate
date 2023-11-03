@@ -8,6 +8,7 @@ use Cake\Utility\Text;
 use \Cake\Database\Expression\QueryExpression;
 use Cake\Error\Debugger;
 use Cake\Http\Exception\NotFoundException;
+use Cake\ORM\TableRegistry;
 
 class SharingGroupsController extends AppController
 {
@@ -171,9 +172,13 @@ class SharingGroupsController extends AppController
                 $input['organisation_id'] = [$input['organisation_id']];
             }
             $result = true;
+            $this->SGO = TableRegistry::getTableLocator()->get('SGOs');
             foreach ($input['organisation_id'] as $org_id) {
-                $org = $this->SharingGroups->SharingGroupOrgs->get($org_id);
-                $result &= (bool)$this->SharingGroups->SharingGroupOrgs->link($sharingGroup, [$org]);
+                $additional_data = [];
+                if (!empty($input['extend'])) {
+                    $additional_data['extend'] = $input['extend'];
+                }
+                $result &= $this->SGO->attach($sharingGroup['id'], $org_id, $additional_data);
             }
             if ($result) {
                 $message = __('Organisation(s) added to the sharing group.');
@@ -216,8 +221,8 @@ class SharingGroupsController extends AppController
             throw new NotFoundException(__('Invalid SharingGroup.'));
         }
         if ($this->request->is('post')) {
-            $org = $this->SharingGroups->SharingGroupOrgs->get($org_id);
-            $result = (bool)$this->SharingGroups->SharingGroupOrgs->unlink($sharingGroup, [$org]);
+            $this->SGO = TableRegistry::getTableLocator()->get('SGOs');
+            $result = (bool)$this->SharingGroups->SharingGroupOrgs->unlink($sharingGroup['id'], $org_id);
             if ($result) {
                 $message = __('Organisation(s) removed from the sharing group.');
             } else {
@@ -253,9 +258,10 @@ class SharingGroupsController extends AppController
 
     public function listOrgs($id)
     {
-        $sharingGroup = $this->SharingGroups->get($id, [
-            'contain' => 'SharingGroupOrgs'
-        ]);
+        $sharingGroup = $this->SharingGroups->find()->where(['id' => $id])->contain(['SharingGroupOrgs'])->first();
+        foreach ($sharingGroup['sharing_group_orgs'] as $k => $org) {
+            $sharingGroup['sharing_group_orgs'][$k]['extend'] = $org['_joinData']['extend'];
+        }
         $params = $this->ParamHandler->harvestParams(['quickFilter']);
         if (!empty($params['quickFilter'])) {
             foreach ($sharingGroup['sharing_group_orgs'] as $k => $org) {

@@ -37,6 +37,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'class' => 'short',
                 'data_path' => 'status',
                 'sort' => 'status',
+                'display_field_data_path' => 'name',
                 'element' => 'brood_sync_status',
             ],
             [

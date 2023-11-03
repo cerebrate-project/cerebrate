@@ -185,6 +185,9 @@ class BootstrapDropdownMenu extends BootstrapGeneric
             $classes = array_merge($classes, $entry['class']);
         }
         $params = $entry['attrs'] ?? [];
+        if (!empty($entry['onclick'])) {
+            $params['onclick'] = $entry['onclick'];
+        }
         $params['href'] = '#';
 
         if (!empty($entry['menu'])) {

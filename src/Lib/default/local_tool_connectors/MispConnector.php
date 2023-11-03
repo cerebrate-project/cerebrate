@@ -15,6 +15,12 @@ class MispConnector extends CommonConnectorTools
     public $name = 'MISP';
 
     public $exposedFunctions = [
+        'diagnosticsAction' => [
+            'type' => 'index',
+            'scope' => 'child',
+            'params' => [
+            ]
+        ],
         'serverSettingsAction' => [
             'type' => 'index',
             'scope' => 'child',
@@ -48,6 +54,11 @@ class MispConnector extends CommonConnectorTools
                 'direction'
             ]
         ],
+        'restartWorkersAction' => [
+            'type' => 'formAction',
+            'scope' => 'childAction',
+            'redirect' => 'diagnosticsAction'
+        ],
         'fetchOrganisationAction' => [
             'type' => 'formAction',
             'scope' => 'childAction',
@@ -55,6 +66,46 @@ class MispConnector extends CommonConnectorTools
                 'uuid'
             ],
             'redirect' => 'organisationsAction'
+        ],
+        'fetchSelectedOrganisationsAction' => [
+            'type' => 'formAction',
+            'scope' => 'childAction',
+            'params' => [
+                'uuid'
+            ],
+            'redirect' => 'organisationsAction'
+        ],
+        'fetchSelectedSharingGroupsAction' => [
+            'type' => 'formAction',
+            'scope' => 'childAction',
+            'params' => [
+                'uuid'
+            ],
+            'redirect' => 'sharingGroupsAction'
+        ],
+        'pushOrganisationAction' => [
+            'type' => 'formAction',
+            'scope' => 'childAction',
+            'params' => [
+                'uuid'
+            ],
+            'redirect' => 'organisationsAction'
+        ],
+        'pushOrganisationsAction' => [
+            'type' => 'formAction',
+            'scope' => 'childAction',
+            'params' => [
+                'uuid'
+            ],
+            'redirect' => 'organisationsAction'
+        ],
+        'pushSharingGroupsAction' => [
+            'type' => 'formAction',
+            'scope' => 'childAction',
+            'params' => [
+                'uuid'
+            ],
+            'redirect' => 'sharingGroupsAction'
         ],
         'fetchSharingGroupAction' => [
             'type' => 'formAction',
@@ -108,7 +159,7 @@ class MispConnector extends CommonConnectorTools
                 'icon' => 'terminal',
                 'variant' => 'primary',
             ]
-        ]
+        ],
     ];
     public $version = '0.1';
     public $settings = [
@@ -229,9 +280,6 @@ class MispConnector extends CommonConnectorTools
             $list = explode('.', $params['sort']);
             $params['sort'] = end($list);
         }
-        if (!isset($params['limit'])) {
-            $params['limit'] = 50;
-        }
         $url = $this->urlAppendParams($url, $params);
         $response = $this->HTTPClientGET($url, $params['connection']);
         if ($response->isOk()) {
@@ -240,7 +288,7 @@ class MispConnector extends CommonConnectorTools
             if (!empty($params['softError'])) {
                 return $response;
             }
-            $errorMsg = __('Could not post to the requested resource for `{0}`. Remote returned:', $url) . PHP_EOL . $response->getStringBody();
+            $errorMsg = __('Could not GET from the requested resource for `{0}`. Remote returned:', $url) . PHP_EOL . $response->getStringBody();
             $this->logError($errorMsg);
             throw new NotFoundException($errorMsg);
         }
@@ -261,6 +309,9 @@ class MispConnector extends CommonConnectorTools
         if ($response->isOk()) {
             return $response;
         } else {
+            if (!empty($params['softError'])) {
+                return $response;
+            }
             $errorMsg = __('Could not post to the requested resource for `{0}`. Remote returned:', $url) . PHP_EOL . $response->getStringBody();
             $this->logError($errorMsg);
             throw new NotFoundException($errorMsg);
@@ -288,10 +339,183 @@ class MispConnector extends CommonConnectorTools
         return $url;
     }
 
+    public function diagnostics(array $params): array
+    {
+        $urlParams = h($params['connection']['id']) . '/serverSettingsAction';
+        $response = $this->getData('/servers/serverSettings', $params);
+        if (!$response->isOk()) {
+            return [];
+        }
+        $data = $response->getJson();
+        $issues = [];
+        if ($data['version']['upToDate'] !== 'same') {
+            $issues['version'] = [
+                'type' => 'danger',
+                'message' => __('Outdated ({0}).', $data['version']['current']),
+                'remediation' => [
+                    'icon' => 'fa-sync',
+                    'title' => __('Update MISP'),
+                    'url' => '/localTools/action/' . h($params['connection']['id']) . '/updateMISP'
+                ]
+            ];
+        }
+        if ($data['phpSettings']['memory_limit']['value'] < $data['phpSettings']['memory_limit']['recommended']) {
+            $issues['php_memory'] = [
+                'type' => 'warning',
+                'message' => __('Low PHP memory ({0}M).', $data['phpSettings']['memory_limit']['value'])
+            ];
+        }
+        $worker_issues = [];
+        foreach ($data['workers'] as $queue => $worker_data) {
+            if (in_array($queue, ['proc_accessible', 'scheduler', 'controls'])) {
+                continue;
+            }
+            if (empty($worker_data['ok'])) {
+                $worker_issues['down'][] = $queue;
+            }
+            if ($worker_data['jobCount'] > 100) {
+                $worker_issues['stalled'][] = $queue;
+            }
+        }
+        if (!empty($worker_issues['down'])) {
+            $issues['workers_down'] = [
+                'type' => 'danger',
+                'message' => __('Worker(s) down: {0}', implode(', ', $worker_issues['down'])),
+                'remediation' => [
+                    'icon' => 'fa-sync',
+                    'title' => __('Restart workers'),
+                    'url' => '/localTools/action/' . h($params['connection']['id']) . '/restartWorkersAction'
+                ]
+            ];
+        }
+
+        if (!empty($worker_issues['stalled'])) {
+            $issues['workers_stalled'] = [
+                'type' => 'warning',
+                'message' => __('Worker(s) stalled: {0}', implode(', ', $worker_issues['stalled'])),
+                'remediation' => [
+                    'icon' => 'fa-sync',
+                    'title' => __('Restart workers'),
+                    'url' => '/localTools/action/' . h($params['connection']['id']) . '/restartWorkersAction'
+                ]
+            ];
+        }
+        if (!empty($data['dbConfiguration'])) {
+            foreach ($data['dbConfiguration'] as $dbConfig) {
+                if ($dbConfig['name'] === 'innodb_buffer_pool_size' && $dbConfig['value'] < $dbConfig['recommended']) {
+                    $issues['innodb_buffer_pool_size'] = [
+                        'type' => 'warning',
+                        'message' => __('InnoDB buffer pool size is low ({0}M).', (round($dbConfig['value']/1024/1024)))
+                    ];
+                }
+            }
+        }
+        if (!empty($data['dbSchemaDiagnostics'])) {
+            if ($data['dbSchemaDiagnostics']['expected_db_version'] > $data['dbSchemaDiagnostics']['actual_db_version'])
+            $issues['schema_version'] = [
+                'type' => 'danger',
+                'message' => __('DB schame outdated.'),
+                'remediation' => [
+                    'icon' => 'fa-sync',
+                    'title' => __('Update DB schema'),
+                    'url' => '/localTools/action/' . h($params['connection']['id']) . '/updateSchemaAction'
+                ]
+            ];
+        }
+        return $issues;
+    }
+
+    public function restartWorkersAction(array $params): array
+    {
+        if ($params['request']->is(['get'])) {
+            return [
+                'data' => [
+                    'title' => __('Restart workers'),
+                    'description' => __('Would you like to trigger a restart of all attached workers?'),
+                    'submit' => [
+                        'action' => $params['request']->getParam('action')
+                    ],
+                    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'restartWorkersAction']
+                ]
+            ];
+        } elseif ($params['request']->is(['post'])) {
+            $response = $this->postData('/servers/restartWorkers', $params);
+            if ($response->isOk()) {
+                return ['success' => 1, 'message' => __('Workers restarted.')];
+            } else {
+                return ['success' => 0, 'message' => __('Could not restart workers.')];
+            }
+        }
+
+
+
+        $response = $this->postData('/servers/restartWorkers', $params);
+        if ($response->isOk()) {
+            return [
+                'type' => 'success',
+                'message' => __('Workers restarted.')
+            ];
+        } else {
+            return [
+                'type' => 'danger',
+                'message' => __('Something went wrong.')
+            ];
+        }
+    }
+
 
     public function diagnosticsAction(array $params): array
     {
-
+        $diagnostics = $this->diagnostics($params);
+        $data = [];
+        foreach ($diagnostics as $error => $error_data) {
+            $data[] = [
+                'error' => $error,
+                'type' => $error_data['type'],
+                'message' => $error_data['message'],
+                'remediation' => $error_data['remediation'] ?? false
+            ];
+        }
+        return [
+            'type' => 'index',
+            'data' => [
+                'data' => $data,
+                'skip_pagination' => 1,
+                'top_bar' => [
+                    'children' => []
+                ],
+                'fields' => [
+                    [
+                        'name' => 'error',
+                        'data_path' => 'error',
+                        'name' => __('Error'),
+                    ],
+                    [
+                        'name' => 'message',
+                        'data_path' => 'message',
+                        'name' => __('Message'),
+                    ],
+                    [
+                        'name' => __('Remediation'),
+                        'element' => 'function',
+                        'function' => function($row, $context) {
+                            $remediation = $context->Hash->extract($row, 'remediation');
+                            if (!empty($remediation['title'])) {
+                                echo sprintf(
+                                    '<a href="%s" class="btn btn-primary btn-sm" title="%s"><i class="fa %s"></i></a>',
+                                    h($remediation['url']),
+                                    h($remediation['title']),
+                                    h($remediation['icon'])
+                                );
+                            }
+                        }
+                    ]
+                ],
+                'title' => false,
+                'description' => false,
+                'pull' => 'right'
+            ]
+        ];
     }
 
     public function serverSettingsAction(array $params): array
@@ -552,6 +776,84 @@ class MispConnector extends CommonConnectorTools
         }
     }
 
+    private function __compareOrgs(array $data, array $existingOrgs): array
+    {
+        foreach ($data as $k => $v) {
+            $data[$k]['Organisation']['local_copy'] = false;
+            if (!empty($existingOrgs[$v['Organisation']['uuid']])) {
+                $remoteOrg = $existingOrgs[$v['Organisation']['uuid']];
+                $localOrg = $v['Organisation'];
+                $same = true;
+                $fieldsToCheck = [
+                    'nationality', 'sector', 'type', 'name'
+                ];
+                foreach (['nationality', 'sector', 'type', 'name'] as $fieldToCheck) {
+                    if ($remoteOrg[$fieldToCheck] != $localOrg[$fieldToCheck]) {
+                        $same = false;
+                    }
+                }
+                $data[$k]['Organisation']['local_copy'] = $same ? 'same' : 'different';
+            } else {
+                $data[$k]['Organisation']['local_copy'] = 'not_found';
+            }
+        }
+        return $data;
+    }
+
+    private function __compareSgs(array $data, array $existingSgs): array
+    {
+        foreach ($existingSgs as $k => $existingSg) {
+            $existingSgs[$k]['org_uuids'] = [];
+            foreach ($existingSg['sharing_group_orgs'] as $sgo) {
+                $existingSgs[$k]['org_uuids'][$sgo['uuid']] = $sgo['_joinData']['extend'];
+            }
+        }
+        foreach ($data as $k => $v) {
+            $data[$k]['SharingGroup']['local_copy'] = false;
+            $data[$k]['SharingGroup']['differences'] = [];
+            if (!empty($existingSgs[$v['SharingGroup']['uuid']])) {
+                $data[$k]['SharingGroup']['roaming'] = !empty($v['SharingGroup']['roaming']);
+                $localSg = $existingSgs[$v['SharingGroup']['uuid']];
+                $remoteSg = $v['SharingGroup'];
+                $same = true;
+                foreach (['description', 'name', 'releasability', 'active'] as $fieldToCheck) {
+                    if ($remoteSg[$fieldToCheck] != $localSg[$fieldToCheck]) {
+                        $same = false;
+                        $data[$k]['differences']['metadata'] = true;
+                    }
+                }
+                if ($v['Organisation']['uuid'] != $localSg['organisation']['uuid']) {
+                    $same = false;
+                    $data[$k]['SharingGroup']['differences']['uuid'] = true;
+                }
+                $v['org_uuids'] = [];
+                foreach ($v['SharingGroupOrg'] as $sgo) {
+                    $v['org_uuids'][$sgo['Organisation']['uuid']] = $sgo['extend'];
+                }
+                if (count($localSg['org_uuids']) !== count($v['org_uuids'])) {
+                    $same = false;
+                    $data[$k]['SharingGroup']['differences']['orgs_count'] = true;
+                }
+                foreach ($localSg['org_uuids'] as $org_uuid => $extend) {
+                    if (!isset($v['org_uuids'][$org_uuid])) {
+                        $same = false;
+                        $data[$k]['SharingGroup']['differences']['remote_orgs_missing'] = true;
+                    } else {
+                        if ($extend != $v['org_uuids'][$org_uuid]) {
+                            $same = false;
+                            $data[$k]['SharingGroup']['differences']['remote_orgs_extend'] = true;
+                        }
+                    }
+                }
+                $data[$k]['SharingGroup']['local_copy'] = $same ? 'same' : 'different';
+            } else {
+                $data[$k]['SharingGroup']['local_copy'] = 'not_found';
+            }
+            $data[$k]['SharingGroup']['differences'] = array_keys($data[$k]['SharingGroup']['differences']);
+        }
+        return $data;
+    }
+
 
     public function organisationsAction(array $params): array
     {
@@ -563,6 +865,30 @@ class MispConnector extends CommonConnectorTools
         $urlParams = h($params['connection']['id']) . '/organisationsAction';
         $response = $this->getData('/organisations/index', $params);
         $data = $response->getJson();
+        $temp = $this->getOrganisations();
+        $existingOrgs = [];
+        foreach ($temp as $k => $v) {
+            $existingOrgs[$v['uuid']] = $v;
+            unset($temp[$k]);
+        }
+        $statusLevels = [
+            'same' => [
+                'colour' => 'success',
+                'message' => __('Remote organisation is the same as local copy'),
+                'icon' => 'check-circle'
+            ],
+            'different' => [
+                'colour' => 'warning',
+                'message' => __('Local and remote versions of the organisations are different.'),
+                'icon' => 'exclamation-circle'
+            ],
+            'not_found' => [
+                'colour' => 'danger',
+                'message' => __('Local organisation not found'),
+                'icon' => 'exclamation-triangle'
+            ]
+        ];
+        $data = $this->__compareOrgs($data, $existingOrgs);
         if (!empty($data)) {
             return [
                 'type' => 'index',
@@ -571,6 +897,25 @@ class MispConnector extends CommonConnectorTools
                     'skip_pagination' => 1,
                     'top_bar' => [
                         'children' => [
+                            [
+                                'type' => 'simple',
+                                'children' => [
+                                    [
+                                        'class' => 'hidden mass-select',
+                                        'text' => __('Fetch selected organisations'),
+                                        'html' => '<i class="fas fa-download"></i> ',
+                                        'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction',
+                                        'popover_url' => '/localTools/action/' . h($params['connection']['id']) . '/fetchSelectedOrganisationsAction'
+                                    ],
+                                    [
+                                        'text' => __('Push organisations'),
+                                        'html' => '<i class="fas fa-upload"></i> ',
+                                        'class' => 'btn btn-primary',
+                                        'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction',
+                                        'popover_url' => '/localTools/action/' . h($params['connection']['id']) . '/pushOrganisationsAction'
+                                    ]
+                                ]
+                            ],
                             [
                                 'type' => 'search',
                                 'button' => __('Search'),
@@ -583,9 +928,30 @@ class MispConnector extends CommonConnectorTools
                     ],
                     'fields' => [
                         [
+                            'element' => 'selector',
+                            'class' => 'short',
+                            'data' => [
+                                'id' => [
+                                    'value_path' => 'Organisation.uuid'
+                                ]
+                            ]
+                        ],
+                        [
                             'name' => 'Name',
                             'sort' => 'Organisation.name',
                             'data_path' => 'Organisation.name',
+                        ],
+                        [
+                            'name' => 'Status',
+                            'sort' => 'Organisation.local_copy',
+                            'data_path' => 'Organisation.local_copy',
+                            'element' => 'status',
+                            'status_levels' => $statusLevels
+                        ],
+                        [
+                            'name' => 'uuid',
+                            'sort' => 'Organisation.uuid',
+                            'data_path' => 'Organisation.uuid'
                         ],
                         [
                             'name' => 'uuid',
@@ -598,6 +964,11 @@ class MispConnector extends CommonConnectorTools
                             'data_path' => 'Organisation.nationality'
                         ],
                         [
+                            'name' => 'local',
+                            'sort' => 'Organisation.local',
+                            'data_path' => 'Organisation.local'
+                        ],
+                        [
                             'name' => 'sector',
                             'sort' => 'Organisation.sector',
                             'data_path' => 'Organisation.sector'
@@ -608,10 +979,32 @@ class MispConnector extends CommonConnectorTools
                     'pull' => 'right',
                     'actions' => [
                         [
+                            'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/pushOrganisationAction?uuid={{0}}',
+                            'modal_params_data_path' => ['Organisation.uuid'],
+                            'icon' => 'upload',
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction',
+                            'complex_requirement' => [
+                                'function' => function ($row, $options) {
+                                    if ($row['Organisation']['local_copy'] === 'different') {
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            ]
+                        ],
+                        [
                             'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/fetchOrganisationAction?uuid={{0}}',
                             'modal_params_data_path' => ['Organisation.uuid'],
                             'icon' => 'download',
-                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction'
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction',
+                            'complex_requirement' => [
+                                'function' => function ($row, $options) {
+                                    if ($row['Organisation']['local_copy'] === 'different' || $row['Organisation']['local_copy'] === 'not_found') {
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            ]
                         ]
                     ]
                 ]
@@ -631,6 +1024,35 @@ class MispConnector extends CommonConnectorTools
         $urlParams = h($params['connection']['id']) . '/sharingGroupsAction';
         $response = $this->getData('/sharing_groups/index', $params);
         $data = $response->getJson();
+        $temp = $this->getSharingGroups();
+        $existingOrgs = [];
+        foreach ($temp as $k => $v) {
+            $existingSGs[$v['uuid']] = $v;
+            unset($temp[$k]);
+        }
+        $data['response'] = $this->__compareSgs($data['response'], $existingSGs);
+        $existingSGs = [];
+        foreach ($temp as $k => $v) {
+            $existingSGs[$v['uuid']] = $v;
+            unset($temp[$k]);
+        }
+                $statusLevels = [
+            'same' => [
+                'colour' => 'success',
+                'message' => __('Remote sharing group is the same as local copy'),
+                'icon' => 'check-circle'
+            ],
+            'different' => [
+                'colour' => 'warning',
+                'message' => __('Local and remote versions of the sharing groups are different.'),
+                'icon' => 'exclamation-circle'
+            ],
+            'not_found' => [
+                'colour' => 'danger',
+                'message' => __('Local sharing group not found'),
+                'icon' => 'exclamation-triangle'
+            ]
+        ];
         if (!empty($data)) {
             return [
                 'type' => 'index',
@@ -640,20 +1062,52 @@ class MispConnector extends CommonConnectorTools
                     'top_bar' => [
                         'children' => [
                             [
-                                'type' => 'search',
-                                'button' => __('Search'),
-                                'placeholder' => __('Enter value to search'),
-                                'data' => '',
-                                'searchKey' => 'value',
-                                'additionalUrlParams' => $urlParams
-                            ]
+                                'type' => 'simple',
+                                'children' => [
+                                    [
+                                        'class' => 'hidden mass-select',
+                                        'text' => __('Fetch selected sharing groups'),
+                                        'html' => '<i class="fas fa-download"></i> ',
+                                        'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/sharingGroupsAction',
+                                        'popover_url' => '/localTools/action/' . h($params['connection']['id']) . '/fetchSelectedSharingGroupsAction'
+                                    ],
+                                    [
+                                        'text' => __('Push sharing groups'),
+                                        'html' => '<i class="fas fa-upload"></i> ',
+                                        'class' => 'btn btn-primary',
+                                        'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/SharingGroupsAction',
+                                        'popover_url' => '/localTools/action/' . h($params['connection']['id']) . '/pushSharingGroupsAction'
+                                    ]
+                                ]
+                            ],
                         ]
                     ],
                     'fields' => [
                         [
+                            'element' => 'selector',
+                            'class' => 'short',
+                            'data' => [
+                                'id' => [
+                                    'value_path' => 'SharingGroup.uuid'
+                                ]
+                            ]
+                        ],
+                        [
                             'name' => 'Name',
                             'sort' => 'SharingGroup.name',
                             'data_path' => 'SharingGroup.name',
+                        ],
+                        [
+                            'name' => 'Status',
+                            'sort' => 'SharingGroup.local_copy',
+                            'data_path' => 'SharingGroup.local_copy',
+                            'element' => 'status',
+                            'status_levels' => $statusLevels
+                        ],
+                        [
+                            'name' => 'Differences',
+                            'data_path' => 'SharingGroup.differences',
+                            'element' => 'list'
                         ],
                         [
                             'name' => 'uuid',
@@ -662,21 +1116,16 @@ class MispConnector extends CommonConnectorTools
                         ],
                         [
                             'name' => 'Organisations',
-                            'sort' => 'Organisation',
-                            'data_path' => 'Organisation',
-                            'element' => 'count_summary'
+                            'sort' => 'SharingGroupOrg',
+                            'data_path' => 'SharingGroupOrg',
+                            'element' => 'count_summary',
+                            'title' => 'foo'
                         ],
                         [
                             'name' => 'Roaming',
                             'sort' => 'SharingGroup.roaming',
                             'data_path' => 'SharingGroup.roaming',
                             'element' => 'boolean'
-                        ],
-                        [
-                            'name' => 'External servers',
-                            'sort' => 'Server',
-                            'data_path' => 'Server',
-                            'element' => 'count_summary'
                         ]
                     ],
                     'title' => false,
@@ -687,7 +1136,15 @@ class MispConnector extends CommonConnectorTools
                             'open_modal' => '/localTools/action/' . h($params['connection']['id']) . '/fetchSharingGroupAction?uuid={{0}}',
                             'modal_params_data_path' => ['SharingGroup.uuid'],
                             'icon' => 'download',
-                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/SharingGroupsAction'
+                            'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/SharingGroupsAction',
+                            'complex_requirement' => [
+                                'function' => function ($row, $options) {
+                                    if ($row['SharingGroup']['roaming']) {
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            ]
                         ]
                     ]
                 ]
@@ -703,7 +1160,7 @@ class MispConnector extends CommonConnectorTools
             return [
                 'data' => [
                     'title' => __('Fetch organisation'),
-                    'description' => __('Fetch and create/update organisation ({0}) from MISP.', $params['uuid']),
+                    'description' => __('Fetch and create/update organisation ({0}) from MISP?', $params['uuid']),
                     'submit' => [
                         'action' => $params['request']->getParam('action')
                     ],
@@ -721,6 +1178,294 @@ class MispConnector extends CommonConnectorTools
                 }
             } else {
                 return ['success' => 0, 'message' => __('Could not fetch the remote organisation.')];
+            }
+        }
+        throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
+    }
+
+    public function fetchSelectedOrganisationsAction(array $params): array
+    {
+        $ids = $params['request']->getQuery('ids');
+        if ($params['request']->is(['get'])) {
+            return [
+                'data' => [
+                    'title' => __('Fetch organisations'),
+                    'description' => __('Fetch and create/update the selected {0} organisations from MISP?', count($ids)),
+                    'submit' => [
+                        'action' => $params['request']->getParam('action')
+                    ],
+                    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'fetchSelectedOrganisationsAction']
+                ]
+            ];
+        } elseif ($params['request']->is(['post'])) {
+            $successes = 0;
+            $errors = 0;
+            foreach ($ids as $id) {
+                $response = $this->getData('/organisations/view/' . $id, $params);
+                $result = $this->captureOrganisation($response->getJson()['Organisation']);
+                if ($response->getStatusCode() == 200) {
+                    $successes++;
+                } else {
+                    $errors++;
+                }
+            }
+            if ($successes) {
+                return ['success' => 1, 'message' => __('The fetching of organisations has succeeded. {0} organisations created/modified and {1} organisations could not be created/modified.', $successes, $errors)];
+            } else {
+                return ['success' => 0, 'message' => __('The fetching of organisations has failed. {0} organisations could not be created/modified.', $errors)];
+            }
+        }
+        throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
+    }
+
+    public function fetchSelectedSharingGroupsAction(array $params): array
+    {
+        $ids = $params['request']->getQuery('ids');
+        if ($params['request']->is(['get'])) {
+            return [
+                'data' => [
+                    'title' => __('Fetch sharing groups'),
+                    'description' => __('Fetch and create/update the selected {0} sharing groups from MISP?', count($ids)),
+                    'submit' => [
+                        'action' => $params['request']->getParam('action')
+                    ],
+                    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'fetchSelectedSharingGroupsAction']
+                ]
+            ];
+        } elseif ($params['request']->is(['post'])) {
+            $successes = 0;
+            $errors = 0;
+            foreach ($ids as $id) {
+                $response = $this->getData('/sharingGroups/view/' . $id, $params);
+                $temp = $response->getJson();
+                $sg = $temp['SharingGroup'];
+                $sg['organisation'] = $temp['Organisation'];
+                foreach ($temp['SharingGroupOrg'] as $sgo) {
+                    $sg['sharing_group_orgs'][] = [
+                        'extend' => $sgo['extend'],
+                        'name' => $sgo['Organisation']['name'],
+                        'uuid' => $sgo['Organisation']['uuid']
+                    ];
+                }
+                $result = $this->captureSharingGroup($sg, $params['user_id']);
+                if ($response->getStatusCode() == 200) {
+                    $successes++;
+                } else {
+                    $errors++;
+                }
+            }
+            if ($successes) {
+                return ['success' => 1, 'message' => __('The fetching of organisations has succeeded. {0} organisations created/modified and {1} organisations could not be created/modified.', $successes, $errors)];
+            } else {
+                return ['success' => 0, 'message' => __('The fetching of organisations has failed. {0} organisations could not be created/modified.', $errors)];
+            }
+        }
+        throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
+    }
+
+    public function pushOrganisationAction(array $params): array
+    {
+        if ($params['request']->is(['get'])) {
+            return [
+                'data' => [
+                    'title' => __('Push organisation'),
+                    'description' => __('Push or update organisation ({0}) on MISP.', $params['uuid']),
+                    'submit' => [
+                        'action' => $params['request']->getParam('action')
+                    ],
+                    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'pushOrganisationAction', $params['uuid']]
+                ]
+            ];
+        } elseif ($params['request']->is(['post'])) {
+            $org = $this->getOrganisation($params['uuid']);
+            if (empty($org)) {
+                return ['success' => 0, 'message' => __('Could not find the organisation.')];
+            }
+            $params['body'] = json_encode($org);
+            $response = $this->getData('/organisations/view/' . $params['uuid'], $params);
+            if ($response->getStatusCode() == 200) {
+                $response = $this->postData('/admin/organisations/edit/' . $params['uuid'], $params);
+                $result = $this->captureOrganisation($response->getJson()['Organisation']);
+                if ($response->getStatusCode() == 200 && $result) {
+                    return ['success' => 1, 'message' => __('Organisation modified.')];
+                } else {
+                    return ['success' => 0, 'message' => __('Could not save the changes to the organisation.')];
+                }
+            } else {
+                $response = $this->postData('/admin/organisations/add/', $params);
+                $result = $this->captureOrganisation($response->getJson()['Organisation']);
+                if ($response->getStatusCode() == 200 && $result) {
+                    return ['success' => 1, 'message' => __('Organisation created.')];
+                } else {
+                    return ['success' => 0, 'message' => __('Could not create the organisation.')];
+                }
+            }
+        }
+        throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
+    }
+
+    public function pushOrganisationsAction(array $params): array
+    {
+        $orgSelectorValues = $this->getOrganisationSelectorValues();
+        if ($params['request']->is(['get'])) {
+            return [
+                'data' => [
+                    'title' => __('Push organisation'),
+                    'description' => __('Push or update organisations on MISP.'),
+                    'fields' => [
+                        [
+                            'field' => 'local',
+                            'label' => __('Only organisations with users'),
+                            'type' => 'checkbox'
+                        ],
+                        [
+                            'field' => 'type',
+                            'label' => __('Type'),
+                            'type' => 'select',
+                            'options' => $orgSelectorValues['type']
+
+                        ],
+                        [
+                            'field' => 'sector',
+                            'label' => __('Sector'),
+                            'type' => 'select',
+                            'options' => $orgSelectorValues['sector']
+
+                        ],
+                        [
+                            'field' => 'nationality',
+                            'label' => __('Country'),
+                            'type' => 'select',
+                            'options' => $orgSelectorValues['nationality']
+
+                        ]
+                    ],
+                    'submit' => [
+                        'action' => $params['request']->getParam('action')
+                    ],
+                    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'pushOrganisationsAction']
+                ]
+            ];
+        } elseif ($params['request']->is(['post'])) {
+            $filters = $params['request']->getData();
+            $orgs = $this->getFilteredOrganisations($filters, true);
+            $created = 0;
+            $modified = 0;
+            $errors = 0;
+            $params['softError'] = 1;
+            if (empty($orgs)) {
+                return ['success' => 0, 'message' => __('Could not find any organisations matching the criteria.')];
+            }
+            foreach ($orgs as $org) {
+                $params['body'] = null;
+                $response = $this->getData('/organisations/view/' . $org->uuid, $params);
+                if ($response->getStatusCode() == 200) {
+                    $params['body'] = json_encode($org);
+                    $response = $this->postData('/admin/organisations/edit/' . $org->uuid, $params);
+                    if ($response->getStatusCode() == 200) {
+                        $modified++;
+                    } else {
+                        $errors++;
+                    }
+                } else {
+                    $params['body'] = json_encode($org);
+                    $response = $this->postData('/admin/organisations/add', $params);
+                    if ($response->getStatusCode() == 200) {
+                        $created++;
+                    } else {
+                        $errors++;
+                    }
+                }
+            }
+            if ($created || $modified) {
+                return ['success' => 1, 'message' => __('Organisations created: {0}, modified: {1}, errors: {2}', $created, $modified, $errors)];
+            } else {
+                return ['success' => 0, 'message' => __('Organisations could not be pushed. Errors: {0}', $errors)];
+            }
+        }
+        throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
+    }
+
+    public function pushSharingGroupsAction(array $params): array
+    {
+        if ($params['request']->is(['get'])) {
+            return [
+                'data' => [
+                    'title' => __('Push sharing groups'),
+                    'description' => __('Push or update sharinggroups to MISP.'),
+                    'fields' => [
+                        [
+                            'field' => 'name',
+                            'label' => __('Name'),
+                            'placeholder' => __('Search for sharing groups by name. You can use the % character as a wildcard.'),
+                        ],
+                        [
+                            'field' => 'releasability',
+                            'label' => __('Releasable to'),
+                            'placeholder' => __('Search for sharing groups by relesability. You can use the % character as a wildcard.'),
+                        ]
+                    ],
+                    'submit' => [
+                        'action' => $params['request']->getParam('action')
+                    ],
+                    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'pushSharingGroupsAction']
+                ]
+            ];
+        } elseif ($params['request']->is(['post'])) {
+            $filters = $params['request']->getData();
+            $sgs = $this->getFilteredSharingGroups($filters, true);
+            $created = 0;
+            $modified = 0;
+            $errors = 0;
+            $params['softError'] = 1;
+            if (empty($sgs)) {
+                return ['success' => 0, 'message' => __('Could not find any sharing groups matching the criteria.')];
+            }
+            foreach ($sgs as $sg) {
+                $params['body'] = null;
+                $sgToPush = [
+                    'name' => $sg->name,
+                    'uuid' => $sg->uuid,
+                    'releasability' => $sg->releasability,
+                    'description' => $sg->description,
+                    'roaming' => true,
+                    'organisation_uuid' => $sg->organisation->uuid,
+                    'Organisation' => [
+                        'uuid' => $sg->organisation->uuid,
+                        'name' => $sg['organisation']['name']
+                    ],
+                    'SharingGroupOrg' => []
+                ];
+                foreach ($sg['sharing_group_orgs'] as $sgo) {
+                    $sgToPush['SharingGroupOrg'][] = [
+                        'extend' => $sgo['_joinData']['extend'],
+                        'uuid' => $sgo['uuid'],
+                        'name' => $sgo['name']
+                    ];
+                }
+                $response = $this->getData('/sharing_groups/view/' . $sg->uuid, $params);
+                if ($response->getStatusCode() == 200) {
+                    $params['body'] = json_encode($sgToPush);
+                    $response = $this->postData('/sharingGroups/edit/' . $sg->uuid, $params);
+                    if ($response->getStatusCode() == 200) {
+                        $modified++;
+                    } else {
+                        $errors++;
+                    }
+                } else {
+                    $params['body'] = json_encode($sgToPush);
+                    $response = $this->postData('/sharingGroups/add', $params);
+                    if ($response->getStatusCode() == 200) {
+                        $created++;
+                    } else {
+                        $errors++;
+                    }
+                }
+            }
+            if ($created || $modified) {
+                return ['success' => 1, 'message' => __('Sharing groups created: {0}, modified: {1}, errors: {2}', $created, $modified, $errors)];
+            } else {
+                return ['success' => 0, 'message' => __('Sharing groups could not be pushed. Errors: {0}', $errors)];
             }
         }
         throw new MethodNotAllowedException(__('Invalid http request type for the given action.'));
@@ -752,7 +1497,11 @@ class MispConnector extends CommonConnectorTools
                     'sharing_group_orgs' => []
                 ];
                 foreach ($mispSG['SharingGroupOrg'] as $sgo) {
-                    $sg['sharing_group_orgs'][] = $sgo['Organisation'];
+                    $sg['sharing_group_orgs'][] = [
+                        'name' => $sgo['Organisation']['name'],
+                        'uuid' => $sgo['Organisation']['uuid'],
+                        'extend' => $sgo['extend']
+                    ];
                 }
                 $result = $this->captureSharingGroup($sg, $params['user_id']);
                 if ($result) {

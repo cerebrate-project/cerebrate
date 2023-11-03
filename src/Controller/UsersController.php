@@ -11,7 +11,7 @@ use Cake\Http\Exception\NotFoundException;
 
 class UsersController extends AppController
 {
-    public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name', 'Organisations.name', 'Organisation.nationality'];
+    public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name', 'Organisations.name', 'Organisations.nationality'];
     public $quickFilterFields = ['Individuals.uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'];
     public $containFields = ['Individuals', 'Roles', 'UserSettings', 'Organisations', 'OrgGroups'];
 
@@ -63,6 +63,11 @@ class UsersController extends AppController
         $this->set('validOrgIDsFOrEdition', $validOrgIDsFOrEdition);
     }
 
+    public function filtering()
+    {
+        $this->CRUD->filtering();
+    }
+
     public function add()
     {
         $currentUser = $this->ACL->getUser();
@@ -72,7 +77,7 @@ class UsersController extends AppController
         ];
         $individual_ids = [];
         if (!$currentUser['role']['perm_admin']) {
-            if (!$currentUser['role']['perm_group_admin']) {
+            if ($currentUser['role']['perm_group_admin']) {
                 $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_group_admin' => 0])->all()->toArray();
                 $individual_ids = $this->Users->Individuals->find('aligned', ['organisation_id' => $currentUser['organisation_id']])->all()->extract('id')->toArray();
             } else {
@@ -219,12 +224,12 @@ class UsersController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $validRoles = [];
-        $individuals_params = [
-            'sort' => ['email' => 'asc']
-        ];
-        $individual_ids = [];
         if (!$currentUser['role']['perm_admin']) {
-            $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->toArray();
+            if ($currentUser['role']['perm_group_admin']) {
+                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_group_admin' => 0])->all()->toArray();
+            } else {
+                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_group_admin' => 0, 'perm_org_admin' => 0])->all()->toArray();
+            }
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
@@ -448,13 +453,17 @@ class UsersController extends AppController
     {
         $editingAnotherUser = false;
         $currentUser = $this->ACL->getUser();
-        if (empty($currentUser['role']['perm_admin']) || $user_id == $currentUser->id) {
+        if ((empty($currentUser['role']['perm_admin']) && empty($currentUser['role']['perm_group_admin'])) || $user_id == $currentUser->id) {
             $user = $currentUser;
         } else {
             $user = $this->Users->get($user_id, [
                 'contain' => ['Roles', 'Individuals' => 'Organisations', 'Organisations', 'UserSettings']
             ]);
             $editingAnotherUser = true;
+            if (!empty($currentUser['role']['perm_group_admin']) && !$this->ACL->canEditUser($currentUser, $user)) {
+                $user = $currentUser;
+                $editingAnotherUser = false;
+            }
         }
         $this->set('editingAnotherUser', $editingAnotherUser);
         $this->set('user', $user);

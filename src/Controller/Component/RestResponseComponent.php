@@ -4,6 +4,7 @@ namespace App\Controller\Component;
 
 use Cake\Controller\Component;
 use Cake\Core\Configure;
+use Cake\Utility\Hash;
 use Cake\Utility\Inflector;
 
 class RestResponseComponent extends Component
@@ -390,7 +391,7 @@ class RestResponseComponent extends Component
         return '[]';
     }
 
-    public function saveFailResponse($controller, $action, $id = false, $validationErrors, $format = false)
+    public function saveFailResponse($controller, $action, $id, $validationErrors, $format = false)
     {
         $this->autoRender = false;
         $response = array();

@@ -8,7 +8,7 @@ class OrgGroupsNavigation extends BaseNavigation
     public function addLinks()
     {
         $controller = 'OrgGroups';
-        if (empty($this->viewVars['canEdit'])) {
+        if (empty($this->viewVars['canEditDefinition'])) {
             $this->bcf->removeLink($controller, 'view', $controller, 'edit');
             $this->bcf->removeLink($controller, 'edit', $controller, 'edit');
         }
@@ -17,9 +17,10 @@ class OrgGroupsNavigation extends BaseNavigation
     public function addActions()
     {
         $controller = 'OrgGroups';
-        if (empty($this->viewVars['canEdit'])) {
+        if (empty($this->viewVars['canEditDefinition'])) {
             $this->bcf->removeAction($controller, 'view', $controller, 'delete');
             $this->bcf->removeAction($controller, 'edit', $controller, 'delete');
+            $this->bcf->removeAction($controller, 'view', $controller, 'add');
         }
     }
 }
