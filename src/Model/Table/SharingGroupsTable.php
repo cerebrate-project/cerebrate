@@ -77,14 +77,17 @@ class SharingGroupsTable extends AppTable
 
     public function postCaptureActions($savedEntity, $input): void
     {
-        $additional_data = [];
-        if (!empty($input['extend'])) {
-            $additional_data['extend'] = $input['extend'];
-        }
-        $this->SGO = TableRegistry::getTableLocator()->get('SGOs');
+        $SGO = TableRegistry::getTableLocator()->get('SGOs');
         foreach ($input['sharing_group_orgs'] as $sgo) {
             $organisation_id = $this->Organisations->captureOrg($sgo);
-            $this->SGO->attach($savedEntity->id, $organisation_id, $additional_data);
+            $sgo_entity = $SGO->newEntity(
+                [
+                    'sharing_group_id' => $savedEntity->id,
+                    'organisation_id' => $organisation_id,
+                    'extend' => $sgo['extend']
+                ]
+            );
+            $SGO->save($sgo_entity);
         }
     }
 }
