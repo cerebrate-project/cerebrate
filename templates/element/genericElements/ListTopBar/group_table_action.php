@@ -5,6 +5,10 @@ use App\Utility\UI\IndexSetting;
 if (empty($data['table_setting_id']) && empty($model)) {
     throw new Exception(__('`table_setting_id` must be set in order to use the `table_action` table topbar'));
 }
+
+$now = date("Y-m-d_H-i-s");
+$downloadFilename = sprintf('%s_%s', $data['table_setting_id'] ?? h($model), $now);
+
 $data['table_setting_id'] = !empty($data['table_setting_id']) ? $data['table_setting_id'] : IndexSetting::getIDFromTable($model);
 $tableSettings = IndexSetting::getTableSetting($loggedUser, $data['table_setting_id']);
 $compactDisplay = !empty($tableSettings['compact_display']);
@@ -52,6 +56,15 @@ $indexColumnMenu = array_merge(
     $metaTemplateColumnMenu
 );
 
+$indexDownloadMenu = [
+    ['header' => true, 'text' => 'JSON', 'icon' => 'file-code'],
+    ['text' => __('Download all'), 'onclick' => sprintf('downloadIndexTable(this, "%s")', $downloadFilename . '.json'), ],
+    ['text' => __('Download filtered table'), 'onclick' => sprintf('downloadIndexTable(this, "%s", true)', $downloadFilename . '.json'), ],
+    ['header' => true, 'text' => 'CSV', 'icon' => 'file-csv', ],
+    ['text' => __('Download all'), 'onclick' => sprintf('downloadIndexTable(this, "%s")', $downloadFilename . '.csv'), ],
+    ['text' => __('Download filtered table'), 'onclick' => sprintf('downloadIndexTable(this, "%s", true)', $downloadFilename . '.csv'), ],
+];
+
 $compactDisplayHtml = $this->element('/genericElements/ListTopBar/group_table_action/compactDisplay', [
     'table_data' => $table_data,
     'tableSettings' => $tableSettings,
@@ -68,8 +81,6 @@ $numberOfElementHtml = $this->element('/genericElements/ListTopBar/group_table_a
 ?>
 <?php if (!isset($data['requirement']) || $data['requirement']) : ?>
     <?php
-    $now = date("Y-m-d_H-i-s");
-    $downloadFilename = sprintf('%s_%s.json', $data['table_setting_id'] ?? h($model), $now);
     echo $this->Bootstrap->dropdownMenu([
         'dropdown-class' => 'ms-1',
         'alignment' => 'end',
@@ -95,9 +106,8 @@ $numberOfElementHtml = $this->element('/genericElements/ListTopBar/group_table_a
             [
                 'text' => __('Download'),
                 'icon' => 'download',
-                'attrs' => [
-                    'onclick' => sprintf('downloadIndexTable(this, "%s")', $downloadFilename),
-                ],
+                'keepOpen' => true,
+                'menu' => $indexDownloadMenu,
             ],
             [
                 'html' => $compactDisplayHtml,

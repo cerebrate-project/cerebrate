@@ -24,7 +24,10 @@
         $filteringButton = '';
         if (!empty($data['allowFilering'])) {
             $activeFilters = !empty($activeFilters) ? $activeFilters : [];
-            $numberActiveFilters = count($activeFilters);
+            $activeFiltersFiltered = array_filter($activeFilters, function ($k) {
+                return !str_starts_with($k, '_');
+            }, ARRAY_FILTER_USE_KEY);
+            $numberActiveFilters = count($activeFiltersFiltered);
             if (!empty($activeFilters['filteringMetaFields'])) {
                 $numberActiveFilters += count($activeFilters['filteringMetaFields']) - 1;
             }
@@ -34,7 +37,7 @@
                 'title' => __('Filter index'),
                 'id' => sprintf('toggleFilterButton-%s', h($tableRandomValue))
             ];
-            if (count($activeFilters) > 0) {
+            if (count($activeFiltersFiltered) > 0) {
                 $buttonConfig['badge'] = [
                     'variant' => 'light',
                     'text' => $numberActiveFilters,

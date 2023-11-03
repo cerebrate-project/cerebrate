@@ -19,7 +19,7 @@ use App\Utility\UI\IndexSetting;
 
 class CRUDComponent extends Component
 {
-    public $components = ['RestResponse'];
+    public $components = ['RestResponse', 'APIRearrange'];
 
     public function initialize(array $config): void
     {
@@ -107,7 +107,7 @@ class CRUDComponent extends Component
         }
         $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
         $totalCount = $this->Controller->getRequest()->getAttribute('paging')[$this->TableAlias]['count'];
-        if ($this->Controller->ParamHandler->isRest()) {
+        if ($this->Controller->ParamHandler->isRest() || $this->request->is('csv')) {
             if (isset($options['hidden'])) {
                 $data->each(function($value, $key) use ($options) {
                     $hidden = is_array($options['hidden']) ? $options['hidden'] : [$options['hidden']];
@@ -138,9 +138,21 @@ class CRUDComponent extends Component
                     return $this->attachMetaTemplatesIfNeeded($value, $metaTemplates);
                 });
             }
-            $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json', false, false, false, [
-                'X-Total-Count' => $totalCount,
-            ]);
+            if ($this->request->is('csv')) {
+                require_once(ROOT . '/src/Lib/Tools/CsvConverter.php');
+                $rearranged = $this->APIRearrange->rearrangeForAPI($data, ['smartFlattenMetafields' => true]);
+                $rearranged = $rearranged->map(function($e) {
+                    return $e->toArray();
+                })->toList();
+                $data = \App\Lib\Tools\CsvConverter::flattenJSON($rearranged, []);
+                $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'csv', false, false, false, [
+                    'X-Total-Count' => $totalCount,
+                ]);
+            } else {
+                $this->Controller->restResponsePayload = $this->RestResponse->viewData($data, 'json', false, false, false, [
+                    'X-Total-Count' => $totalCount,
+                ]);
+            }
         } else {
             $this->Controller->setResponse($this->Controller->getResponse()->withHeader('X-Total-Count', $totalCount));
             if (isset($options['afterFind'])) {
@@ -281,7 +293,7 @@ class CRUDComponent extends Component
      */
     public function getResponsePayload()
     {
-        if ($this->Controller->ParamHandler->isRest()) {
+        if ($this->Controller->ParamHandler->isRest() || $this->request->is('csv')) {
             return $this->Controller->restResponsePayload;
         } else if ($this->Controller->ParamHandler->isAjax() && $this->request->is(['post', 'put'])) {
             return $this->Controller->ajaxResponsePayload;
@@ -1305,6 +1317,7 @@ class CRUDComponent extends Component
             }
             $query = $this->setMetaFieldFilters($query, $filteringMetaFields);
         }
+        $activeFilters['_here'] = $this->request->getRequestTarget();
 
         $this->Controller->set('activeFilters', $activeFilters);
         return $query;

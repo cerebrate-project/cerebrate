@@ -11,7 +11,7 @@ use Cake\Http\Exception\NotFoundException;
 
 class UsersController extends AppController
 {
-    public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name', 'Organisations.name', 'Organisation.nationality'];
+    public $filterFields = ['Individuals.uuid', 'username', 'Individuals.email', 'Individuals.first_name', 'Individuals.last_name', 'Organisations.name', 'Organisations.nationality'];
     public $quickFilterFields = ['Individuals.uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'];
     public $containFields = ['Individuals', 'Roles', 'UserSettings', 'Organisations', 'OrgGroups'];
 
@@ -61,6 +61,11 @@ class UsersController extends AppController
             $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->toArray()
         );
         $this->set('validOrgIDsFOrEdition', $validOrgIDsFOrEdition);
+    }
+
+    public function filtering()
+    {
+        $this->CRUD->filtering();
     }
 
     public function add()
