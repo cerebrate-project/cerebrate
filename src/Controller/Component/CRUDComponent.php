@@ -96,8 +96,9 @@ class CRUDComponent extends Component
                 $query->order($sort . ' ' . $direction);
             }
         }
+        $isRestOrCSV = $this->Controller->ParamHandler->isRest() || $this->request->is('csv');
         if ($this->metaFieldsSupported()) {
-            $query = $this->includeRequestedMetaFields($query);
+            $query = $this->includeRequestedMetaFields($query, $isRestOrCSV);
         }
 
         if (!$this->Controller->ParamHandler->isRest()) {
@@ -107,7 +108,7 @@ class CRUDComponent extends Component
         }
         $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
         $totalCount = $this->Controller->getRequest()->getAttribute('paging')[$this->TableAlias]['count'];
-        if ($this->Controller->ParamHandler->isRest() || $this->request->is('csv')) {
+        if ($isRestOrCSV) {
             if (isset($options['hidden'])) {
                 $data->each(function($value, $key) use ($options) {
                     $hidden = is_array($options['hidden']) ? $options['hidden'] : [$options['hidden']];
@@ -777,8 +778,11 @@ class CRUDComponent extends Component
         return $data;
     }
 
-    protected function includeRequestedMetaFields($query)
+    protected function includeRequestedMetaFields($query, $isREST=false)
     {
+        if (!empty($isREST)) {
+            return $query->contain(['MetaFields']);
+        }
         $user = $this->Controller->ACL->getUser();
         $tableSettings = IndexSetting::getTableSetting($user, $this->Table);
         if (empty($tableSettings['visible_meta_column'])) {

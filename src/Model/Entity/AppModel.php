@@ -78,7 +78,7 @@ class AppModel extends Entity
                 $this->meta_fields[$i]['template_namespace'] = $templates[$templateDirectoryId]['namespace'];
             }
         }
-        if (!empty($options['smartFlattenMetafields'])) {
+        if (!empty($this->meta_fields) && !empty($options['smartFlattenMetafields'])) {
             $smartFlatten = [];
             foreach ($this->meta_fields as $metafield) {
                 $key = "{$metafield['template_name']}_v{$metafield['template_version']}:{$metafield['field']}";
