@@ -322,7 +322,7 @@ class NotifyAdminsBehavior extends Behavior
             } else if (is_object($fieldValue)) {
                 switch (get_class($fieldValue)) {
                     case 'Cake\I18n\FrozenTime':
-                        return $fieldValue->i18nFormat('yyyy-mm-dd HH:mm:ss');
+                        return $fieldValue->i18nFormat('yyyy-MM-dd HH:mm:ss');
                 }
             } else {
                 return strval($fieldValue);
