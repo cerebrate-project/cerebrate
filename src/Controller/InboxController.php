@@ -23,7 +23,7 @@ class InboxController extends AppController
     public $paginate = [
         'order' => [
             'Inbox.created' => 'desc'
-        ]
+        ],
     ];
 
     public function beforeFilter(EventInterface $event)
