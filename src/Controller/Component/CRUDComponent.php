@@ -90,7 +90,9 @@ class CRUDComponent extends Component
             if ($this->_validOrderFields($sort) && ($direction === 'asc' || $direction === 'desc')) {
                 $sort = explode('.', $sort);
                 if (count($sort) > 1) {
-                    $sort[0] = Inflector::camelize(Inflector::pluralize($sort[0]));
+                    if ($sort[0] != $this->Table->getAlias()) {
+                        $sort[0] = Inflector::camelize(Inflector::pluralize($sort[0]));
+                    }
                 }
                 $sort = implode('.', $sort);
                 $query->order($sort . ' ' . $direction);
