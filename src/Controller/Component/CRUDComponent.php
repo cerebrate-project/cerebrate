@@ -51,7 +51,9 @@ class CRUDComponent extends Component
             $options['filters'][] = 'filteringTags';
         }
         $optionFilters = [];
-        $optionFilters += empty($options['filters']) ? [] : $options['filters'];
+        $optionFilters += array_map(function($filter) {
+            return is_array($filter) ? $filter['name'] : $filter;
+        }, empty($options['filters']) ? [] : $options['filters']);
         foreach ($optionFilters as $i => $filter) {
             $optionFilters[] = "{$filter} !=";
             $optionFilters[] = "{$filter} >=";
@@ -259,6 +261,13 @@ class CRUDComponent extends Component
         foreach ($filtersConfigRaw as $fieldConfig) {
             if (is_array($fieldConfig)) {
                 $filtersConfig[$fieldConfig['name']] = $fieldConfig;
+                if (!empty($fieldConfig['options'])) {
+                    if (is_string($fieldConfig['options'])) {
+                        $filtersConfig[$fieldConfig['name']]['options'] = $this->Table->{$fieldConfig['options']}($this->Controller->ACL->getUser());
+                    } else {
+                        $filtersConfig[$fieldConfig['name']]['options'] = $fieldConfig['options'];
+                    }
+                }
             } else {
                 $filtersConfig[$fieldConfig] = ['name' => $fieldConfig];
             }
@@ -1368,7 +1377,12 @@ class CRUDComponent extends Component
     protected function setRelatedCondition($query, $modelName, $fieldName, $filterValue)
     {
         return $query->matching($modelName, function (\Cake\ORM\Query $q) use ($fieldName, $filterValue) {
-            return $this->setValueCondition($q, $fieldName, $filterValue);
+            if (is_array($filterValue)) {
+                $query = $this->setInCondition($q, $fieldName, $filterValue);
+            } else {
+                $query = $this->setValueCondition($q, $fieldName, $filterValue);
+            }
+            return $query;
         });
     }
 
