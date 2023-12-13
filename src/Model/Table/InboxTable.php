@@ -2,6 +2,7 @@
 namespace App\Model\Table;
 
 use App\Model\Table\AppTable;
+use Cake\Utility\Hash;
 use Cake\Database\Schema\TableSchemaInterface;
 use Cake\Database\Type;
 use Cake\ORM\Table;
@@ -70,6 +71,17 @@ class InboxTable extends AppTable
         ]);
 
         return $rules;
+    }
+
+    public function getAllUsername($currentUser): array
+    {
+        $this->Users = \Cake\ORM\TableRegistry::getTableLocator()->get('Users');
+        $conditions = [];
+        if (empty($currentUser['role']['perm_admin'])) {
+            $conditions['organisation_id IN'] = [$currentUser['organisation_id']];
+        }
+        $users = $this->Users->find()->where($conditions)->all()->extract('username')->toList();
+        return Hash::combine($users, '{n}', '{n}');
     }
 
     public function checkUserBelongsToBroodOwnerOrg($user, $entryData) {
