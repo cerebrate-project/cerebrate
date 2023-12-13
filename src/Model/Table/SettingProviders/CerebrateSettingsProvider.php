@@ -351,7 +351,20 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                         ],
                     ]
                 ]
-            ]
+            ],
+            'Inbox' => [
+                'Data change notification' => [
+                    'Data change notification' => [
+                        'inbox.data_change_notify_for_all' => [
+                            'name' => __('Notify data modification for all Users'),
+                            'type' => 'boolean',
+                            'description' => __('Turning this option ON will alert administrators whenever data is modified, irrespective of the user\'s role responsible for the modification.'),
+                            'default' => false,
+                            'severity' => 'warning',
+                        ],
+                    ],
+                ],
+            ],
             /*
             'Features' => [
                 'Demo Settings' => [

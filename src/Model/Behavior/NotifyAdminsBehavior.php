@@ -73,7 +73,10 @@ class NotifyAdminsBehavior extends Behavior
     public function isNotificationAllowed(EventInterface $event, EntityInterface $entity, ArrayObject $options): bool
     {
         $loggedUser = Configure::read('loggedUser');
-        if (empty($loggedUser) || !empty($loggedUser['role']['perm_admin']) || !empty($loggedUser['role']['perm_sync'])) {
+        if (
+            empty(Configure::read('inbox.data_change_notify_for_all', false)) &&
+            (empty($loggedUser) || !empty($loggedUser['role']['perm_admin']) || !empty($loggedUser['role']['perm_sync']))
+        ) {
             return false;
         }
         return true;
