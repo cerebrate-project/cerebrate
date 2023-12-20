@@ -57,7 +57,7 @@ class IndividualsTable extends AppTable
     public function validationDefault(Validator $validator): Validator
     {
         $validator
-            ->notEmptyString('email')
+            ->email('email')
             ->requirePresence(['email'], 'create');
         return $validator;
     }

@@ -16,14 +16,14 @@ use Cake\Http\Exception\ForbiddenException;
 
 class InboxController extends AppController
 {
-    public $filterFields = ['scope', 'action', 'Inbox.created', 'severity', 'title', 'origin', 'message', 'Users.id', 'Users.username',];
+    public $filterFields = ['scope', 'action', 'Inbox.created', 'severity', 'title', 'origin', 'message', 'Users.id', ['name' => 'Users.username', 'multiple' => true, 'options' => 'getAllUsername', 'select2' => true],];
     public $quickFilterFields = ['scope', 'action', ['title' => true], ['message' => true], 'origin'];
     public $containFields = ['Users'];
 
     public $paginate = [
         'order' => [
             'Inbox.created' => 'desc'
-        ]
+        ],
     ];
 
     public function beforeFilter(EventInterface $event)

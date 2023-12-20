@@ -51,7 +51,9 @@ class CRUDComponent extends Component
             $options['filters'][] = 'filteringTags';
         }
         $optionFilters = [];
-        $optionFilters += empty($options['filters']) ? [] : $options['filters'];
+        $optionFilters += array_map(function($filter) {
+            return is_array($filter) ? $filter['name'] : $filter;
+        }, empty($options['filters']) ? [] : $options['filters']);
         foreach ($optionFilters as $i => $filter) {
             $optionFilters[] = "{$filter} !=";
             $optionFilters[] = "{$filter} >=";
@@ -90,14 +92,17 @@ class CRUDComponent extends Component
             if ($this->_validOrderFields($sort) && ($direction === 'asc' || $direction === 'desc')) {
                 $sort = explode('.', $sort);
                 if (count($sort) > 1) {
-                    $sort[0] = Inflector::camelize(Inflector::pluralize($sort[0]));
+                    if ($sort[0] != $this->Table->getAlias()) {
+                        $sort[0] = Inflector::camelize(Inflector::pluralize($sort[0]));
+                    }
                 }
                 $sort = implode('.', $sort);
                 $query->order($sort . ' ' . $direction);
             }
         }
+        $isRestOrCSV = $this->Controller->ParamHandler->isRest() || $this->request->is('csv');
         if ($this->metaFieldsSupported()) {
-            $query = $this->includeRequestedMetaFields($query);
+            $query = $this->includeRequestedMetaFields($query, $isRestOrCSV);
         }
 
         if (!$this->Controller->ParamHandler->isRest()) {
@@ -107,7 +112,7 @@ class CRUDComponent extends Component
         }
         $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
         $totalCount = $this->Controller->getRequest()->getAttribute('paging')[$this->TableAlias]['count'];
-        if ($this->Controller->ParamHandler->isRest() || $this->request->is('csv')) {
+        if ($isRestOrCSV) {
             if (isset($options['hidden'])) {
                 $data->each(function($value, $key) use ($options) {
                     $hidden = is_array($options['hidden']) ? $options['hidden'] : [$options['hidden']];
@@ -256,6 +261,13 @@ class CRUDComponent extends Component
         foreach ($filtersConfigRaw as $fieldConfig) {
             if (is_array($fieldConfig)) {
                 $filtersConfig[$fieldConfig['name']] = $fieldConfig;
+                if (!empty($fieldConfig['options'])) {
+                    if (is_string($fieldConfig['options'])) {
+                        $filtersConfig[$fieldConfig['name']]['options'] = $this->Table->{$fieldConfig['options']}($this->Controller->ACL->getUser());
+                    } else {
+                        $filtersConfig[$fieldConfig['name']]['options'] = $fieldConfig['options'];
+                    }
+                }
             } else {
                 $filtersConfig[$fieldConfig] = ['name' => $fieldConfig];
             }
@@ -777,8 +789,11 @@ class CRUDComponent extends Component
         return $data;
     }
 
-    protected function includeRequestedMetaFields($query)
+    protected function includeRequestedMetaFields($query, $isREST=false)
     {
+        if (!empty($isREST)) {
+            return $query->contain(['MetaFields']);
+        }
         $user = $this->Controller->ACL->getUser();
         $tableSettings = IndexSetting::getTableSetting($user, $this->Table);
         if (empty($tableSettings['visible_meta_column'])) {
@@ -1362,7 +1377,12 @@ class CRUDComponent extends Component
     protected function setRelatedCondition($query, $modelName, $fieldName, $filterValue)
     {
         return $query->matching($modelName, function (\Cake\ORM\Query $q) use ($fieldName, $filterValue) {
-            return $this->setValueCondition($q, $fieldName, $filterValue);
+            if (is_array($filterValue)) {
+                $query = $this->setInCondition($q, $fieldName, $filterValue);
+            } else {
+                $query = $this->setValueCondition($q, $fieldName, $filterValue);
+            }
+            return $query;
         });
     }
 

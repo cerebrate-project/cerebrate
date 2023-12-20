@@ -56,13 +56,22 @@ $filteringForm = $this->Bootstrap->table(
                         'label' => '',
                         'class' => 'fieldValue form-control-sm'
                     ];
-                    if (!empty($filtersConfig[$fieldName]['multiple'])) {
-                        $fieldData['type'] = 'dropdown';
-                        $fieldData['multiple'] = true;
-                        $fieldData['select2'] = [
-                            'tags' => true,
-                            'tokenSeparators' => [',', ' '],
-                        ];
+                    if (!empty($filtersConfig[$fieldName])) {
+                        if (!empty($filtersConfig[$fieldName]['options'])) {
+                            $fieldData['options'] = $filtersConfig[$fieldName]['options'];
+                        }
+                        if (!empty($filtersConfig[$fieldName]['select2'])) {
+                            $fieldData['type'] = 'dropdown';
+                            $fieldData['select2'] = true;
+                        }
+                        if (!empty($filtersConfig[$fieldName]['multiple'])) {
+                            $fieldData['type'] = 'dropdown';
+                            $fieldData['multiple'] = true;
+                            $fieldData['select2'] = [
+                                'tags' => true,
+                                'tokenSeparators' => [',', ' '],
+                            ];
+                        }
                     }
                     $this->Form->setTemplates([
                         'formGroup' => '<div class="col-sm-10">{{input}}</div>',
@@ -187,6 +196,7 @@ echo $this->Bootstrap->modal([
         $row = $filteringTable.find('td > span.fieldName').filter(function() {
             return $(this).data('fieldname') == field
         }).closest('tr')
+        $row.addClass('table-warning')
         $row.find('.fieldOperator').val(operator)
         const $formElement = $row.find('.fieldValue');
         if ($formElement.attr('type') === 'datetime-local') {
@@ -195,7 +205,10 @@ echo $this->Bootstrap->modal([
             let newOptions = [];
             value.forEach(aValue => {
                 const existingOption = $formElement.find('option').filter(function() {
-                    return $(this).val() === aValue
+                    if ($(this).val() === aValue) {
+                        $(this).prop('selected', true)
+                        return true
+                    }
                 })
                 if (existingOption.length == 0) {
                     newOptions.push(new Option(aValue, aValue, true, true))

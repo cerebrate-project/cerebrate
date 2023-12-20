@@ -44,12 +44,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
         'fields' => [
             [
                 'name' => '#',
-                'sort' => 'id',
+                'sort' => 'Inbox.id',
                 'data_path' => 'id',
             ],
             [
                 'name' => 'created',
-                'sort' => 'created',
+                'sort' => 'Inbox.created',
                 'data_path' => 'created',
                 'element' => 'datetime'
             ],
@@ -87,7 +87,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
             ],
             [
                 'name' => 'user',
-                'sort' => 'user_id',
+                'sort' => 'Inbox.user_id',
                 'data_path' => 'user',
                 'element' => 'user'
             ],
