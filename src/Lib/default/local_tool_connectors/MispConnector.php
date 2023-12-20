@@ -1032,6 +1032,7 @@ class MispConnector extends CommonConnectorTools
         $data = $response->getJson();
         $temp = $this->getSharingGroups();
         $existingOrgs = [];
+        $existingSGs = [];
         foreach ($temp as $k => $v) {
             $existingSGs[$v['uuid']] = $v;
             unset($temp[$k]);
