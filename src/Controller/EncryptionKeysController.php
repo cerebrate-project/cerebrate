@@ -21,6 +21,7 @@ class EncryptionKeysController extends AppController
 
     public function index()
     {
+        $currentUser = $this->ACL->getUser();
         $this->EncryptionKeys->initializeGpg();
         $Model = $this->EncryptionKeys;
         $this->CRUD->index([
@@ -33,7 +34,7 @@ class EncryptionKeysController extends AppController
             ],
             'contain' => $this->containFields,
             'statisticsFields' => $this->statisticsFields,
-            'afterFind' => function($data) use ($Model) {
+            'afterFind' => function($data) use ($Model, $currentUser) {
                 if ($data['type'] === 'pgp') {
                     $keyInfo = $Model->verifySingleGPG($data);
                     $data['status'] = __('OK');
@@ -45,6 +46,7 @@ class EncryptionKeysController extends AppController
                         $data['fingerprint'] = $keyInfo[4];
                     }
                 }
+                $data['_canBeEdited'] = $Model->canEdit($currentUser, $data);
                 return $data;
             }
         ]);
@@ -96,24 +98,12 @@ class EncryptionKeysController extends AppController
             }
             $params['beforeSave'] = function($entity) use($currentUser) {
                 if ($entity['owner_model'] === 'organisation') {
-                    if ($entity['owner_id'] !== $currentUser['organisation_id']) {
+                    if (!$this->EncryptionKeys->canEditForOrganisation($currentUser, $entity)) {
                         throw new MethodNotAllowedException(__('Selected organisation cannot be linked by the current user.'));
                     }
-                } else {
-                    if ($currentUser['role']['perm_org_admin']) {
-                        $this->loadModel('Alignments');
-                        $validIndividuals = $this->Alignments->find('list', [
-                            'keyField' => 'individual_id',
-                            'valueField' => 'id',
-                            'conditions' => ['organisation_id' => $currentUser['organisation_id']]
-                        ])->toArray();
-                        if (!isset($validIndividuals[$entity['owner_id']])) {
-                            throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
-                        }
-                    } else {
-                        if ($entity['owner_id'] !== $currentUser['id']) {
-                            throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
-                        }
+                } else if ($entity['owner_model'] === 'individual') {
+                    if (!$this->EncryptionKeys->canEditForIndividual($currentUser, $entity)) {
+                        throw new MethodNotAllowedException(__('Selected individual cannot be linked by the current user.'));
                     }
                 }
                 return $entity;
