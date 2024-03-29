@@ -195,7 +195,7 @@ class EncryptionKeysTable extends AppTable
                 return true;
             }
         } else {
-            if ($entity['owner_id'] === $user['id']) {
+            if ($entity['owner_id'] === $user['individual_id']) {
                 return true;
             }
         }
