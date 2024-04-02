@@ -97,6 +97,8 @@ class CRUDComponent extends Component
                     if ($sort[0] != $this->Table->getAlias()) {
                         $sort[0] = Inflector::camelize(Inflector::pluralize($sort[0]));
                     }
+                } else {
+                    array_unshift($sort, $this->Table->getAlias());
                 }
                 $sort = implode('.', $sort);
                 $query->order($sort . ' ' . $direction);
