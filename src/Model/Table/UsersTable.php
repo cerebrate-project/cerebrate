@@ -292,4 +292,9 @@ class UsersTable extends AppTable
         }
         return true;
     }
+
+    public function getAllOrganisations($currentUser) {
+        $this->Individuals = TableRegistry::get('Individuals');
+        return $this->Individuals->getAllOrganisations($currentUser);
+    }
 }
