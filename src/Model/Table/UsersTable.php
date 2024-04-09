@@ -80,6 +80,13 @@ class UsersTable extends AppTable
         return $success;
     }
 
+    public function afterSave(EventInterface $event, EntityInterface $entity, ArrayObject $options)
+    {
+        if ($entity->isNew()) {
+            $this->handleUserUpdateRouter($entity);
+        }
+    }
+
     private function checkPermissionRestrictions(EntityInterface $entity)
     {
         if (!isset($this->PermissionLimitations)) {

@@ -335,7 +335,7 @@ class AuthKeycloakBehavior extends Behavior
 
     public function getParsedKeycloakUser(): array
     {
-        $response = $this->restApiRequest('%s/admin/realms/%s/users', [], 'get');
+        $response = $this->restApiRequest('%s/admin/realms/%s/users/?max=999999', [], 'get');
         $keycloakUsers = json_decode($response->getStringBody(), true);
         $keycloakUsersParsed = [];
         $mappers = array_merge(['role_name', 'role_uuid', 'org_uuid', 'org_name'], $this->getMappedFieldList());
