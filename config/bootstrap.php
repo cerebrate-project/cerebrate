@@ -94,6 +94,10 @@ if (file_exists(CONFIG . 'app_local.php')) {
         $settings = file_get_contents(CONFIG . 'config.json');
         $settings = json_decode($settings, true);
         foreach ($settings as $path => $setting) {
+            if($path == 'debug') {
+                Configure::write($path, (bool) $setting);
+                continue;
+            }
             Configure::write($path, $setting);
         }
     }
