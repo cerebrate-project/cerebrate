@@ -199,6 +199,9 @@ class AuthKeycloakBehavior extends Behavior
                 'model_title' => __('Successful Keycloak enrollment for user {0}', $user['username']),
                 'changed' => $logChange
             ]);
+            $saved_user = $this->getCerebrateUsers($user['id']);
+            $clientId = $this->getClientId();
+            $this->syncUsers($saved_user, $clientId);
             $response = $this->restApiRequest(
                 '%s/admin/realms/%s/users/' . urlencode($newUserId) . '/execute-actions-email',
                 ['UPDATE_PASSWORD'],
@@ -357,10 +360,10 @@ class AuthKeycloakBehavior extends Behavior
         return $keycloakUsersParsed;
     }
 
-    private function getCerebrateUsers(): array
+    private function getCerebrateUsers($id = null): array
     {
         $metaFieldsSelector = ['fields' => ['MetaFields.field', 'MetaFields.parent_id', 'MetaFields.value']];
-        $results = $this->_table->find()->contain(['Individuals', 'Organisations', 'Roles', 'MetaFields' => $metaFieldsSelector])->select([
+        $query = $this->_table->find()->contain(['Individuals', 'Organisations', 'Roles', 'MetaFields' => $metaFieldsSelector])->select([
             'id',
             'uuid',
             'username',
@@ -373,7 +376,11 @@ class AuthKeycloakBehavior extends Behavior
             'Roles.uuid',
             'Organisations.name',
             'Organisations.uuid'
-        ])->disableHydration()->toArray();
+        ]);
+        if ($id) {
+            $query->where(['User.id' => $id]);
+        }
+        $results = $query->disableHydration()->toArray();
         foreach ($results as &$result) {
             if (!empty($result['meta_fields'])) {
                 $temp = [];
