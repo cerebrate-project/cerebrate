@@ -80,12 +80,22 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'open_modal' => '/encryptionKeys/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'edit'
+                'icon' => 'edit',
+                'complex_requirement' => [
+                    'function' => function ($row, $options) {
+                        return $row['_canBeEdited'];
+                    }
+                ]
             ],
             [
                 'open_modal' => '/encryptionKeys/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
-                'icon' => 'trash'
+                'icon' => 'trash',
+                'complex_requirement' => [
+                    'function' => function ($row, $options) {
+                        return $row['_canBeEdited'];
+                    }
+                ]
             ],
         ]
     ]

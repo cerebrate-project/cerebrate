@@ -102,7 +102,7 @@ $filteringTags = '';
 if ($taggingEnabled) {
     $helpText = $this->Bootstrap->node('sup', [
         'class' => ['ms-1 fa fa-info'],
-        'title' => __('Supports negation matches (with the `!` character) and LIKE matches (with the `%` character).&#10;Example: `!exportable`, `%able`'),
+        'title' => __('Supports negation matches (with the `!` character) and LIKE matches (with the `%` character). Example: `!exportable`, `%able`'),
         'data-bs-toggle' => 'tooltip',
     ]);
     $filteringTags = $this->Bootstrap->node('h5', [

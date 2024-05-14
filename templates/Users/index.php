@@ -54,7 +54,27 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             return true;
                         },
                     ],
-                    'skip_full_reload' => true
+                    'skip_full_reload' => true,
+                    'confirm' => [
+                        'enable' => [
+                            'titleHtml' => __('Confirm disabling the user?'),
+                            'type' => 'confirm-warning',
+                            'bodyHtml' => __('You\'re about to change the state of the user {{0}}.'),
+                            'confirmText' => __('Disable user'),
+                            'arguments' => [
+                                'bodyHtml' => ['individual.email'],
+                            ]
+                        ],
+                        'disable' => [
+                            'titleHtml' => __('Confirm enabling the user?'),
+                            'type' => 'confirm-success',
+                            'bodyHtml' => __('You\'re about to change the state of the user {{0}}.'),
+                            'confirmText' => __('Enable user'),
+                            'arguments' => [
+                                'bodyHtml' => ['individual.email'],
+                            ]
+                        ]
+                    ]
                 ]
             ],
             [
@@ -168,5 +188,4 @@ echo $this->element('genericElements/IndexTable/index_table', [
         ]
     ]
 ]);
-echo '</div>';
 ?>

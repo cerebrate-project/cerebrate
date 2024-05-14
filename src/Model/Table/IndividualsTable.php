@@ -3,6 +3,7 @@
 namespace App\Model\Table;
 
 use App\Model\Table\AppTable;
+use Cake\Utility\Hash;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\ORM\Query;
@@ -136,5 +137,12 @@ class IndividualsTable extends AppTable
             ]
         )->all()->extract('individual_id')->toArray();
         return $validIndividualIds;
+    }
+
+    public function getAllOrganisations($currentUser): array
+    {
+        $this->Organisations = \Cake\ORM\TableRegistry::getTableLocator()->get('Organisations');
+        $orgs = $this->Organisations->find()->select(['id', 'name'])->all()->toList();
+        return Hash::combine($orgs, '{n}.id', '{n}.name');
     }
 }

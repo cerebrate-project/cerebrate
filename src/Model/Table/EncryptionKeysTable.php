@@ -3,6 +3,7 @@
 namespace App\Model\Table;
 
 use App\Model\Table\AppTable;
+use Cake\ORM\TableRegistry;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 use Cake\Event\EventInterface;
@@ -146,5 +147,58 @@ class EncryptionKeysTable extends AppTable
             $this->gpg = false;
             return null;
         }
+    }
+
+    public function canEdit($user, $entity): bool
+    {
+        if ($entity['owner_model'] === 'organisation') {
+            return $this->canEditForOrganisation($user, $entity);
+        } else if ($entity['owner_model'] === 'individual') {
+            return $this->canEditForIndividual($user, $entity);
+        }
+        return false;
+    }
+
+    public function canEditForOrganisation($user, $entity): bool
+    {
+        if ($entity['owner_model'] !== 'organisation') {
+            return false;
+        }
+        if (!empty($user['role']['perm_admin'])) {
+            return true;
+        }
+        if (
+            $user['role']['perm_org_admin'] && 
+            $entity['owner_id'] === $user['organisation_id']
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    public function canEditForIndividual($user, $entity): bool
+    {
+        if ($entity['owner_model'] !== 'individual') {
+            return false;
+        }
+        if (!empty($user['role']['perm_admin'])) {
+            return true;
+        }
+        if ($user['role']['perm_org_admin']) {
+            $this->Alignments = TableRegistry::get('Alignments');
+            $validIndividuals = $this->Alignments->find('list', [
+                'keyField' => 'individual_id',
+                'valueField' => 'id',
+                'conditions' => ['organisation_id' => $user['organisation_id']]
+            ])->toArray();
+            if (isset($validIndividuals[$entity['owner_id']])) {
+                return true;
+            }
+        } else {
+            if ($entity['owner_id'] === $user['individual_id']) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -14,7 +14,15 @@ use Cake\ORM\TableRegistry;
 class IndividualsController extends AppController
 {
     public $quickFilterFields = ['uuid', ['email' => true], ['first_name' => true], ['last_name' => true], 'position'];
-    public $filterFields = ['uuid', 'email', 'first_name', 'last_name', 'position', 'Organisations.id', 'Alignments.type'];
+    public $filterFields = [
+        'uuid',
+        'email',
+        'first_name',
+        'last_name',
+        'position',
+        'Alignments.type',
+        ['name' => 'Organisations.id', 'multiple' => true, 'options' => 'getAllOrganisations', 'select2' => true],
+    ];
     public $containFields = ['Alignments' => 'Organisations'];
     public $statisticsFields = ['position'];
 
