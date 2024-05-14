@@ -14,8 +14,8 @@ use Cake\Error\Debugger;
 
 class EncryptionKeysController extends AppController
 {
-    public $filterFields = ['owner_model', 'owner_id', 'encryption_key'];
-    public $quickFilterFields = [['encryption_key' => true]];
+    public $filterFields = ['owner_model', 'owner_id', 'encryption_key', 'Individuals.email', 'Organisations.name'];
+    public $quickFilterFields = [['encryption_key' => true], ['Individuals.email' => true], ['Organisations.name' => true]];
     public $containFields = ['Individuals', 'Organisations'];
     public $statisticsFields = ['type'];
 
