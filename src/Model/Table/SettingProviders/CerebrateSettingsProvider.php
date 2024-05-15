@@ -62,6 +62,36 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'test' => 'testUuid',
                         ],
                     ],
+                    'Session handling' => [
+                        'Session.defaults' => [
+                            'description' => 'The session handler used. We strongly recommend "php" and configuring the redis handler in your php.ini. Be advised, that database sessions require the creation of a session table first.',
+                            'default' => 'php',
+                            'name' => 'Session handler',
+                            'options' => function ($settingsProviders) {
+                                return [
+                                    'php' => 'php',
+                                    'cake' => 'cake',
+                                    'database' => 'database'
+                                ];
+                            },
+                            'severity' => 'info',
+                            'type' => 'select'
+                        ],
+                        'Session.timeout' => [
+                            'description' => 'The session timeout (in minutes)',
+                            'default' => 30,
+                            'name' => 'Session Timeout',
+                            'severity' => 'info',
+                            'type' => 'integer',
+                        ],
+                        'Session.ini.session.cookie_lifetime' => [
+                            'description' => 'The cookie timeout (in seconds). Whilst the session itself gets refreshed on each interaction, the cookie\'s timeout cannot be prolonged, so make sure that you set something at least as high as the session timeout, preferrably longer.',
+                            'default' => 604800,
+                            'name' => 'Cookie Timeout',
+                            'severity' => 'info',
+                            'type' => 'integer',
+                        ],
+                    ],
                     /*
                     'Miscellaneous' => [
                         'sc2.hero' => [
