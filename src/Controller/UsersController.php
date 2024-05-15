@@ -117,7 +117,14 @@ class UsersController extends AppController
                     $data['role_id'] = $defaultRole['id'];
                 }
                 if (!$currentUser['role']['perm_admin']) {
-                    $data['organisation_id'] = $currentUser['organisation_id'];
+                    $validOrgs = $this->Users->getValidOrgsForUser($currentUser);
+                    if ($currentUser['role']['perm_group_admin']) {
+                        if (!empty($data['organisation_id']) && !in_array($currentUser['organisation_id'], $validOrgs)) {
+                            throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
+                        }
+                    } else {
+                        $data['organisation_id'] = $currentUser['organisation_id'];
+                    }
                     if (!in_array($data['role_id'], array_keys($validRoles))) {
                         throw new MethodNotAllowedException(__('You do not have permission to assign that role.'));
                     }
@@ -171,7 +178,8 @@ class UsersController extends AppController
         */
         $org_conditions = [];
         if (empty($currentUser['role']['perm_admin'])) {
-            $org_conditions = ['id' => $currentUser['organisation_id']];
+            $validOrgs = $this->Users->getValidOrgsForUser($currentUser);
+            $org_conditions = ['id IN' => $validOrgs];
         }
         $dropdownData = [
             'role' => $validRoles,
