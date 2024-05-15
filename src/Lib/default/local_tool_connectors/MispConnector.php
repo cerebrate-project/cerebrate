@@ -908,6 +908,12 @@ class MispConnector extends CommonConnectorTools
                                         'popover_url' => '/localTools/action/' . h($params['connection']['id']) . '/fetchSelectedOrganisationsAction'
                                     ],
                                     [
+                                        'text' => __('Fetch all organisations'),
+                                        'html' => '<i class="fas fa-download"></i> ',
+                                        'reload_url' => '/localTools/action/' . h($params['connection']['id']) . '/organisationsAction',
+                                        'popover_url' => '/localTools/action/' . h($params['connection']['id']) . '/fetchSelectedOrganisationsAction?ids=all'
+                                    ],
+                                    [
                                         'text' => __('Push organisations'),
                                         'html' => '<i class="fas fa-upload"></i> ',
                                         'class' => 'btn btn-primary',
@@ -1026,6 +1032,7 @@ class MispConnector extends CommonConnectorTools
         $data = $response->getJson();
         $temp = $this->getSharingGroups();
         $existingOrgs = [];
+        $existingSGs = [];
         foreach ($temp as $k => $v) {
             $existingSGs[$v['uuid']] = $v;
             unset($temp[$k]);
@@ -1190,23 +1197,42 @@ class MispConnector extends CommonConnectorTools
             return [
                 'data' => [
                     'title' => __('Fetch organisations'),
-                    'description' => __('Fetch and create/update the selected {0} organisations from MISP?', count($ids)),
+                    'description' => is_array($ids) ?
+                        __('Fetch and create/update the selected {0} organisations from MISP?', count($ids)) :
+                        __('Fetch and create/update ALL organisations from MISP?'),
                     'submit' => [
                         'action' => $params['request']->getParam('action')
                     ],
-                    'url' => ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'fetchSelectedOrganisationsAction']
+                    'url' => is_array($ids) ? 
+                        ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'fetchSelectedOrganisationsAction'] :
+                        ['controller' => 'localTools', 'action' => 'action', $params['connection']['id'], 'fetchSelectedOrganisationsAction?ids=all']
                 ]
             ];
         } elseif ($params['request']->is(['post'])) {
             $successes = 0;
             $errors = 0;
-            foreach ($ids as $id) {
-                $response = $this->getData('/organisations/view/' . $id, $params);
-                $result = $this->captureOrganisation($response->getJson()['Organisation']);
+            if (!is_array($ids) && $ids === 'all') {
+                $response = $this->getData('/organisations/index/scope:all', $params);
                 if ($response->getStatusCode() == 200) {
-                    $successes++;
-                } else {
-                    $errors++;
+                    $orgs = $response->getJson();
+                    foreach ($orgs as $org) {
+                        $result = $this->captureOrganisation($org['Organisation']);
+                        if ($result) {
+                            $successes++;
+                        } else {
+                            $errors++;
+                        }
+                    }
+                }
+            } else {
+                foreach ($ids as $id) {
+                    $response = $this->getData('/organisations/view/' . $id, $params);
+                    $result = $this->captureOrganisation($response->getJson()['Organisation']);
+                    if ($response->getStatusCode() == 200) {
+                        $successes++;
+                    } else {
+                        $errors++;
+                    }
                 }
             }
             if ($successes) {

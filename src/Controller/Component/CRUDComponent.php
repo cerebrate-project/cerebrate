@@ -112,6 +112,7 @@ class CRUDComponent extends Component
         if (!$this->Controller->ParamHandler->isRest()) {
             $this->setRequestedEntryAmount();
         } else if (empty($this->request->getQuery('limit'))) {
+            $this->Controller->paginate['maxLimit'] = PHP_INT_MAX;
             $this->Controller->paginate['limit'] = PHP_INT_MAX; // Make sure to download the entire filtered table
         }
         $data = $this->Controller->paginate($query, $this->Controller->paginate ?? []);
@@ -924,9 +925,10 @@ class CRUDComponent extends Component
         $tableSettings = IndexSetting::getTableSetting($user, $this->Table);
         if (!empty($tableSettings['number_of_element'])) {
             if ($tableSettings['number_of_element'] === 'all') {
-                $tableSettings['number_of_element'] = 10000; // Even with all selecect, make sure not to return too much data for the browser
+                $tableSettings['number_of_element'] = 10000; // Even with all selected, make sure not to return too much data for the browser
             }
             $this->Controller->paginate['limit'] = intval($tableSettings['number_of_element']);
+            $this->Controller->paginate['maxLimit'] = $this->Controller->paginate['limit'];
         }
     }
 

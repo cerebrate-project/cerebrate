@@ -101,12 +101,15 @@ class AppController extends Controller
 
     public function beforeFilter(EventInterface $event)
     {
+        $this->loadModel('Settings');
+        $this->Settings->loadSettings();
         $this->loadModel('Users');
         $this->Users->checkForNewInstance();
         if ($this->ParamHandler->isRest()) {
             $this->authApiUser();
             $this->Security->setConfig('unlockedActions', [$this->request->getParam('action')]);
         }
+        
         $this->ACL->setPublicInterfaces();
         if (!empty($this->request->getAttribute('identity'))) {
             $user = $this->Users->get($this->request->getAttribute('identity')->getIdentifier(), [

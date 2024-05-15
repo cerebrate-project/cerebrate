@@ -29,7 +29,7 @@ class AuthKeysTable extends AppTable
     public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options)
     {
         $data['created'] = time();
-        if (empty($data['expiration'])) {
+        if (!isset($data['expiration'])) {
             $data['expiration'] = 0;
         } else {
             $data['expiration'] = strtotime($data['expiration']);
@@ -56,7 +56,16 @@ class AuthKeysTable extends AppTable
     {
         $validator
             ->notEmptyString('user_id')
-            ->requirePresence(['user_id'], 'create');
+            ->requirePresence(['user_id'], 'create')
+            ->add('expiration', 'custom', [
+                'rule' => function ($value, $context) {
+                    if ($value && $value < time()) {
+                        return false;
+                    }
+                    return true;
+                },
+                'message' => __('Expiration date/time has to be in the future.')
+            ]);
         return $validator;
     }
 
