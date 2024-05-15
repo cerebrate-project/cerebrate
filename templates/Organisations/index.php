@@ -109,8 +109,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'modal_params_data_path' => 'id',
                 'icon' => 'edit',
                 'complex_requirement' => [
-                    'function' => function ($row, $options) use ($loggedUser) {
+                    'function' => function ($row, $options) use ($loggedUser, $validOrgs) {
                         if ($loggedUser['role']['perm_admin'] || ($loggedUser['role']['perm_org_admin'] && $row['id'] == $loggedUser['organisation']['id'])) {
+                            return true;
+                        }
+                        if ($loggedUser['role']['perm_group_admin'] && in_array($row['id'], $validOrgs)) {
                             return true;
                         }
                         return false;
