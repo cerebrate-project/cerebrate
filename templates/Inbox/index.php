@@ -86,7 +86,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'origin',
             ],
             [
-                'name' => 'user',
+                'name' => __('to'),
                 'sort' => 'Inbox.user_id',
                 'data_path' => 'user',
                 'element' => 'user'
