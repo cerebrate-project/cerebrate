@@ -89,17 +89,18 @@ try {
 if (file_exists(CONFIG . 'app_local.php')) {
     Configure::load('app_local', 'default');
     //Configure::load('cerebrate', 'default', true);
-    $settingsFile = new File(CONFIG . 'config.json');
-    if ($settingsFile->exists()) {
-        $settings = file_get_contents(CONFIG . 'config.json');
-        $settings = json_decode($settings, true);
-        foreach ($settings as $path => $setting) {
-            if($path == 'debug') {
-                Configure::write($path, (bool) $setting);
-                continue;
-            }
-            Configure::write($path, $setting);
+}
+
+$settingsFile = new File(CONFIG . 'config.json');
+if ($settingsFile->exists()) {
+    $settings = file_get_contents(CONFIG . 'config.json');
+    $settings = json_decode($settings, true);
+    foreach ($settings as $path => $setting) {
+        if ($path == 'debug') {
+            Configure::write($path, (bool) $setting);
+            continue;
         }
+        Configure::write($path, $setting);
     }
 }
 
