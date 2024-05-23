@@ -126,7 +126,7 @@ class SettingsTable extends AppTable
         return $settings;
     }
 
-    private function loadSettings(): void
+    public function loadSettings(): void
     {
         $settings = file_get_contents(CONFIG . 'config.json');
         $settings = json_decode($settings, true);

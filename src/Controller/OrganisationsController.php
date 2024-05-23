@@ -70,7 +70,7 @@ class OrganisationsController extends AppController
             $additionalContainFields[] = 'MetaFields';
         }
         $containFields = array_merge($this->containFields, $additionalContainFields);
-
+        $this->set('validOrgs', $this->Users->getValidOrgsForUser($this->ACL->getUser()));
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
@@ -184,7 +184,12 @@ class OrganisationsController extends AppController
         if ($currentUser['role']['perm_admin']) {
             return true;
         }
+
         if ($currentUser['role']['perm_org_admin'] && $currentUser['organisation']['id'] == $orgId) {
+            return true;
+        }
+
+        if ($currentUser['role']['perm_group_admin'] && in_array($orgId, $this->Users->getValidOrgsForUser($currentUser))) {
             return true;
         }
         return false;

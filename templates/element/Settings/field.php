@@ -53,6 +53,7 @@
                 'type' => 'number',
                 'min' => '0',
                 'step' => 1,
+                'value' => isset($setting['value']) ? h($setting['value']) : '',
                 'id' => h($settingId),
                 'data-setting-name' => h($settingName),
                 'aria-describedby' => h("{$settingId}Help")

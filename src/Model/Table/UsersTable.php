@@ -293,8 +293,18 @@ class UsersTable extends AppTable
         return true;
     }
 
-    public function getAllOrganisations($currentUser) {
+    public function getAllOrganisations(\App\Model\Entity\User $currentUser)
+    {
         $this->Individuals = TableRegistry::get('Individuals');
         return $this->Individuals->getAllOrganisations($currentUser);
+    }
+
+    public function getValidOrgsForUser(\App\Model\Entity\User $user): array
+    {
+        if (!empty($user['role']['perm_group_admin'])) {
+            return $this->Organisations->OrgGroups->getGroupOrgIdsForUser($user);
+        } else {
+            return [$user['organisation_id']];
+        }
     }
 }

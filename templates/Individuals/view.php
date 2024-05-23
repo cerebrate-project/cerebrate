@@ -40,6 +40,12 @@ echo $this->element(
                 'scope' => 'individuals'
             ]
         ],
-        'children' => []
+        'children' => [
+            [
+                'url' => '/EncryptionKeys/index?owner_id={{0}}&owner_model=individual',
+                'url_params' => ['id'],
+                'title' => __('Encryption keys')
+            ]
+        ]
     ]
 );

@@ -1,6 +1,7 @@
 <?php
 
 use Cake\ORM\TableRegistry;
+use Cake\Routing\Router;
 
 $bookmarks = !empty($loggedUser->user_settings_by_name['ui.bookmarks']['value']) ? json_decode($loggedUser->user_settings_by_name['ui.bookmarks']['value'], true) : [];
 $this->userSettingsTable = TableRegistry::getTableLocator()->get('UserSettings');
@@ -49,9 +50,10 @@ $this->userSettingsTable = TableRegistry::getTableLocator()->get('UserSettings')
             $modelForDisplay = $exploded[count($exploded) - 1];
             $panelTitle = $this->Html->link(
                 h($modelForDisplay),
-                $this->Url->build([
+                Router::url([
                     'controller' => $modelForDisplay,
                     'action' => 'index',
+                    '?' => ['sort' => 'modified', 'direction' => 'desc']
                 ]),
                 ['class' => 'text-white text-decoration-none fw-light stretched-link']
             );
