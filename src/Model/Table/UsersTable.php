@@ -89,11 +89,19 @@ class UsersTable extends AppTable
         foreach ($permissions as $permission_name => $permission) {
             foreach ($permission as $scope => $permission_data) {
                 $valueToCompareTo = $permission_data['current'];
-
                 $enabled = false;
                 if (!empty($entity->meta_fields)) {
                     foreach ($entity['meta_fields'] as $metaField) {
                         if ($metaField['field'] === $permission_name) {
+                            if (!$entity->new) {
+                                $conditions = [
+                                    'field' => $permission_name, 'scope' => 'user', 'parent_id' => $entity->id
+                                ];
+                                $existing = $this->MetaFields->find()->where($conditions)->select(['value'])->first();
+                                if ($existing && (bool)$metaField['value'] === (bool)$existing['value']) {
+                                    continue 2;
+                                }
+                            }
                             $enabled = true;
                             if ($metaField->isNew()) {
                                 $valueToCompareTo += !empty($metaField->value) ? 1 : 0;
