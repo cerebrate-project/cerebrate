@@ -63,6 +63,12 @@ echo $this->element(
         'data' => $entity,
         'fields' => $fields,
         'combinedFieldsView' => false,
-        'children' => []
+        'children' => [
+            [
+                'url' => '/EncryptionKeys/index?owner_id={{0}}&owner_model=organisation',
+                'url_params' => ['id'],
+                'title' => __('Encryption keys')
+            ]
+        ]
     ]
 );

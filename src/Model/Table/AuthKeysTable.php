@@ -29,7 +29,7 @@ class AuthKeysTable extends AppTable
     public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options)
     {
         $data['created'] = time();
-        if (!isset($data['expiration'])) {
+        if (!isset($data['expiration']) || empty($data['expiration'])) {
             $data['expiration'] = 0;
         } else {
             $data['expiration'] = strtotime($data['expiration']);
