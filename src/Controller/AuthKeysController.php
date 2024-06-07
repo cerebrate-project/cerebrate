@@ -90,6 +90,9 @@ class AuthKeysController extends AppController
                 if (!in_array($data['user_id'], array_keys($users))) {
                     throw new MethodNotAllowedException(__('You are not authorised to do that.'));
                 }
+                if (empty($data['expiration'])) {
+                    $data['expiration'] = 0;
+                }
                 return $data;
             }
         ]);
