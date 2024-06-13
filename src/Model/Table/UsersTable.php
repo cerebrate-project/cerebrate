@@ -93,7 +93,7 @@ class UsersTable extends AppTable
                 if (!empty($entity->meta_fields)) {
                     foreach ($entity['meta_fields'] as $metaField) {
                         if ($metaField['field'] === $permission_name) {
-                            if (!$entity->new) {
+                            if (!$entity->isNew()) {
                                 $conditions = [
                                     'field' => $permission_name, 'scope' => 'user', 'parent_id' => $entity->id
                                 ];
