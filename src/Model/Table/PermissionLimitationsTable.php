@@ -37,7 +37,8 @@ class PermissionLimitationsTable extends AppTable
                 'keyField' => 'id',
                 'valueField' => 'id',
                 'conditions' => [
-                    'organisation_id' => $data['organisation_id']
+                    'organisation_id' => $data['organisation_id'],
+                    'disabled' => false
                 ]
             ])->all()->toList();
         }
@@ -58,11 +59,19 @@ class PermissionLimitationsTable extends AppTable
             }
         }
         foreach ($limitations as $field => $data) {
+            $disabledUserIds = $Users->find('list', [
+                'keyField' => 'id',
+                'valueField' => 'id',
+                'conditions' => [
+                    'disabled' => true
+                ]
+            ])->all()->toList();
             if (isset($data['global'])) {
                 $limitations[$field]['global']['current'] = $MetaFields->find('all', [
                     'conditions' => [
                         'scope' => 'user',
-                        'field' => $field
+                        'field' => $field,
+                        'parent_id NOT IN' => $disabledUserIds
                     ]
                 ])->count();
             }
