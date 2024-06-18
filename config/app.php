@@ -177,6 +177,7 @@ return [
      *   breathing room to complete logging or error handling.
      */
     'Error' => [
+        'logger' => App\Error\ExtendedErrorLogger::class,
         'errorLevel' => E_ALL,
         'skipLog' => [],
         'log' => true,
