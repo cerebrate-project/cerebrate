@@ -41,14 +41,14 @@ class ACLComponent extends Component
             'queryACL' => ['perm_admin']
         ],
         'Alignments' => [
-            'add' => ['perm_admin', 'perm_org_admin'],
-            'delete' => ['perm_admin', 'perm_org_admin'],
+            'add' => ['perm_community_admin', 'perm_org_admin'],
+            'delete' => ['perm_community_admin', 'perm_org_admin'],
             'index' => ['*'],
             'view' => ['*']
         ],
         'AuditLogs' => [
-            'filtering' => ['perm_admin'],
-            'index' => ['perm_admin'],
+            'filtering' => ['perm_community_admin'],
+            'index' => ['perm_community_admin'],
         ],
         'AuthKeys' => [
             'add' => ['*'],
@@ -56,17 +56,17 @@ class ACLComponent extends Component
             'index' => ['*']
         ],
         'Broods' => [
-            'add' => ['perm_admin'],
-            'delete' => ['perm_admin'],
-            'downloadIndividual' => ['perm_admin'],
-            'downloadOrg' => ['perm_admin'],
-            'downloadSharingGroup' => ['perm_admin'],
-            'edit' => ['perm_admin'],
-            'index' => ['perm_admin'],
-            'interconnectTools' => ['perm_admin'],
-            'previewIndex' => ['perm_admin'],
-            'testConnection' => ['perm_admin'],
-            'view' => ['perm_admin']
+            'add' => ['perm_community_admin'],
+            'delete' => ['perm_community_admin'],
+            'downloadIndividual' => ['perm_community_admin'],
+            'downloadOrg' => ['perm_community_admin'],
+            'downloadSharingGroup' => ['perm_community_admin'],
+            'edit' => ['perm_community_admin'],
+            'index' => ['perm_community_admin'],
+            'interconnectTools' => ['perm_community_admin'],
+            'previewIndex' => ['perm_community_admin'],
+            'testConnection' => ['perm_community_admin'],
+            'view' => ['perm_community_admin']
         ],
         'EncryptionKeys' => [
             'view' => ['*'],
@@ -76,29 +76,29 @@ class ACLComponent extends Component
             'index' => ['*']
         ],
         'Enumerations' => [
-            'delete' => ['perm_admin'],
+            'delete' => ['perm_community_admin'],
             'index' => ['*']
         ],
         'EnumerationCollections' => [
             'view' => ['*'],
-            'add' => ['perm_admin'],
-            'edit' => ['perm_admin'],
-            'delete' => ['perm_admin'],
+            'add' => ['perm_community_admin'],
+            'edit' => ['perm_community_admin'],
+            'delete' => ['perm_community_admin'],
             'index' => ['*']
         ],
         'Inbox' => [
-            'createEntry' => ['OR' => ['perm_admin', 'perm_sync']],
-            'delete' => ['perm_admin'],
-            'filtering' => ['perm_admin'],
-            'index' => ['perm_admin'],
-            'listProcessors' => ['OR' => ['perm_admin', 'perm_sync']],
-            'process' => ['perm_admin'],
-            'view' => ['perm_admin'],
+            'createEntry' => ['OR' => ['perm_community_admin', 'perm_sync']],
+            'delete' => ['perm_community_admin'],
+            'filtering' => ['perm_community_admin'],
+            'index' => ['perm_community_admin'],
+            'listProcessors' => ['OR' => ['perm_community_admin', 'perm_sync']],
+            'process' => ['perm_community_admin'],
+            'view' => ['perm_community_admin'],
         ],
         'Individuals' => [
-            'add' => ['perm_admin', 'perm_org_admin'],
-            'delete' => ['perm_admin'],
-            'edit' => ['perm_admin', 'perm_org_admin'],
+            'add' => ['perm_community_admin', 'perm_org_admin'],
+            'delete' => ['perm_community_admin'],
+            'edit' => ['perm_community_admin', 'perm_org_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
             'tag' => ['*'],
@@ -119,19 +119,19 @@ class ACLComponent extends Component
             'topology' => ['perm_admin'],
         ],
         'LocalTools' => [
-            'action' => ['perm_admin'],
+            'action' => ['OR' => ['perm_admin', 'perm_community_admin']],
             'add' => ['perm_admin'],
             'batchAction' => ['perm_admin'],
-            'broodTools' => ['perm_admin'],
-            'connectionRequest' => ['perm_admin'],
+            'broodTools' => ['OR' => ['perm_admin', 'perm_community_admin']],
+            'connectionRequest' => ['OR' => ['perm_admin', 'perm_community_admin']],
             // 'connectLocal' => ['perm_admin'],
             'delete' => ['perm_admin'],
             'edit' => ['perm_admin'],
-            'exposedTools' => ['OR' => ['perm_admin', 'perm_sync']],
-            'index' => ['perm_admin'],
+            'exposedTools' => ['OR' => ['perm_admin', 'perm_sync', 'perm_community_admin']],
+            'index' => ['OR' => ['perm_admin', 'perm_community_admin']],
             'connectorIndex' => ['perm_admin'],
-            'view' => ['perm_admin'],
-            'viewConnector' => ['perm_admin']
+            'view' => ['OR' => ['perm_admin', 'perm_community_admin']],
+            'viewConnector' => ['OR' => ['perm_admin', 'perm_community_admin']]
         ],
         'MailingLists' => [
             "add" => ['perm_org_admin'],
@@ -144,7 +144,7 @@ class ACLComponent extends Component
             "view" => ['*'],
         ],
         'MetaTemplateFields' => [
-            'index' => ['perm_admin']
+            'index' => ['perm_admin', 'perm_community_admin']
         ],
         'MetaTemplates' => [
             'createNewTemplate' => ['perm_admin'],
@@ -164,26 +164,26 @@ class ACLComponent extends Component
             'index' => ['perm_admin'],
         ],
         'OrgGroups' => [
-            'add' => ['perm_admin'],
-            'delete' => ['perm_admin'],
-            'edit' => ['perm_admin'],
+            'add' => ['perm_community_admin'],
+            'delete' => ['perm_community_admin'],
+            'edit' => ['perm_community_admin'],
             'index' => ['*'],
             'view' => ['*'],
             'filtering' => ['*'],
-            'tag' => ['perm_admin'],
-            'untag' => ['perm_admin'],
+            'tag' => ['perm_community_admin'],
+            'untag' => ['perm_community_admin'],
             'viewTags' => ['*'],
             'listAdmins' => ['*'],
             'listOrgs' => ['*'],
-            'assignAdmin' => ['perm_admin'],
-            'removeAdmin' => ['perm_admin'],
-            'attachOrg' => ['perm_admin', 'perm_group_admin'],
-            'detachOrg' => ['perm_admin', 'perm_group_admin']
+            'assignAdmin' => ['perm_community_admin'],
+            'removeAdmin' => ['perm_community_admin'],
+            'attachOrg' => ['perm_community_admin', 'perm_group_admin'],
+            'detachOrg' => ['perm_community_admin', 'perm_group_admin']
         ],
         'Organisations' => [
-            'add' => ['perm_admin'],
-            'delete' => ['perm_admin'],
-            'edit' => ['perm_admin', 'perm_org_admin'],
+            'add' => ['perm_community_admin'],
+            'delete' => ['perm_community_admin'],
+            'edit' => ['perm_community_admin', 'perm_org_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
             'tag' => ['perm_org_admin'],
@@ -211,9 +211,9 @@ class ACLComponent extends Component
             "delete" => ['perm_admin']
         ],
         'Roles' => [
-            'add' => ['perm_admin'],
-            'delete' =>  ['perm_admin'],
-            'edit' =>  ['perm_admin'],
+            'add' => ['perm_community_admin'],
+            'delete' =>  ['perm_community_admin'],
+            'edit' =>  ['perm_community_admin'],
             'index' =>  ['*'],
             'view' =>  ['*']
         ],
@@ -228,9 +228,9 @@ class ACLComponent extends Component
             'view' => ['*']
         ],
         'Tags' => [
-            'add' => ['perm_admin'],
-            'delete' => ['perm_admin'],
-            'edit' => ['perm_admin'],
+            'add' => ['perm_community_admin'],
+            'delete' => ['perm_community_admin'],
+            'edit' => ['perm_community_admin'],
             'index' => ['*'],
             'view' => ['*']
         ],
@@ -354,14 +354,14 @@ class ACLComponent extends Component
         if (empty($user) || empty($currentUser)) {
             return false;
         }
-        if ($currentUser['role']['perm_admin']) {
+        if ($currentUser['role']['perm_community_admin']) {
             return true;
         }
         if ($user['id'] === $currentUser['id']) {
             return true;
         }
 
-        if ($user['role']['perm_admin']) {
+        if ($user['role']['perm_community_admin']) {
             return false; // org_admins cannot edit admins
         }
         if ($currentUser['role']['perm_org_admin'] && $user['role']['perm_group_admin']) {
@@ -401,7 +401,7 @@ class ACLComponent extends Component
             return true;
         }
         if (!empty($this->user->role->perm_admin)) {
-            return true;
+            //return true;
         }
         //$this->__checkLoggedActions($user, $controller, $action);
         if (isset($this->aclList['*'][$action])) {
@@ -589,7 +589,7 @@ class ACLComponent extends Component
         }
         foreach ($this->aclList as $controller => $actions) {
             foreach ($actions as $action => $permissions) {
-                if ($role['perm_admin']) {
+                if ($role['perm_admin'] && empty($permissions)) {
                     $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);
                 } elseif (in_array('*', $permissions)) {
                     $results = $this->__formatControllerAction($results, $controller, $action, $url_mode);

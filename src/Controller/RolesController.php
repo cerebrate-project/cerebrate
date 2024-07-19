@@ -12,7 +12,7 @@ use Cake\Http\Exception\ForbiddenException;
 
 class RolesController extends AppController
 {
-    public $filterFields = ['name', 'uuid', 'perm_admin', 'Users.id', 'perm_org_admin'];
+    public $filterFields = ['name', 'uuid', 'perm_admin', 'perm_community_admin', 'Users.id', 'perm_org_admin'];
     public $quickFilterFields = ['name'];
     public $containFields = [];
 
@@ -26,7 +26,7 @@ class RolesController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $this->set('metaGroup', $this->isCommunityAdmin ? 'Administration' : 'Cerebrate');
     }
 
     public function add()
@@ -44,7 +44,7 @@ class RolesController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $this->set('metaGroup', $this->isCommunityAdmin ? 'Administration' : 'Cerebrate');
     }
 
     public function view($id)
@@ -54,7 +54,7 @@ class RolesController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $this->set('metaGroup', $this->isCommunityAdmin ? 'Administration' : 'Cerebrate');
     }
 
     public function edit($id)
@@ -72,7 +72,7 @@ class RolesController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $this->set('metaGroup', $this->isCommunityAdmin ? 'Administration' : 'Cerebrate');
         $this->render('add');
     }
 
@@ -83,6 +83,6 @@ class RolesController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $this->set('metaGroup', $this->isCommunityAdmin ? 'Administration' : 'Cerebrate');
     }
 }

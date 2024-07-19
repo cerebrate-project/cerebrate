@@ -13,8 +13,13 @@ echo $this->element(
                 'path' => 'name'
             ],
             [
-                'key' => __('Admin permission'),
+                'key' => __('Site admin permission (instance management)'),
                 'path' => 'perm_admin',
+                'type' => 'boolean'
+            ],
+            [
+                'key' => __('Community admin permission (data admin)'),
+                'path' => 'perm_community_admin',
                 'type' => 'boolean'
             ],
             [

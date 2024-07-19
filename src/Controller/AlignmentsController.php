@@ -150,7 +150,7 @@ class AlignmentsController extends AppController
     private function canEditIndividual($indId): bool
     {
         $currentUser = $this->ACL->getUser();
-        if ($currentUser['role']['perm_admin']) {
+        if ($currentUser['role']['perm_community_admin']) {
             return true;
         }
         $this->loadModel('Individuals');
@@ -164,7 +164,7 @@ class AlignmentsController extends AppController
     private function canEditOrganisation($orgId): bool
     {
         $currentUser = $this->ACL->getUser();
-        if ($currentUser['role']['perm_admin']) {
+        if ($currentUser['role']['perm_community_admin']) {
             return true;
         }
         if ($currentUser['role']['perm_org_admin'] && $currentUser['organisation']['id'] == $orgId) {

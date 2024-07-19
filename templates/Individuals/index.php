@@ -91,7 +91,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'edit',
                 'complex_requirement' => [
                     'function' => function ($row, $options) use ($loggedUser, $editableIds) {
-                        if ($loggedUser['role']['perm_admin'] || ($editableIds && in_array($row['id'], $editableIds))) {
+                        if ($loggedUser['role']['perm_community_admin'] || ($editableIds && in_array($row['id'], $editableIds))) {
                             return true;
                         }
                         return false;
@@ -107,7 +107,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         if (!empty($row['user'])) { // cannot delete individuals with associated user(s)
                             return false;
                         }
-                        return (bool)$loggedUser['role']['perm_admin'];
+                        return (bool)$loggedUser['role']['perm_community_admin'];
                     }
                 ]
             ],

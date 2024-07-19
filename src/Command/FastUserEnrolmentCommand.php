@@ -100,8 +100,14 @@ class FastUserEnrolmentCommand extends Command
                     die(1);
                 }
                 $defaultRole = $defaultRole->toArray();
-                if (!empty($defaultRole['perm_admin'])) {
+                if (!empty($defaultRole['perm_community_admin'])) {
                     $selection = $io->askChoice('The default role has the `admin` permission. Confirm giving the admin permission to users to be enrolled.', ['Y', 'N'], 'N');
+                    if ($selection != 'Y') {
+                        die(1);
+                    }
+                }
+                if (!empty($defaultRole['perm_community_admin'])) {
+                    $selection = $io->askChoice('The default role has the `community_admin` permission. Confirm giving the admin permission to users to be enrolled.', ['Y', 'N'], 'N');
                     if ($selection != 'Y') {
                         die(1);
                     }

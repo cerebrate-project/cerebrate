@@ -121,7 +121,7 @@ class OrganisationsController extends AppController
         $currentUser = $this->ACL->getUser();
         $this->CRUD->edit($id, [
             'beforeSave' => function($data) use ($currentUser) {
-                if (!$currentUser['role']['perm_admin']) {
+                if (!$currentUser['role']['perm_community_admin']) {
                     unset($data['uuid']);
                 }
                 return $data;
@@ -181,7 +181,7 @@ class OrganisationsController extends AppController
     private function canEdit($orgId): bool
     {
         $currentUser = $this->ACL->getUser();
-        if ($currentUser['role']['perm_admin']) {
+        if ($currentUser['role']['perm_community_admin']) {
             return true;
         }
 

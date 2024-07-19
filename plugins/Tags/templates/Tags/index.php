@@ -11,7 +11,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'type' => 'simple',
                             'text' => __('Add tag'),
                             'popover_url' => '/tags/add',
-                            'requirement' => !empty($loggedUser['role']['perm_admin']),
+                            'requirement' => !empty($loggedUser['role']['perm_community_admin']),
                         ]
                     ]
                 ],
@@ -67,13 +67,13 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'open_modal' => '/tags/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'edit',
-                'requirement' => !empty($loggedUser['role']['perm_admin']),
+                'requirement' => !empty($loggedUser['role']['perm_community_admin']),
             ],
             [
                 'open_modal' => '/tags/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash',
-                'requirement' => !empty($loggedUser['role']['perm_admin']),
+                'requirement' => !empty($loggedUser['role']['perm_community_admin']),
             ],
         ]
     ]

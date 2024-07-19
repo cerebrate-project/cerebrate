@@ -34,7 +34,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'open_modal' => '/enumerations/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash',
-                'requirement' => !empty($loggedUser['role']['perm_admin'])
+                'requirement' => !empty($loggedUser['role']['perm_community_admin'])
             ],
         ]
     ]

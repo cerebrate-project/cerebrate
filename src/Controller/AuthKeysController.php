@@ -22,7 +22,7 @@ class AuthKeysController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $conditions = [];
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $conditions['Users.organisation_id'] = $currentUser['organisation_id'];
             if (empty($currentUser['role']['perm_org_admin'])) {
                 $conditions['Users.id'] = $currentUser['id'];
@@ -40,14 +40,14 @@ class AuthKeysController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $this->set('metaGroup', $this->isCommunityAdmin ? 'Administration' : 'Cerebrate');
     }
 
     public function delete($id)
     {
         $currentUser = $this->ACL->getUser();
         $conditions = [];
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $conditions['Users.organisation_id'] = $currentUser['organisation_id'];
             if (empty($currentUser['role']['perm_org_admin'])) {
                 $conditions['Users.id'] = $currentUser['id'];
@@ -58,20 +58,20 @@ class AuthKeysController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $this->set('metaGroup', $this->isCommunityAdmin ? 'Administration' : 'Cerebrate');
     }
 
     public function add()
     {
-        $this->set('metaGroup', $this->isAdmin ? 'Administration' : 'Cerebrate');
+        $this->set('metaGroup', $this->isCommunityAdmin ? 'Administration' : 'Cerebrate');
         $validUsers = [];
         $userConditions = [];
         $currentUser = $this->ACL->getUser();
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             if (empty($currentUser['role']['perm_org_admin'])) {
                 $userConditions['id'] = $currentUser['id'];
             } else {
-                $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0, 'perm_org_admin' => 0])->all()->extract('id')->toList();
+                $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0, 'perm_community_admin', 'perm_org_admin' => 0])->all()->extract('id')->toList();
                 $userConditions['organisation_id'] = $currentUser['organisation_id'];
                 $userConditions['OR'] = [
                     ['role_id IN' => $role_ids],

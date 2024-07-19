@@ -126,16 +126,17 @@ class IndividualsTable extends AppTable
     public function getValidIndividualsToEdit(object $currentUser): array
     {
         $isSiteAdmin = $currentUser['role']['perm_admin'];
+        $isCommunityAdmin = $currentUser['role']['perm_community_admin'];
         $isGroupAdmin = $currentUser['role']['perm_group_admin'];
         $validRoles = $this->Users->Roles->find('list')->select(['id']);
         if (!$isSiteAdmin) {
-            $validRoles->where(['perm_admin' => 0]);
+            $validRoles->where(['perm_community_admin' => 0]);
         }
         $validRoles = $validRoles->all()->toArray();
         $conditions = [
             'disabled' => 0
         ];
-        if (!$isSiteAdmin) {
+        if (!$isCommunityAdmin) {
             $conditions['OR'] = [
                 ['role_id IN' => array_keys($validRoles)],
                 ['id' => $currentUser['id']]

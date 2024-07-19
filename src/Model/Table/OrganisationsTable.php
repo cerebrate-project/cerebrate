@@ -87,7 +87,7 @@ class OrganisationsTable extends AppTable
     public function getEditableOrganisationsForUser($user): array
     {
         $query = $this->find();
-        if (empty($user['role']['perm_admin'])) {
+        if (empty($user['role']['perm_community_admin'])) {
             if (!empty($user['role']['perm_org_admin'])) {
                 $query->where(['Organisations.id' => $user['organisation']['id']]);
             } else {

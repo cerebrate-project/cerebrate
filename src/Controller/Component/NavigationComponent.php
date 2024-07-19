@@ -312,12 +312,12 @@ class BreadcrumbFactory
 
         $this->addAction($controller, 'view', $controller, 'add');
         $this->addAction($controller, 'view', $controller, 'delete');
-        if (!empty($loggedUser['role']['perm_admin'])) {
+        if (!empty($loggedUser['role']['perm_community_admin'])) {
             $this->addAction($controller, 'view', $controller, 'audit');
         }
         $this->addAction($controller, 'edit', $controller, 'add');
         $this->addAction($controller, 'edit', $controller, 'delete');
-        if (!empty($loggedUser['role']['perm_admin'])) {
+        if (!empty($loggedUser['role']['perm_community_admin'])) {
             $this->addAction($controller, 'edit', $controller, 'audit');
         }
     }

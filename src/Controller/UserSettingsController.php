@@ -22,7 +22,7 @@ class UserSettingsController extends AppController
     {
         $conditions = [];
         $currentUser = $this->ACL->getUser();
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $conditions['user_id'] = $currentUser->id;
         }
         $this->CRUD->index([
@@ -39,7 +39,7 @@ class UserSettingsController extends AppController
             $conditions = [
                 'id' => $this->request->getQuery('Users_id')
             ];
-            if (empty($currentUser['role']['perm_admin'])) {
+            if (empty($currentUser['role']['perm_community_admin'])) {
                 $conditions['organisation_id'] = $currentUser['organisation_id'];
             }
             $settingsForUser = $this->UserSettings->Users->find()->where($conditions)->first();
@@ -76,7 +76,7 @@ class UserSettingsController extends AppController
                 if (!empty($existingSetting)) {
                     throw new MethodNotAllowedException(__('You cannot create a setting that already exists for the given user.'));
                 }
-                if (empty($currentUser['role']['perm_admin'])) {
+                if (empty($currentUser['role']['perm_community_admin'])) {
                     $data['user_id'] = $currentUser->id;
                 }
                 return $data;
@@ -87,7 +87,7 @@ class UserSettingsController extends AppController
             return $responsePayload;
         }
         $allUsers = $this->UserSettings->Users->find('list', ['keyField' => 'id', 'valueField' => 'username'])->order(['username' => 'ASC']);
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $allUsers->where(['id' => $currentUser->id]);
             $user_id = $currentUser->id;
         } else if (!is_null($user_id)) {
@@ -109,7 +109,7 @@ class UserSettingsController extends AppController
         $currentUser = $this->ACL->getUser();
         $validUsers = [];
         $individual_ids = [];
-        if (!$currentUser['role']['perm_admin']) {
+        if (!$currentUser['role']['perm_community_admin']) {
             if ($currentUser['role']['perm_org_admin']) {
                 $validUsers = $this->Users->find('list')->select(['id', 'username'])->order(['username' => 'asc'])->where(['organisation_id' => $currentUser['organisation']['id']])->all()->toArray();
             } else {
@@ -272,7 +272,7 @@ class UserSettingsController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $isAllowed = false;
-        if (!empty($currentUser['role']['perm_admin'])) {
+        if (!empty($currentUser['role']['perm_community_admin'])) {
             $isAllowed = true;
         } else {
             if (is_numeric($setting)) {
@@ -301,7 +301,7 @@ class UserSettingsController extends AppController
         if (is_bool($user_id)) {
             return $currentUser;
         }
-        if (!empty($currentUser['role']['perm_admin'])) {
+        if (!empty($currentUser['role']['perm_community_admin'])) {
             $user = $this->Users->get($user_id, [
                 'contain' => ['Roles', 'Individuals' => 'Organisations']
             ]);

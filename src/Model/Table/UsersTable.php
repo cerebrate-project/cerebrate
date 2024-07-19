@@ -220,6 +220,7 @@ class UsersTable extends AppTable
             $role = $this->Roles->newEntity([
                 'name' => 'admin',
                 'perm_admin' => 1,
+                'perm_community_admin' => 1,
                 'perm_org_admin' => 1,
                 'perm_sync' => 1
             ]);

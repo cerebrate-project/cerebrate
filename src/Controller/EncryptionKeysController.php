@@ -64,7 +64,7 @@ class EncryptionKeysController extends AppController
         $dropdownData = [];
         $currentUser = $this->ACL->getUser();
         $params = [];
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $params = $this->buildBeforeSave($params, $currentUser, $orgConditions, $individualConditions, $dropdownData);
         }
         $this->CRUD->delete($id, $params);
@@ -77,7 +77,7 @@ class EncryptionKeysController extends AppController
 
     private function buildBeforeSave(array $params, $currentUser, array &$orgConditions, array &$individualConditions, array &$dropdownData): array
     {
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $orgConditions = [
                 'id' => $currentUser['organisation_id']
             ];
@@ -154,7 +154,7 @@ class EncryptionKeysController extends AppController
             ],
             'redirect' => $this->referer()
         ];
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $params = $this->buildBeforeSave($params, $currentUser, $orgConditions, $individualConditions, $dropdownData);
         }
         $this->CRUD->edit($id, $params);

@@ -12,7 +12,7 @@
                     'label' => 'UUID',
                     'type' => 'uuid',
                     'tooltip' => __('If the Organisation already has a known UUID in another application such as MISP or another Cerebrate, please re-use this one.'),
-                    'requirements' => $loggedUser['role']['perm_admin']
+                    'requirements' => $loggedUser['role']['perm_community_admin']
                 ),
                 array(
                     'field' => 'url'

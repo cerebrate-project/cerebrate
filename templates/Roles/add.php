@@ -10,7 +10,12 @@
                 [
                     'field' => 'perm_admin',
                     'type' => 'checkbox',
-                    'label' => 'Full admin privilege'
+                    'label' => 'Site admin privilege (instance management)'
+                ],
+                [
+                    'field' => 'perm_community',
+                    'type' => 'checkbox',
+                    'label' => 'Community admin privilege (data admin)'
                 ],
                 [
                     'field' => 'perm_group_admin',
