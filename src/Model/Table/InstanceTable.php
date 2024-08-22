@@ -38,7 +38,7 @@ class InstanceTable extends AppTable
                 'conditions' => false,
                 'afterFind' => function($result, $user) {
                     foreach ($result as $i => $row) {
-                        if (empty($user['role']['perm_admin'])) {
+                        if (empty($user['role']['perm_community_admin'])) {
                             $orgFound = false;
                             if (!empty($row['sharing_group_orgs'])) {
                                 foreach ($row['sharing_group_orgs'] as $org) {
@@ -58,7 +58,7 @@ class InstanceTable extends AppTable
             'Users' => [
                 'conditions' => function($user) {
                     $conditions = [];
-                    if (empty($user['role']['perm_admin'])) {
+                    if (empty($user['role']['perm_community_admin'])) {
                         $conditions['Users.organisation_id'] = $user['organisation_id'];
                     }
                     return $conditions;
@@ -264,8 +264,10 @@ class InstanceTable extends AppTable
         $broods = '';
         $edges = '';
         // pre-run the loop to get the latest version
-        foreach ($data['broods'] as $brood) {
-            if ($brood['status']['code'] === 200) {
+        foreach ($data['broods'] as $k => $brood) {
+            if (!isset($brood['status']['code'])) {
+                $data['broods'][$k]['status']['code'] = 495 . ' - SSL error';
+            } else if ($brood['status']['code'] === 200) {
                 if (version_compare($brood['status']['response']['version'], $newest) > 0) {
                     $newest = $brood['status']['response']['version'];
                 }

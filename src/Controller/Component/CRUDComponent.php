@@ -526,10 +526,10 @@ class CRUDComponent extends Component
         if (!empty($errors)) {
             if (count($errors) == 1) {
                 $field = array_keys($errors)[0];
-                $fieldError = implode(', ', array_values($errors[$field]));
+                $fieldError = json_encode($errors[$field]);
                 $validationMessage = __('{0}: {1}', $field, $fieldError);
             } else {
-                $validationMessage = __('There has been validation issues with multiple fields');
+                $validationMessage = __('There has been validation issues with multiple fields: {0}', json_encode($errors));
             }
         }
         return $validationMessage;

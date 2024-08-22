@@ -164,7 +164,7 @@ class EncryptionKeysTable extends AppTable
         if ($entity['owner_model'] !== 'organisation') {
             return false;
         }
-        if (!empty($user['role']['perm_admin'])) {
+        if (!empty($user['role']['perm_community_admin'])) {
             return true;
         }
         if (
@@ -181,7 +181,7 @@ class EncryptionKeysTable extends AppTable
         if ($entity['owner_model'] !== 'individual') {
             return false;
         }
-        if (!empty($user['role']['perm_admin'])) {
+        if (!empty($user['role']['perm_community_admin'])) {
             return true;
         }
         if ($user['role']['perm_org_admin']) {

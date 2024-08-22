@@ -29,7 +29,7 @@ class MailingListsController extends AppController
             'quickFilters' => $this->quickFilterFields,
             'statisticsFields' => $this->statisticsFields,
             'afterFind' => function ($row) use ($currentUser) {
-                if (empty($currentUser['role']['perm_admin']) && $row['user_id'] != $currentUser['id']) {
+                if (empty($currentUser['role']['perm_community_admin']) && $row['user_id'] != $currentUser['id']) {
                     if (!$this->MailingLists->isIndividualListed($currentUser['individual_id'], $row)) {
                         $row = false;
                     }
@@ -66,7 +66,7 @@ class MailingListsController extends AppController
         $this->CRUD->view($id, [
             'contain' => $this->containFields,
             'afterFind' => function($data) use ($currentUser) {
-                if (empty($currentUser['role']['perm_admin']) && $data['user_id'] != $currentUser['id']) {
+                if (empty($currentUser['role']['perm_community_admin']) && $data['user_id'] != $currentUser['id']) {
                     if (!$this->MailingLists->isIndividualListed($currentUser['individual_id'], $data)) {
                         $data = [];
                     }
@@ -84,7 +84,7 @@ class MailingListsController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $params = [];
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $params['conditions'] = ['user_id' => $currentUser['id']];
         }
         $this->CRUD->edit($id, $params);
@@ -98,7 +98,7 @@ class MailingListsController extends AppController
     public function delete($id)
     {
         $currentUser = $this->ACL->getUser();
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $params['conditions'] = ['user_id' => $currentUser['id']];
         }
         $this->CRUD->delete($id, $params);
@@ -131,7 +131,7 @@ class MailingListsController extends AppController
         if (is_null($mailingList)) {
             throw new NotFoundException(__('Invalid {0}.', Inflector::singularize($this->MailingLists->getAlias())));
         }
-        if (empty($currentUser['role']['perm_admin']) && $mailingList['user_id'] != $currentUser['id']) {
+        if (empty($currentUser['role']['perm_community_admin']) && $mailingList['user_id'] != $currentUser['id']) {
             if (!$this->MailingLists->isIndividualListed($currentUser['individual_id'], $mailingList)) {
                 throw new NotFoundException(__('Invalid {0}.', Inflector::singularize($this->MailingLists->getAlias())));
             }
@@ -197,7 +197,7 @@ class MailingListsController extends AppController
         $params = [
             'contain' => ['Individuals', 'MetaFields']
         ];
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $params['conditions'] = ['user_id' => $currentUser['id']];
         }
         $mailingList = $this->MailingLists->get($mailinglist_id, $params);
@@ -274,7 +274,7 @@ class MailingListsController extends AppController
         $params = [
             'contain' => ['Individuals', 'MetaFields']
         ];
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $params['conditions'] = ['user_id' => $currentUser['id']];
         }
         $mailingList = $this->MailingLists->get($mailinglist_id, $params);

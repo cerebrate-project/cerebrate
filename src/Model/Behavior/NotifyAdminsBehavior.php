@@ -75,7 +75,7 @@ class NotifyAdminsBehavior extends Behavior
         $loggedUser = Configure::read('loggedUser');
         if (
             empty(Configure::read('inbox.data_change_notify_for_all', false)) &&
-            (empty($loggedUser) || !empty($loggedUser['role']['perm_admin']) || !empty($loggedUser['role']['perm_sync']))
+            (empty($loggedUser) || !empty($loggedUser['role']['perm_admin']) || !empty($loggedUser['role']['perm_sync']) || !empty(empty($loggedUser['role']['perm_community_admin'])))
         ) {
             return false;
         }

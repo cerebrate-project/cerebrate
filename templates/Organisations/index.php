@@ -12,7 +12,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'text' => __('Add organisation'),
                             'class' => 'btn btn-primary',
                             'popover_url' => '/organisations/add',
-                            'requirement' => !empty($loggedUser['role']['perm_admin']),
+                            'requirement' => !empty($loggedUser['role']['perm_community_admin']),
                         ]
                     ]
                 ],
@@ -110,7 +110,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'icon' => 'edit',
                 'complex_requirement' => [
                     'function' => function ($row, $options) use ($loggedUser, $validOrgs) {
-                        if ($loggedUser['role']['perm_admin'] || ($loggedUser['role']['perm_org_admin'] && $row['id'] == $loggedUser['organisation']['id'])) {
+                        if ($loggedUser['role']['perm_community_admin'] || ($loggedUser['role']['perm_org_admin'] && $row['id'] == $loggedUser['organisation']['id'])) {
                             return true;
                         }
                         if ($loggedUser['role']['perm_group_admin'] && in_array($row['id'], $validOrgs)) {
@@ -124,7 +124,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'open_modal' => '/organisations/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash',
-                'requirement' => $loggedUser['role']['perm_admin']
+                'requirement' => $loggedUser['role']['perm_community_admin']
             ],
         ]
     ]

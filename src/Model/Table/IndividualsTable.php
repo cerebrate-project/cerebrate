@@ -126,28 +126,44 @@ class IndividualsTable extends AppTable
     public function getValidIndividualsToEdit(object $currentUser): array
     {
         $isSiteAdmin = $currentUser['role']['perm_admin'];
+        $isCommunityAdmin = $currentUser['role']['perm_community_admin'];
         $isGroupAdmin = $currentUser['role']['perm_group_admin'];
         $validRoles = $this->Users->Roles->find('list')->select(['id']);
         if (!$isSiteAdmin) {
-            $validRoles->where(['perm_admin' => 0]);
+            $validRoles->where(['perm_community_admin' => 0]);
         }
         $validRoles = $validRoles->all()->toArray();
         $conditions = [
             'disabled' => 0
         ];
-        if (!$isSiteAdmin) {
+        if (!$isCommunityAdmin) {
             $conditions['OR'] = [
                 ['role_id IN' => array_keys($validRoles)],
                 ['id' => $currentUser['id']]
             ];
             if ($isGroupAdmin) {
                 $OrgGroups = \Cake\ORM\TableRegistry::getTableLocator()->get('OrgGroups');
-                $conditions['organisation_id IN'] = $OrgGroups->getGroupOrgIdsForUser($currentUser);
+                $orgGroupIds = $OrgGroups->getGroupOrgIdsForUser($currentUser);
+                $conditions['organisation_id IN'] = $orgGroupIds;
             } else {
                 $conditions['organisation_id'] = $currentUser['organisation_id'];
             }
         }
         $validIndividualIds = $this->Users->find()->select(['individual_id'])->where($conditions)->all()->extract('individual_id')->toArray();
+        if (!$isCommunityAdmin) {
+            $conditions = [];
+            if ($isGroupAdmin) {
+                $conditions = ['organisation_id IN' => $orgGroupIds];
+            } else {
+                $conditions['organisation_id'] = $currentUser['organisation_id'];
+            }
+            $alignmentBasedIndividualIds = $this->Alignments->find('list', [
+                'keyField' => 'id',
+                'valueField' => 'individual_id'
+            ])->where($conditions)->all()->toList();
+            $validIndividualIds = array_merge($validIndividualIds, $alignmentBasedIndividualIds);
+            $validIndividualIds = array_unique($validIndividualIds);
+        }
         return $validIndividualIds;
     }
 

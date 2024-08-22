@@ -1,6 +1,6 @@
 <?php
 $topbarChildren = [];
-if (!empty($loggedUser->role->perm_admin)) {
+if (!empty($loggedUser->role->perm_community_admin)) {
     $topbarChildren[] =  [
         'type' => 'simple',
         'children' => [
@@ -45,9 +45,15 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'placeholder' => __('Leave empty to auto generate')
             ],
             [
-                'name' => __('Admin'),
+                'name' => __('Site Admin'),
                 'sort' => 'perm_admin',
                 'data_path' => 'perm_admin',
+                'element' => 'boolean'
+            ],
+            [
+                'name' => __('Community Admin'),
+                'sort' => 'perm_community_admin',
+                'data_path' => 'perm_community_admin',
                 'element' => 'boolean'
             ],
             [
@@ -89,13 +95,13 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'open_modal' => '/roles/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'edit',
-                'requirement' => !empty($loggedUser['role']['perm_admin'])
+                'requirement' => !empty($loggedUser['role']['perm_community_admin'])
             ],
             [
                 'open_modal' => '/roles/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash',
-                'requirement' => !empty($loggedUser['role']['perm_admin'])
+                'requirement' => !empty($loggedUser['role']['perm_community_admin'])
             ],
         ]
     ]

@@ -124,6 +124,7 @@ class AppController extends Controller
             $this->ACL->setUser($user);
             $this->request->getSession()->write('authUser', $user);
             $this->isAdmin = $user['role']['perm_admin'];
+            $this->isCommunityAdmin = $user['role']['perm_community_admin'];
             if (!$this->ParamHandler->isRest()) {
                 $this->set('menu', $this->ACL->getMenu());
                 $this->set('loggedUser', $this->ACL->getUser());
@@ -155,7 +156,7 @@ class AppController extends Controller
             }
 
             if ($this->modelClass == 'Tags.Tags') {
-                $this->set('metaGroup', !empty($this->isAdmin) ? 'Administration' : 'Cerebrate');
+                $this->set('metaGroup', !empty($this->isCommunityAdmin) ? 'Administration' : 'Cerebrate');
             }
             $this->response = $this->response->withHeader('X-Frame-Options', 'DENY');
         }
