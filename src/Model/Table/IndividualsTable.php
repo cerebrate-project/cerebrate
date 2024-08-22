@@ -143,12 +143,27 @@ class IndividualsTable extends AppTable
             ];
             if ($isGroupAdmin) {
                 $OrgGroups = \Cake\ORM\TableRegistry::getTableLocator()->get('OrgGroups');
-                $conditions['organisation_id IN'] = $OrgGroups->getGroupOrgIdsForUser($currentUser);
+                $orgGroupIds = $OrgGroups->getGroupOrgIdsForUser($currentUser);
+                $conditions['organisation_id IN'] = $orgGroupIds;
             } else {
                 $conditions['organisation_id'] = $currentUser['organisation_id'];
             }
         }
         $validIndividualIds = $this->Users->find()->select(['individual_id'])->where($conditions)->all()->extract('individual_id')->toArray();
+        if (!$isCommunityAdmin) {
+            $conditions = [];
+            if ($isGroupAdmin) {
+                $conditions = ['organisation_id IN' => $orgGroupIds];
+            } else {
+                $conditions['organisation_id'] = $currentUser['organisation_id'];
+            }
+            $alignmentBasedIndividualIds = $this->Alignments->find('list', [
+                'keyField' => 'id',
+                'valueField' => 'individual_id'
+            ])->where($conditions)->all()->toList();
+            $validIndividualIds = array_merge($validIndividualIds, $alignmentBasedIndividualIds);
+            $validIndividualIds = array_unique($validIndividualIds);
+        }
         return $validIndividualIds;
     }
 
