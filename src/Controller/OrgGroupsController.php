@@ -121,7 +121,7 @@ class OrgGroupsController extends AppController
     private function canEdit($groupId): bool
     {
         $currentUser = $this->ACL->getUser();
-        if ($currentUser['role']['perm_admin']) {
+        if ($currentUser['role']['perm_community_admin']) {
             return true;
         }
         if ($currentUser['role']['perm_group_admin']) {
@@ -140,7 +140,7 @@ class OrgGroupsController extends AppController
     private function canEditDefinition($groupId): bool
     {
         $currentUser = $this->ACL->getUser();
-        if ($currentUser['role']['perm_admin']) {
+        if ($currentUser['role']['perm_community_admin']) {
             return true;
         }
         return false;
@@ -154,7 +154,7 @@ class OrgGroupsController extends AppController
         }
         $orgGroup = $this->OrgGroups->get($groupId, ['contain' => ['Users' => ['Individuals', 'Organisations']]]);
         $this->set('data', $orgGroup['users']);
-        $this->set('canEdit', $this->ACL->getUser()['role']['perm_admin']);
+        $this->set('canEdit', $this->ACL->getUser()['role']['perm_community_admin']);
         $this->set('groupId', $groupId);
     }
 
@@ -172,7 +172,7 @@ class OrgGroupsController extends AppController
 
     public function assignAdmin($groupId)
     {
-        if (!$this->ACL->getUser()['role']['perm_admin']) {
+        if (!$this->ACL->getUser()['role']['perm_community_admin']) {
             throw new MethodNotAllowedException(__('You do not have permission to edit this group.'));
         }
         $this->CRUD->linkObjects(__FUNCTION__, $groupId, 'OrgGroups', 'Users', ['redirect' => '/orgGroups/listAdmins/' . $groupId]);
@@ -188,7 +188,7 @@ class OrgGroupsController extends AppController
         $validRoles = $this->Roles->find('list')->disableHydration()->select(
             ['id', 'name']
         )->where(
-            ['OR' => ['perm_admin' => 1, 'perm_group_admin' => 1]]
+            ['OR' => ['perm_community_admin' => 1, 'perm_group_admin' => 1]]
         )->toArray();
         $admins = $this->Users->find('list')->disableHydration()->select(['id', 'username'])->where(['Users.role_id IN' => array_keys($validRoles)])->toArray();
         asort($admins, SORT_STRING | SORT_FLAG_CASE);
@@ -207,7 +207,7 @@ class OrgGroupsController extends AppController
 
     public function removeAdmin($groupId, $adminId)
     {
-        if (!$this->ACL->getUser()['role']['perm_admin']) {
+        if (!$this->ACL->getUser()['role']['perm_community_admin']) {
             throw new MethodNotAllowedException(__('You do not have permission to edit this group.'));
         }
         $this->CRUD->unlinkObjects(__FUNCTION__, $groupId, $adminId, 'OrgGroups', 'Users');

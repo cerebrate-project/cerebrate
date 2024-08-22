@@ -29,7 +29,7 @@ class IndividualsController extends AppController
     public function index()
     {
         $currentUser = $this->ACL->getUser();
-        $orgAdmin = !$currentUser['role']['perm_admin'] && $currentUser['role']['perm_org_admin'];
+        $orgAdmin = !$currentUser['role']['perm_community_admin'] && $currentUser['role']['perm_org_admin'];
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
@@ -37,7 +37,7 @@ class IndividualsController extends AppController
             'contain' => $this->containFields,
             'statisticsFields' => $this->statisticsFields,
             'afterFind' => function($data) use ($currentUser) {
-                if ($currentUser['role']['perm_admin']) {
+                if ($currentUser['role']['perm_community_admin']) {
                     $data['user'] = $this->Individuals->Users->find()->select(['id', 'username', 'Organisations.id', 'Organisations.name'])->contain('Organisations')->where(['individual_id' => $data['id']])->all()->toArray();
                 }
                 return $data;
@@ -88,7 +88,7 @@ class IndividualsController extends AppController
         $currentUser = $this->ACL->getUser();
         $this->CRUD->edit($id, [
             'beforeSave' => function($data) use ($currentUser) {
-                if ($currentUser['role']['perm_admin'] && isset($data['uuid'])) {
+                if ($currentUser['role']['perm_community_admin'] && isset($data['uuid'])) {
                     unset($data['uuid']);
                 }
                 return $data;
@@ -157,7 +157,7 @@ class IndividualsController extends AppController
     private function canEdit($indId): bool
     {
         $currentUser = $this->ACL->getUser();
-        if ($currentUser['role']['perm_admin']) {
+        if ($currentUser['role']['perm_community_admin']) {
             return true;
         }
         $validIndividuals = $this->Individuals->getValidIndividualsToEdit($currentUser);
@@ -174,7 +174,7 @@ class IndividualsController extends AppController
             return false;
         }
         $currentUser = $this->ACL->getUser();
-        if ($currentUser['role']['perm_admin']) {
+        if ($currentUser['role']['perm_community_admin']) {
             return true;
         }
         return false;

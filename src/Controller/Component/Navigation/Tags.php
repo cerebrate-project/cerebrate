@@ -8,7 +8,7 @@ class TagsNavigation extends BaseNavigation
     public function addLinks()
     {
         $controller = 'Tags';
-        if (empty($this->viewVars['loggedUser']['role']['perm_admin'])) {
+        if (empty($this->viewVars['loggedUser']['role']['perm_community_admin'])) {
             $this->bcf->removeLink($controller, 'view', $controller, 'edit');
             $this->bcf->removeLink($controller, 'edit', $controller, 'edit');
         }
@@ -17,7 +17,7 @@ class TagsNavigation extends BaseNavigation
     public function addActions()
     {
         $controller = 'Tags';
-        if (empty($this->viewVars['loggedUser']['role']['perm_admin'])) {
+        if (empty($this->viewVars['loggedUser']['role']['perm_community_admin'])) {
             $this->bcf->removeAction($controller, 'view', $controller, 'delete');
             $this->bcf->removeAction($controller, 'edit', $controller, 'delete');
         }

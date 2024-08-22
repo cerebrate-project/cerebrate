@@ -77,7 +77,7 @@ class InboxTable extends AppTable
     {
         $this->Users = \Cake\ORM\TableRegistry::getTableLocator()->get('Users');
         $conditions = [];
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $conditions['organisation_id IN'] = [$currentUser['organisation_id']];
         }
         $users = $this->Users->find()->where($conditions)->all()->extract('username')->toList();

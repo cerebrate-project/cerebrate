@@ -26,7 +26,7 @@ class SharingGroupsController extends AppController
             'quickFilters' => $this->quickFilterFields,
             'conditions' => $conditions,
             'afterFind' => function ($row) use ($currentUser) {
-                if (empty($currentUser['role']['perm_admin'])) {
+                if (empty($currentUser['role']['perm_community_admin'])) {
                     $orgFound = false;
                     if (!empty($row['sharing_group_orgs'])) {
                         foreach ($row['sharing_group_orgs'] as $org) {
@@ -56,7 +56,7 @@ class SharingGroupsController extends AppController
                 'user_id' => $this->ACL->getUser()['id']
             ],
             'beforeSave' => function($data) use ($currentUser) {
-                if (!$currentUser['role']['perm_admin']) {
+                if (!$currentUser['role']['perm_community_admin']) {
                     $data['organisation_id'] = $currentUser['organisation_id'];
                 }
                 return $data;
@@ -78,7 +78,7 @@ class SharingGroupsController extends AppController
         $this->CRUD->view($id, [
             'contain' => ['SharingGroupOrgs', 'Organisations', 'Users' => ['fields' => ['id', 'username']]],
             'afterFind' => function($data) use ($currentUser) {
-                if (empty($currentUser['role']['perm_admin'])) {
+                if (empty($currentUser['role']['perm_community_admin'])) {
                     $orgFound = false;
                     if (!empty($data['sharing_group_orgs'])) {
                         foreach ($data['sharing_group_orgs'] as $org) {
@@ -104,7 +104,7 @@ class SharingGroupsController extends AppController
     {
         $params = [];
         $currentUser = $this->ACL->getUser();
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $params['conditions'] = ['organisation_id' => $currentUser['organisation_id']];
         }
         $params['fields'] = ['name', 'releasability', 'description', 'active'];
@@ -124,7 +124,7 @@ class SharingGroupsController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $params = [];
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             $params['conditions'] = ['organisation_id' => $currentUser['organisation_id']];
         }
         $this->CRUD->delete($id, $params);
@@ -140,7 +140,7 @@ class SharingGroupsController extends AppController
         $sharingGroup = $this->SharingGroups->get($id, [
             'contain' => 'SharingGroupOrgs'
         ]);
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             if ($sharingGroup['organisation_id'] !== $currentUser['organisation_id']) {
                 $sharingGroup = null;
             }
@@ -212,7 +212,7 @@ class SharingGroupsController extends AppController
         $sharingGroup = $this->SharingGroups->get($id, [
             'contain' => 'SharingGroupOrgs'
         ]);
-        if (empty($currentUser['role']['perm_admin'])) {
+        if (empty($currentUser['role']['perm_community_admin'])) {
             if ($sharingGroup['organisation_id'] !== $currentUser['organisation_id']) {
                 $sharingGroup = null;
             }
@@ -278,7 +278,7 @@ class SharingGroupsController extends AppController
     private function getAvailableOrgForSg($user)
     {
         $organisations = [];
-        if (!empty($user['role']['perm_admin'])) {
+        if (!empty($user['role']['perm_community_admin'])) {
             $organisations = $this->SharingGroups->Organisations->find('list')->order(['name' => 'ASC'])->toArray();
         } else {
             $organisations = $this->SharingGroups->Organisations->find('list', [

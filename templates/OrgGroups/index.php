@@ -12,7 +12,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                             'text' => __('Add group'),
                             'class' => 'btn btn-primary',
                             'popover_url' => '/orgGroups/add',
-                            'requirement' => !empty($loggedUser['role']['perm_admin']),
+                            'requirement' => !empty($loggedUser['role']['perm_community_admin']),
                         ]
                     ]
                 ],
@@ -73,13 +73,13 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'open_modal' => '/orgGroups/edit/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'edit',
-                'requirement' => $loggedUser['role']['perm_admin']
+                'requirement' => $loggedUser['role']['perm_community_admin']
             ],
             [
                 'open_modal' => '/orgGroups/delete/[onclick_params_data_path]',
                 'modal_params_data_path' => 'id',
                 'icon' => 'trash',
-                'requirement' => $loggedUser['role']['perm_admin']
+                'requirement' => $loggedUser['role']['perm_community_admin']
             ],
         ]
     ]

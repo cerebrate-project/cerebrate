@@ -140,6 +140,7 @@ class RestResponseComponent extends Component
                     'perm_delegate',
                     'perm_sync',
                     'perm_admin',
+                    'perm_community_admin',
                     'perm_audit',
                     'perm_auth',
                     'perm_site_admin',
@@ -160,6 +161,7 @@ class RestResponseComponent extends Component
                     'perm_delegate',
                     'perm_sync',
                     'perm_admin',
+                    'perm_community_admin',
                     'perm_audit',
                     'perm_auth',
                     'perm_site_admin',
@@ -1249,6 +1251,11 @@ class RestResponseComponent extends Component
                 'help' => __('The hardcoded password')
             ),
             'perm_admin' => array(
+                'input' => 'radio',
+                'type' => 'integer',
+                'values' => array(1 => 'True', 0 => 'False' )
+            ),
+            'perm_community_admin' => array(
                 'input' => 'radio',
                 'type' => 'integer',
                 'values' => array(1 => 'True', 0 => 'False' )
