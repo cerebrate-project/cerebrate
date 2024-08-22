@@ -240,9 +240,11 @@ class UsersController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $validRoles = [];
+        $validOrgIds = [];
         if (!$currentUser['role']['perm_community_admin']) {
             if ($currentUser['role']['perm_group_admin']) {
                 $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0])->all()->toArray();
+                $validOrgIds = $this->Users->Organisations->OrgGroups->getGroupOrgIdsForUser($currentUser);
             } else {
                 $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_org_admin' => 0])->all()->toArray();
             }
@@ -266,7 +268,7 @@ class UsersController extends AppController
         ];
         if ($this->request->is(['get'])) {
             $params['fields'] = array_merge($params['fields'], ['role_id', 'disabled']);
-            if (!empty($this->ACL->getUser()['role']['perm_community_admin'])) {
+            if (!empty($this->ACL->getUser()['role']['perm_community_admin']) || !empty($this->ACL->getUser()['role']['perm_group_admin'])) {
                 $params['fields'][] = 'organisation_id';
             }
             if (!$currentUser['role']['perm_community_admin']) {
@@ -292,7 +294,16 @@ class UsersController extends AppController
             $params['fields'][] = 'role_id';
             $params['fields'][] = 'organisation_id';
             $params['fields'][] = 'disabled';
-        } else if ($this->request->is(['post', 'put']) && !empty($this->ACL->getUser()['role']['perm_org_admin'])) {
+        } else if (
+            $this->request->is(['post', 'put']) && 
+            (
+                !empty($this->ACL->getUser()['role']['perm_org_admin']) ||
+                !empty($this->ACL->getUser()['role']['perm_group_admin'])
+            )
+        ) {
+            if (!empty($this->ACL->getUser()['role']['perm_group_admin'])) {
+                $params['fields'][] = 'organisation_id';
+            }
             $params['fields'][] = 'role_id';
             $params['fields'][] = 'disabled';
             if (!$currentUser['role']['perm_community_admin']) {
@@ -321,6 +332,9 @@ class UsersController extends AppController
         $org_conditions = [];
         if (empty($currentUser['role']['perm_community_admin'])) {
             $org_conditions = ['id' => $currentUser['organisation_id']];
+            if (!empty($currentUser['role']['perm_group_admin'])) {
+                $org_conditions = ['id IN' => $validOrgIds];
+            }
         }
         if ($this->ACL->getUser()['id'] == $id) {
             $validRoles[$this->ACL->getUser()['role']['id']] = $this->ACL->getUser()['role']['name']; // include the current role of the user
