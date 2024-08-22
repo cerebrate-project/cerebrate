@@ -111,7 +111,6 @@ class UsersTable extends AppTable
                         }
                     }
                 }
-
                 if (!$enabled && !empty($entity->_metafields_to_delete)) {
                     foreach ($entity->_metafields_to_delete as $metaFieldToDelete) {
                         if ($metaFieldToDelete['field'] === $permission_name) {
@@ -120,7 +119,7 @@ class UsersTable extends AppTable
                     }
                 }
 
-                if ($valueToCompareTo > $permission_data['limit']) {
+                if ($enabled && $valueToCompareTo > $permission_data['limit']) {
                     return [
                         $permission_name => 
                         __(
@@ -202,7 +201,7 @@ class UsersTable extends AppTable
                 foreach ($permissionRestrictionCheck as $permission_name => $errors) {
                     foreach ($entity->meta_fields as $i => $metaField) {
                         if ($metaField['field'] === $permission_name) {
-                            $entity->meta_fields[$i]->setErrors(['value' => $errors]);
+                            $entity->setErrors(['meta_fields' => [$permission_name => $errors]]);
                         }
                     }
                 }
