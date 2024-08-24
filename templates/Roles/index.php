@@ -75,6 +75,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'boolean'
             ],
             [
+                'name' => __('Meta field Editor'),
+                'sort' => 'perm_meta_field_editor',
+                'data_path' => 'perm_meta_field_editor',
+                'element' => 'boolean'
+            ],
+            [
                 'name' => 'Default',
                 'sort' => 'is_default',
                 'data_path' => 'is_default',

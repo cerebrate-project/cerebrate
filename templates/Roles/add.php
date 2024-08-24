@@ -33,6 +33,11 @@
                     'label' => 'Sync permission'
                 ],
                 [
+                    'field' => 'perm_meta_field_editor',
+                    'type' => 'checkbox',
+                    'label' => 'Meta field modification privilege'
+                ],
+                [
                     'field' => 'is_default',
                     'type' => 'checkbox',
                     'label' => 'Default role'
