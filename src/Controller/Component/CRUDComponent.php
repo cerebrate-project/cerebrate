@@ -427,7 +427,9 @@ class CRUDComponent extends Component
     public function add(array $params = []): void
     {
         $data = $this->Table->newEmptyEntity();
-        if ($this->metaFieldsSupported()) {
+        $user = $this->Controller->ACL->getUser();
+        $metaFieldsEnabled = $user['role']['perm_meta_field_editor'] && $this->metaFieldsSupported();
+        if ($metaFieldsEnabled) {
             $metaTemplates = $this->getMetaTemplates();
             $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
             if (isset($params['afterFind'])) {
@@ -452,7 +454,7 @@ class CRUDComponent extends Component
                     throw new NotFoundException(__('Could not save {0} due to the marshaling failing. Your input is bad and you should feel bad.', $this->ObjectAlias));
                 }
             }
-            if ($this->metaFieldsSupported()) {
+            if ($metaFieldsEnabled) {
                 $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
                 unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
                 $data = $massagedData['entity'];
@@ -526,10 +528,10 @@ class CRUDComponent extends Component
         if (!empty($errors)) {
             if (count($errors) == 1) {
                 $field = array_keys($errors)[0];
-                $fieldError = json_encode($errors[$field]);
+                $fieldError = implode(', ', array_values($errors[$field]));
                 $validationMessage = __('{0}: {1}', $field, $fieldError);
             } else {
-                $validationMessage = __('There has been validation issues with multiple fields: {0}', json_encode($errors));
+                $validationMessage = __('There has been validation issues with multiple fields');
             }
         }
         return $validationMessage;
@@ -692,7 +694,9 @@ class CRUDComponent extends Component
             $params['contain'][] = 'Tags';
             $this->setAllTags();
         }
-        if ($this->metaFieldsSupported()) {
+        $user = $this->Controller->ACL->getUser();
+        $metaFieldsEnabled = $user['role']['perm_meta_field_editor'] && $this->metaFieldsSupported();
+        if ($metaFieldsEnabled) {
             if (empty($params['contain'])) {
                 $params['contain'] = [];
             }
@@ -710,7 +714,7 @@ class CRUDComponent extends Component
             $query->where($params['conditions']);
         }
         $data = $query->first();
-        if ($this->metaFieldsSupported()) {
+        if ($metaFieldsEnabled) {
             $metaTemplates = $this->getMetaTemplates();
             $data = $this->attachMetaTemplatesIfNeeded($data, $metaTemplates->toArray());
         }
@@ -734,7 +738,7 @@ class CRUDComponent extends Component
                     throw new NotFoundException(__('Could not save {0} due to the marshaling failing. Your input is bad and you should feel bad.', $this->ObjectAlias));
                 }
             }
-            if ($this->metaFieldsSupported()) {
+            if ($metaFieldsEnabled) {
                 $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
                 unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
                 $data = $massagedData['entity'];
@@ -749,7 +753,7 @@ class CRUDComponent extends Component
             }
             $savedData = $this->Table->save($data);
             if ($savedData !== false) {
-                if ($this->metaFieldsSupported() && !empty($metaFieldsToDelete)) {
+                if ($metaFieldsEnabled && !empty($metaFieldsToDelete)) {
                     foreach ($metaFieldsToDelete as $k => $v) {
                         if ($v === null) {
                             unset($metaFieldsToDelete[$k]);
