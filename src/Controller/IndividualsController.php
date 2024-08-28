@@ -62,7 +62,16 @@ class IndividualsController extends AppController
 
     public function add()
     {
-        $this->CRUD->add();
+        $currentUser = $this->ACL->getUser();
+        $params = [
+            'afterSave' => function($data) use ($currentUser) {
+                if (empty($currentUser['role']['perm_community_admin'])) {
+                    $this->Individuals->Alignments->setAlignment($currentUser['organisation_id'], $data->id, 'Member');
+                }
+                return $data;
+            }
+        ];
+        $this->CRUD->add($params);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;

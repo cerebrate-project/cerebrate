@@ -156,6 +156,10 @@ class UsersController extends AppController
                 if (Configure::read('keycloak.enabled')) {
                     $this->Users->enrollUserRouter($data);
                 }
+                if ($data['individual_id']) {
+                    $data['individual'] = $this->Users->Individuals->find('all')->where(['id' => $data['individual_id']])->contain(['Alignments' => 'Organisations'])->first();
+                }
+                return $data;
             },
             'afterFind' => function ($user, &$params) use ($currentUser) {
                 if (!empty($user)) { // We don't have a 404
