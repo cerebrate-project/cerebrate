@@ -458,6 +458,9 @@ class CRUDComponent extends Component
                 $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
                 unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
                 $data = $massagedData['entity'];
+                if (isset($input['meta_fields'])) {
+                    unset($input['meta_fields']);
+                }
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if (isset($params['beforeSave'])) {
@@ -568,10 +571,35 @@ class CRUDComponent extends Component
         $this->Table->saveMetaFields($id, $input, $this->Table);
     }
 
-    // prune empty values and marshall fields
-    public function massageMetaFields($entity, $input, $allMetaTemplates = [])
+    private function handleSimpleMetaFieldInput($allMetaTemplates, $input, &$cleanupMetaFields)
     {
-        if (empty($input['MetaTemplates']) || !$this->metaFieldsSupported()) {
+        $input['MetaTemplates'] = [];
+        foreach ($input['meta_fields'] as $metaField) {
+            foreach ($allMetaTemplates as $metaTemplate) {
+                if ($metaTemplate->uuid != $metaField['template_uuid'] || $metaTemplate->version != $metaField['template_version']) {
+                    continue;
+                }
+                foreach ($metaTemplate['meta_template_fields'] as $mtp) {
+                    if ($mtp->field == $metaField['field']) {
+                        // I feel dirty. I'm sorry.
+                        $input['MetaTemplates'][$metaTemplate->id]['meta_template_fields'][$mtp->id]['metaFields']['new'][] = $metaField['value'];
+                        $cleanupMetaFields[] = [
+                            'scope' => $this->Table->getBehavior('MetaFields')->getScope(),
+                            'field' => $mtp->field,
+                            'meta_template_field_id' => $mtp->id,
+                            'meta_template_id' => $metaTemplate->id
+                        ];
+                    }
+                }
+            }
+        }
+        return $input;
+    }
+
+    // prune empty values and marshall fields
+    public function massageMetaFields($entity, $input, $allMetaTemplates = [], &$cleanupMetaFields = [])
+    {
+        if ((empty($input['MetaTemplates']) && !isset($input['meta_fields'])) || !$this->metaFieldsSupported()) {
             return ['entity' => $entity, 'metafields_to_delete' => []];
         }
 
@@ -579,6 +607,12 @@ class CRUDComponent extends Component
         $metaFieldsIndex = [];
         if (empty($metaTemplates)) {
             $allMetaTemplates = $this->getMetaTemplates()->toArray();
+        }
+        // handle simpler format of meta_templates via the API
+        // the idea is that integrators shouldn't have to mimic the complex format used by the UI.
+        if (isset($input['meta_fields'])) {
+            $input = $this->handleSimpleMetaFieldInput($allMetaTemplates, $input, $cleanupMetaFields);
+            $entity->cleanupMetaFields = $cleanupMetaFields;
         }
         if (!empty($entity->meta_fields)) {
             foreach ($entity->meta_fields as $i => $metaField) {
@@ -738,11 +772,28 @@ class CRUDComponent extends Component
                     throw new NotFoundException(__('Could not save {0} due to the marshaling failing. Your input is bad and you should feel bad.', $this->ObjectAlias));
                 }
             }
+            $cleanupMetaFields = [];
             if ($metaFieldsEnabled) {
-                $massagedData = $this->massageMetaFields($data, $input, $metaTemplates);
+                $massagedData = $this->massageMetaFields($data, $input, $metaTemplates, $cleanupMetaFields);
+                if (!empty($cleanupMetaFields)) {
+                    foreach ($cleanupMetaFields as $cleanupMetaField) {
+                        $this->Table->MetaFields->deleteAll([
+                            'AND' => [
+                                'scope' => $cleanupMetaField['scope'],
+                                'field' => $cleanupMetaField['field'],
+                                'meta_template_field_id' => $cleanupMetaField['meta_template_field_id'],
+                                'meta_template_id' => $cleanupMetaField['meta_template_id'],
+                                'parent_id' => $id
+                            ]
+                        ]);
+                    }
+                }
                 unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
                 $data = $massagedData['entity'];
                 $metaFieldsToDelete = $massagedData['metafields_to_delete'];
+                if (isset($input['meta_fields'])) {
+                    unset($input['meta_fields']);
+                }
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
             if (isset($params['beforeSave'])) {
