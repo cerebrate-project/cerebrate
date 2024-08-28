@@ -612,7 +612,6 @@ class CRUDComponent extends Component
         // the idea is that integrators shouldn't have to mimic the complex format used by the UI.
         if (isset($input['meta_fields'])) {
             $input = $this->handleSimpleMetaFieldInput($allMetaTemplates, $input, $cleanupMetaFields);
-            $entity->cleanupMetaFields = $cleanupMetaFields;
         }
         if (!empty($entity->meta_fields)) {
             foreach ($entity->meta_fields as $i => $metaField) {
