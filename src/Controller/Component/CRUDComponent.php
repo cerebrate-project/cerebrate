@@ -15,8 +15,10 @@ use Cake\Database\Expression\QueryExpression;
 use Cake\Routing\Router;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Collection\Collection;
 use App\Utility\UI\IndexSetting;
+use phpDocumentor\Reflection\DocBlock\Tags\InvalidTag;
 
 class CRUDComponent extends Component
 {
@@ -703,6 +705,9 @@ class CRUDComponent extends Component
     private function __massageInput($params)
     {
         $input = $this->request->getData();
+        if (empty($input)) {
+            throw new BadRequestException(__('Invalid request content. Please make sure that you pass the data to be handled in the body and that the proper Accept and Content-type headers are set. This could also be caused by invalid JSON data being passed.'));
+        }
         if (!empty($params['override'])) {
             foreach ($params['override'] as $field => $value) {
                 $input[$field] = $value;
