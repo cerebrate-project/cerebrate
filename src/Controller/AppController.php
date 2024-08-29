@@ -145,6 +145,9 @@ class AppController extends Controller
         }
 
         $this->ACL->checkAccess();
+        $version = file_get_contents(ROOT . DS . 'src' . DS . 'VERSION.json');
+        $version = json_decode($version, true)['version'];
+        $this->set('cerebrate_version', $version);
         if (!$this->ParamHandler->isRest()) {
             $this->set('ajax', $this->request->is('ajax'));
             $this->request->getParam('prefix');
