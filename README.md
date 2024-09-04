@@ -56,7 +56,7 @@ For installation via docker, refer to the [cerebrate-docker](https://github.com/
 ~~~~
     The software is released under the AGPLv3.
 
-    Copyright (C) 2019, 2021  Andras Iklody
-    Copyright (C) 2020-2021 Sami Mokaddem
+    Copyright (C) 2019-2024  Andras Iklody
+    Copyright (C) 2020-2024 Sami Mokaddem
     Copyright (C) CIRCL - Computer Incident Response Center Luxembourg
 ~~~~
