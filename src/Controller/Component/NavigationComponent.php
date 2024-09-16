@@ -74,8 +74,13 @@ class NavigationComponent extends Component
         $userSettingTable = TableRegistry::getTableLocator()->get('UserSettings');
         $setting = $userSettingTable->getSettingByName($this->request->getAttribute('identity'), 'ui.bookmarks');
         $bookmarks = is_null($setting) ? [] : json_decode($setting->value, true);
-
+        if (empty($bookmarks)) {
+            return [];
+        }
         $links = array_map(function($bookmark) {
+            if (!isset($bookmark['name']) || !isset($bookmark['label']) || !isset($bookmark['url'])) {
+                return [];
+            }
             return [
                 'name' => $bookmark['name'],
                 'label' => $bookmark['label'],
