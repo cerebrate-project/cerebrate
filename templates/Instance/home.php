@@ -18,16 +18,16 @@ $this->userSettingsTable = TableRegistry::getTableLocator()->get('UserSettings')
         <ul class="col-sm-12 col-md-10 col-l-8 col-xl-8 mb-3">
             <?php foreach ($bookmarks as $bookmark) : ?>
                 <li class="list-group-item">
-                    <?php if ($this->userSettingsTable->validURI($bookmark['url'])): ?>
+                    <?php if (!empty($bookmark['url']) && $this->userSettingsTable->validURI($bookmark['url'])): ?>
                         <a href="<?= h($bookmark['url']) ?>" class="w-bold">
                             <?= h($bookmark['label']) ?>
                         </a>
                     <?php else: ?>
                         <span class="w-bold">
-                            <?= h($bookmark['url']) ?>
+                            <?= !empty($bookmark['url']) ? h($bookmark['url']) : '' ?>
                         </span>
                     <?php endif; ?>
-                    <span class="ms-3 fw-light"><?= h($bookmark['name']) ?></span>
+                    <span class="ms-3 fw-light"><?= !empty($bookmark['name']) ? h($bookmark['name']): '' ?></span>
                 </li>
             <?php endforeach; ?>
         </ul>
