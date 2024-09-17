@@ -144,9 +144,13 @@ class UserSettingsTable extends AppTable
      */
     public function validURI(String $uri): bool
     {
-        $parsed = parse_url($uri);
-        $isLocalPath = empty($parsed['scheme']) && empty($parsed['domain']) && !empty($parsed['path']);
-        $isValidURL = !empty($parsed['scheme']) && in_array($parsed['scheme'], ['http', 'https']) && filter_var($uri, FILTER_SANITIZE_URL);
+        try {
+            $parsed = parse_url($uri);
+            $isLocalPath = empty($parsed['scheme']) && empty($parsed['domain']) && !empty($parsed['path']);
+            $isValidURL = !empty($parsed['scheme']) && in_array($parsed['scheme'], ['http', 'https']) && filter_var($uri, FILTER_SANITIZE_URL);
+        } catch (\Exception $e) {
+            return false;
+        }
         return $isLocalPath || $isValidURL;
     }
 }
