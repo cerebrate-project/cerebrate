@@ -83,8 +83,8 @@ class PermissionLimitationsTable extends AppTable
                     'scope' => 'user',
                     'field' => $field,
                 ];
-                if (!empty($ownOrgUserIds)) {
-                    $conditions['parent_id IN'] = array_values($ownOrgUserIds);
+                if ($includeOrganisationPermissions) {
+                    $conditions['parent_id IN'] = !empty($ownOrgUserIds) ? array_values($ownOrgUserIds) : [-1];
                 }
                 $limitations[$field]['organisation']['current'] = '?';
                 if ($includeOrganisationPermissions) {
