@@ -541,4 +541,22 @@ class UsersController extends AppController
         }
         $this->viewBuilder()->setLayout('login');
     }
+
+    public function getLimitationForOrganisation($org_id) {
+        $currentUser = $this->ACL->getUser();
+        if (!$currentUser['role']['perm_community_admin']) {
+            $validOrgs = $this->Users->getValidOrgsForUser($currentUser);
+            if ($currentUser['role']['perm_group_admin']) {
+                if (!in_array($org_id, $validOrgs)) {
+                    throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
+                }
+            }
+        }
+        $fakeUser = $this->Users->newEmptyEntity();
+        $fakeUser->organisation_id = $org_id; // set fakeUser's to the selected org-id
+        $metaTemplates = $this->CRUD->getMetaTemplates();
+        $fakeUser = $this->CRUD->attachMetaTemplatesIfNeeded($fakeUser, $metaTemplates->toArray());
+        $fakeUser = $this->fetchTable('PermissionLimitations')->attachLimitations($fakeUser);
+        return $this->RestResponse->viewData($fakeUser, 'json');
+    }
 }

@@ -245,7 +245,8 @@ class ACLComponent extends Component
             'register' => ['*'],
             'settings' => ['*'],
             'toggle' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            'view' => ['*']
+            'view' => ['*'],
+            'getLimitationForOrganisation' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
         ],
         'UserSettings' => [
             'index' => ['*'],

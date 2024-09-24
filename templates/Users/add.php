@@ -102,43 +102,63 @@ echo $this->element('genericElements/Form/genericForm', [
 <script>
     $(document).ready(function() {
         const entity = <?= json_encode($entity) ?>;
-        if (entity.MetaTemplates) {
-            for (const [metaTemplateId, metaTemplate] of Object.entries(entity.MetaTemplates)) {
-                for (const [metaTemplateFieldId, metaTemplateField] of Object.entries(metaTemplate.meta_template_fields)) {
-                    let metaFieldId = false
-                    if (metaTemplateField.metaFields !== undefined && Object.keys(metaTemplateField.metaFields).length > 0) {
-                        metaFieldId = Object.keys(metaTemplateField.metaFields)[0]
-                    }
-                    let metafieldInput
-                    const baseQueryPath = `MetaTemplates.${metaTemplateId}.meta_template_fields.${metaTemplateFieldId}.metaFields`
-                    if (metaFieldId) {
-                        metafieldInput = document.getElementById(`${baseQueryPath}.${metaFieldId}.value-field`)
-                    } else {
-                        metafieldInput = document.getElementById(`${baseQueryPath}.new.0-field`)
-                    }
-                    if (metafieldInput !== null) {
-                        const permissionWarnings = buildPermissionElement(metaTemplateField)
-                        $(metafieldInput.parentElement).append(permissionWarnings)
+        createUIForPermission(entity)
+
+        $('#organisation_id-field').change(updateOrgPermissionCount)
+        updateOrgPermissionCount()
+
+        function createUIForPermission(entity) {
+            if (entity.MetaTemplates) {
+                for (const [metaTemplateId, metaTemplate] of Object.entries(entity.MetaTemplates)) {
+                    for (const [metaTemplateFieldId, metaTemplateField] of Object.entries(metaTemplate.meta_template_fields)) {
+                        let metaFieldId = false
+                        if (metaTemplateField.metaFields !== undefined && Object.keys(metaTemplateField.metaFields).length > 0) {
+                            metaFieldId = Object.keys(metaTemplateField.metaFields)[0]
+                        }
+                        let metafieldInput
+                        const baseQueryPath = `MetaTemplates.${metaTemplateId}.meta_template_fields.${metaTemplateFieldId}.metaFields`
+                        if (metaFieldId) {
+                            metafieldInput = document.getElementById(`${baseQueryPath}.${metaFieldId}.value-field`)
+                        } else {
+                            metafieldInput = document.getElementById(`${baseQueryPath}.new.0-field`)
+                        }
+                        if (metafieldInput !== null) {
+                            const permissionWarnings = buildPermissionElement(metaTemplateField)
+                            $(metafieldInput.parentElement).find('.permission-container').remove()
+                            $(metafieldInput.parentElement).append(permissionWarnings)
+                        }
                     }
                 }
             }
+
+            function buildPermissionElement(metaTemplateField) {
+                const warningTypes = ['danger', 'warning', 'info', ]
+                const $span = $('<span>')
+                    .addClass(['permission-container', 'ms-2'])
+                warningTypes.forEach(warningType => {
+                    if (metaTemplateField[warningType]) {
+                        $theWarning = $('<span>')
+                            .addClass([
+                                `text-${warningType}`,
+                                'ms-1',
+                            ])
+                            .append($(metaTemplateField[warningType]))
+                        $span.append($theWarning)
+                    }
+                });
+                return $span
+            }
         }
 
-        function buildPermissionElement(metaTemplateField) {
-            const warningTypes = ['danger', 'warning', 'info', ]
-            const $span = $('<span>').addClass('ms-2')
-            warningTypes.forEach(warningType => {
-                if (metaTemplateField[warningType]) {
-                    $theWarning = $('<span>')
-                        .addClass([
-                            `text-${warningType}`,
-                            'ms-1',
-                        ])
-                        .append($(metaTemplateField[warningType]))
-                    $span.append($theWarning)
-                }
-            });
-            return $span
+        async function updateOrgPermissionCount() {
+            var org_id = $('#organisation_id-field').val()
+            var url = `/users/getLimitationForOrganisation/${org_id}?includeMetatemplate=1`
+            const response = await fetch(url, new Headers({Accept: 'application/json'}));
+            if (!response.ok) {
+                throw new Error(`Network response was not ok. \`${response.statusText}\``)
+            }
+            const entity = await response.json();
+            createUIForPermission(entity)
         }
     })
 </script>
