@@ -336,7 +336,7 @@ class UsersController extends AppController
         $org_conditions = [];
         if (empty($currentUser['role']['perm_community_admin'])) {
             $org_conditions = ['id' => $currentUser['organisation_id']];
-            if (!empty($currentUser['role']['perm_group_admin'])) {
+            if (!empty($currentUser['role']['perm_group_admin']) && !empty($validOrgIds)) {
                 $org_conditions = ['id IN' => $validOrgIds];
             }
         }
