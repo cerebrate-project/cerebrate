@@ -19,6 +19,7 @@ $fields = [
     ],
     [
         'key' => __('Country'),
+        'type' => 'country',
         'path' => 'nationality'
     ],
     [

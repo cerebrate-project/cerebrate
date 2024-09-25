@@ -124,7 +124,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
             [
                 'name' => __('Country'),
                 'sort' => 'organisation.nationality',
-                'data_path' => 'organisation.nationality'
+                'data_path' => 'organisation.nationality',
+                'element' => 'country',
             ],
             [
                 'name' => __('# User Settings'),

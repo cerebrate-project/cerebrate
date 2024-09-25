@@ -46,7 +46,8 @@ $fields = [
     ],
     [
         'key' => __('Country'),
-        'path' => 'organisation.nationality'
+        'path' => 'organisation.nationality',
+        'type' => 'country',
     ],
     [
         'key' => __('Alignments'),
