@@ -67,12 +67,15 @@ class PermissionLimitationsTable extends AppTable
                 ]
             ])->all()->toList();
             if (isset($data['global'])) {
+                $conditions = [
+                    'scope' => 'user',
+                    'field' => $field,
+                ];
+                if (!empty($disabledUserIds)) {
+                    $conditions['parent_id NOT IN'] = $disabledUserIds;
+                }
                 $limitations[$field]['global']['current'] = $MetaFields->find('all', [
-                    'conditions' => [
-                        'scope' => 'user',
-                        'field' => $field,
-                        'parent_id NOT IN' => $disabledUserIds
-                    ]
+                    'conditions' => $conditions,
                 ])->count();
             }
             if (isset($data['global'])) {
@@ -80,8 +83,8 @@ class PermissionLimitationsTable extends AppTable
                     'scope' => 'user',
                     'field' => $field,
                 ];
-                if (!empty($ownOrgUserIds)) {
-                    $conditions['parent_id IN'] = array_values($ownOrgUserIds);
+                if ($includeOrganisationPermissions) {
+                    $conditions['parent_id IN'] = !empty($ownOrgUserIds) ? array_values($ownOrgUserIds) : [-1];
                 }
                 $limitations[$field]['organisation']['current'] = '?';
                 if ($includeOrganisationPermissions) {

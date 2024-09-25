@@ -20,7 +20,7 @@
 
         foreach ($tableResult['entries'] as $entry) {
             if ($entry->getSource() == 'MetaFields') {
-                $section .= sprintf('<a class="dropdown-item" href="%s">%s</a>',
+                $section .= sprintf('<a class="dropdown-item" href="%s" style="max-width: 70vw; overflow: hidden; text-overflow: ellipsis;">%s</a>',
                     Cake\Routing\Router::URL([
                         'controller' => Cake\Utility\Inflector::pluralize($entry->scope),
                         'action' => 'view',
@@ -29,7 +29,7 @@
                     sprintf('%s (%s::%s)', h($entry->value), h($entry->scope), h($entry->field))
                 );
             } else {
-                $section .= sprintf('<a class="dropdown-item" href="%s">%s</a>',
+                $section .= sprintf('<a class="dropdown-item" href="%s" style="max-width: 70vw; overflow: hidden; text-overflow: ellipsis;">%s</a>',
                     Cake\Routing\Router::URL([
                         'controller' => Cake\Utility\Inflector::pluralize($entry->getSource()),
                         'action' => 'view',

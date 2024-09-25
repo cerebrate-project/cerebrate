@@ -239,12 +239,14 @@ class ACLComponent extends Component
             'delete' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
             'edit' => ['*'],
             'index' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
+            'filtering' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
             'login' => ['*'],
             'logout' => ['*'],
             'register' => ['*'],
             'settings' => ['*'],
             'toggle' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            'view' => ['*']
+            'view' => ['*'],
+            'getLimitationForOrganisation' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
         ],
         'UserSettings' => [
             'index' => ['*'],

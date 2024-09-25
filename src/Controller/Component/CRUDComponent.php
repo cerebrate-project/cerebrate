@@ -393,7 +393,7 @@ class CRUDComponent extends Component
         return false;
     }
 
-    private function getMetaTemplates(array $metaTemplateConditions = [])
+    public function getMetaTemplates(array $metaTemplateConditions = [])
     {
         $metaTemplates = [];
         if (!$this->metaFieldsSupported()) {
