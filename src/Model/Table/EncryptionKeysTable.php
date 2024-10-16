@@ -109,10 +109,10 @@ class EncryptionKeysTable extends AppTable
             if (!$sortedKeys['valid']) {
                 $result[2] = 'The user\'s PGP key does not include a valid subkey that could be used for encryption.';
                 if ($sortedKeys['expired']) {
-                    $result[2] .= ' ' . __n('Found %s subkey that have expired.', 'Found %s subkeys that have expired.', $sortedKeys['expired'], $sortedKeys['expired']);
+                    $result[2] .= ' ' . __n(__('Found 1 subkey that has expired.'), __('Found {0} subkeys that have expired.', $sortedKeys['expired']), $sortedKeys['expired']);
                 }
                 if ($sortedKeys['noEncrypt']) {
-                    $result[2] .= ' ' . __n('Found %s subkey that is sign only.', 'Found %s subkeys that are sign only.', $sortedKeys['noEncrypt'], $sortedKeys['noEncrypt']);
+                    $result[2] .= ' ' . __n(__('Found 1 subkey that is sign only.'), __('Found {0} subkeys that are sign only.', $sortedKeys['noEncrypt']), $sortedKeys['noEncrypt']);
                 }
             } else {
                 $result[0] = true;

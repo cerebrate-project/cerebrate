@@ -107,7 +107,7 @@ class CryptGpgExtended extends \Crypt_GPG
         $this->engine->reset();
         $this->engine->setInput($input);
         $this->engine->setOutput($output);
-        $this->engine->setOperation('--import', ['--import-options', 'show-only', '--with-colons']);
+        $this->engine->setOperation('--import', ['--import-options', 'show-only', '--with-colons', '--no-default-keyring --no-auto-check-trustdb --trust-model pgp']);
         $this->engine->run();
 
         $keys   = [];
