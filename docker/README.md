@@ -16,7 +16,7 @@ and issue `make image`
 
 ```
 COMPOSER_VERSION?=2.1.5
-PHP_VERSION?=7.4
+PHP_VERSION?=8.2
 DEBIAN_RELEASE?=buster
 IMAGE_NAME?=cerebrate:latest
 
