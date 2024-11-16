@@ -346,11 +346,11 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'description' => __('The debug level of the instance'),
                             'default' => 0,
                             'options' => [
-                                false => __('Debug Off'),
-                                true => __('Debug On'),
+                                0 => __('Debug Off'),
+                                1 => __('Debug On'),
                             ],
                             'test' => function ($value, $setting, $validator) {
-                                $validator->range('value', [0, 2]);
+                                $validator->range('value', [0, 1]);
                                 return testValidator($value, $validator);
                             },
                         ],
