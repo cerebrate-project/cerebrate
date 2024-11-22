@@ -103,7 +103,7 @@ class UserSettingsTable extends AppTable
             'name' => $data['bookmark_name'],
             'url' => $data['bookmark_url'],
         ];
-        $restricted_domains = Configure::read('Security.restrictions.allowed_bookmark_domains');
+        $restricted_domains = Configure::read('security.restrictions.allowed_bookmark_domains');
         if (!empty($restricted_domains)) {
             $restricted_domains = explode(',', $restricted_domains);
             $parsed = parse_url($bookmarkData['url']);
