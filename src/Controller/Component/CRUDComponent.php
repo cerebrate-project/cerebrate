@@ -472,7 +472,7 @@ class CRUDComponent extends Component
                 } catch (\Exception $e) {
                     $message = $e->getMessage();
                     $break = true;
-                    $this->__raiseErrorToUser(__('Could not save {0}.', $this->ObjectAlias), ['Custom checks' => ['Custom checks' => $message]]);
+                    $this->__raiseErrorToUser(__('Could not save {0}.', $this->ObjectAlias), $message);
                 }
                 if ($data === false) {
                     $break = true;
@@ -488,7 +488,7 @@ class CRUDComponent extends Component
                         } catch (\Exception $e) {
                             $message = $e->getMessage();
                             $break = true;
-                            $this->__raiseErrorToUser(__('Saved {0}, but could not execute post-save actions.', $this->ObjectAlias), ['Custom checks' => ['Custom checks' => $message]]);
+                            $this->__raiseErrorToUser(__('Saved {0}, but could not execute post-save actions.', $this->ObjectAlias), $message);
                         }
                         if ($data === false) {
                             $break = true;
@@ -748,10 +748,12 @@ class CRUDComponent extends Component
     private function __raiseErrorToUser($title, $message = null)
     {
         if ($this->Controller->ParamHandler->isRest()) {
+            $this->Controller->restResponsePayload = $this->RestResponse->viewData($message, 'json');
         } else if ($this->Controller->ParamHandler->isAjax()) {
-            $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'edit', [], $title, $message);
+            $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'edit', [], $title, ['Custom checks' => ['Custom checks' => $message]]);
         } else {
-            throw new NotFoundException($message);
+            $this->Controller->isFailResponse = true;
+            $this->Controller->Flash->error($message);
         }
     }
 
@@ -839,7 +841,7 @@ class CRUDComponent extends Component
                 } catch (\Exception $e) {
                     $message = $e->getMessage();
                     $break = true;
-                    $this->__raiseErrorToUser(__('Could not save {0}.', $this->ObjectAlias), ['Custom checks' => ['Custom checks' => $message]]);
+                    $this->__raiseErrorToUser(__('Could not save {0}.', $this->ObjectAlias), $message);
                 }
                 if ($data === false) {
                     $break = true;
@@ -867,7 +869,7 @@ class CRUDComponent extends Component
                             } catch (\Exception $e) {
                                 $message = $e->getMessage();
                                 $break = true;
-                                $this->__raiseErrorToUser(__('Saved {0} `{1}`, but could not execute post-save actions.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()}), ['Custom checks' => ['Custom checks' => $message]]);
+                                $this->__raiseErrorToUser(__('Saved {0} `{1}`, but could not execute post-save actions.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()}), $message);
                             }
                             if ($data === false) {
                                 $break = true;
