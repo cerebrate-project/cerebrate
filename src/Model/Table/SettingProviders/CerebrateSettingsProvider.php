@@ -338,6 +338,17 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                         ],
                     ]
                 ],
+                'Restrictions' => [
+                    'Allowed bookmark domains' => [
+                        'security.restrictions.allowed_bookmark_domains' => [
+                            'name' => __('Allowed bookmark domains'),
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'description' => __('Comma separated list of allowed bookmark domains. Leave empty to allow all domains.'),
+                            'default' => '',
+                        ],
+                    ],
+                ],
                 'Development' => [
                     'Debugging' => [
                         'debug' => [
