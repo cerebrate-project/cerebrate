@@ -465,50 +465,72 @@ class CRUDComponent extends Component
                 }
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
+            $break = false;
             if (isset($params['beforeSave'])) {
-                $data = $params['beforeSave']($data);
+                try {
+                    $data = $params['beforeSave']($data);
+                } catch (\Exception $e) {
+                    $message = $e->getMessage();
+                    $break = true;
+                    $this->__raiseErrorToUser(__('Could not save {0}.', $this->ObjectAlias), ['Custom checks' => ['Custom checks' => $message]]);
+                }
                 if ($data === false) {
-                    throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                    $break = true;
+                    $this->__raiseErrorToUser(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
                 }
             }
-            $savedData = $this->Table->save($data);
-            if ($savedData !== false) {
-                if (isset($params['afterSave'])) {
-                    $params['afterSave']($data);
-                }
-                $message = __('{0} added.', $this->ObjectAlias);
-                if ($this->Controller->ParamHandler->isRest()) {
-                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($savedData, 'json');
-                } else if ($this->Controller->ParamHandler->isAjax()) {
-                    if (!empty($params['displayOnSuccess'])) {
-                        $displayOnSuccess = $this->renderViewInVariable($params['displayOnSuccess'], ['entity' => $data]);
-                        $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message, ['displayOnSuccess' => $displayOnSuccess]);
-                    } else {
-                        $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message);
+            if (!$break) {
+                $savedData = $this->Table->save($data);
+                if ($savedData !== false) {
+                    if (isset($params['afterSave'])) {
+                        try {
+                            $data = $params['afterSave']($data);
+                        } catch (\Exception $e) {
+                            $message = $e->getMessage();
+                            $break = true;
+                            $this->__raiseErrorToUser(__('Saved {0}, but could not execute post-save actions.', $this->ObjectAlias), ['Custom checks' => ['Custom checks' => $message]]);
+                        }
+                        if ($data === false) {
+                            $break = true;
+                            $this->__raiseErrorToUser(__('Saved {0}, but the post-save actons failed.', $this->ObjectAlias));
+                        }
+                    }
+                    if (!$break) {
+                        $message = __('{0} added.', $this->ObjectAlias);
+                        if ($this->Controller->ParamHandler->isRest()) {
+                            $this->Controller->restResponsePayload = $this->RestResponse->viewData($savedData, 'json');
+                        } else if ($this->Controller->ParamHandler->isAjax()) {
+                            if (!empty($params['displayOnSuccess'])) {
+                                $displayOnSuccess = $this->renderViewInVariable($params['displayOnSuccess'], ['entity' => $data]);
+                                $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message, ['displayOnSuccess' => $displayOnSuccess]);
+                            } else {
+                                $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'add', $savedData, $message);
+                            }
+                        } else {
+                            $this->Controller->Flash->success($message);
+                            if (empty($params['redirect'])) {
+                                $this->Controller->redirect(['action' => 'view', $data->id]);
+                            } else {
+                                $this->Controller->redirect($params['redirect']);
+                            }
+                        }
                     }
                 } else {
-                    $this->Controller->Flash->success($message);
-                    if (empty($params['redirect'])) {
-                        $this->Controller->redirect(['action' => 'view', $data->id]);
+                    $this->Controller->isFailResponse = true;
+                    $validationErrors = $data->getErrors();
+                    $validationMessage = $this->prepareValidationMessage($validationErrors);
+                    $message = __(
+                        '{0} could not be added.{1}',
+                        $this->ObjectAlias,
+                        empty($validationMessage) ? '' : PHP_EOL . __('Reason: {0}', $validationMessage)
+                    );
+                    if ($this->Controller->ParamHandler->isRest()) {
+                        $this->Controller->restResponsePayload = $this->RestResponse->viewData($message, 'json');
+                    } else if ($this->Controller->ParamHandler->isAjax()) {
+                        $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'add', $data, $message, $validationErrors);
                     } else {
-                        $this->Controller->redirect($params['redirect']);
+                        $this->Controller->Flash->error($message);
                     }
-                }
-            } else {
-                $this->Controller->isFailResponse = true;
-                $validationErrors = $data->getErrors();
-                $validationMessage = $this->prepareValidationMessage($validationErrors);
-                $message = __(
-                    '{0} could not be added.{1}',
-                    $this->ObjectAlias,
-                    empty($validationMessage) ? '' : PHP_EOL . __('Reason: {0}', $validationMessage)
-                );
-                if ($this->Controller->ParamHandler->isRest()) {
-                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($message, 'json');
-                } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'add', $data, $message, $validationErrors);
-                } else {
-                    $this->Controller->Flash->error($message);
                 }
             }
         }
@@ -723,6 +745,16 @@ class CRUDComponent extends Component
         return $input;
     }
 
+    private function __raiseErrorToUser($title, $message = null)
+    {
+        if ($this->Controller->ParamHandler->isRest()) {
+        } else if ($this->Controller->ParamHandler->isAjax()) {
+            $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'edit', [], $title, $message);
+        } else {
+            throw new NotFoundException($message);
+        }
+    }
+
     public function edit(int $id, array $params = []): void
     {
         if (empty($id)) {
@@ -800,53 +832,78 @@ class CRUDComponent extends Component
                 }
             }
             $data = $this->Table->patchEntity($data, $input, $patchEntityParams);
+            $break = false;
             if (isset($params['beforeSave'])) {
-                $data = $params['beforeSave']($data);
+                try {
+                    $data = $params['beforeSave']($data);
+                } catch (\Exception $e) {
+                    $message = $e->getMessage();
+                    $break = true;
+                    $this->__raiseErrorToUser(__('Could not save {0}.', $this->ObjectAlias), ['Custom checks' => ['Custom checks' => $message]]);
+                }
                 if ($data === false) {
-                    throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
+                    $break = true;
+                    $this->__raiseErrorToUser(__('Could not save {0} due to the input failing to meet expectations.', $this->ObjectAlias), __('Your input is bad and you should feel bad.'));
                 }
             }
-            $savedData = $this->Table->save($data);
-            if ($savedData !== false) {
-                if ($metaFieldsEnabled && !empty($metaFieldsToDelete)) {
-                    foreach ($metaFieldsToDelete as $k => $v) {
-                        if ($v === null) {
-                            unset($metaFieldsToDelete[$k]);
+            if (!$break) {
+                $savedData = $this->Table->save($data);
+                if ($savedData !== false) {
+                    if ($metaFieldsEnabled && !empty($metaFieldsToDelete)) {
+                        foreach ($metaFieldsToDelete as $k => $v) {
+                            if ($v === null) {
+                                unset($metaFieldsToDelete[$k]);
+                            }
+                        }
+                        if (!empty($metaFieldsToDelete)) {
+                            $this->Table->MetaFields->unlink($savedData, $metaFieldsToDelete);
                         }
                     }
-                    if (!empty($metaFieldsToDelete)) {
-                        $this->Table->MetaFields->unlink($savedData, $metaFieldsToDelete);
+                    $break = false;
+                    if (isset($params['afterSave'])) {
+                        if (isset($params['afterSave'])) {
+                            try {
+                                $data = $params['afterSave']($data);
+                            } catch (\Exception $e) {
+                                $message = $e->getMessage();
+                                $break = true;
+                                $this->__raiseErrorToUser(__('Saved {0} `{1}`, but could not execute post-save actions.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()}), ['Custom checks' => ['Custom checks' => $message]]);
+                            }
+                            if ($data === false) {
+                                $break = true;
+                                $this->__raiseErrorToUser(__('Saved {0} `{1}`, but the post-save actons failed.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()}));
+                            }
+                        }
                     }
-                }
-                if (isset($params['afterSave'])) {
-                    $params['afterSave']($data);
-                }
-                $message = __('{0} `{1}` updated.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()});
-                if ($this->Controller->ParamHandler->isRest()) {
-                    $this->Controller->restResponsePayload = $this->RestResponse->viewData($savedData, 'json');
-                } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'edit', $savedData, $message);
+                    if (!$break) {
+                        $message = __('{0} `{1}` updated.', $this->ObjectAlias, $savedData->{$this->Table->getDisplayField()});
+                        if ($this->Controller->ParamHandler->isRest()) {
+                            $this->Controller->restResponsePayload = $this->RestResponse->viewData($savedData, 'json');
+                        } else if ($this->Controller->ParamHandler->isAjax()) {
+                            $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxSuccessResponse($this->ObjectAlias, 'edit', $savedData, $message);
+                        } else {
+                            $this->Controller->Flash->success($message);
+                            if (empty($params['redirect'])) {
+                                $this->Controller->redirect(['action' => 'view', $id]);
+                            } else {
+                                $this->Controller->redirect($params['redirect']);
+                            }
+                        }
+                    }
                 } else {
-                    $this->Controller->Flash->success($message);
-                    if (empty($params['redirect'])) {
-                        $this->Controller->redirect(['action' => 'view', $id]);
+                    $validationErrors = $data->getErrors();
+                    $validationMessage = $this->prepareValidationError($data);
+                    $message = __(
+                        '{0} could not be modified.{1}',
+                        $this->ObjectAlias,
+                        empty($validationMessage) ? '' : PHP_EOL . __('Reason: {0}', $validationMessage)
+                    );
+                    if ($this->Controller->ParamHandler->isRest()) {
+                    } else if ($this->Controller->ParamHandler->isAjax()) {
+                        $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'edit', $data, $message, $validationErrors);
                     } else {
-                        $this->Controller->redirect($params['redirect']);
+                        $this->Controller->Flash->error($message);
                     }
-                }
-            } else {
-                $validationErrors = $data->getErrors();
-                $validationMessage = $this->prepareValidationError($data);
-                $message = __(
-                    '{0} could not be modified.{1}',
-                    $this->ObjectAlias,
-                    empty($validationMessage) ? '' : PHP_EOL . __('Reason: {0}', $validationMessage)
-                );
-                if ($this->Controller->ParamHandler->isRest()) {
-                } else if ($this->Controller->ParamHandler->isAjax()) {
-                    $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, 'edit', $data, $message, $validationErrors);
-                } else {
-                    $this->Controller->Flash->error($message);
                 }
             }
         }

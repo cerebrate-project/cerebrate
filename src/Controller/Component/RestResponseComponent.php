@@ -440,7 +440,7 @@ class RestResponseComponent extends Component
         return $this->viewData($response);
     }
 
-    public function ajaxFailResponse($ObjectAlias, $action, $entity, $message, $errors = [])
+    public function ajaxFailResponse($ObjectAlias, $action, $entity, $message, $errors = [], $description = '')
     {
         $action = $this->__dissectAdminRouting($action);
         $entity = is_array($entity) ? $entity : $entity->toArray();
@@ -448,6 +448,7 @@ class RestResponseComponent extends Component
             'success' => false,
             'message' => $message,
             'errors' => $errors,
+            'description' => $description,
             'url' =>  !empty($entity['id']) ? $this->__generateURL($action, $ObjectAlias, $entity['id']) : ''
         ];
         return $this->viewData($response);
