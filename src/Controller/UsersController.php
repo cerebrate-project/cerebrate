@@ -487,7 +487,7 @@ class UsersController extends AppController
     {
         $editingAnotherUser = false;
         $currentUser = $this->ACL->getUser();
-        if ((empty($currentUser['role']['perm_community_admin']) && empty($currentUser['role']['perm_group_admin'])) || $user_id == $currentUser->id) {
+        if ((empty($currentUser['role']['perm_community_admin']) && empty($currentUser['role']['perm_group_admin'])) || empty($user_id) || $user_id == $currentUser->id) {
             $user = $currentUser;
         } else {
             $user = $this->Users->get($user_id, [
