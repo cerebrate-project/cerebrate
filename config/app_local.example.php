@@ -25,7 +25,7 @@ return [
      * Development Mode:
      * true: Errors and warnings shown.
      */
-    'debug' => filter_var(env('DEBUG', 0), FILTER_VALIDATE_INT, array("options" => array("min_range"=>0, "max_range"=>1))),
+    'debug' => filter_var(env('DEBUG', false), FILTER_VALIDATE_BOOLEAN),
 
     /*
      * Security and encryption configuration
