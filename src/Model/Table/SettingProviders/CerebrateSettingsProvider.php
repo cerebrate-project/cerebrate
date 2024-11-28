@@ -136,12 +136,14 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                     'Proxy' => [
                         'Proxy.host' => [
                             'name' => __('Host'),
+			    'severity' => 'info',
                             'type' => 'string',
                             'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
                             'test' => 'testHostname',
                         ],
                         'Proxy.port' => [
                             'name' => __('Port'),
+			    'severity' => 'info',
                             'type' => 'integer',
                             'description' => __('The TCP port for the HTTP proxy.'),
                             'test' => 'testForRangeXY',
