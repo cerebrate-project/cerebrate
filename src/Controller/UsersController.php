@@ -320,9 +320,12 @@ class UsersController extends AppController
                     }
                     return $data;
                 };
-                $params['beforeSave'] = function ($data) use ($currentUser, $validRoles) {
+                $params['beforeSave'] = function ($data) use ($currentUser, $validRoles, $validOrgIds) {
                     if (!in_array($data['role_id'], array_keys($validRoles)) && $this->ACL->getUser()['id'] != $data['id']) {
                         throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
+                    }
+                    if (!in_array($data['organisation_id'], $validOrgIds)) {
+                        throw new MethodNotAllowedException(__('You cannot assign the chosen organisation to a user.'));
                     }
                     return $data;
                 };
