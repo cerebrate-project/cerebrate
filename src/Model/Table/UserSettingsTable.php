@@ -95,9 +95,24 @@ class UserSettingsTable extends AppTable
         return $savedData;
     }
 
-    public function saveBookmark($user, $data)
+    public function saveBookmark($user, $data, &$message = null)
     {
         $setting = $this->getSettingByName($user, $this->BOOKMARK_SETTING_NAME);
+        $fieldsToCheck = [
+            'bookmark_label' => __('Label'),
+            'bookmark_name' => __('Name'),
+            'bookmark_url' => __('URL')
+        ];
+        foreach ($fieldsToCheck as $field => $fieldName) {
+            if (empty($data[$field])) {
+                $message = __('Please fill in all fields, {0} missing.', $fieldName);
+                return null;
+            }
+        }
+        if (empty($data['bookmark_label']) || empty($data['bookmark_name']) || empty($data['bookmark_url'])) {
+
+            return null;
+        }
         $bookmarkData = [
             'label' => $data['bookmark_label'],
             'name' => $data['bookmark_name'],
@@ -107,7 +122,7 @@ class UserSettingsTable extends AppTable
         if (!empty($restricted_domains)) {
             $restricted_domains = explode(',', $restricted_domains);
             $parsed = parse_url($bookmarkData['url']);
-            if (!in_array($parsed['host'], $restricted_domains)) {
+            if (!empty($parsed['host']) && !in_array($parsed['host'], $restricted_domains)) {
                 return null;
             }
         }

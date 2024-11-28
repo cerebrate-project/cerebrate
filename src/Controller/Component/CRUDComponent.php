@@ -1365,7 +1365,7 @@ class CRUDComponent extends Component
                 if (!empty($additionalData['redirect'])) { // If a redirection occurs, we need to make sure the flash message gets displayed
                     $this->Controller->Flash->error($message);
                 }
-                $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, $action, $data, $message, !is_null($errors) ? $errors : $data->getErrors());
+                $this->Controller->ajaxResponsePayload = $this->RestResponse->ajaxFailResponse($this->ObjectAlias, $action, $data, $message, $errors);
             } else {
                 $this->Controller->Flash->error($message);
                 $this->Controller->redirect($this->Controller->referer());
