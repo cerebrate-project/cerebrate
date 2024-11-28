@@ -140,6 +140,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'type' => 'string',
                             'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
                             'test' => 'testHostname',
+                            'empty' => true
                         ],
                         'Proxy.port' => [
                             'name' => __('Port'),
@@ -147,6 +148,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'type' => 'integer',
                             'description' => __('The TCP port for the HTTP proxy.'),
                             'test' => 'testForRangeXY',
+                            'empty' => true
                         ],
                         'Proxy.user' => [
                             'name' => __('User'),
@@ -154,6 +156,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'description' => __('The authentication username for the HTTP proxy.'),
                             'default' => 'admin',
                             'dependsOn' => 'proxy.host',
+                            'empty' => true
                         ],
                         'Proxy.password' => [
                             'name' => __('Password'),
@@ -161,6 +164,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'description' => __('The authentication password for the HTTP proxy.'),
                             'default' => '',
                             'dependsOn' => 'proxy.host',
+                            'empty' => true
                         ],
                     ],
                 ],
