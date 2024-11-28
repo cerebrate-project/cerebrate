@@ -13,7 +13,7 @@
                     'label' => 'Site admin privilege (instance management)'
                 ],
                 [
-                    'field' => 'perm_community',
+                    'field' => 'perm_community_admin',
                     'type' => 'checkbox',
                     'label' => 'Community admin privilege (data admin)'
                 ],
