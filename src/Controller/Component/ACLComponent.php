@@ -363,11 +363,19 @@ class ACLComponent extends Component
             return true;
         }
 
-        if ($user['role']['perm_community_admin']) {
-            return false; // org_admins cannot edit admins
+        $this->Roles = TableRegistry::get('Roles');
+        $validRoles = [];
+        if (!$currentUser['role']['perm_community_admin']) {
+            if ($currentUser['role']['perm_group_admin']) {
+                $validRoles = $this->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_admin' => 0])->all()->toArray();
+            } else {
+                $validRoles = $this->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_org_admin' => 0, 'perm_admin' => 0])->all()->toArray();
+            }
+        } else {
+            $validRoles = $this->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
-        if ($currentUser['role']['perm_org_admin'] && $user['role']['perm_group_admin']) {
-            return false; // org_admins cannot edit group_admin
+        if (!in_array($user['role_id'], array_keys($validRoles)) && $currentUser['id'] != $user['id']) {
+            return false;
         }
         if ($currentUser['role']['perm_group_admin']) {
             $this->OrgGroups = TableRegistry::get('OrgGroups');
