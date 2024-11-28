@@ -221,7 +221,9 @@ class UsersTable extends AppTable
                 'perm_admin' => 1,
                 'perm_community_admin' => 1,
                 'perm_org_admin' => 1,
-                'perm_sync' => 1
+                'perm_sync' => 1,
+                'perm_group_admin' => 1,
+                'perm_meta_field_editor' => 1
             ]);
             $this->Roles->save($role);
             $this->Organisations = TableRegistry::get('Organisations');
