@@ -79,6 +79,10 @@ class UserSettingsController extends AppController
                 if (empty($currentUser['role']['perm_community_admin'])) {
                     $data['user_id'] = $currentUser->id;
                 }
+                $validationResult = $this->UserSettings->validateUserSetting($data, $currentUser);
+                if (!$validationResult !== true) {
+                    throw new MethodNotAllowedException(__('You cannot create the given user setting. Reason: {0}', $validationResult));
+                }
                 return $data;
             }
         ]);
@@ -130,6 +134,10 @@ class UserSettingsController extends AppController
                 }
                 if ($data['user_id'] != $entity->user_id) {
                     throw new MethodNotAllowedException(__('You cannot assign the setting to a different user.'));
+                }
+                $validationResult = $this->UserSettings->validateUserSetting($data);
+                if ($validationResult !== true) {
+                    throw new MethodNotAllowedException(__('Setting value: {0}', $validationResult));
                 }
                 return $data;
             }
@@ -235,9 +243,10 @@ class UserSettingsController extends AppController
     public function saveMyBookmark()
     {
         if (!$this->request->is('get')) {
-            $result = $this->UserSettings->saveBookmark($this->ACL->getUser(), $this->request->getData());
+            $errors = null;
+            $result = $this->UserSettings->saveBookmark($this->ACL->getUser(), $this->request->getData(), $errors);
             $success = !empty($result);
-            $message = $success ? __('Bookmark saved') : __('Could not save bookmark');
+            $message = $success ? __('Bookmark saved') : ($errors ?? __('Could not save bookmark'));
             $this->CRUD->setResponseForController('saveBookmark', $success, $message, $result);
             $responsePayload = $this->CRUD->getResponsePayload();
             if (!empty($responsePayload)) {

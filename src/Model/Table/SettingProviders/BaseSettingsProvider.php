@@ -163,18 +163,22 @@ class BaseSettingsProvider
         $setting['error'] = false;
         if (!$skipValidation) {
             $validationResult = true;
-            if (!isset($setting['value'])) {
-                $validationResult = $this->settingValidator->testEmptyBecomesDefault(null, $setting);
-            } else if (isset($setting['test'])) {
-                $setting['value'] = $setting['value'] ?? '';
-                $validationResult = $this->evaluateFunctionForSetting($setting['test'], $setting);
-            }
-            if ($validationResult !== true) {
-                $setting['severity'] = $setting['severity'] ?? 'warning';
-                if (!in_array($setting['severity'], $this->severities)) {
-                    $setting['severity'] = 'warning';
+            if (empty($setting['value']) && !empty($setting['empty'])) {
+                $validationResult = true;
+            } else {
+                if (!isset($setting['value'])) {
+                    $validationResult = $this->settingValidator->testEmptyBecomesDefault(null, $setting);
+                } else if (isset($setting['test'])) {
+                    $setting['value'] = $setting['value'] ?? '';
+                    $validationResult = $this->evaluateFunctionForSetting($setting['test'], $setting);
                 }
-                $setting['errorMessage'] = $validationResult;
+                if ($validationResult !== true) {
+                    $setting['severity'] = $setting['severity'] ?? 'warning';
+                    if (!in_array($setting['severity'], $this->severities)) {
+                        $setting['severity'] = 'warning';
+                    }
+                    $setting['errorMessage'] = $validationResult;
+                }
             }
             $setting['error'] = $validationResult !== true ? true : false;
         }

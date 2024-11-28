@@ -86,10 +86,10 @@ class UsersController extends AppController
         $individual_ids = [];
         if (!$currentUser['role']['perm_community_admin']) {
             if ($currentUser['role']['perm_group_admin']) {
-                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0])->all()->toArray();
+                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_admin' => 0])->all()->toArray();
                 $individual_ids = $this->Users->Individuals->find('aligned', ['organisation_id' => $currentUser['organisation_id']])->all()->extract('id')->toArray();
             } else {
-                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_org_admin' => 0])->all()->toArray();
+                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_org_admin' => 0, 'perm_admin' => 0])->all()->toArray();
 
             }
             if (empty($individual_ids)) {
@@ -247,10 +247,10 @@ class UsersController extends AppController
         $validOrgIds = [];
         if (!$currentUser['role']['perm_community_admin']) {
             if ($currentUser['role']['perm_group_admin']) {
-                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0])->all()->toArray();
+                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_admin' => 0])->all()->toArray();
                 $validOrgIds = $this->Users->Organisations->OrgGroups->getGroupOrgIdsForUser($currentUser);
             } else {
-                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_org_admin' => 0])->all()->toArray();
+                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_org_admin' => 0, 'perm_admin' => 0])->all()->toArray();
             }
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
@@ -320,9 +320,12 @@ class UsersController extends AppController
                     }
                     return $data;
                 };
-                $params['beforeSave'] = function ($data) use ($currentUser, $validRoles) {
+                $params['beforeSave'] = function ($data) use ($currentUser, $validRoles, $validOrgIds) {
                     if (!in_array($data['role_id'], array_keys($validRoles)) && $this->ACL->getUser()['id'] != $data['id']) {
                         throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
+                    }
+                    if (!in_array($data['organisation_id'], $validOrgIds)) {
+                        throw new MethodNotAllowedException(__('You cannot assign the chosen organisation to a user.'));
                     }
                     return $data;
                 };
@@ -487,7 +490,7 @@ class UsersController extends AppController
     {
         $editingAnotherUser = false;
         $currentUser = $this->ACL->getUser();
-        if ((empty($currentUser['role']['perm_community_admin']) && empty($currentUser['role']['perm_group_admin'])) || $user_id == $currentUser->id) {
+        if ((empty($currentUser['role']['perm_community_admin']) && empty($currentUser['role']['perm_group_admin'])) || empty($user_id) || $user_id == $currentUser->id) {
             $user = $currentUser;
         } else {
             $user = $this->Users->get($user_id, [

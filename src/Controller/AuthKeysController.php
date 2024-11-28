@@ -22,20 +22,29 @@ class AuthKeysController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $conditions = [];
+        $userId = $this->request->getQuery('Users_id');
+        if (!empty($userId)) {
+            $conditions['AND']['Users.id'] = $userId;
+        }
+
         if (empty($currentUser['role']['perm_community_admin'])) {
             $conditions['Users.organisation_id'] = $currentUser['organisation_id'];
             if (empty($currentUser['role']['perm_org_admin'])) {
                 $conditions['Users.id'] = $currentUser['id'];
             }
         }
-        $this->CRUD->index([
+        $indexOptions = [
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'contain' => $this->containFields,
             'exclude_fields' => ['authkey'],
             'conditions' => $conditions,
             'hidden' => []
-        ]);
+        ];
+        if (!empty($userId)) {
+            $indexOptions['action_query_strings'] = ['Users.id' => $userId];
+        }
+        $this->CRUD->index($indexOptions);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
@@ -46,13 +55,7 @@ class AuthKeysController extends AppController
     public function delete($id)
     {
         $currentUser = $this->ACL->getUser();
-        $conditions = [];
-        if (empty($currentUser['role']['perm_community_admin'])) {
-            $conditions['Users.organisation_id'] = $currentUser['organisation_id'];
-            if (empty($currentUser['role']['perm_org_admin'])) {
-                $conditions['Users.id'] = $currentUser['id'];
-            }
-        }
+        $conditions = $this->AuthKeys->buildUserConditions($currentUser);
         $this->CRUD->delete($id, ['conditions' => $conditions, 'contain' => 'Users']);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -67,21 +70,14 @@ class AuthKeysController extends AppController
         $validUsers = [];
         $userConditions = [];
         $currentUser = $this->ACL->getUser();
-        if (empty($currentUser['role']['perm_community_admin'])) {
-            if (empty($currentUser['role']['perm_org_admin'])) {
-                $userConditions['id'] = $currentUser['id'];
-            } else {
-                $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0, 'perm_community_admin', 'perm_org_admin' => 0])->all()->extract('id')->toList();
-                $userConditions['organisation_id'] = $currentUser['organisation_id'];
-                $userConditions['OR'] = [
-                    ['role_id IN' => $role_ids],
-                    ['id' => $currentUser['id']],
-                ];
-            }
-        }
+        $conditions = $this->AuthKeys->buildUserConditions($currentUser);
+        $userId = $this->request->getQuery('Users_id');
         $users = $this->Users->find('list');
-        if (!empty($userConditions)) {
-            $users->where($userConditions);
+        if (!empty($conditions)) {
+            $users->where($conditions);
+        }
+        if (!empty($userId)) {
+            $users->where(['Users.id' => $userId]);
         }
         $users = $users->order(['username' => 'asc'])->all()->toArray();
         $this->CRUD->add([

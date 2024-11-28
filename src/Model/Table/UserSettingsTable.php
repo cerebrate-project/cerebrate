@@ -5,6 +5,7 @@ namespace App\Model\Table;
 use App\Model\Table\AppTable;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Core\Configure;
 
 require_once(APP . 'Model' . DS . 'Table' . DS . 'SettingProviders' . DS . 'UserSettingsProvider.php');
 use App\Settings\SettingsProvider\UserSettingsProvider;
@@ -94,14 +95,37 @@ class UserSettingsTable extends AppTable
         return $savedData;
     }
 
-    public function saveBookmark($user, $data)
+    public function saveBookmark($user, $data, &$message = null)
     {
         $setting = $this->getSettingByName($user, $this->BOOKMARK_SETTING_NAME);
+        $fieldsToCheck = [
+            'bookmark_label' => __('Label'),
+            'bookmark_name' => __('Name'),
+            'bookmark_url' => __('URL')
+        ];
+        foreach ($fieldsToCheck as $field => $fieldName) {
+            if (empty($data[$field])) {
+                $message = __('Please fill in all fields, {0} missing.', $fieldName);
+                return null;
+            }
+        }
+        if (empty($data['bookmark_label']) || empty($data['bookmark_name']) || empty($data['bookmark_url'])) {
+
+            return null;
+        }
         $bookmarkData = [
             'label' => $data['bookmark_label'],
             'name' => $data['bookmark_name'],
             'url' => $data['bookmark_url'],
         ];
+        $restricted_domains = Configure::read('security.restrictions.allowed_bookmark_domains');
+        if (!empty($restricted_domains)) {
+            $restricted_domains = explode(',', $restricted_domains);
+            $parsed = parse_url($bookmarkData['url']);
+            if (!empty($parsed['host']) && !in_array($parsed['host'], $restricted_domains)) {
+                return null;
+            }
+        }
         if (is_null($setting)) { // setting not found, create it
             $bookmarksData = json_encode([$bookmarkData]);
             $result = $this->createSetting($user, $this->BOOKMARK_SETTING_NAME, $bookmarksData);
@@ -152,5 +176,41 @@ class UserSettingsTable extends AppTable
             return false;
         }
         return $isLocalPath || $isValidURL;
+    }
+
+    public function validateUserSetting($data): bool|string
+    {
+        $errors = [];
+        $json_fields = ['ui.bookmarks'];
+        if (in_array($data['name'], $json_fields)) {
+            $decoded = json_decode($data['value'], true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return __('Invalid JSON data');
+            }
+            $value = $decoded;
+        } else {
+            $value = $data['value'];
+        }
+        if ($data['name'] === 'ui.bookmarks') {
+            if (array_values($value) !== $value) {
+                $value = [$value];
+            }
+            $restricted_domains = Configure::read('security.restrictions.allowed_bookmark_domains');
+            if (!empty($restricted_domains)) {
+                $restricted_domains = explode(',', $restricted_domains);
+                foreach ($restricted_domains as &$rd) {
+                    $rd = trim($rd);
+                }
+            }
+            foreach ($value as $bookmark) {   
+                if (!empty($restricted_domains)) {
+                    $parsed = parse_url($bookmark['url']);
+                    if (!in_array($parsed['host'], $restricted_domains)) {
+                        return __('Invalid domain for bookmark. The only domains allowed are: {0}', implode(', ', $restricted_domains));
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

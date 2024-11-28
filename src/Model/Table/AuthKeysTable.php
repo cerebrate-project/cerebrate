@@ -93,4 +93,36 @@ class AuthKeysTable extends AppTable
         }
         return [];
     }
+
+    public function buildUserConditions($currentUser)
+    {
+        $conditions = [];
+        $validOrgs = $this->Users->getValidOrgsForUser($currentUser);
+        if (empty($currentUser['role']['perm_community_admin'])) {
+            $conditions['Users.organisation_id IN'] = $validOrgs;
+            if (empty($currentUser['role']['perm_group_admin'])) {
+                if (empty($currentUser['role']['perm_org_admin'])) {
+                    $conditions['Users.id'] = $currentUser['id'];
+                } else {
+                    $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0, 'perm_community_admin' => 0, 'perm_org_admin' => 0, 'perm_group_admin' => 0])->all()->extract('id')->toList();
+                    $conditions['Users.organisation_id'] = $currentUser['organisation_id'];
+                    $subConditions = [
+                        ['Users.id' => $currentUser['id']]
+                    ];
+                    if (!empty($role_ids)) {
+                        $subConditions[] = ['Users.role_id IN' => $role_ids];
+                    }
+                    $conditions['OR'] = $subConditions;
+                }
+            } else {
+                $conditions['Users.group_id'] = $currentUser['group_id'];
+                $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0, 'perm_community_admin' => 0, 'perm_group_admin' => 0])->all()->extract('id')->toList();
+                $conditions['OR'] = [
+                    ['Users.id' => $currentUser['id']],
+                    ['Users.role_id IN' => $role_ids]
+                ];
+            }
+        }
+        return $conditions;
+    }
 }

@@ -136,15 +136,19 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                     'Proxy' => [
                         'Proxy.host' => [
                             'name' => __('Host'),
+			    'severity' => 'info',
                             'type' => 'string',
                             'description' => __('The hostname of an HTTP proxy for outgoing sync requests. Leave empty to not use a proxy.'),
                             'test' => 'testHostname',
+                            'empty' => true
                         ],
                         'Proxy.port' => [
                             'name' => __('Port'),
+			    'severity' => 'info',
                             'type' => 'integer',
                             'description' => __('The TCP port for the HTTP proxy.'),
                             'test' => 'testForRangeXY',
+                            'empty' => true
                         ],
                         'Proxy.user' => [
                             'name' => __('User'),
@@ -152,6 +156,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'description' => __('The authentication username for the HTTP proxy.'),
                             'default' => 'admin',
                             'dependsOn' => 'proxy.host',
+                            'empty' => true
                         ],
                         'Proxy.password' => [
                             'name' => __('Password'),
@@ -159,6 +164,7 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'description' => __('The authentication password for the HTTP proxy.'),
                             'default' => '',
                             'dependsOn' => 'proxy.host',
+                            'empty' => true
                         ],
                     ],
                 ],
@@ -337,6 +343,17 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'default' => true,
                         ],
                     ]
+                ],
+                'Restrictions' => [
+                    'Allowed bookmark domains' => [
+                        'security.restrictions.allowed_bookmark_domains' => [
+                            'name' => __('Allowed bookmark domains'),
+                            'type' => 'string',
+                            'severity' => 'info',
+                            'description' => __('Comma separated list of allowed bookmark domains. Leave empty to allow all domains.'),
+                            'default' => '',
+                        ],
+                    ],
                 ],
                 'Development' => [
                     'Debugging' => [
