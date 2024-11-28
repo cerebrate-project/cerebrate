@@ -71,7 +71,7 @@ class AuthKeysController extends AppController
             if (empty($currentUser['role']['perm_org_admin'])) {
                 $userConditions['id'] = $currentUser['id'];
             } else {
-                $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0, 'perm_community_admin', 'perm_org_admin' => 0])->all()->extract('id')->toList();
+                $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0, 'perm_community_admin' => 0, 'perm_org_admin' => 0])->all()->extract('id')->toList();
                 $userConditions['organisation_id'] = $currentUser['organisation_id'];
                 $userConditions['OR'] = [
                     ['role_id IN' => $role_ids],
@@ -84,6 +84,7 @@ class AuthKeysController extends AppController
             $users->where($userConditions);
         }
         $users = $users->order(['username' => 'asc'])->all()->toArray();
+
         $this->CRUD->add([
             'displayOnSuccess' => 'authkey_display',
             'beforeSave' => function($data) use ($users) {
