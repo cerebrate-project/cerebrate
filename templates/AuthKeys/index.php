@@ -10,8 +10,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                         'data' => [
                             'type' => 'simple',
                             'text' => __('Add authentication key'),
-                            'popover_url' => '/authKeys/add',
-                            'reload_url' => $this->request->getRequestTarget()
+                            'popover_url' => '/authKeys/add' . ($action_query_strings ? '?' . http_build_query($action_query_strings) : ''),
+                            'reload_url' => $this->request->getRequestTarget(),
                         ]
                     ]
                 ],

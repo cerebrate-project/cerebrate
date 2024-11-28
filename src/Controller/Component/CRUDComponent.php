@@ -272,6 +272,10 @@ class CRUDComponent extends Component
             $this->Controller->set('model', $this->Table);
             $this->Controller->set('data', $data);
             $this->Controller->set('embedInModal', $embedInModal);
+            if (!empty($options['action_query_strings'])) {
+                $this->Controller->set('action_query_strings', $options['action_query_strings']);
+
+            }
             $this->Controller->set('skipTableToolbar', $skipTableToolbar);
         }
     }
