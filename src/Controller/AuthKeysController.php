@@ -72,14 +72,14 @@ class AuthKeysController extends AppController
                 $userConditions['id'] = $currentUser['id'];
             } else {
                 $role_ids = $this->Users->Roles->find()->where(['perm_admin' => 0, 'perm_community_admin' => 0, 'perm_org_admin' => 0])->all()->extract('id')->toList();
-                if (empty($role_ids)) {
-                    throw new MethodNotAllowedException(__('You are not authorised to do that, as there are no roles that you could assign to a user. Contact your administrator to rectify this.'));
-                }
                 $userConditions['organisation_id'] = $currentUser['organisation_id'];
-                $userConditions['OR'] = [
-                    ['role_id IN' => $role_ids],
-                    ['id' => $currentUser['id']],
+                $subConditions = [
+                    ['id' => $currentUser['id']]
                 ];
+                if (!empty($role_ids)) {
+                    $subConditions[] = ['role_id IN' => $role_ids];
+                }
+                $userConditions['OR'] = $subConditions;
             }
         }
         $users = $this->Users->find('list');
