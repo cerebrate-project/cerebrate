@@ -1165,6 +1165,7 @@ class CRUDComponent extends Component
                             throw new NotFoundException(__('Could not save {0} due to the input failing to meet expectations. Your input is bad and you should feel bad.', $this->ObjectAlias));
                         }
                     } catch (\Exception $e) {
+                        $exceptionMessage = $e->getMessage();
                         $entity = false;
                     }
                 }
@@ -1182,7 +1183,7 @@ class CRUDComponent extends Component
                 $isBulk,
                 __('{0} deleted.', $this->ObjectAlias),
                 __('All selected {0} have been deleted.', Inflector::pluralize($this->ObjectAlias)),
-                __('Could not delete {0}.', $this->ObjectAlias),
+                $exceptionMessage ?? __('Could not delete {0}.', $this->ObjectAlias),
                 __(
                     '{0} / {1} {2} have been deleted.',
                     $bulkSuccesses,

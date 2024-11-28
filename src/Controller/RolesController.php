@@ -78,7 +78,15 @@ class RolesController extends AppController
 
     public function delete($id)
     {
-        $this->CRUD->delete($id);
+        $this->CRUD->delete($id, [
+            'beforeSave' => function ($data) {
+                $userCount = $this->Roles->Users->find()->where(['role_id' => $data['id']])->count();
+                if ($userCount > 0) {
+                    throw new ForbiddenException(__('You cannot delete a role that has users assigned to it.'));
+                }
+                return true;
+            }
+        ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
