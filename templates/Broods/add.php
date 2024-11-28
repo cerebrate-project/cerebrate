@@ -1,7 +1,7 @@
 <?php
     echo $this->element('genericElements/Form/genericForm', array(
         'data' => array(
-            'description' => __('Individuals are natural persons. They are meant to describe the basic information about an individual that may or may not be a user of this community. Users in genral require an individual object to identify the person behind them - however, no user account is required to store information about an individual. Individuals can have affiliations to organisations and broods as well as cryptographic keys, using which their messages can be verified and which can be used to securely contact them.'),
+            'description' => __('Cerebrate can connect to other Cerebrate instances to exchange trust information and to instrument interconnectivity between connected local tools. Each such Cerebrate instance with its connected tools is considered to be a brood.'),
             'model' => 'Organisations',
             'fields' => array(
                 array(
