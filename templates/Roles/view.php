@@ -38,6 +38,11 @@ echo $this->element(
                 'type' => 'boolean'
             ],
             [
+                'key' => __('Meta field editor permission'),
+                'path' => 'perm_meta_field_editor',
+                'type' => 'boolean'
+            ],
+            [
                 'key' => __('Default role'),
                 'path' => 'is_default',
                 'type' => 'boolean'
