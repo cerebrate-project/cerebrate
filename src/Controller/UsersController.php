@@ -320,11 +320,12 @@ class UsersController extends AppController
                     }
                     return $data;
                 };
-                $params['beforeSave'] = function ($data) use ($currentUser, $validRoles, $validOrgIds) {
-                    if (!in_array($data['role_id'], array_keys($validRoles)) && $this->ACL->getUser()['id'] != $data['id']) {
+                $params['beforeSave'] = function ($data) use ($currentUser, $validRoles, $validOrgIds, $params) {
+                    // only run these checks if the user CAN edit them and if the values are actually set in the request
+                    if (in_array('role_id', $params['fields']) && isset($data['role_id']) && !in_array($data['role_id'], array_keys($validRoles)) && $this->ACL->getUser()['id'] != $data['id']) {
                         throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
                     }
-                    if (!in_array($data['organisation_id'], $validOrgIds)) {
+                    if (in_array('organisation_id', $params['fields']) && isset($data['organisation_id']) && !in_array($data['organisation_id'], $validOrgIds)) {
                         throw new MethodNotAllowedException(__('You cannot assign the chosen organisation to a user.'));
                     }
                     return $data;
