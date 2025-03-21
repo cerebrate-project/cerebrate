@@ -39,6 +39,12 @@ class IndividualsController extends AppController
             'afterFind' => function($data) use ($currentUser) {
                 if ($currentUser['role']['perm_community_admin']) {
                     $data['user'] = $this->Individuals->Users->find()->select(['id', 'username', 'Organisations.id', 'Organisations.name'])->contain('Organisations')->where(['individual_id' => $data['id']])->all()->toArray();
+                } else if ($currentUser['role']['perm_group_admin']) {
+                    $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+                    $orgGroupIds = $OrgGroups->getGroupOrgIdsForUser($currentUser);
+                    $data['user'] = $this->Individuals->Users->find()->select(['id', 'username', 'Organisations.id', 'Organisations.name'])->contain('Organisations')->where(['individual_id' => $data['id'], 'Organisations.id IN' => $orgGroupIds])->all()->toArray();
+                } else if ($currentUser['role']['perm_org_admin']) {
+                    $data['user'] = $this->Individuals->Users->find()->select(['id', 'username', 'Organisations.id', 'Organisations.name'])->contain('Organisations')->where(['individual_id' => $data['id'], 'Organisations.id' => $currentUser['organisation_id']])->all()->toArray();
                 }
                 return $data;
             }
@@ -80,7 +86,19 @@ class IndividualsController extends AppController
 
     public function view($id)
     {
-        $this->CRUD->view($id, ['contain' => ['Alignments' => 'Organisations']]);
+        $canEdit = $this->canEdit($id);
+        $this->CRUD->view($id, [
+            'contain' => ['Alignments' => 'Organisations', 'Users' => ['fields' => ['id', 'username']]],
+            'afterFind' => function($data) use ($canEdit) {
+                if (!empty($data['user'])) {
+                    $data['has_user'] = true;
+                    if (!$canEdit) {
+                        unset($data['user']);
+                    }
+                }
+                return $data;
+            }
+        ]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
             return $responsePayload;
