@@ -41,8 +41,8 @@ class ACLComponent extends Component
             'queryACL' => ['perm_admin']
         ],
         'Alignments' => [
-            'add' => ['perm_community_admin', 'perm_org_admin'],
-            'delete' => ['perm_community_admin', 'perm_org_admin'],
+            'add' => ['perm_community_admin', 'perm_org_admin', 'perm_group_admin'],
+            'delete' => ['perm_community_admin', 'perm_org_admin', 'perm_group_admin'],
             'index' => ['*'],
             'view' => ['*']
         ],
@@ -96,9 +96,9 @@ class ACLComponent extends Component
             'view' => ['perm_community_admin'],
         ],
         'Individuals' => [
-            'add' => ['perm_community_admin', 'perm_org_admin'],
+            'add' => ['perm_community_admin', 'perm_org_admin', 'perm_group_admin'],
             'delete' => ['perm_community_admin'],
-            'edit' => ['perm_community_admin', 'perm_org_admin'],
+            'edit' => ['perm_community_admin', 'perm_org_admin', 'perm_group_admin'],
             'filtering' => ['*'],
             'index' => ['*'],
             'tag' => ['*'],
@@ -134,13 +134,13 @@ class ACLComponent extends Component
             'viewConnector' => ['OR' => ['perm_admin', 'perm_community_admin']]
         ],
         'MailingLists' => [
-            "add" => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            "addIndividual" => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            "delete" => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            "edit" => ['OR' => ['perm_org_admin', 'perm_community_admin']],
+            "add" => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
+            "addIndividual" => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
+            "delete" => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
+            "edit" => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             "index" => ['*'],
-            "listIndividuals" => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            "removeIndividual" => ['OR' => ['perm_org_admin', 'perm_community_admin']],
+            "listIndividuals" => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
+            "removeIndividual" => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             "view" => ['*'],
         ],
         'MetaTemplateFields' => [
@@ -177,8 +177,8 @@ class ACLComponent extends Component
             'listOrgs' => ['*'],
             'assignAdmin' => ['perm_community_admin'],
             'removeAdmin' => ['perm_community_admin'],
-            'attachOrg' => ['perm_community_admin', 'perm_group_admin'],
-            'detachOrg' => ['perm_community_admin', 'perm_group_admin']
+            'attachOrg' => ['perm_community_admin'],
+            'detachOrg' => ['perm_community_admin']
         ],
         'Organisations' => [
             'add' => ['perm_community_admin'],
@@ -218,13 +218,13 @@ class ACLComponent extends Component
             'view' =>  ['*']
         ],
         'SharingGroups' => [
-            'add' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            'addOrg' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            'delete' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            'edit' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
+            'add' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
+            'addOrg' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
+            'delete' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
+            'edit' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             'index' => ['*'],
             'listOrgs' => ['*'],
-            'removeOrg' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
+            'removeOrg' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             'view' => ['*']
         ],
         'Tags' => [
@@ -235,18 +235,18 @@ class ACLComponent extends Component
             'view' => ['*']
         ],
         'Users' => [
-            'add' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            'delete' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
+            'add' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
+            'delete' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             'edit' => ['*'],
-            'index' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
-            'filtering' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
+            'index' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
+            'filtering' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             'login' => ['*'],
             'logout' => ['*'],
             'register' => ['*'],
             'settings' => ['*'],
-            'toggle' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
+            'toggle' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             'view' => ['*'],
-            'getLimitationForOrganisation' => ['OR' => ['perm_org_admin', 'perm_community_admin']],
+            'getLimitationForOrganisation' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
         ],
         'UserSettings' => [
             'index' => ['*'],

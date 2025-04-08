@@ -98,7 +98,8 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url_pattern' => '/orgGroups/view/{{data_id}}'
             ],
             [
-                'name' => __('Email'),
+                'name' => __('Individual'),
+                'description' => __('The individual associated with the user, as represented by the Individual\'s e-mail address.'),
                 'sort' => 'individual.email',
                 'data_path' => 'individual.email',
                 'url' => '/individuals/view/{{0}}',

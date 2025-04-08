@@ -34,6 +34,19 @@ echo $this->element(
                 'editable' => $canEdit,
             ],
             [
+                'key' => __('Has associated user'),
+                'type' => 'boolean',
+                'path' => 'has_user',
+                'requirement' => !$canEdit
+            ],
+            [
+                'key' => __('Associated user'),
+                'type' => 'user',
+                'owner_model_path' => 'user',
+                'path' => 'user',
+                'requirement' => $canEdit
+            ],
+            [
                 'key' => __('Alignments'),
                 'type' => 'alignment',
                 'path' => '',

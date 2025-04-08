@@ -1,5 +1,8 @@
 <div class="d-flex">
     <div class="global-search-container d-md-block d-none me-4">
+        <span><a style="text-decoration: none" class="link-light" href="<?= h($baseurl) . '/users/view/' . h($loggedUser['id']) ?>"><i class="<?= $this->FontAwesome->getClass('user') ?> fa"></i> <?= h($loggedUser['username']) ?></a></span>
+    </div>
+    <div class="global-search-container d-md-block d-none me-4">
         <span><a style="text-decoration: none" class="link-light" href="https://cerebrate-project.org">Cerebrate</a> <a style="text-decoration: none" class="link-light" href="https://github.com/cerebrate-project/cerebrate/releases/tag/v<?= h($cerebrate_version) ?>">v<?= h($cerebrate_version) ?></a></span>
     </div>
     <div class="global-search-container d-md-block d-none">

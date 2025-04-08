@@ -66,18 +66,29 @@ class UserSettingsController extends AppController
 
     public function add($user_id=null)
     {
+        $validUsers = [];
+        $individual_ids = [];
         $currentUser = $this->ACL->getUser();
+        if (!$currentUser['role']['perm_community_admin']) {
+            if ($currentUser['role']['perm_org_admin']) {
+                $validUsers = $this->Users->find('list')->select(['id', 'username'])->order(['username' => 'asc'])->where(['organisation_id' => $currentUser['organisation']['id']])->all()->toArray();
+            } else {
+                $validUsers = [$currentUser['id'] => $currentUser['username']];
+            }
+        } else {
+            $validUsers = $this->Users->find('list')->select(['id', 'username'])->order(['username' => 'asc'])->all()->toArray();
+        }
         $this->CRUD->add([
             'redirect' => ['action' => 'index', $user_id],
-            'beforeSave' => function ($data) use ($currentUser) {
+            'beforeSave' => function ($data) use ($currentUser, $validUsers) {
+                if (!in_array($data['user_id'], array_keys($validUsers))) {
+                    throw new MethodNotAllowedException(__('You cannot edit the given user.'));
+                }
                 $fakeUser = new \stdClass();
                 $fakeUser->id = $data['user_id'];
                 $existingSetting = $this->UserSettings->getSettingByName($fakeUser, $data['name']);
                 if (!empty($existingSetting)) {
                     throw new MethodNotAllowedException(__('You cannot create a setting that already exists for the given user.'));
-                }
-                if (empty($currentUser['role']['perm_community_admin'])) {
-                    $data['user_id'] = $currentUser->id;
                 }
                 $validationResult = $this->UserSettings->validateUserSetting($data, $currentUser);
                 if (!$validationResult !== true) {
@@ -90,15 +101,8 @@ class UserSettingsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
-        $allUsers = $this->UserSettings->Users->find('list', ['keyField' => 'id', 'valueField' => 'username'])->order(['username' => 'ASC']);
-        if (empty($currentUser['role']['perm_community_admin'])) {
-            $allUsers->where(['id' => $currentUser->id]);
-            $user_id = $currentUser->id;
-        } else if (!is_null($user_id)) {
-            $allUsers->where(['id' => $user_id]);
-        }
         $dropdownData = [
-            'user' => $allUsers->all()->toArray(),
+            'user' => $validUsers,
         ];
         $this->set(compact('dropdownData'));
         $this->set('user_id', $user_id);
@@ -121,6 +125,9 @@ class UserSettingsController extends AppController
             }
         } else {
             $validUsers = $this->Users->find('list')->select(['id', 'username'])->order(['username' => 'asc'])->all()->toArray();
+        }
+        if (!isset($validUsers[$id])) {
+            throw new MethodNotAllowedException(__('You do not have permission to edit this user setting.'));
         }
         $dropdownData = [
             'user' => [$entity->user_id => $validUsers[$entity->user_id]],
@@ -280,22 +287,20 @@ class UserSettingsController extends AppController
     private function isLoggedUserAllowedToEdit($setting): bool
     {
         $currentUser = $this->ACL->getUser();
-        $isAllowed = false;
-        if (!empty($currentUser['role']['perm_community_admin'])) {
-            $isAllowed = true;
-        } else {
-            if (is_numeric($setting)) {
-                $setting = $this->UserSettings->find()->where([
-                    'id' => $setting
-                ])->first();
-                if (empty($setting)) {
-                    return false;
-                }
-            } else {
-                $isAllowed = $setting->user_id == $currentUser->id;
-            }
+        $setting = $this->UserSettings->find()->where([
+            'id' => $setting
+        ])->first();
+        if (empty($setting)) {
+            return false;
         }
-        return $isAllowed;
+        $user = $this->UserSettings->find()->where([
+            'id' => $setting->id
+        ])->first();
+
+        if ($this->ACL->canEditUser($currentUser, $user)) {
+            return true;
+        }
+        return false;
     }
 
     /**

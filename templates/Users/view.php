@@ -17,7 +17,7 @@ $fields = [
     ],
     [
         'type' => 'generic',
-        'key' => __('Email'),
+        'key' => __('Linked individual'),
         'path' => 'individual.email',
         'url' => '/individuals/view/{{0}}',
         'url_vars' => 'individual_id'
