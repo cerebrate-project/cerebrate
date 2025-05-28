@@ -128,7 +128,7 @@ class MetaTemplatesTable extends AppTable
             if ($success) {
                 $files_processed[] = $template['uuid'];
             } else {
-                $updatesErrors[] = $errors;
+                $updatesErrors[] = implode(', ', Hash::extract($errors, '{n}.message'));
             }
         }
         $results = [
@@ -226,7 +226,7 @@ class MetaTemplatesTable extends AppTable
             $files_processed[] = $templateOnDisk['uuid'];
         }
         if (!empty($errors)) {
-            $updatesErrors[] = $errors;
+            $updatesErrors[] = implode(', ', Hash::extract($errors, '{n}.message'));
         }
         $results = [
             'update_errors' => $updatesErrors,
@@ -843,7 +843,7 @@ class MetaTemplatesTable extends AppTable
             }
         }
         if (empty($metaTemplate)) {
-            $errors[] = new UpdateError(false, __('Could not save the template.'), $metaTemplate->getErrors());
+            $errors[] = new UpdateError(false, __('Could not save the template.'));
             return false;
         }
         return true;
