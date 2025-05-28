@@ -47,6 +47,22 @@ class MetaTemplateFieldsTable extends AppTable
             ->notEmptyString('field')
             ->notEmptyString('type')
             ->requirePresence(['field', 'type'], 'create');
+
+        $jsonArrayRule = [
+            'rule' => function ($value, $context) {
+                if ($value === null || $value === '' || is_array($value)) {
+                    return true;
+                }
+
+                $decoded = json_decode($value, true);
+                return is_array($decoded) && array_keys($decoded) === range(0, count($decoded) - 1);
+            },
+            'message' => 'This field must be a valid JSON array.'
+        ];
+
+        $validator->add('sane_default', 'validJsonArray', $jsonArrayRule);
+        $validator->add('values_list', 'validJsonArray', $jsonArrayRule);
+
         return $validator;
     }
 
