@@ -568,7 +568,7 @@ class CRUDComponent extends Component
         return $validationMessage;
     }
 
-    private function prepareValidationError($data)
+    public function prepareValidationError($data)
     {
         $validationMessage = '';
         if (!empty($data->getErrors())) {

@@ -243,6 +243,7 @@ class ACLComponent extends Component
             'login' => ['*'],
             'logout' => ['*'],
             'register' => ['*'],
+            'massEdit' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             'settings' => ['*'],
             'toggle' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             'view' => ['*'],

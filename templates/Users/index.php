@@ -1,11 +1,27 @@
 <?php
 
 use Cake\Core\Configure;
+
 echo $this->element('genericElements/IndexTable/index_table', [
     'data' => [
         'data' => $data,
         'top_bar' => [
             'children' => [
+                [
+                    'type' => 'multi_select_actions',
+                    'children' => [
+                        [
+                            'text' => __('Mass Edit'),
+                            'variant' => 'primary',
+                            'onclick' => 'massEditUsers',
+                        ]
+                    ],
+                    'data' => [
+                        'id' => [
+                            'value_path' => 'id'
+                        ]
+                    ]
+                ],
                 [
                     'type' => 'simple',
                     'children' => [
@@ -50,7 +66,7 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'url_params_vars' => ['id'],
                 'toggle_data' => [
                     'editRequirement' => [
-                        'function' => function($row, $options) {
+                        'function' => function ($row, $options) {
                             return true;
                         },
                     ],
@@ -191,3 +207,61 @@ echo $this->element('genericElements/IndexTable/index_table', [
     ]
 ]);
 ?>
+
+<script>
+    function massEditUsers(idList, selectedData, $table) {
+        const successCallback = function([data, modalObject]) {
+            UI.reload('/users/index', UI.getContainerForTable($table), $table)
+        }
+        const failCallback = ([data, modalObject]) => {
+            const tableData = selectedData.map(row => {
+                entryInError = data.filter(error => error.data.id == row.id)[0]
+                $faIcon = $('<i class="fa"></i>').addClass(entryInError.success ? 'fa-check text-success' : 'fa-times text-danger')
+                return [row.id, row.username, row.organisation.name, row.individual.name, role.name, entryInError.message, JSON.stringify(entryInError.errors), $faIcon]
+            });
+            handleMessageTable(
+                modalObject.$modal,
+                ['<?= __('ID') ?>', '<?= __('Username') ?>', '<?= __('Organisation') ?>', '<?= __('Individual') ?>', '<?= __('Role') ?>', '<?= __('Error') ?>', '<?= __('State') ?>'],
+                tableData
+            )
+            const $footer = $(modalObject.ajaxApi.statusNode).parent()
+            modalObject.ajaxApi.statusNode.remove()
+            const $cancelButton = $footer.find('button[data-bs-dismiss="modal"]')
+            $cancelButton.text('<?= __('OK') ?>').removeClass('btn-secondary').addClass('btn-primary')
+        }
+        UI.submissionModal('/users/massEdit', successCallback, failCallback).then(([modalObject, ajaxApi]) => {
+            const $idsInput = modalObject.$modal.find('form').find('input#ids-field')
+            $idsInput.val(JSON.stringify(idList))
+            const tableData = selectedData.map(row => {
+                return [row.id, row.username, row.organisation.name, row.individual.full_name, row.role.name]
+            });
+            handleMessageTable(
+                modalObject.$modal,
+                ['<?= __('ID') ?>', '<?= __('Username') ?>', '<?= __('Organisation') ?>', '<?= __('Individual') ?>', '<?= __('Role') ?>', ],
+                tableData
+            )
+        })
+
+        function constructMessageTable(header, data) {
+            return HtmlHelper.table(
+                header,
+                data, {
+                    small: true,
+                    borderless: true,
+                    tableClass: ['message-table', 'mt-4 mb-0'],
+                }
+            )
+        }
+
+        function handleMessageTable($modal, header, data) {
+            const $modalBody = $modal.find('.modal-body')
+            const $messageTable = $modalBody.find('table.message-table')
+            const messageTableHTML = constructMessageTable(header, data)[0].outerHTML
+            if ($messageTable.length) {
+                $messageTable.html(messageTableHTML)
+            } else {
+                $modalBody.append(messageTableHTML)
+            }
+        }
+    }
+</script>

@@ -11,6 +11,7 @@ use Cake\Utility\Inflector;
 use Cake\Utility\Text;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
+use App\Model\Entity\MetaTemplate;
 
 class MetaTemplatesTable extends AppTable
 {
@@ -1445,6 +1446,46 @@ class MetaTemplatesTable extends AppTable
 
         $entity->setDirty('meta_fields', true);
         return ['entity' => $entity, 'metafields_to_delete' => $metaFieldsToDelete];
+    }
+
+    /**
+     * Apply transformTemplatesInputsForUnchangedSupport to a list of metatemplates
+     *
+     * @param MetaTemplate $template The form template definition to transform.
+     * @return MetaTemplate The transformed template with updated input types.
+     */
+    public function transformTemplatesInputsForUnchangedSupport(array $metaTemplates): array
+    {
+        return array_map([$this, 'transformTemplateInputsForUnchangedSupport'], $metaTemplates);
+    }
+
+    /**
+     * Transforms binary inputs (e.g., checkboxes and selects) in the template
+     * into tristate selects that support 'true', 'false', and 'unchanged' values.
+     *
+     * This is used to distinguish between explicit false/true values and
+     * inputs that were not modified by the user.
+     *
+     * @param MetaTemplate $template The form template definition to transform.
+     * @return MetaTemplate The transformed template with updated input types.
+     */
+    public function transformTemplateInputsForUnchangedSupport(MetaTemplate $metaTemplate): MetaTemplate
+    {
+        foreach ($metaTemplate['meta_template_fields'] as $i => &$meta_template_field) {
+            if ($meta_template_field['form_type'] == 'checkbox') {
+                $meta_template_field->default_value = 'unchanged';
+                $meta_template_field->skip_no_value = true;
+                $meta_template_field['form_type'] = 'select';
+                $meta_template_field['values_list'] = [
+                    ['value' => true, 'text' => __('Active')],
+                    ['value' => false, 'text' => __('Inactive')],
+                    ['value' => 'unchanged', 'text' => __('-- Unchanged --')],
+                ];
+            } else if ($meta_template_field['form_type'] == 'select') {
+                $meta_template_field['values_list'][] = ['value' => 'unchanged', 'text' => __('-- Unchanged --')];
+            }
+        }
+        return $metaTemplate;
     }
 }
 
