@@ -73,7 +73,11 @@ class MetaFieldsTable extends AppTable
         if (empty($entityData['meta_template_field_id'])) {
             return true;
         }
-        $metaTemplateField = $metaFieldsTable->MetaTemplateFields->get($entityData['meta_template_field_id']);
+        $templateFieldId = $entityData['meta_template_field_id'];
+        if (!$metaFieldsTable->MetaTemplateFields->exists(['id' => $templateFieldId])) {
+            return false; 
+        }
+        $metaTemplateField = $metaFieldsTable->MetaTemplateFields->get($templateFieldId);
         return $this->isValidMetaFieldForMetaTemplateField($value, $metaTemplateField);
     }
 
