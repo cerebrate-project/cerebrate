@@ -201,9 +201,15 @@ echo $this->Bootstrap->modal([
         const $formElement = $row.find('.fieldValue');
         if ($formElement.attr('type') === 'datetime-local') {
             $formElement.val(moment(value).format('yyyy-MM-DDThh:mm:ss'))
-        } else if ($formElement.is('select') && Array.isArray(value)) {
+        } else if ($formElement.is('select')) {
+            let values
+            if (Array.isArray(value)) {
+                values = value
+            } else {
+                values = [value]
+            }
             let newOptions = [];
-            value.forEach(aValue => {
+            values.forEach(aValue => {
                 const existingOption = $formElement.find('option').filter(function() {
                     if ($(this).val() === aValue) {
                         $(this).prop('selected', true)
