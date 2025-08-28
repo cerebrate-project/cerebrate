@@ -1565,7 +1565,19 @@ class CRUDComponent extends Component
         if ($this->metaFieldsSupported()) {
             $filteringMetaFields = $this->getMetaFieldFiltersFromQuery();
             if (!empty($filteringMetaFields)) {
-                $activeFilters['filteringMetaFields'] = $filteringMetaFields;
+                $activeFilterForIndex = [];
+                foreach ($filteringMetaFields as $operator => $filter) {
+                    if ($operator == 'NOT') {
+                        foreach ($filter as $notFilter) {
+                            $notFilter['operator'] = '!=';
+                            $activeFilterForIndex[] = $notFilter;
+                        }
+                    } else {
+                        $filter['operator'] = '=';
+                        $activeFilterForIndex[] = $filter;
+                    }
+                }
+                $activeFilters['filteringMetaFields'] = $activeFilterForIndex;
             }
             $query = $this->setMetaFieldFilters($query, $filteringMetaFields);
         }
@@ -2008,12 +2020,20 @@ class CRUDComponent extends Component
             $prefix = '_metafield';
             if (substr($filterName, 0, strlen($prefix)) === $prefix) {
                 $dissected = explode('_', substr($filterName, strlen($prefix)));
-                if (count($dissected) == 3) { // Skip if template_id or template_field_id not provided
-                    $filters[] = [
+                if (count($dissected) == 3 || count($dissected) == 4) { // Skip if template_id or template_field_id not provided
+                    $filter = [
                         'meta_template_id' => intval($dissected[1]),
                         'meta_template_field_id' => intval($dissected[2]),
                         'value' => $value,
                     ];
+                    if (count($dissected) == 4 && $dissected[3] === '!=') {
+                        if (empty($filters['NOT'])) {
+                            $filters['NOT'] = [];
+                        }
+                        $filters['NOT'][] = $filter;
+                    } else {
+                        $filters[] = $filter;
+                    }
                 }
             }
         }

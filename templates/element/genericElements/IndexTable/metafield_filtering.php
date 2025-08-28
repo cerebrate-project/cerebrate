@@ -54,8 +54,9 @@ $filteringForm = $this->Bootstrap->table(
             const randomValue = getRandomValue()
             const activeFilters = Object.assign({}, $(`#toggleFilterButton-${randomValue}`).data('activeFilters'))
             const metaFields = activeFilters['filteringMetaFields'] !== undefined ? Object.assign({}, activeFilters)['filteringMetaFields'] : []
+
             metaFields.forEach(metaField => {
-                addFilteringRow($filteringTable, metaField.meta_template_field_id, metaField.value, '=')
+                addFilteringRow($filteringTable, metaField.meta_template_field_id, metaField.value, metaField.operator ?? '=')
             })
         }
 
