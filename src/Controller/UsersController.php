@@ -20,7 +20,8 @@ class UsersController extends AppController
         'Individuals.last_name',
         'Individuals.uuid',
         ['name' => 'Organisations.id', 'multiple' => true, 'options' => 'getAllOrganisations', 'select2' => true],
-        'Organisations.nationality'
+        'Organisations.nationality',
+        ['name' => 'Roles.id', 'multiple' => true, 'options' => 'getAllRoles', 'select2' => true],
     ];
     public $quickFilterFields = ['Individuals.uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'];
     public $containFields = ['Individuals', 'Roles', 'UserSettings', 'Organisations', 'OrgGroups'];

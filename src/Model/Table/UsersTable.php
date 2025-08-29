@@ -14,6 +14,7 @@ use Cake\Http\Client;
 use Cake\Utility\Security;
 use Cake\Core\Configure;
 use Cake\Utility\Text;
+use Cake\Utility\Hash;
 use ArrayObject;
 
 class UsersTable extends AppTable
@@ -307,6 +308,13 @@ class UsersTable extends AppTable
     {
         $this->Individuals = TableRegistry::get('Individuals');
         return $this->Individuals->getAllOrganisations($currentUser);
+    }
+
+    public function getAllRoles(\App\Model\Entity\User $currentUser)
+    {
+        $this->Roles = TableRegistry::get('Roles');
+        $roles = $this->Roles->find()->select(['id', 'name'])->all()->toList();
+        return Hash::combine($roles, '{n}.id', '{n}.name');
     }
 
     public function getValidOrgsForUser(\App\Model\Entity\User $user): array
