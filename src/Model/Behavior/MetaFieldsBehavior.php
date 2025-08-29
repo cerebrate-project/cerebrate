@@ -160,9 +160,6 @@ class MetaFieldsBehavior extends Behavior
         if (empty($filters)) {
             return [];
         }
-        if (count(array_filter(array_keys($filters), 'is_string'))) {
-            $filters = [$filters];
-        }
         $conjugatedFilters = $this->buildConjugatedFilters($filters);
         $conditions = $this->buildConjugatedQuerySnippet($conjugatedFilters);
         return $conditions;
@@ -186,7 +183,7 @@ class MetaFieldsBehavior extends Behavior
     protected function buildConjugatedQuerySnippet(array $conjugatedFilters, string $parentOperator='AND'): array
     {
         $conditions = [];
-        if (empty($conjugatedFilters['AND']) && empty($conjugatedFilters['OR'])) {
+        if (empty($conjugatedFilters['AND']) && empty($conjugatedFilters['OR'])  && empty($conjugatedFilters['NOT'])) {
             if (count(array_filter(array_keys($conjugatedFilters), 'is_string')) > 0) {
                 $conditions = $this->buildComposedQuerySnippet([$conjugatedFilters]);
             } else {
@@ -194,7 +191,7 @@ class MetaFieldsBehavior extends Behavior
             }
         } else {
             foreach ($conjugatedFilters as $subOperator => $subFilter) {
-                $conditions[$subOperator] = $this->buildConjugatedQuerySnippet($subFilter, $subOperator);
+                $conditions[$subOperator] = $this->buildConjugatedQuerySnippet($subFilter, 'AND');
             }
         }
         return $conditions;
@@ -204,7 +201,7 @@ class MetaFieldsBehavior extends Behavior
     {
         $conditions = [];
         foreach ($filters as $filterOperator => $filter) {
-            $subQuery = $this->buildQuerySnippet($filter, true);
+            $subQuery = $this->buildQuerySnippet($filter);
             $modelAlias = $this->_table->getAlias();
             $conditions[$operator][] = [$modelAlias . '.id IN' => $subQuery];
         }

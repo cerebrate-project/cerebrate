@@ -13,11 +13,12 @@ use Cake\Http\Exception\NotFoundException;
 class UsersController extends AppController
 {
     public $filterFields = [
-        'Individuals.uuid',
-        'username',
         'Individuals.email',
+        'username',
+        'disabled',
         'Individuals.first_name',
         'Individuals.last_name',
+        'Individuals.uuid',
         ['name' => 'Organisations.id', 'multiple' => true, 'options' => 'getAllOrganisations', 'select2' => true],
         'Organisations.nationality'
     ];
@@ -74,7 +75,21 @@ class UsersController extends AppController
 
     public function filtering()
     {
-        $this->CRUD->filtering();
+        $this->CRUD->filtering([
+            'afterFind' => function($filtersConfig, $typeMap) {
+                $filtersConfig['disabled']['options'] = [
+                    '' => __('-- All --'),
+                    '0' => __('Enabled'),
+                    '1' => __('Disabled'),
+                ];
+                $filtersConfig['disabled']['multiple'] = false;
+                $filtersConfig['disabled']['select2'] = true;
+                return [
+                    'filtersConfig' => $filtersConfig,
+                    'typeMap' => $typeMap,
+                ];
+            }
+        ]);
     }
 
     public function add()
