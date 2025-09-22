@@ -60,7 +60,8 @@ function deleteTag(url, tag_ids, clicked) {
                     const controllerName = split[1]
                     const id = split[3]
                     const urlRetag = `/${controllerName}/tag/${id}`
-                    addTags(urlRetag, tags, $container.find('.tag-container')).then(() => {
+                    const tag = decodeURIComponent($(clicked).data('tagname'))
+                    addTags(urlRetag, [tag], $container.find('.tag-container')).then(() => {
                         theToast.removeToast()
                     })
                 }),

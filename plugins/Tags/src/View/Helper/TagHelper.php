@@ -117,6 +117,9 @@ class TagHelper extends Helper
                     ]),
                     $tag['id']
                 ),
+                'attrs' => [
+                    'data-tagname' => urlencode($tag['name'])
+                ]
             ]);
         } else {
             $deleteButton = '';
