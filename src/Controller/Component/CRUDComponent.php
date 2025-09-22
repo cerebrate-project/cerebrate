@@ -1292,7 +1292,7 @@ class CRUDComponent extends Component
                 $input['tags'] = array_filter(
                     $entity->tags,
                     function ($existingTag) use ($tagsToRemove) {
-                        return !in_array($existingTag->name, $tagsToRemove);
+                        return !in_array($existingTag->id, $tagsToRemove);
                     }
                 );
                 $patchEntityParams = [

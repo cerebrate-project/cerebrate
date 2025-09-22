@@ -27,8 +27,8 @@ class TagHelper extends Helper
         $field = 'tag_list';
         $values = !empty($options['allTags']) ? array_map(function($tag) {
             return [
-                'text' => h($tag['name']),
-                'value' => h($tag['name']),
+                'text' => $tag['name'],
+                'value' => $tag['name'],
                 'data-colour' => h($tag['colour']),
                 'data-text-colour' => h($tag['text_colour']),
             ];
@@ -115,7 +115,7 @@ class TagHelper extends Helper
                         'action' => 'untag',
                         $this->getView()->get('entity')['id']
                     ]),
-                    h($tag['name'])
+                    $tag['id']
                 ),
             ]);
         } else {
@@ -129,7 +129,7 @@ class TagHelper extends Helper
                 'mx-1',
                 'align-middle',
             ],
-            'title' => h($tag['name']),
+            'title' => $tag['name'],
             'style' => sprintf('color:%s; background-color:%s', $textColour, h($tag['colour'])),
         ], h($tag['name']) . $deleteButton);
         return $html;

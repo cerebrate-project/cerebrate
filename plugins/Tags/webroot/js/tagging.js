@@ -33,12 +33,12 @@ function createTagPicker(clicked) {
     initSelect2Picker($select)
 }
 
-function deleteTag(url, tags, clicked) {
-    if (!Array.isArray(tags)) {
-        tags = [tags];
+function deleteTag(url, tag_ids, clicked) {
+    if (!Array.isArray(tag_ids)) {
+        tag_ids = [tag_ids];
     }
     const data = {
-        tag_list: JSON.stringify(tags)
+        tag_list: JSON.stringify(tag_ids)
     }
     const $statusNode = $(clicked).closest('.tag')
     const APIOptions = {
