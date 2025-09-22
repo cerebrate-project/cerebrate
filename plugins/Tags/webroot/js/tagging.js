@@ -122,7 +122,8 @@ function initSelect2Picker($select) {
     const $modal = $select.closest('.modal')
 
     $select.select2({
-        dropdownParent: $modal.length != 0 ? $modal.find('.modal-body') : $(document.body),
+        // dropdownParent: $modal.length != 0 ? $modal.find('.modal-body') : $(document.body),
+        dropdownParent: $(document.body), // to avoid z-index issues with modals
         placeholder: 'Pick a tag',
         tags: true,
         width: '100%',
