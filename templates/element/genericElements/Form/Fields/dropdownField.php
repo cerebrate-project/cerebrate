@@ -56,8 +56,8 @@ echo $this->FormFieldMassage->prepareFormElement($this->Form, $controlParams, $f
             $select.parent().find('input.custom-value').attr('oninput', 'updateAssociatedSelect(this)')
             updateAssociatedSelect($select.parent().find('input.custom-value')[0])
             <?php if ($initSelect2) : ?>
-                // let $container = $select.closest('.modal-dialog .modal-body')
-                let $container = []
+                let $container = $select.closest('.modal-dialog .modal-body')
+                // let $container = []
                 if ($container.length == 0) {
                     $container = $(document.body)
                 }
