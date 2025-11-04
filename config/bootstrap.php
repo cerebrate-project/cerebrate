@@ -153,7 +153,7 @@ if ($isCli) {
  * Set the full base URL.
  * This URL is used as the base of all absolute links.
  */
-$fullBaseUrl = Configure::read('App.fullBaseUrl');
+$fullBaseUrl = Configure::check('App.fullBaseUrl') ? Configure::read('App.fullBaseUrl') : Configure::read('App.baseurl');
 if (!$fullBaseUrl) {
     $s = null;
     if (env('HTTPS')) {
