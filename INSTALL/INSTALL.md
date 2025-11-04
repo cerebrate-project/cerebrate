@@ -58,12 +58,12 @@ sudo mv composer.phar /usr/local/bin/composer
 - for apache
 
 ```bash
-sudo apt install apache2 mariadb-server git composer php-intl php-mbstring php-dom php-xml unzip php-ldap php-sqlite3 php-curl sqlite libapache2-mod-php php-mysql
+sudo apt install apache2 mariadb-server git composer php-intl php-mbstring php-dom php-xml unzip php-ldap php-sqlite3 php-curl sqlite3 libapache2-mod-php php-mysql
 ```
 
 - for nginx
 ```bash
-sudo apt install nginx mariadb-server git composer php-intl php-mbstring php-dom php-xml unzip php-ldap php-sqlite3 sqlite php-fpm php-curl php-mysql
+sudo apt install nginx mariadb-server git composer php-intl php-mbstring php-dom php-xml unzip php-ldap php-sqlite3 sqlite3 php-fpm php-curl php-mysql
 ```
 
 
