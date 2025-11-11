@@ -272,6 +272,9 @@ class UsersController extends AppController
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
         }
+        if ($this->ACL->getUser()['id'] == $id) {
+            $validRoles[$this->ACL->getUser()['role']['id']] = $this->ACL->getUser()['role']['name']; // include the current role of the user
+        }
         if (empty($id)) {
             $id = $currentUser['id'];
         } else {
@@ -329,7 +332,7 @@ class UsersController extends AppController
             $params['fields'][] = 'disabled';
             if (!$currentUser['role']['perm_community_admin']) {
                 $params['afterFind'] = function ($data, &$params) use ($currentUser, $validRoles) {
-                    if (!in_array($data['role_id'], array_keys($validRoles)) && $this->ACL->getUser()['id'] != $data['id']) {
+                    if (!in_array($data['role_id'], array_keys($validRoles))) {
                         throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
                     }
                     if (!$this->ACL->canEditUser($currentUser, $data)) {
@@ -339,7 +342,7 @@ class UsersController extends AppController
                 };
                 $params['beforeSave'] = function ($data) use ($currentUser, $validRoles, $validOrgIds, $params) {
                     // only run these checks if the user CAN edit them and if the values are actually set in the request
-                    if (in_array('role_id', $params['fields']) && isset($data['role_id']) && !in_array($data['role_id'], array_keys($validRoles)) && $this->ACL->getUser()['id'] != $data['id']) {
+                    if (in_array('role_id', $params['fields']) && isset($data['role_id']) && !in_array($data['role_id'], array_keys($validRoles))) {
                         throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
                     }
                     if (in_array('organisation_id', $params['fields']) && isset($data['organisation_id']) && !in_array($data['organisation_id'], $validOrgIds)) {
@@ -360,9 +363,6 @@ class UsersController extends AppController
             if (!empty($currentUser['role']['perm_group_admin']) && !empty($validOrgIds)) {
                 $org_conditions = ['id IN' => $validOrgIds];
             }
-        }
-        if ($this->ACL->getUser()['id'] == $id) {
-            $validRoles[$this->ACL->getUser()['role']['id']] = $this->ACL->getUser()['role']['name']; // include the current role of the user
         }
         $dropdownData = [
             'role' => $validRoles,
