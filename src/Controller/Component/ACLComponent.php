@@ -614,7 +614,7 @@ class ACLComponent extends Component
                 } elseif (isset($permissions['AND'])) {
                     $access = true;
                     foreach ($permissions['AND'] as $permission) {
-                        if ($role[$permission]) {
+                        if (!$role[$permission]) {
                             $access = false;
                         }
                     }
