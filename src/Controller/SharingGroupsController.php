@@ -259,6 +259,23 @@ class SharingGroupsController extends AppController
     public function listOrgs($id)
     {
         $sharingGroup = $this->SharingGroups->find()->where(['id' => $id])->contain(['SharingGroupOrgs'])->first();
+        if (empty($sharingGroup)) {
+            throw new NotFoundException(__('Invalid SharingGroup.'));
+        }
+        $currentUser = $this->ACL->getUser();
+        if (empty($currentUser['role']['perm_community_admin'])) {
+            $orgFound = false;
+            if (!empty($sharingGroup['sharing_group_orgs'])) {
+                foreach ($sharingGroup['sharing_group_orgs'] as $org) {
+                    if ($org['id'] === $currentUser['organisation_id']) {
+                        $orgFound = true;
+                    }
+                }
+            }
+            if ($sharingGroup['organisation_id'] !== $currentUser['organisation_id'] && !$orgFound) {
+                throw new NotFoundException(__('Invalid SharingGroup.'));
+            }
+        }
         foreach ($sharingGroup['sharing_group_orgs'] as $k => $org) {
             $sharingGroup['sharing_group_orgs'][$k]['extend'] = $org['_joinData']['extend'];
         }
