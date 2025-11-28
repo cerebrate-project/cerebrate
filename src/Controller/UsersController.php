@@ -136,7 +136,7 @@ class UsersController extends AppController
                 if (!$currentUser['role']['perm_community_admin']) {
                     $validOrgs = $this->Users->getValidOrgsForUser($currentUser);
                     if ($currentUser['role']['perm_group_admin']) {
-                        if (!empty($data['organisation_id']) && !in_array($currentUser['organisation_id'], $validOrgs)) {
+                        if (!empty($data['organisation_id']) && !in_array($data['organisation_id'], $validOrgs)) {
                             throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
                         }
                     } else {
@@ -484,13 +484,15 @@ class UsersController extends AppController
             $editErrors = [];
             $input = $this->request->getData();
             $inputWithChanges = $this->extractChangedFields($input, $validFields, true);
+
             if (!empty($inputWithChanges)) {
                 foreach ($ids as $id) {
                     $user = $this->Users->get($id, [
                         'contain' => ['MetaFields']
                     ]);
-                    $user = $this->CRUD->attachMetaTemplatesIfNeeded($user, $metaTemplates->toArray());
-
+                    if ($metaFieldsEnabled) {
+                        $user = $this->CRUD->attachMetaTemplatesIfNeeded($user, $metaTemplates->toArray());
+                    }
                     if (!$currentUser['role']['perm_community_admin']) {
                         if (!$this->ACL->canEditUser($currentUser, $user)) {
                             throw new MethodNotAllowedException(__('You cannot edit the given user.'));
@@ -527,6 +529,7 @@ class UsersController extends AppController
                                 ];
                             }
                         }
+                        
                         $massagedData = $this->CRUD->massageMetaFields($user, $inputWithChanges, $metaTemplates);
                         if (!empty($cleanupMetaFields)) {
                             foreach ($cleanupMetaFields as $cleanupMetaField) {
@@ -541,6 +544,7 @@ class UsersController extends AppController
                                 ]);
                             }
                         }
+                        
                         unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
                     }
                     $data = $massagedData['entity'];
