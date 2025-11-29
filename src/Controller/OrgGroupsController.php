@@ -88,7 +88,7 @@ class OrgGroupsController extends AppController
     public function tag($id)
     {
         if (!$this->canEdit($id)) {
-            throw new MethodNotAllowedException(__('You cannot tag that organisation.'));
+            throw new MethodNotAllowedException(__('You cannot tag that organisation group.'));
         }
         $this->CRUD->tag($id);
         $responsePayload = $this->CRUD->getResponsePayload();
@@ -100,7 +100,7 @@ class OrgGroupsController extends AppController
     public function untag($id)
     {
         if (!$this->canEdit($id)) {
-            throw new MethodNotAllowedException(__('You cannot untag that organisation.'));
+            throw new MethodNotAllowedException(__('You cannot untag that organisation group.'));
         }
         $this->CRUD->untag($id);
         $responsePayload = $this->CRUD->getResponsePayload();
