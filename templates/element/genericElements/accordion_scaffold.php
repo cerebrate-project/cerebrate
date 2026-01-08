@@ -10,7 +10,7 @@
                 <?= h($child['title']) ?>
                 </button>
             </h2>
-            <div id="collapse-<?= $childId ?>" class="accordion-collapse collapse" aria-labelledby="heading-<?= $accordionId ?>" data-bs-parent="#accordion-<?= $accordionId ?>">
+            <div id="collapse-<?= $childId ?>" class="accordion-collapse collapse" aria-labelledby="heading-<?= $childId ?>" data-bs-parent="#accordion-<?= $accordionId ?>">
                 <div class="accordion-body">
                     <?= $child['body'] ?>
                 </div>

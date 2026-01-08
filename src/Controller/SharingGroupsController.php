@@ -192,7 +192,7 @@ class SharingGroupsController extends AppController
                     ]);
                     return $this->RestResponse->ajaxSuccessResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'addOrg', $savedData, $message);
                 } else {
-                    return $this->RestResponse->ajaxFailResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'addOrg', $sharingGroup, $message);;
+                    return $this->RestResponse->ajaxFailResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'addOrg', $sharingGroup, $message);
                 }
             } else {
                 if ($result) {
@@ -226,7 +226,7 @@ class SharingGroupsController extends AppController
             if ($result) {
                 $message = __('Organisation(s) removed from the sharing group.');
             } else {
-                $message = __('Organisation(s) could not be removed to the sharing group.');
+                $message = __('Organisation(s) could not be removed from the sharing group.');
             }
             if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
                 if ($result) {
