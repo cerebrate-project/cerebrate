@@ -752,10 +752,10 @@ class UsersController extends AppController
         $currentUser = $this->ACL->getUser();
         if (!$currentUser['role']['perm_community_admin']) {
             $validOrgs = $this->Users->getValidOrgsForUser($currentUser);
-            if ($currentUser['role']['perm_group_admin']) {
-                if (!in_array($org_id, $validOrgs)) {
-                    throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
-                }
+            if ($currentUser['role']['perm_group_admin'] && !in_array($org_id, $validOrgs)) {
+                throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
+            } else if ($currentUser['role']['perm_org_admin'] && $currentUser['organisation_id'] != $org_id) {
+                throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
             }
         }
         $fakeUser = $this->Users->newEmptyEntity();
