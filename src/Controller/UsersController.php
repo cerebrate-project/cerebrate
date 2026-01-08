@@ -503,8 +503,14 @@ class UsersController extends AppController
                     }
 
                     // only run these checks if the user CAN edit them and if the values are actually set in the request
-                    if (isset($inputWithChanges['role_id']) && !in_array($inputWithChanges['role_id'], array_keys($validRoles)) && $currentUser['id'] != $inputWithChanges['id']) {
-                        throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
+                    if (isset($inputWithChanges['role_id'])) {
+                        if ($currentUser['id'] == $user['id'] && $inputWithChanges['role_id'] != $user['role_id']) {
+                            throw new MethodNotAllowedException(__('You cannot change your own role.'));
+                        }
+                        
+                        if (!in_array($inputWithChanges['role_id'], array_keys($validRoles))) {
+                            throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
+                        }
                     }
                     if (in_array('organisation_id', $validFields) && isset($inputWithChanges['organisation_id']) && !in_array($inputWithChanges['organisation_id'], $validOrgIds)) {
                         throw new MethodNotAllowedException(__('You cannot assign the chosen organisation to a user.'));
