@@ -243,6 +243,7 @@ class ACLComponent extends Component
             'login' => ['*'],
             'logout' => ['*'],
             'register' => ['*'],
+            'massEdit' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             'settings' => ['*'],
             'toggle' => ['OR' => ['perm_org_admin', 'perm_community_admin', 'perm_group_admin']],
             'view' => ['*'],
@@ -613,7 +614,7 @@ class ACLComponent extends Component
                 } elseif (isset($permissions['AND'])) {
                     $access = true;
                     foreach ($permissions['AND'] as $permission) {
-                        if ($role[$permission]) {
+                        if (!$role[$permission]) {
                             $access = false;
                         }
                     }

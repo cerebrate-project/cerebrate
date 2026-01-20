@@ -27,7 +27,7 @@ $this->userSettingsTable = TableRegistry::getTableLocator()->get('UserSettings')
                             <?= !empty($bookmark['url']) ? h($bookmark['url']) : '' ?>
                         </span>
                     <?php endif; ?>
-                    <span class="ms-3 fw-light"><?= !empty($bookmark['name']) ? h($bookmark['name']): '' ?></span>
+                    <span class="ms-3 fw-light"><?= !empty($bookmark['name']) ? h($bookmark['name']) : '' ?></span>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -67,3 +67,15 @@ $this->userSettingsTable = TableRegistry::getTableLocator()->get('UserSettings')
         </div>
     <?php endforeach ?>
 </div>
+
+<?php if (!empty($admin_message)): ?>
+    <h3>
+        <?= $this->Bootstrap->icon('bullhorn', [
+            'class' => ['fa-fw']
+        ]); ?>
+        <?= __('Message from admins') ?>
+    </h3>
+    <div class="row ps-5 mt-4">
+        <?= $this->Markdown->text($admin_message); ?>
+    </div>
+<?php endif; ?>

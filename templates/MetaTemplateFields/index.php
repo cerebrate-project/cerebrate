@@ -44,6 +44,11 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'data_path' => 'regex'
             ],
             [
+                'name' => __('Link'),
+                'sort' => 'link',
+                'data_path' => 'link'
+            ],
+            [
                 'name' => __('Field Usage'),
                 'sort' => 'counter',
                 'data_path' => 'counter',

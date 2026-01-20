@@ -14,7 +14,11 @@ $this->Form->setTemplates($default_template);
 $backupTemplates = $this->Form->getTemplates();
 
 $fieldsHtml = '';
-foreach ($metaTemplate->meta_template_fields as $metaTemplateField) {
+$sorted_meta_template_fields = $metaTemplate->meta_template_fields;
+usort($sorted_meta_template_fields, function ($a, $b) {
+    return strcmp($a->field, $b->field);
+});
+foreach ($sorted_meta_template_fields as $metaTemplateField) {
     $metaTemplateField->label = Inflector::humanize($metaTemplateField->field);
     if (!empty($metaTemplateField->metaFields)) {
         if (!empty($metaTemplateField->multiple)) {

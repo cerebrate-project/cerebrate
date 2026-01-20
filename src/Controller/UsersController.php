@@ -6,19 +6,22 @@ use Cake\ORM\TableRegistry;
 use Cake\Http\Exception\UnauthorizedException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Core\Configure;
+use Cake\Utility\Inflector;
 use Cake\Utility\Security;
 use Cake\Http\Exception\NotFoundException;
 
 class UsersController extends AppController
 {
     public $filterFields = [
-        'Individuals.uuid',
-        'username',
         'Individuals.email',
+        'username',
+        'disabled',
         'Individuals.first_name',
         'Individuals.last_name',
+        'Individuals.uuid',
         ['name' => 'Organisations.id', 'multiple' => true, 'options' => 'getAllOrganisations', 'select2' => true],
-        'Organisations.nationality'
+        'Organisations.nationality',
+        ['name' => 'Roles.id', 'multiple' => true, 'options' => 'getAllRoles', 'select2' => true],
     ];
     public $quickFilterFields = ['Individuals.uuid', ['username' => true], ['Individuals.first_name' => true], ['Individuals.last_name' => true], 'Individuals.email'];
     public $containFields = ['Individuals', 'Roles', 'UserSettings', 'Organisations', 'OrgGroups'];
@@ -73,7 +76,21 @@ class UsersController extends AppController
 
     public function filtering()
     {
-        $this->CRUD->filtering();
+        $this->CRUD->filtering([
+            'afterFind' => function($filtersConfig, $typeMap) {
+                $filtersConfig['disabled']['options'] = [
+                    '' => __('-- All --'),
+                    '0' => __('Enabled'),
+                    '1' => __('Disabled'),
+                ];
+                $filtersConfig['disabled']['multiple'] = false;
+                $filtersConfig['disabled']['select2'] = true;
+                return [
+                    'filtersConfig' => $filtersConfig,
+                    'typeMap' => $typeMap,
+                ];
+            }
+        ]);
     }
 
     public function add()
@@ -119,7 +136,7 @@ class UsersController extends AppController
                 if (!$currentUser['role']['perm_community_admin']) {
                     $validOrgs = $this->Users->getValidOrgsForUser($currentUser);
                     if ($currentUser['role']['perm_group_admin']) {
-                        if (!empty($data['organisation_id']) && !in_array($currentUser['organisation_id'], $validOrgs)) {
+                        if (!empty($data['organisation_id']) && !in_array($data['organisation_id'], $validOrgs)) {
                             throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
                         }
                     } else {
@@ -201,7 +218,7 @@ class UsersController extends AppController
     public function view($id = false)
     {
         $currentUser = $this->ACL->getUser();
-        if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_community_admin']))) {
+        if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_community_admin'])) || $id === 'me') {
             $id = $this->ACL->getUser()['id'];
         }
         $keycloakUsersParsed = null;
@@ -254,6 +271,9 @@ class UsersController extends AppController
             }
         } else {
             $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
+        }
+        if ($this->ACL->getUser()['id'] == $id) {
+            $validRoles[$this->ACL->getUser()['role']['id']] = $this->ACL->getUser()['role']['name']; // include the current role of the user
         }
         if (empty($id)) {
             $id = $currentUser['id'];
@@ -312,7 +332,7 @@ class UsersController extends AppController
             $params['fields'][] = 'disabled';
             if (!$currentUser['role']['perm_community_admin']) {
                 $params['afterFind'] = function ($data, &$params) use ($currentUser, $validRoles) {
-                    if (!in_array($data['role_id'], array_keys($validRoles)) && $this->ACL->getUser()['id'] != $data['id']) {
+                    if (!in_array($data['role_id'], array_keys($validRoles))) {
                         throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
                     }
                     if (!$this->ACL->canEditUser($currentUser, $data)) {
@@ -322,7 +342,7 @@ class UsersController extends AppController
                 };
                 $params['beforeSave'] = function ($data) use ($currentUser, $validRoles, $validOrgIds, $params) {
                     // only run these checks if the user CAN edit them and if the values are actually set in the request
-                    if (in_array('role_id', $params['fields']) && isset($data['role_id']) && !in_array($data['role_id'], array_keys($validRoles)) && $this->ACL->getUser()['id'] != $data['id']) {
+                    if (in_array('role_id', $params['fields']) && isset($data['role_id']) && !in_array($data['role_id'], array_keys($validRoles))) {
                         throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
                     }
                     if (in_array('organisation_id', $params['fields']) && isset($data['organisation_id']) && !in_array($data['organisation_id'], $validOrgIds)) {
@@ -343,9 +363,6 @@ class UsersController extends AppController
             if (!empty($currentUser['role']['perm_group_admin']) && !empty($validOrgIds)) {
                 $org_conditions = ['id IN' => $validOrgIds];
             }
-        }
-        if ($this->ACL->getUser()['id'] == $id) {
-            $validRoles[$this->ACL->getUser()['role']['id']] = $this->ACL->getUser()['role']['name']; // include the current role of the user
         }
         $dropdownData = [
             'role' => $validRoles,
@@ -418,6 +435,197 @@ class UsersController extends AppController
             return $responsePayload;
         }
         $this->set('metaGroup', $this->isCommunityAdmin ? 'Administration' : 'Cerebrate');
+    }
+
+    public function massEdit()
+    {
+        $currentUser = $this->ACL->getUser();
+        $validRoles = [];
+        $validOrgIds = [];
+        if (!$currentUser['role']['perm_community_admin']) {
+            if ($currentUser['role']['perm_group_admin']) {
+                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_admin' => 0])->all()->toArray();
+                $validOrgIds = $this->Users->Organisations->OrgGroups->getGroupOrgIdsForUser($currentUser);
+            } else {
+                $validRoles = $this->Users->Roles->find('list')->select(['id', 'name'])->order(['name' => 'asc'])->where(['perm_community_admin' => 0, 'perm_group_admin' => 0, 'perm_org_admin' => 0, 'perm_admin' => 0])->all()->toArray();
+            }
+        } else {
+            $validRoles = $this->Users->Roles->find('list')->order(['name' => 'asc'])->all()->toArray();
+            $validOrgIds = $this->Users->Organisations->find()->all()->extract('id')->toList();
+        }
+
+        $org_conditions = [];
+        if (empty($currentUser['role']['perm_community_admin'])) {
+            $org_conditions = ['id' => $currentUser['organisation_id']];
+            if (!empty($currentUser['role']['perm_group_admin']) && !empty($validOrgIds)) {
+                $org_conditions = ['id IN' => $validOrgIds];
+            }
+        }
+        $organisations = $this->Users->Organisations->find('list', [
+            'sort' => ['name' => 'asc'],
+            'conditions' => $org_conditions
+        ])->toArray();
+
+        $validFields = ['role_id', 'disabled'];
+        if (!empty($currentUser['role']['perm_community_admin']) || !empty($currentUser['role']['perm_group_admin'])) {
+            $validFields[] = 'organisation_id';
+        }
+
+        $metaFieldsEnabled = $currentUser['role']['perm_meta_field_editor'] && $this->CRUD->metaFieldsSupported();
+        if ($metaFieldsEnabled) {
+            $MetaTemplates = TableRegistry::getTableLocator()->get('MetaTemplates');
+            $metaTemplates = $this->CRUD->getMetaTemplates();
+        }
+
+        if ($this->request->is('post') || $this->request->is('put')) {
+            $ids = $this->CRUD->getIdsOrFail();
+            $editSuccesses = 0;
+            $editResults = [];
+            $editErrors = [];
+            $input = $this->request->getData();
+            $inputWithChanges = $this->extractChangedFields($input, $validFields, true);
+
+            if (!empty($inputWithChanges)) {
+                foreach ($ids as $id) {
+                    $user = $this->Users->get($id, [
+                        'contain' => ['MetaFields']
+                    ]);
+                    if ($metaFieldsEnabled) {
+                        $user = $this->CRUD->attachMetaTemplatesIfNeeded($user, $metaTemplates->toArray());
+                    }
+                    if (!$currentUser['role']['perm_community_admin']) {
+                        if (!$this->ACL->canEditUser($currentUser, $user)) {
+                            throw new MethodNotAllowedException(__('You cannot edit the given user.'));
+                        }
+                        if (!empty($inputWithChanges['role_id']) && !in_array($user['role_id'], array_keys($validRoles)) && $currentUser['id'] != $user['id']) {
+                            throw new MethodNotAllowedException(__('You cannot edit the given privileged user.'));
+                        }
+                    }
+
+                    // only run these checks if the user CAN edit them and if the values are actually set in the request
+                    if (isset($inputWithChanges['role_id'])) {
+                        if ($currentUser['id'] == $user['id'] && $inputWithChanges['role_id'] != $user['role_id']) {
+                            throw new MethodNotAllowedException(__('You cannot change your own role.'));
+                        }
+                        
+                        if (!in_array($inputWithChanges['role_id'], array_keys($validRoles))) {
+                            throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
+                        }
+                    }
+                    if (in_array('organisation_id', $validFields) && isset($inputWithChanges['organisation_id']) && !in_array($inputWithChanges['organisation_id'], $validOrgIds)) {
+                        throw new MethodNotAllowedException(__('You cannot assign the chosen organisation to a user.'));
+                    }
+
+                    // Adapt input to update values that were changed.
+                    $patchEntityParams = [
+                        'fields' => $validFields,
+                    ];
+
+                    if (!empty($inputWithChanges['MetaTemplates'])) {
+                        // Deleting everything and re-created
+                        $cleanupMetaFields = [];
+                        foreach ($inputWithChanges['MetaTemplates'] as $template_id => $template) {
+                            foreach ($template['meta_template_fields'] as $meta_template_field_id => $meta_template_field) {
+                                $field = $metaTemplates->toArray()[$template_id]['meta_template_fields'][$meta_template_field_id]->field;
+                                $cleanupMetaFields[] = [
+                                    'scope' => $this->Users->getBehavior('MetaFields')->getScope(),
+                                    'field' => $field,
+                                    'meta_template_field_id' => $meta_template_field_id,
+                                    'meta_template_id' => $template_id,
+                                ];
+                            }
+                        }
+                        
+                        $massagedData = $this->CRUD->massageMetaFields($user, $inputWithChanges, $metaTemplates);
+                        if (!empty($cleanupMetaFields)) {
+                            foreach ($cleanupMetaFields as $cleanupMetaField) {
+                                $this->Users->MetaFields->deleteAll([
+                                    'AND' => [
+                                        'scope' => $cleanupMetaField['scope'],
+                                        'field' => $cleanupMetaField['field'],
+                                        'meta_template_field_id' => $cleanupMetaField['meta_template_field_id'],
+                                        'meta_template_id' => $cleanupMetaField['meta_template_id'],
+                                        'parent_id' => $id
+                                    ]
+                                ]);
+                            }
+                        }
+                        
+                        unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
+                    }
+                    $data = $massagedData['entity'];
+                    $metaFieldsToDelete = $massagedData['metafields_to_delete'];
+                    if (isset($input['meta_fields'])) {
+                        unset($input['meta_fields']);
+                    }
+
+                    $data = $this->Users->patchEntity($data, $inputWithChanges, $patchEntityParams);
+                    $savedData = $this->Users->save($data);
+                    if ($savedData !== false) {
+                        if (!empty($metaFieldsToDelete)) {
+                            foreach ($metaFieldsToDelete as $k => $v) {
+                                if ($v === null) {
+                                    unset($metaFieldsToDelete[$k]);
+                                }
+                            }
+                            if (!empty($metaFieldsToDelete)) {
+                                $this->Users->MetaFields->unlink($savedData, $metaFieldsToDelete);
+                            }
+                        }
+                        $editResults[] = $savedData;
+                        $editSuccesses++;
+                    } else {
+                        $validationErrors = $data->getErrors();
+                        $validationMessage = $this->CRUD->prepareValidationError($data);
+                        $editErrors[] = $validationMessage;
+                    }
+
+                }
+            }
+            if (empty($inputWithChanges)) {
+                $success = true;
+                $message = __('No changes applied.');
+            } else {
+                $success = $editSuccesses == count($ids);
+                $message = __(
+                    '{0} {1} have been modified.',
+                    $editSuccesses == count($ids) ? __('All') : sprintf('%s / %s', $editSuccesses, count($ids)),
+                    Inflector::pluralize($this->Users->getAlias())
+                );
+                if (!$success) {
+                    $message .= __(' Errors: {0}', implode(', ', $editErrors));
+                }
+            }
+            $this->CRUD->setResponseForController('massEdit', $success, $message, $editResults, $editResults, $editErrors);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
+            }
+        }
+        $validRoles += ['unchanged' => __('-- Unchanged --')];
+        $organisations += ['unchanged' => __('-- Unchanged --')];
+        $dropdownData = [
+            'role' => $validRoles,
+            'organisation' => $organisations
+        ];
+        $this->set(compact('dropdownData'));
+        $this->set('defaultRole', 'unchanged');
+        $this->set('defaultOrg', 'unchanged');
+        $this->set('defaultDisabledState', 'unchanged');
+        $this->set('validFields', $validFields);
+
+        $data = $this->Users->newEmptyEntity();
+        $metaFieldsEnabled = $currentUser['role']['perm_meta_field_editor'] && $this->CRUD->metaFieldsSupported();
+        if ($metaFieldsEnabled) {
+            $metaTemplates = $MetaTemplates->transformTemplatesInputsForUnchangedSupport($metaTemplates->toList());
+            $data = $this->CRUD->attachMetaTemplates($data, $metaTemplates);
+        }
+        $this->set('entity', $data);
+
+        $responsePayload = $this->CRUD->getResponsePayload();
+        if (!empty($responsePayload)) {
+            return $responsePayload;
+        }
     }
 
     public function login()
@@ -550,10 +758,10 @@ class UsersController extends AppController
         $currentUser = $this->ACL->getUser();
         if (!$currentUser['role']['perm_community_admin']) {
             $validOrgs = $this->Users->getValidOrgsForUser($currentUser);
-            if ($currentUser['role']['perm_group_admin']) {
-                if (!in_array($org_id, $validOrgs)) {
-                    throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
-                }
+            if ($currentUser['role']['perm_group_admin'] && !in_array($org_id, $validOrgs)) {
+                throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
+            } else if ($currentUser['role']['perm_org_admin'] && $currentUser['organisation_id'] != $org_id) {
+                throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
             }
         }
         $fakeUser = $this->Users->newEmptyEntity();
@@ -562,5 +770,27 @@ class UsersController extends AppController
         $fakeUser = $this->CRUD->attachMetaTemplatesIfNeeded($fakeUser, $metaTemplates->toArray());
         $fakeUser = $this->fetchTable('PermissionLimitations')->attachLimitations($fakeUser);
         return $this->RestResponse->viewData($fakeUser, 'json');
+    }
+
+    public function extractChangedFields(array $input, array $validFields=[], $checkForMetatemplate=false): array
+    {
+        $inputWithChanges = [];
+        foreach ($validFields as $field) {
+            if ($input[$field] != 'unchanged') {
+                $inputWithChanges[$field] = $input[$field];
+            }
+        }
+
+        if ($checkForMetatemplate && !empty($input['MetaTemplates'])) {
+            foreach ($input['MetaTemplates'] as $template_id => $meta_template_fields) {
+                foreach ($meta_template_fields['meta_template_fields'] as $field_id => $meta_field) {
+                    if ($meta_field['metaFields']['new'][0] != 'unchanged') {
+                        $inputWithChanges['MetaTemplates'][$template_id]['meta_template_fields'][$field_id] = $meta_field;
+                    }
+                }
+            }
+        }
+
+        return $inputWithChanges;
     }
 }

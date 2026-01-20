@@ -37,13 +37,25 @@ class MetaTemplateField extends AppModel
     {
         $formOptions = [];
         if ($this->formType === 'dropdown') {
-            $selectOptions = !empty($this->sane_default) ? $this->sane_default : $this->values_list;
-            $selectOptions = array_combine($selectOptions, $selectOptions);
+            $defaultedSelectOptions = !empty($this->sane_default) ? $this->sane_default : $this->values_list;
+            $selectOptions = [];
+            foreach ($defaultedSelectOptions as $key => $value) {
+                if (is_array($value)) {
+                    $selectOptions[] = $value;
+                } else {
+                    $selectOptions[$value] = $value;
+                }
+            }
             if (!empty($this->sane_default)) {
                 $selectOptions[] = ['value' => '_custom', 'text' => __('-- custom value --'), 'class' => 'custom-value'];
             }
-            $selectOptions[''] = __('-- no value --');
+            if (empty($this->skip_no_value)) {
+                $selectOptions[''] = __('-- no value --');
+            }
             $formOptions['options'] = $selectOptions;
+            if (isset($this->default_value)) {
+                $formOptions['default'] = $this->default_value;
+            }
         }
         return $formOptions;
     }

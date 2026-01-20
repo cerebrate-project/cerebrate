@@ -33,12 +33,12 @@ function createTagPicker(clicked) {
     initSelect2Picker($select)
 }
 
-function deleteTag(url, tags, clicked) {
-    if (!Array.isArray(tags)) {
-        tags = [tags];
+function deleteTag(url, tag_ids, clicked) {
+    if (!Array.isArray(tag_ids)) {
+        tag_ids = [tag_ids];
     }
     const data = {
-        tag_list: JSON.stringify(tags)
+        tag_list: JSON.stringify(tag_ids)
     }
     const $statusNode = $(clicked).closest('.tag')
     const APIOptions = {
@@ -60,7 +60,8 @@ function deleteTag(url, tags, clicked) {
                     const controllerName = split[1]
                     const id = split[3]
                     const urlRetag = `/${controllerName}/tag/${id}`
-                    addTags(urlRetag, tags, $container.find('.tag-container')).then(() => {
+                    const tag = decodeURIComponent($(clicked).data('tagname'))
+                    addTags(urlRetag, [tag], $container.find('.tag-container')).then(() => {
                         theToast.removeToast()
                     })
                 }),
@@ -122,7 +123,8 @@ function initSelect2Picker($select) {
     const $modal = $select.closest('.modal')
 
     $select.select2({
-        dropdownParent: $modal.length != 0 ? $modal.find('.modal-body') : $(document.body),
+        // dropdownParent: $modal.length != 0 ? $modal.find('.modal-body') : $(document.body),
+        dropdownParent: $(document.body), // to avoid z-index issues with modals
         placeholder: 'Pick a tag',
         tags: true,
         width: '100%',
