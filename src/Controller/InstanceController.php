@@ -22,7 +22,9 @@ class InstanceController extends AppController
     public function home()
     {
         $statistics = $this->Instance->getStatistics();
+        $admin_message = Configure::read('misc.admin_message');
         $this->set('statistics', $statistics);
+        $this->set('admin_message', $admin_message);
     }
 
     public function status()
