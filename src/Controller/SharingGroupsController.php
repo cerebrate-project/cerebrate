@@ -192,7 +192,7 @@ class SharingGroupsController extends AppController
                     ]);
                     return $this->RestResponse->ajaxSuccessResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'addOrg', $savedData, $message);
                 } else {
-                    return $this->RestResponse->ajaxFailResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'addOrg', $sharingGroup, $message);;
+                    return $this->RestResponse->ajaxFailResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'addOrg', $sharingGroup, $message);
                 }
             } else {
                 if ($result) {
@@ -226,7 +226,7 @@ class SharingGroupsController extends AppController
             if ($result) {
                 $message = __('Organisation(s) removed from the sharing group.');
             } else {
-                $message = __('Organisation(s) could not be removed to the sharing group.');
+                $message = __('Organisation(s) could not be removed from the sharing group.');
             }
             if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
                 if ($result) {
@@ -259,6 +259,23 @@ class SharingGroupsController extends AppController
     public function listOrgs($id)
     {
         $sharingGroup = $this->SharingGroups->find()->where(['id' => $id])->contain(['SharingGroupOrgs'])->first();
+        if (empty($sharingGroup)) {
+            throw new NotFoundException(__('Invalid SharingGroup.'));
+        }
+        $currentUser = $this->ACL->getUser();
+        if (empty($currentUser['role']['perm_community_admin'])) {
+            $orgFound = false;
+            if (!empty($sharingGroup['sharing_group_orgs'])) {
+                foreach ($sharingGroup['sharing_group_orgs'] as $org) {
+                    if ($org['id'] === $currentUser['organisation_id']) {
+                        $orgFound = true;
+                    }
+                }
+            }
+            if ($sharingGroup['organisation_id'] !== $currentUser['organisation_id'] && !$orgFound) {
+                throw new NotFoundException(__('Invalid SharingGroup.'));
+            }
+        }
         foreach ($sharingGroup['sharing_group_orgs'] as $k => $org) {
             $sharingGroup['sharing_group_orgs'][$k]['extend'] = $org['_joinData']['extend'];
         }

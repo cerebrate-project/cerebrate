@@ -136,7 +136,7 @@ class UsersController extends AppController
                 if (!$currentUser['role']['perm_community_admin']) {
                     $validOrgs = $this->Users->getValidOrgsForUser($currentUser);
                     if ($currentUser['role']['perm_group_admin']) {
-                        if (!empty($data['organisation_id']) && !in_array($currentUser['organisation_id'], $validOrgs)) {
+                        if (!empty($data['organisation_id']) && !in_array($data['organisation_id'], $validOrgs)) {
                             throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
                         }
                     } else {
@@ -484,13 +484,15 @@ class UsersController extends AppController
             $editErrors = [];
             $input = $this->request->getData();
             $inputWithChanges = $this->extractChangedFields($input, $validFields, true);
+
             if (!empty($inputWithChanges)) {
                 foreach ($ids as $id) {
                     $user = $this->Users->get($id, [
                         'contain' => ['MetaFields']
                     ]);
-                    $user = $this->CRUD->attachMetaTemplatesIfNeeded($user, $metaTemplates->toArray());
-
+                    if ($metaFieldsEnabled) {
+                        $user = $this->CRUD->attachMetaTemplatesIfNeeded($user, $metaTemplates->toArray());
+                    }
                     if (!$currentUser['role']['perm_community_admin']) {
                         if (!$this->ACL->canEditUser($currentUser, $user)) {
                             throw new MethodNotAllowedException(__('You cannot edit the given user.'));
@@ -501,8 +503,14 @@ class UsersController extends AppController
                     }
 
                     // only run these checks if the user CAN edit them and if the values are actually set in the request
-                    if (isset($inputWithChanges['role_id']) && !in_array($inputWithChanges['role_id'], array_keys($validRoles)) && $currentUser['id'] != $inputWithChanges['id']) {
-                        throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
+                    if (isset($inputWithChanges['role_id'])) {
+                        if ($currentUser['id'] == $user['id'] && $inputWithChanges['role_id'] != $user['role_id']) {
+                            throw new MethodNotAllowedException(__('You cannot change your own role.'));
+                        }
+                        
+                        if (!in_array($inputWithChanges['role_id'], array_keys($validRoles))) {
+                            throw new MethodNotAllowedException(__('You cannot assign the chosen role to a user.'));
+                        }
                     }
                     if (in_array('organisation_id', $validFields) && isset($inputWithChanges['organisation_id']) && !in_array($inputWithChanges['organisation_id'], $validOrgIds)) {
                         throw new MethodNotAllowedException(__('You cannot assign the chosen organisation to a user.'));
@@ -527,6 +535,7 @@ class UsersController extends AppController
                                 ];
                             }
                         }
+                        
                         $massagedData = $this->CRUD->massageMetaFields($user, $inputWithChanges, $metaTemplates);
                         if (!empty($cleanupMetaFields)) {
                             foreach ($cleanupMetaFields as $cleanupMetaField) {
@@ -541,6 +550,7 @@ class UsersController extends AppController
                                 ]);
                             }
                         }
+                        
                         unset($input['MetaTemplates']); // Avoid MetaTemplates to be overriden when patching entity
                     }
                     $data = $massagedData['entity'];
@@ -748,10 +758,10 @@ class UsersController extends AppController
         $currentUser = $this->ACL->getUser();
         if (!$currentUser['role']['perm_community_admin']) {
             $validOrgs = $this->Users->getValidOrgsForUser($currentUser);
-            if ($currentUser['role']['perm_group_admin']) {
-                if (!in_array($org_id, $validOrgs)) {
-                    throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
-                }
+            if ($currentUser['role']['perm_group_admin'] && !in_array($org_id, $validOrgs)) {
+                throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
+            } else if ($currentUser['role']['perm_org_admin'] && $currentUser['organisation_id'] != $org_id) {
+                throw new MethodNotAllowedException(__('You do not have permission to assign that organisation.'));
             }
         }
         $fakeUser = $this->Users->newEmptyEntity();

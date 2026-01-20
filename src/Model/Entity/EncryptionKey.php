@@ -7,6 +7,11 @@ use Cake\ORM\Entity;
 
 class EncryptionKey extends AppModel
 {
+    protected $_accessible = [
+        '*' => true,
+        'id' => false,
+        'uuid' => false,
+    ];
 
     public function rearrangeForAPI(array $options = []): void
     {
