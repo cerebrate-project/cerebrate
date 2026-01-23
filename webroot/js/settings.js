@@ -24,7 +24,7 @@ $(document).ready(function () {
         $('[data-bs-spy="scroll"]').trigger('scroll.bs.scrollspy')
     })
 
-    $('.tab-content input, .tab-content select').on('input', function () {
+    $('.tab-content input, .tab-content textarea, .tab-content select').on('input', function () {
         if ($(this).attr('type') == 'checkbox') {
             const $input = $(this)
             const $inputGroup = $(this).closest('.setting-group')
@@ -37,14 +37,14 @@ $(document).ready(function () {
     })
 
     $('.tab-content .setting-group .btn-save-setting').click(function () {
-        const $input = $(this).closest('.input-group').find('input, select')
+        const $input = $(this).closest('.input-group').find('input, select, textarea')
         const settingName = $input.data('setting-name')
         const settingValue = $input.val()
         saveAndUpdateSetting(this, $input, settingName, settingValue)
     })
     $('.tab-content .setting-group .btn-reset-setting').click(function () {
         const $btn = $(this)
-        const $input = $btn.closest('.input-group').find('input, select')
+        const $input = $btn.closest('.input-group').find('input, select, textarea')
         let oldValue = window.settingsFlattened[$input.data('setting-name')].value
         if ($input.is('select')) {
             oldValue = oldValue !== undefined ? oldValue : -1

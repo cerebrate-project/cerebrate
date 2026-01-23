@@ -18,8 +18,23 @@ foreach($data['MetaTemplates'] as $metaTemplate) {
             if (!empty($metaTemplateField->metaFields)) {
                 foreach ($metaTemplateField->metaFields as $metaField) {
                     $viewElementCandidate = $metaTemplateField->index_type == 'text' ? 'generic' : $metaTemplateField->index_type; // Currently, single-view generic fields are not using index-view fields
+
+                    $linkHtml = '';
+                    if ($metaTemplateField['link']) {
+                        $linkHtml = sprintf(
+                            ' <a href="%s" class="text-nowrap fw-light d-block">%s %s</a>',
+                            h($metaTemplateField['link']),
+                            $this->Bootstrap->icon('link'),
+                            h($metaTemplateField['link'])
+                        );
+                    }
+
+                    $key = !$labelPrintedOnce ? (
+                        h($metaField->field) . ($linkHtml ? $linkHtml : '')
+                    ) : '';
+
                     $fields[] = [
-                        'key' => !$labelPrintedOnce ? $metaField->field : '',
+                        'keyHtml' => $key,
                         // Not relying on the `type` option as this table is a special case where not all values have a label
                         'raw' => $this->element(sprintf('%s%sField', $viewElementCandidatePath, $viewElementCandidate), [
                             'data' => $metaField,
@@ -30,7 +45,8 @@ foreach($data['MetaTemplates'] as $metaTemplate) {
                         'rawNoEscaping' => true,
                         'notice_warning' => $metaTemplateField->warning ?? null,
                         'notice_info' => $metaTemplateField->info ?? null,
-                        'notice_danger' => $metaTemplateField->danger ?? null
+                        'notice_danger' => $metaTemplateField->danger ?? null,
+                        'notice_secondary' => $metaTemplateField->secondary ?? null,
                     ];
                     $labelPrintedOnce = true;
                 }

@@ -46,5 +46,6 @@ class AppView extends View
         $this->loadHelper('Tags.Tag');
         $this->loadHelper('ACL');
         $this->loadHelper('Flag');
+        $this->loadHelper('Markdown');
     }
 }
