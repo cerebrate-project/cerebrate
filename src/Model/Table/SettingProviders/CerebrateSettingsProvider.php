@@ -62,6 +62,16 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'test' => 'testUuid',
                         ],
                     ],
+                    'Miscellaneous' => [
+                        'misc.admin_message' => [
+                            'description' => 'Message to be display on the home page. (Accepts markdown)',
+                            'default' => __('Welcome to **Cerebrate**!'),
+                            'name' => __('Admin message'),
+                            'severity' => 'info',
+                            'type' => 'textarea',
+                            'empty' => true,
+                        ],
+                    ],
                     'Session handling' => [
                         'Session.defaults' => [
                             'description' => 'The session handler used. We strongly recommend "php" and configuring the redis handler in your php.ini. Be advised, that database sessions require the creation of a session table first.',

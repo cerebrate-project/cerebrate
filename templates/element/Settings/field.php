@@ -18,7 +18,8 @@
                     'value' => isset($setting['value']) ? h($setting['value']) : "",
                     'placeholder' => empty($setting['default']) ? '' : h($setting['default']),
                     'aria-describedby' => h("{$settingId}Help")
-                ]
+                ],
+                $setting['type'] == 'textarea' ? (isset($setting['value']) ? h($setting['value']) : '') : ''
             );
         })($settingName, $setting, $this);
 

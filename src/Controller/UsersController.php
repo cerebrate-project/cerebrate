@@ -218,7 +218,7 @@ class UsersController extends AppController
     public function view($id = false)
     {
         $currentUser = $this->ACL->getUser();
-        if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_community_admin']))) {
+        if (empty($id) || (empty($currentUser['role']['perm_org_admin']) && empty($currentUser['role']['perm_community_admin'])) || $id === 'me') {
             $id = $this->ACL->getUser()['id'];
         }
         $keycloakUsersParsed = null;
