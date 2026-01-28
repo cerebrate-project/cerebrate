@@ -60,6 +60,9 @@ class MetaTemplateFieldsTable extends AppTable
             'message' => 'This field must be a valid JSON array.'
         ];
 
+        $validator->allowEmptyString('sane_default');
+        $validator->allowEmptyString('values_list');
+
         $validator->add('sane_default', 'validJsonArray', $jsonArrayRule);
         $validator->add('values_list', 'validJsonArray', $jsonArrayRule);
 
