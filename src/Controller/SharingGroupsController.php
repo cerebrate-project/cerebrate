@@ -157,6 +157,9 @@ class SharingGroupsController extends AppController
                 ]
             ];
         }
+        if (!$this->SharingGroups->Organisations->canUserSeeOtherOrganisations($currentUser)) {
+            $conditions['id'] = $currentUser['organisation']['id'];
+        }
         $dropdownData = [
             'organisation' => $this->SharingGroups->Organisations->find('list', [
                 'sort' => ['name' => 'asc'],
@@ -295,7 +298,7 @@ class SharingGroupsController extends AppController
     private function getAvailableOrgForSg($user)
     {
         $organisations = [];
-        if (!empty($user['role']['perm_community_admin'])) {
+        if (!empty($user['role']['perm_community_admin']) && $this->SharingGroups->Organisations->canUserSeeOtherOrganisations($user)) {
             $organisations = $this->SharingGroups->Organisations->find('list')->order(['name' => 'ASC'])->toArray();
         } else {
             $organisations = $this->SharingGroups->Organisations->find('list', [

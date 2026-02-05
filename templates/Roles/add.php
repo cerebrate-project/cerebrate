@@ -38,6 +38,11 @@
                     'label' => 'Meta field modification privilege'
                 ],
                 [
+                    'field' => 'perm_view_all_orgs',
+                    'type' => 'checkbox',
+                    'label' => 'View all organisations'
+                ],
+                [
                     'field' => 'is_default',
                     'type' => 'checkbox',
                     'label' => 'Default role'

@@ -96,4 +96,9 @@ class OrganisationsTable extends AppTable
         }
         return $query->all()->toList();
     }
+
+    public function canUserSeeOtherOrganisations($user): bool
+    {
+        return !empty($user['role']['perm_admin']) || !empty($user['role']['perm_view_all_orgs']);
+    }
 }
