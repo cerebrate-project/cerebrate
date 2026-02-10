@@ -70,6 +70,10 @@ class OrganisationsController extends AppController
             $additionalContainFields[] = 'MetaFields';
         }
         $containFields = array_merge($this->containFields, $additionalContainFields);
+        $conditions = [];
+        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            $conditions['id'] = $this->ACL->getUser()['organisation_id'];
+        }
         $this->set('validOrgs', $this->Users->getValidOrgsForUser($this->ACL->getUser()));
         $this->CRUD->index([
             'filters' => $this->filterFields,
@@ -79,6 +83,7 @@ class OrganisationsController extends AppController
                 'custom' => $customContextFilters,
             ],
             'contain' => $containFields,
+            'conditions' => $conditions,
             'statisticsFields' => $this->statisticsFields,
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
@@ -105,6 +110,10 @@ class OrganisationsController extends AppController
 
     public function view($id)
     {
+        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
+
         $this->CRUD->view($id, ['contain' => ['Alignments' => 'Individuals', 'OrgGroups']]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -115,6 +124,9 @@ class OrganisationsController extends AppController
 
     public function edit($id)
     {
+        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
         if (!$this->canEdit($id)) {
             throw new MethodNotAllowedException(__('You cannot modify that organisation.'));
         }
@@ -137,6 +149,9 @@ class OrganisationsController extends AppController
 
     public function delete($id)
     {
+        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
         $this->CRUD->delete($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -147,6 +162,9 @@ class OrganisationsController extends AppController
 
     public function tag($id)
     {
+        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
         if (!$this->canEdit($id)) {
             throw new MethodNotAllowedException(__('You cannot tag that organisation.'));
         }
@@ -159,6 +177,9 @@ class OrganisationsController extends AppController
 
     public function untag($id)
     {
+        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
         if (!$this->canEdit($id)) {
             throw new MethodNotAllowedException(__('You cannot untag that organisation.'));
         }
@@ -171,6 +192,9 @@ class OrganisationsController extends AppController
 
     public function viewTags($id)
     {
+        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
         $this->CRUD->viewTags($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
