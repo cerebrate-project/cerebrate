@@ -85,7 +85,7 @@ class SettingsTable extends AppTable
             $beforeSaveResult = $this->SettingsProvider->evaluateFunctionForSetting($setting['beforeSave'], $setting);
             if ($beforeSaveResult !== true) {
                 $errors[] = $beforeSaveResult;
-                $setting['errorMessage'] = $validationResult;
+                $setting['errorMessage'] = $beforeSaveResult;
             }
         }
         if (empty($errors)) {

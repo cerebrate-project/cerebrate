@@ -405,6 +405,25 @@ class CerebrateSettingsProvider extends BaseSettingsProvider
                             'description' => __('This setting will allow the deletion of users by authorized users.'),
                             'default' => false
                         ],
+                        'user.username-validation-regex' => [
+                            'name' => __('Username validation regex'),
+                            'type' => 'string',
+                            'description' => __('Defines a regular expression that usernames must match in order to be accepted during account creation.'),
+                            'default' => '',
+                            'placeholder' => '^[a-z][a-z0-9._-]{2,21}$',
+                            'test' => function ($value, $setting, $validator) {
+                                $validator->add('value', 'validRegex', [
+                                    'rule' => function ($check) {
+                                        $regex = (substr($check, 0, 1) === '/' && substr($check, -1) === '/')
+                                            ? $check
+                                            : '/' . $check . '/';
+
+                                        return @preg_match($regex, '') !== false;
+                                    },
+                                ]);
+                                return testValidator($value, $validator);
+                            },
+                        ],
                     ]
                 ]
             ],
