@@ -30,11 +30,24 @@ class IndividualsController extends AppController
     {
         $currentUser = $this->ACL->getUser();
         $orgAdmin = !$currentUser['role']['perm_community_admin'] && $currentUser['role']['perm_org_admin'];
+        $conditions = [];
         $this->CRUD->index([
             'filters' => $this->filterFields,
             'quickFilters' => $this->quickFilterFields,
             'quickFilterForMetaField' => ['enabled' => true, 'wildcard_search' => true],
             'contain' => $this->containFields,
+            'conditions' => $conditions,
+            'filterFunction' => function ($query) {
+                $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+                $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+                $administeredOrgs[] = $this->ACL->getUser()['organisation_id'];
+                if (!$this->Individuals->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+                    $query->matching('Alignments', function ($q) use ($administeredOrgs) {
+                        return $q->where(['Alignments.organisation_id IN' => $administeredOrgs]);
+                    });
+                }
+                return $query;
+            },
             'statisticsFields' => $this->statisticsFields,
             'afterFind' => function($data) use ($currentUser) {
                 if ($currentUser['role']['perm_community_admin']) {

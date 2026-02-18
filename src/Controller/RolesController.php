@@ -37,7 +37,7 @@ class RolesController extends AppController
                 if ($data['is_default']) {
                     $rolesModel->query()->update()->set(['is_default' => false])->where(['id !=' => $data->id])->execute();
                 }
-                return true;
+                return $data;
             }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
@@ -65,7 +65,7 @@ class RolesController extends AppController
                 if ($data['is_default']) {
                     $rolesModel->query()->update()->set(['is_default' => false])->where(['id !=' => $data->id])->execute();
                 }
-                return true;
+                return $data;
             }
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();

@@ -186,6 +186,16 @@ class UsersTable extends AppTable
                 'message' => 'Username has to be a valid e-mail address.'
             ]);
         }
+        $validationRegex = Configure::read('user.username-validation-regex');
+        if ($validationRegex) {
+            $regex = (substr($validationRegex, 0, 1) === '/' && substr($validationRegex, -1) === '/')
+                ? $validationRegex
+                : '/' . $validationRegex . '/';
+            $validator->add('username', 'validationRegex', [
+                'rule' => ['custom', $regex],
+                'message' => __('The username format is invalid. It must match the following validation regex: {0}', $validationRegex),
+            ]);
+        }
         return $validator;
     }
 

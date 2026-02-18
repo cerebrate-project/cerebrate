@@ -81,6 +81,12 @@ echo $this->element('genericElements/IndexTable/index_table', [
                 'element' => 'boolean'
             ],
             [
+                'name' => __('View all organisations'),
+                'sort' => 'perm_view_all_orgs',
+                'data_path' => 'perm_view_all_orgs',
+                'element' => 'boolean'
+            ],
+            [
                 'name' => 'Default',
                 'sort' => 'is_default',
                 'data_path' => 'is_default',

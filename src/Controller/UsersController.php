@@ -260,6 +260,10 @@ class UsersController extends AppController
     public function edit($id = false)
     {
         $currentUser = $this->ACL->getUser();
+        $userToEdit = $this->Users->find()->where(['Users.id' => $id])->contain('Roles')->first();
+        if (!$this->ACL->canEditUser($currentUser, $userToEdit)) {
+            throw new NotFoundException(__('Invalid User.'));
+        }
         $validRoles = [];
         $validOrgIds = [];
         if (!$currentUser['role']['perm_community_admin']) {

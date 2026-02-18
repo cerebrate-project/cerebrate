@@ -9,6 +9,7 @@ use Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\ForbiddenException;
+use Cake\ORM\TableRegistry;
 
 class OrganisationsController extends AppController
 {
@@ -70,6 +71,13 @@ class OrganisationsController extends AppController
             $additionalContainFields[] = 'MetaFields';
         }
         $containFields = array_merge($this->containFields, $additionalContainFields);
+        $conditions = [];
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $administeredOrgs[] = $this->ACL->getUser()['organisation_id'];
+        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            $conditions['id IN'] = $administeredOrgs;
+        }
         $this->set('validOrgs', $this->Users->getValidOrgsForUser($this->ACL->getUser()));
         $this->CRUD->index([
             'filters' => $this->filterFields,
@@ -79,6 +87,7 @@ class OrganisationsController extends AppController
                 'custom' => $customContextFilters,
             ],
             'contain' => $containFields,
+            'conditions' => $conditions,
             'statisticsFields' => $this->statisticsFields,
         ]);
         $responsePayload = $this->CRUD->getResponsePayload();
@@ -105,6 +114,14 @@ class OrganisationsController extends AppController
 
     public function view($id)
     {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
+
         $this->CRUD->view($id, ['contain' => ['Alignments' => 'Individuals', 'OrgGroups']]);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -115,6 +132,13 @@ class OrganisationsController extends AppController
 
     public function edit($id)
     {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
         if (!$this->canEdit($id)) {
             throw new MethodNotAllowedException(__('You cannot modify that organisation.'));
         }
@@ -137,6 +161,13 @@ class OrganisationsController extends AppController
 
     public function delete($id)
     {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
         $this->CRUD->delete($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {
@@ -147,6 +178,13 @@ class OrganisationsController extends AppController
 
     public function tag($id)
     {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
         if (!$this->canEdit($id)) {
             throw new MethodNotAllowedException(__('You cannot tag that organisation.'));
         }
@@ -159,6 +197,13 @@ class OrganisationsController extends AppController
 
     public function untag($id)
     {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
         if (!$this->canEdit($id)) {
             throw new MethodNotAllowedException(__('You cannot untag that organisation.'));
         }
@@ -171,6 +216,13 @@ class OrganisationsController extends AppController
 
     public function viewTags($id)
     {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
+        }
         $this->CRUD->viewTags($id);
         $responsePayload = $this->CRUD->getResponsePayload();
         if (!empty($responsePayload)) {

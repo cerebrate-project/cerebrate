@@ -157,6 +157,12 @@ class SharingGroupsController extends AppController
                 ]
             ];
         }
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $administeredOrgs[] = $this->ACL->getUser()['organisation_id'];
+        if (!$this->SharingGroups->Organisations->canUserSeeOtherOrganisations($currentUser)) {
+            $conditions['id IN'] = $administeredOrgs;
+        }
         $dropdownData = [
             'organisation' => $this->SharingGroups->Organisations->find('list', [
                 'sort' => ['name' => 'asc'],
@@ -220,31 +226,11 @@ class SharingGroupsController extends AppController
         if (empty($sharingGroup)) {
             throw new NotFoundException(__('Invalid SharingGroup.'));
         }
+        $this->CRUD->unlinkObjects(__FUNCTION__, $sharingGroup['id'], $org_id, 'SharingGroups', 'SharingGroupOrgs');
         if ($this->request->is('post')) {
-            $this->SGO = TableRegistry::getTableLocator()->get('SGOs');
-            $result = (bool)$this->SharingGroups->SharingGroupOrgs->unlink($sharingGroup['id'], $org_id);
-            if ($result) {
-                $message = __('Organisation(s) removed from the sharing group.');
-            } else {
-                $message = __('Organisation(s) could not be removed from the sharing group.');
-            }
-            if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
-                if ($result) {
-                    $savedData = $this->SharingGroups->get($id, [
-                        'contain' => 'SharingGroupOrgs'
-                    ]);
-                    return $this->RestResponse->ajaxSuccessResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'removeOrg', $savedData, $message);
-                } else {
-                    return $this->RestResponse->ajaxFailResponse(Inflector::singularize($this->SharingGroups->getAlias()), 'removeOrg', $sharingGroup, $message);
-                    ;
-                }
-            } else {
-                if ($result) {
-                    $this->Flash->success($message);
-                } else {
-                    $this->Flash->error($message);
-                }
-                $this->redirect(['action' => 'view', $id]);
+            $responsePayload = $this->CRUD->getResponsePayload();
+            if (!empty($responsePayload)) {
+                return $responsePayload;
             }
         }
         $this->set('scope', 'sharing_groups');
@@ -258,7 +244,18 @@ class SharingGroupsController extends AppController
 
     public function listOrgs($id)
     {
-        $sharingGroup = $this->SharingGroups->find()->where(['id' => $id])->contain(['SharingGroupOrgs'])->first();
+        $conditions = [];
+        if (!$this->SharingGroups->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+            $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+            $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+            $administeredOrgs[] = $this->ACL->getUser()['organisation_id'];
+            $conditions = [
+                'id IN' => $administeredOrgs,
+            ];
+        }
+        $sharingGroup = $this->SharingGroups->find()->where(['id' => $id])->contain(['SharingGroupOrgs' => [
+            'conditions' => $conditions
+        ]])->first();
         if (empty($sharingGroup)) {
             throw new NotFoundException(__('Invalid SharingGroup.'));
         }
@@ -295,7 +292,7 @@ class SharingGroupsController extends AppController
     private function getAvailableOrgForSg($user)
     {
         $organisations = [];
-        if (!empty($user['role']['perm_community_admin'])) {
+        if (!empty($user['role']['perm_community_admin']) && $this->SharingGroups->Organisations->canUserSeeOtherOrganisations($user)) {
             $organisations = $this->SharingGroups->Organisations->find('list')->order(['name' => 'ASC'])->toArray();
         } else {
             $organisations = $this->SharingGroups->Organisations->find('list', [
