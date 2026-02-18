@@ -40,6 +40,9 @@ class AuthKeysTable extends AppTable
     {
         if (empty($entity->authkey)) {
             $authkey = $this->generateAuthKey();
+            if (empty($entity->created)) {
+                $entity->created = time();
+            }
             $entity->authkey_start = substr($authkey, 0, 4);
             $entity->authkey_end = substr($authkey, -4);
             $entity->authkey = (new DefaultPasswordHasher())->hash($authkey);
