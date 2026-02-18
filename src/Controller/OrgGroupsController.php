@@ -164,7 +164,20 @@ class OrgGroupsController extends AppController
         if (empty($groupId)) {
             throw new NotFoundException(__('Invalid {0}.', 'OrgGroup'));
         }
-        $orgGroup = $this->OrgGroups->get($groupId, ['contain' => 'Organisations']);
+
+        $orgGroup = $this->OrgGroups->get($groupId, ['contain' => ['Organisations', 'Users']]);
+        $administratorIds = array_map(fn($admin) => $admin['id'], $orgGroup['users']);
+
+        $this->loadModel('Organisations');
+        if (!in_array($this->ACL->getUser()['id'], $administratorIds)) {
+            if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+                $orgGroup->organisations = array_filter(
+                    $orgGroup->organisations,
+                    fn($org) => $org->id === $this->ACL->getUser()['organisation_id']
+                );
+            }
+        }
+
         $this->set('data', $orgGroup['organisations']);
         $this->set('canEdit', $this->canEdit($groupId));
         $this->set('groupId', $groupId);

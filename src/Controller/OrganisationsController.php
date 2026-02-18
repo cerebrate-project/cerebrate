@@ -9,6 +9,7 @@ use Cake\Database\Expression\QueryExpression;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Http\Exception\MethodNotAllowedException;
 use Cake\Http\Exception\ForbiddenException;
+use Cake\ORM\TableRegistry;
 
 class OrganisationsController extends AppController
 {
@@ -71,8 +72,11 @@ class OrganisationsController extends AppController
         }
         $containFields = array_merge($this->containFields, $additionalContainFields);
         $conditions = [];
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $administeredOrgs[] = $this->ACL->getUser()['organisation_id'];
         if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
-            $conditions['id'] = $this->ACL->getUser()['organisation_id'];
+            $conditions['id IN'] = $administeredOrgs;
         }
         $this->set('validOrgs', $this->Users->getValidOrgsForUser($this->ACL->getUser()));
         $this->CRUD->index([
@@ -110,7 +114,11 @@ class OrganisationsController extends AppController
 
     public function view($id)
     {
-        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
 
@@ -124,7 +132,11 @@ class OrganisationsController extends AppController
 
     public function edit($id)
     {
-        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
         if (!$this->canEdit($id)) {
@@ -149,7 +161,11 @@ class OrganisationsController extends AppController
 
     public function delete($id)
     {
-        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
         $this->CRUD->delete($id);
@@ -162,7 +178,11 @@ class OrganisationsController extends AppController
 
     public function tag($id)
     {
-        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
         if (!$this->canEdit($id)) {
@@ -177,7 +197,11 @@ class OrganisationsController extends AppController
 
     public function untag($id)
     {
-        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
         if (!$this->canEdit($id)) {
@@ -192,7 +216,11 @@ class OrganisationsController extends AppController
 
     public function viewTags($id)
     {
-        if (!$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+        $isOrgManagedByUser = in_array($id, $administeredOrgs);
+
+        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
         $this->CRUD->viewTags($id);

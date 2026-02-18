@@ -38,9 +38,12 @@ class IndividualsController extends AppController
             'contain' => $this->containFields,
             'conditions' => $conditions,
             'filterFunction' => function ($query) {
+                $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+                $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
+                $administeredOrgs[] = $this->ACL->getUser()['organisation_id'];
                 if (!$this->Individuals->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
-                    $query->matching('Alignments', function ($q) {
-                        return $q->where(['Alignments.organisation_id' => $this->ACL->getUser()['organisation_id']]);
+                    $query->matching('Alignments', function ($q) use ($administeredOrgs) {
+                        return $q->where(['Alignments.organisation_id IN' => $administeredOrgs]);
                     });
                 }
                 return $query;
