@@ -324,7 +324,7 @@ class ACLComponent extends Component
                     if ($hit) {
                         $this->Log = TableRegistry::get('Log');
                         $this->Log->create();
-                        $this->Log->save(array(
+                        $this->Log->save([
                                 'org' => 'SYSTEM',
                                 'model' => 'User',
                                 'model_id' => $user['id'],
@@ -332,7 +332,7 @@ class ACLComponent extends Component
                                 'action' => 'security',
                                 'user_id' => $user['id'],
                                 'title' => __('User triggered security alert by attempting to access /%s/%s. Reason why this endpoint is of interest: %s', $controller, $action, $message),
-                        ));
+                        ]);
                     }
                 }
             }
