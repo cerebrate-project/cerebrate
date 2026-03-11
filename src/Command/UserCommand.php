@@ -117,4 +117,28 @@ class UserCommand extends Command
         $user->disabled = !$user->disabled;
         return $this->Users->save($user);
     }
+
+    /**
+     * Generate an auth key for a user (non-interactive).
+     *
+     * @param string|int $userIdentifier User ID (numeric) or username.
+     * @return string|false The raw auth key on success, false on failure.
+     */
+    public function generateAuthkey($userIdentifier)
+    {
+        $user = $this->selectUser($userIdentifier);
+        if (empty($user)) {
+            return false;
+        }
+        $this->loadModel('AuthKeys');
+        $authkey = $this->AuthKeys->newEntity([
+            'user_id' => $user->id,
+            'comment' => 'Generated via CLI',
+            'expiration' => 0,
+        ]);
+        if ($this->AuthKeys->save($authkey)) {
+            return $authkey->authkey_raw;
+        }
+        return false;
+    }
 }

@@ -98,11 +98,23 @@ jobs:
           sleep 1
           curl -sI http://127.0.0.1:8765/ || true
 
-      - name: Bootstrap instance and get auth key
+      - name: Trigger instance bootstrap
+        run: |
+          # First request triggers checkForNewInstance() which creates
+          # the default admin user, role, and organisation
+          curl -s -o /dev/null http://127.0.0.1:8765/users/login
+
+      - name: Generate admin auth key via CLI
         id: setup
         run: |
-          AUTHKEY=$(python3 tests/ci_setup.py --url http://127.0.0.1:8765)
+          AUTHKEY=$(./bin/cake generate_authkey admin)
           echo "authkey=${AUTHKEY}" >> "$GITHUB_OUTPUT"
+
+      - name: Create required roles
+        run: |
+          python3 tests/ci_setup.py \
+            --url http://127.0.0.1:8765 \
+            --authkey "${{ steps.setup.outputs.authkey }}"
 
       - name: Run ACL tests
         run: |
