@@ -88,6 +88,12 @@ jobs:
           sudo a2ensite cerebrate
           mkdir -p tmp logs
           chmod -R 777 tmp logs
+          # Allow Apache (www-data) to traverse the workspace path
+          DIR="$GITHUB_WORKSPACE"
+          while [ "$DIR" != "/" ]; do
+            chmod o+rx "$DIR"
+            DIR=$(dirname "$DIR")
+          done
           sudo systemctl restart apache2
           sleep 1
           curl -sI http://127.0.0.1:8765/ || true
