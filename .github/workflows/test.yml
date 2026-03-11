@@ -53,7 +53,7 @@ jobs:
       - name: Create CakePHP directories
         run: |
           mkdir -p tmp/cache/models tmp/cache/persistent tmp/sessions tmp/tests logs
-          chmod -R 777 tmp logs
+          sudo chown -R www-data:www-data tmp logs
 
       - name: Install PHP dependencies
         run: composer install --no-progress --no-interaction
@@ -63,8 +63,8 @@ jobs:
 
       - name: Run database migrations
         run: |
-          ./bin/cake migrations migrate
-          ./bin/cake migrations migrate -p Tags
+          sudo -u www-data ./bin/cake migrations migrate
+          sudo -u www-data ./bin/cake migrations migrate -p Tags
 
       - name: Configure and start Apache with PHP-FPM
         run: |
@@ -110,7 +110,8 @@ jobs:
       - name: Generate admin auth key via CLI
         id: setup
         run: |
-          AUTHKEY=$(./bin/cake generate_authkey admin)
+          # Extract just the 40-char authkey from output (ignore deprecation warnings)
+          AUTHKEY=$(sudo -u www-data ./bin/cake generate_authkey admin 2>/dev/null | grep -oE '^[a-zA-Z0-9]{40}$')
           echo "authkey=${AUTHKEY}" >> "$GITHUB_OUTPUT"
 
       - name: Create required roles
