@@ -50,16 +50,16 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: pdo, pdo_mysql, mysqli, simplexml, intl
 
-      - name: Create CakePHP directories
-        run: |
-          mkdir -p tmp/cache/models tmp/cache/persistent tmp/sessions tmp/tests logs
-          sudo chown -R www-data:www-data tmp logs
-
       - name: Install PHP dependencies
         run: composer install --no-progress --no-interaction
 
       - name: Install Python dependencies
         run: pip install requests
+
+      - name: Set ownership to www-data
+        run: |
+          mkdir -p tmp/cache/models tmp/cache/persistent tmp/sessions tmp/tests logs
+          sudo chown -R www-data:www-data $GITHUB_WORKSPACE
 
       - name: Run database migrations
         run: |
