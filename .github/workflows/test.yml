@@ -39,6 +39,7 @@ jobs:
           cp ./config/app_local.example.php ./config/app_local.php
           cp ./config/config.example.json ./config/config.json
           # Point the default datasource at the CI MariaDB service
+          sed -i "s/'host' => 'localhost'/'host' => '127.0.0.1'/" ./config/app_local.php
           sed -i "s/'username' => 'my_app'/'username' => 'cerebrate'/" ./config/app_local.php
           sed -i "s/'password' => 'secret'/'password' => 'cerebrate'/" ./config/app_local.php
           sed -i "s/'database' => 'my_app'/'database' => 'cerebrate'/" ./config/app_local.php
