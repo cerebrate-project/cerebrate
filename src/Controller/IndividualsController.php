@@ -99,9 +99,18 @@ class IndividualsController extends AppController
 
     public function view($id)
     {
+        $canView = $this->canView($id);
+        if (!$canView) {
+            throw new NotFoundException(__('Individual not found'));
+        }
         $canEdit = $this->canEdit($id);
+
         $this->CRUD->view($id, [
             'contain' => ['Alignments' => 'Organisations', 'Users' => ['fields' => ['id', 'username']]],
+            'beforeFind' => function($data) use ($id) {
+                
+                return $query;
+            },
             'afterFind' => function($data) use ($canEdit) {
                 if (!empty($data['user'])) {
                     $data['has_user'] = true;
@@ -192,6 +201,21 @@ class IndividualsController extends AppController
         if (!empty($responsePayload)) {
             return $responsePayload;
         }
+    }
+
+    private function canView($indId): bool
+    {
+        $currentUser = $this->ACL->getUser();
+        if ($currentUser['role']['perm_community_admin']) {
+            return true;
+        }
+        $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
+        $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($currentUser);
+        $administeredOrgs[] = $currentUser['organisation_id'];
+        $individual = $this->Individuals->find('all')->where(['Individuals.id' => $indId])->matching('Alignments', function ($q) use ($administeredOrgs) {
+            return $q->where(['Alignments.organisation_id IN' => $administeredOrgs]);
+        })->first();
+        return !empty($individual);
     }
 
     private function canEdit($indId): bool
