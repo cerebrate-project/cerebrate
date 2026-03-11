@@ -117,8 +117,9 @@ class OrganisationsController extends AppController
         $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
         $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
         $isOrgManagedByUser = in_array($id, $administeredOrgs);
+        $isOwnOrg = $this->ACL->getUser()['organisation_id'] == $id;
 
-        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        if (!$isOwnOrg && !$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
 
@@ -135,8 +136,9 @@ class OrganisationsController extends AppController
         $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
         $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
         $isOrgManagedByUser = in_array($id, $administeredOrgs);
+        $isOwnOrg = $this->ACL->getUser()['organisation_id'] == $id;
 
-        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        if (!$isOwnOrg && !$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
         if (!$this->canEdit($id)) {
@@ -164,8 +166,9 @@ class OrganisationsController extends AppController
         $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
         $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
         $isOrgManagedByUser = in_array($id, $administeredOrgs);
+        $isOwnOrg = $this->ACL->getUser()['organisation_id'] == $id;
 
-        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        if (!$isOwnOrg && !$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
         $this->CRUD->delete($id);
@@ -181,8 +184,8 @@ class OrganisationsController extends AppController
         $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
         $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
         $isOrgManagedByUser = in_array($id, $administeredOrgs);
-
-        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        $isOwnOrg = $this->ACL->getUser()['organisation_id'] == $id;
+        if (!$isOwnOrg && !$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
         if (!$this->canEdit($id)) {
@@ -200,8 +203,9 @@ class OrganisationsController extends AppController
         $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
         $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
         $isOrgManagedByUser = in_array($id, $administeredOrgs);
+        $isOwnOrg = $this->ACL->getUser()['organisation_id'] == $id;
 
-        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        if (!$isOwnOrg && !$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
         if (!$this->canEdit($id)) {
@@ -219,8 +223,8 @@ class OrganisationsController extends AppController
         $OrgGroups = TableRegistry::getTableLocator()->get('OrgGroups');
         $administeredOrgs = $OrgGroups->getGroupOrgIdsForUser($this->ACL->getUser());
         $isOrgManagedByUser = in_array($id, $administeredOrgs);
-
-        if (!$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
+        $isOwnOrg = $this->ACL->getUser()['organisation_id'] == $id;
+        if (!$isOwnOrg && !$isOrgManagedByUser && !$this->Organisations->canUserSeeOtherOrganisations($this->ACL->getUser())) {
             throw new NotFoundException(__('Invalid {0}.', 'Organisation'));
         }
         $this->CRUD->viewTags($id);
