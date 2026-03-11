@@ -60,6 +60,12 @@ jobs:
         run: |
           mkdir -p tmp/cache/models tmp/cache/persistent tmp/sessions tmp/tests logs
           sudo chown -R www-data:www-data $GITHUB_WORKSPACE
+          # Allow www-data to traverse the workspace path
+          DIR="$GITHUB_WORKSPACE"
+          while [ "$DIR" != "/" ]; do
+            sudo chmod o+rx "$DIR"
+            DIR=$(dirname "$DIR")
+          done
 
       - name: Run database migrations
         run: |
@@ -91,12 +97,6 @@ jobs:
           echo "Listen 8765" | sudo tee /etc/apache2/ports.conf > /dev/null
           sudo a2dissite 000-default
           sudo a2ensite cerebrate
-          # Allow Apache (www-data) to traverse the workspace path
-          DIR="$GITHUB_WORKSPACE"
-          while [ "$DIR" != "/" ]; do
-            sudo chmod o+rx "$DIR"
-            DIR=$(dirname "$DIR")
-          done
           sudo systemctl restart apache2
           sleep 1
           curl -sI http://127.0.0.1:8765/ || true
