@@ -86,6 +86,7 @@ jobs:
           echo "Listen 8765" | sudo tee /etc/apache2/ports.conf > /dev/null
           sudo a2dissite 000-default
           sudo a2ensite cerebrate
+          mkdir -p tmp logs
           chmod -R 777 tmp logs
           sudo systemctl restart apache2
           sleep 1
