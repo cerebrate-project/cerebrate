@@ -2,51 +2,103 @@ name: test
 
 on:
   push:
-    branches: [main, develop, fix-test-action]
+    branches: [main, develop]
   pull_request:
     branches: [main, develop]
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 5
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
-        php: ["8.2"]
+        php: ["8.2", "8.3"]
+
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_DATABASE: cerebrate
+          MARIADB_USER: cerebrate
+          MARIADB_PASSWORD: cerebrate
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Create config files
         run: |
           cp ./config/app_local.example.php ./config/app_local.php
           cp ./config/config.example.json ./config/config.json
-
-      - name: Setup MariaDB
-        uses: getong/mariadb-action@v1.1
-        with:
-          host port: 3306
-          container port: 3306
-          mysql database: "cerebrate_test"
-          mysql user: "cerebrate"
-          mysql password: "cerebrate"
+          # Point the default datasource at the CI MariaDB service
+          sed -i "s/'username' => 'my_app'/'username' => 'cerebrate'/" ./config/app_local.php
+          sed -i "s/'password' => 'secret'/'password' => 'cerebrate'/" ./config/app_local.php
+          sed -i "s/'database' => 'my_app'/'database' => 'cerebrate'/" ./config/app_local.php
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: pdo, pdo_mysql, mysqli, simplexml
+          extensions: pdo, pdo_mysql, mysqli, simplexml, intl
 
-      - name: Install dependencies
-        env:
-          php_version: ${{ matrix.php }}
+      - name: Install PHP dependencies
+        run: composer install --no-progress --no-interaction
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Run database migrations
         run: |
-          sudo apt-get -y update
-          sudo apt-get install -y --no-install-recommends curl git zip unzip libicu-dev libxml2-dev
-          composer install --no-progress --no-interaction
+          ./bin/cake migrations migrate
+          ./bin/cake migrations migrate -p Tags
 
-      - name: Run tests
-        run: composer test
-        env:
-          DEBUG: true
+      - name: Configure and start Apache with PHP-FPM
+        run: |
+          sudo apt-get install -y apache2 libapache2-mod-fcgid
+          sudo a2enmod rewrite proxy proxy_fcgi
+          sudo systemctl start php${{ matrix.php }}-fpm
+
+          PHP_VERSION=${{ matrix.php }}
+          cat <<EOF | sudo tee /etc/apache2/sites-available/cerebrate.conf > /dev/null
+          <VirtualHost *:8765>
+              DocumentRoot $GITHUB_WORKSPACE/webroot
+              <Directory $GITHUB_WORKSPACE/webroot>
+                  Options FollowSymLinks
+                  AllowOverride All
+                  Require all granted
+              </Directory>
+              <FilesMatch \.php$>
+                  SetHandler "proxy:unix:/run/php/php${PHP_VERSION}-fpm.sock|fcgi://localhost"
+              </FilesMatch>
+              SetEnv DEBUG true
+          </VirtualHost>
+          EOF
+
+          echo "Listen 8765" | sudo tee /etc/apache2/ports.conf > /dev/null
+          sudo a2dissite 000-default
+          sudo a2ensite cerebrate
+          chmod -R 777 tmp logs
+          sudo systemctl restart apache2
+          sleep 1
+          curl -sI http://127.0.0.1:8765/ || true
+
+      - name: Bootstrap instance and get auth key
+        id: setup
+        run: |
+          AUTHKEY=$(python3 tests/ci_setup.py --url http://127.0.0.1:8765)
+          echo "authkey=${AUTHKEY}" >> "$GITHUB_OUTPUT"
+
+      - name: Run ACL tests
+        run: |
+          python3 tests/test_users_acl.py \
+            --url http://127.0.0.1:8765 \
+            --authkey "${{ steps.setup.outputs.authkey }}" \
+            --verbose
