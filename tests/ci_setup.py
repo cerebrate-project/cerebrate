@@ -32,11 +32,18 @@ def main() -> None:
 
     # --- Ensure the required roles exist -------------------------------------
     print("Checking roles…", file=sys.stderr)
+    print(f"  Authkey length: {len(args.authkey)}", file=sys.stderr)
+    print(f"  Authkey preview: {args.authkey[:4]}...{args.authkey[-4:] if len(args.authkey) >= 4 else '(too short)'}", file=sys.stderr)
     r = api.get(f"{base}/roles/index.json")
-    if r.status_code != 200:
+    print(f"  /roles/index.json -> HTTP {r.status_code}, body length: {len(r.text)}", file=sys.stderr)
+    if r.status_code != 200 or not r.text.strip():
         print(f"Could not list roles: HTTP {r.status_code}\n{r.text[:500]}", file=sys.stderr)
         sys.exit(1)
-    existing = r.json()
+    try:
+        existing = r.json()
+    except Exception:
+        print(f"Non-JSON response from /roles/index.json:\n{r.text[:500]}", file=sys.stderr)
+        sys.exit(1)
 
     def has_role(pred):
         return any(pred(ro) for ro in existing)
