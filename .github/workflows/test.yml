@@ -90,7 +90,7 @@ jobs:
               <FilesMatch \.php$>
                   SetHandler "proxy:unix:/run/php/php${PHP_VERSION}-fpm.sock|fcgi://localhost"
               </FilesMatch>
-              SetEnv DEBUG true
+              SetEnv DEBUG false
           </VirtualHost>
           EOF
 
