@@ -50,6 +50,11 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: pdo, pdo_mysql, mysqli, simplexml, intl
 
+      - name: Create CakePHP directories
+        run: |
+          mkdir -p tmp/cache/models tmp/cache/persistent tmp/sessions tmp/tests logs
+          chmod -R 777 tmp logs
+
       - name: Install PHP dependencies
         run: composer install --no-progress --no-interaction
 
@@ -86,8 +91,6 @@ jobs:
           echo "Listen 8765" | sudo tee /etc/apache2/ports.conf > /dev/null
           sudo a2dissite 000-default
           sudo a2ensite cerebrate
-          mkdir -p tmp logs
-          chmod -R 777 tmp logs
           # Allow Apache (www-data) to traverse the workspace path
           DIR="$GITHUB_WORKSPACE"
           while [ "$DIR" != "/" ]; do

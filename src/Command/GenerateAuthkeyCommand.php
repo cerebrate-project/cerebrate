@@ -42,6 +42,8 @@ class GenerateAuthkeyCommand extends Command
             'user_id' => $user->id,
             'comment' => 'Generated via CLI',
             'expiration' => 0,
+        ], [
+            'accessibleFields' => ['user_id' => true],
         ]);
 
         if (!$this->AuthKeys->save($authkey)) {
