@@ -91,7 +91,7 @@ jobs:
           # Allow Apache (www-data) to traverse the workspace path
           DIR="$GITHUB_WORKSPACE"
           while [ "$DIR" != "/" ]; do
-            chmod o+rx "$DIR"
+            sudo chmod o+rx "$DIR"
             DIR=$(dirname "$DIR")
           done
           sudo systemctl restart apache2
