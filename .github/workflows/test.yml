@@ -110,14 +110,14 @@ jobs:
       - name: Generate admin auth key via CLI
         id: setup
         run: |
-          # Show full output for debugging, then extract just the 40-char authkey
-          sudo -u www-data ./bin/cake generate_authkey admin 2>/dev/null || true
-          AUTHKEY=$(sudo -u www-data ./bin/cake generate_authkey admin 2>/dev/null | grep -oE '[a-zA-Z0-9]{40}')
+          OUTPUT=$(sudo -u www-data ./bin/cake generate_authkey admin 2>/dev/null)
+          AUTHKEY=$(echo "$OUTPUT" | grep -oE '[a-zA-Z0-9]{40}')
           if [ -z "$AUTHKEY" ]; then
-            echo "ERROR: Failed to extract authkey from CLI output"
+            echo "ERROR: Failed to extract authkey. Full output:"
             sudo -u www-data ./bin/cake generate_authkey admin
             exit 1
           fi
+          echo "Extracted authkey: ${AUTHKEY:0:4}...${AUTHKEY: -4}"
           echo "authkey=${AUTHKEY}" >> "$GITHUB_OUTPUT"
 
       - name: Create required roles
