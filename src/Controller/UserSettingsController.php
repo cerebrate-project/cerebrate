@@ -126,7 +126,7 @@ class UserSettingsController extends AppController
         } else {
             $validUsers = $this->Users->find('list')->select(['id', 'username'])->order(['username' => 'asc'])->all()->toArray();
         }
-        if (!isset($validUsers[$id])) {
+        if (!isset($validUsers[$entity->user_id])) {
             throw new MethodNotAllowedException(__('You do not have permission to edit this user setting.'));
         }
         $dropdownData = [
