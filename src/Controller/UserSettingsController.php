@@ -293,9 +293,9 @@ class UserSettingsController extends AppController
         if (empty($setting)) {
             return false;
         }
-        $user = $this->UserSettings->find()->where([
-            'id' => $setting->id
-        ])->first();
+        $user = $this->UserSettings->Users->find()
+            ->where(['Users.id' => $setting->user_id])
+            ->first();
 
         if ($this->ACL->canEditUser($currentUser, $user)) {
             return true;
