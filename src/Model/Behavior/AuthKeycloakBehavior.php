@@ -29,6 +29,15 @@ class AuthKeycloakBehavior extends Behavior
         return explode(',', $mappers);
     }
 
+    public function getMappedOrgFieldList(): array
+    {
+        $mappers = Configure::read('keycloak.org_meta_mapping');
+        if (empty($mappers)) {
+            return [];
+        }
+        return explode(',', $mappers);
+    }
+
     public function getUser(EntityInterface $profile, Session $session)
     {
         $userId = $session->read('Auth.User.id');
@@ -341,9 +350,12 @@ class AuthKeycloakBehavior extends Behavior
         $response = $this->restApiRequest('%s/admin/realms/%s/users/?max=999999', [], 'get');
         $keycloakUsers = json_decode($response->getStringBody(), true);
         $keycloakUsersParsed = [];
-        $mappers = array_merge(['role_name', 'role_uuid', 'org_uuid', 'org_name'], $this->getMappedFieldList());
+        $mappers = array_merge(
+            ['role_name', 'role_uuid', 'org_uuid', 'org_name'],
+            $this->getMappedFieldList(),
+            array_map(fn($field) => 'org_' . $field, $this->getMappedOrgFieldList())
+        );
         foreach ($keycloakUsers as $u) {
-            $attributes = [];
             $keycloakUsersParsed[$u['username']] = [
                 'id' => $u['id'],
                 'username' => $u['username'],
@@ -363,22 +375,35 @@ class AuthKeycloakBehavior extends Behavior
     private function getCerebrateUsers($id = null): array
     {
         $metaFieldsSelector = ['fields' => ['MetaFields.field', 'MetaFields.parent_id', 'MetaFields.value']];
-        $query = $this->_table->find()->contain(['Individuals', 'Organisations', 'Roles', 'MetaFields' => $metaFieldsSelector])->select([
-            'id',
-            'uuid',
-            'username',
-            'disabled',
-            'Individuals.email',
-            'Individuals.first_name',
-            'Individuals.last_name',
-            'Individuals.uuid',
-            'Roles.name',
-            'Roles.uuid',
-            'Organisations.name',
-            'Organisations.uuid'
-        ]);
+        $query = $this->_table->find()
+            ->contain([
+                'Individuals',
+                'Organisations' => function ($q) use ($metaFieldsSelector) {
+                    return $q
+                        ->contain([
+                            'MetaFields' => $metaFieldsSelector
+                        ])
+                        ->enableAutoFields(true);
+                },
+                'Roles',
+                'MetaFields' => $metaFieldsSelector
+            ])
+            ->select([
+                'id',
+                'uuid',
+                'username',
+                'disabled',
+                'Individuals.email',
+                'Individuals.first_name',
+                'Individuals.last_name',
+                'Individuals.uuid',
+                'Roles.name',
+                'Roles.uuid',
+                'Organisations.name',
+                'Organisations.uuid',
+            ]);
         if ($id) {
-            $query->where(['User.id' => $id]);
+            $query->where(['Users.id' => $id]);
         }
         $results = $query->disableHydration()->toArray();
         foreach ($results as &$result) {
@@ -388,6 +413,13 @@ class AuthKeycloakBehavior extends Behavior
                     $temp[$meta_field['field']] = $meta_field['value'];
                 }
                 $result['meta_fields'] = $temp;
+            }
+            if (!empty($result['organisation']['meta_fields'])) {
+                $temp = [];
+                foreach ($result['organisation']['meta_fields'] as $meta_field) {
+                    $temp[$meta_field['field']] = $meta_field['value'];
+                }
+                $result['org_meta_fields'] = $temp;
             }
         }
         return $results;
@@ -414,6 +446,7 @@ class AuthKeycloakBehavior extends Behavior
                 ]
             ];
             $custom_mappers = $this->getMappedFieldList();
+            $custom_org_mappers = $this->getMappedOrgFieldList();
             $change = [
                 'enabled' => !$user['disabled'],
                 'firstName' => $user['individual']['first_name'],
@@ -429,6 +462,9 @@ class AuthKeycloakBehavior extends Behavior
             }
             foreach ($custom_mappers as $mapper) {
                 $change['attributes'][$mapper] = $user['meta_fields'][$mapper] ?? '';
+            }
+            foreach ($custom_org_mappers as $mapper) {
+                $change['attributes']['org_' . $mapper] = $user['org_meta_fields'][$mapper] ?? '';
             }
             $response = $this->restApiRequest('%s/admin/realms/%s/users/' . $keycloakUser['id'], $change, 'put');
             if (!$response->isOk()) {
@@ -484,6 +520,7 @@ class AuthKeycloakBehavior extends Behavior
     private function checkKeycloakUserRequiresUpdate(array $keycloakUser, array $user, array &$differences = []): bool
     {   
         $mappedFields = $this->getMappedFieldList();
+        $mappedOrgFields = $this->getMappedOrgFieldList();
         $condEnabled = $keycloakUser['enabled'] == $user['disabled'];
         $condFirstname = mb_strtolower($keycloakUser['firstName']) !== mb_strtolower($user['individual']['first_name']);
         $condLastname = mb_strtolower($keycloakUser['lastName']) !== mb_strtolower($user['individual']['last_name']);
@@ -493,6 +530,7 @@ class AuthKeycloakBehavior extends Behavior
         $condOrgname = (empty($keycloakUser['attributes']['org_name']) || mb_strtolower($keycloakUser['attributes']['org_name']) !== mb_strtolower($user['organisation']['name']));
         $condOrguuid = (empty($keycloakUser['attributes']['org_uuid']) || mb_strtolower($keycloakUser['attributes']['org_uuid']) !== mb_strtolower($user['organisation']['uuid']));
         $condMapped = false;
+        $condMappedOrg = false;
         if (!empty($user['meta_fields']) && isset($user['meta_fields'][0])) {
             $temp = [];
             foreach ($user['meta_fields'] as $meta_field) {
@@ -509,7 +547,16 @@ class AuthKeycloakBehavior extends Behavior
                 ];
             }
         }
-        if ($condEnabled || $condFirstname || $condLastname || $condEmail || $condRolename || $condRoleuuid || $condOrgname || $condOrguuid || $condMapped) {
+        foreach ($mappedOrgFields as $mappedField) {
+            if (($keycloakUser['attributes']['org_' . $mappedField] ?? '') != ($user['org_meta_fields'][$mappedField] ?? '')) {
+                $condMappedOrg = true;
+                $differences[$mappedField] = [
+                    'keycloak' => $keycloakUser['attributes']['org_' . $mappedField] ?? '',
+                    'cerebrate' => $user['org_meta_fields'][$mappedField] ?? ''
+                ];
+            }
+        }
+        if ($condEnabled || $condFirstname || $condLastname || $condEmail || $condRolename || $condRoleuuid || $condOrgname || $condOrguuid || $condMapped || $condMappedOrg) {
             if ($condEnabled) {
                 $differences['enabled'] = ['keycloak' => $keycloakUser['enabled'], 'cerebrate' => $user['disabled']];
             }
@@ -604,7 +651,6 @@ class AuthKeycloakBehavior extends Behavior
             'role_name' => 0,
             'role_uuid' => 0
         ];
-        $mappersToEnable = explode(',', Configure::read('keycloak.user_meta_mapping'));
         foreach ($mappers as $mapper) {
             if ($mapper['protocolMapper'] !== 'oidc-usermodel-attribute-mapper') {
                 continue;
@@ -616,7 +662,9 @@ class AuthKeycloakBehavior extends Behavior
             $enabledMappers[$mapper['name']] = $mapper;
         }
         $payload = [];
-        foreach ($mappersToEnable as $mapperToEnable) {
+        $mappersToEnable = explode(',', Configure::read('keycloak.user_meta_mapping'));
+        $orgMappersToEnable = explode(',', Configure::read('keycloak.org_meta_mapping'));
+        foreach (array_merge($mappersToEnable, $orgMappersToEnable) as $mapperToEnable) {
             $payload[] = [
                 'protocol' => 'openid-connect',
                 'name' => $mapperToEnable,
