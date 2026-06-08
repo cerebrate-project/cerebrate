@@ -96,7 +96,7 @@ class EncryptionKeysTable extends AppTable
             $sortedKeys = ['valid' => 0, 'expired' => 0, 'noEncrypt' => 0];
             foreach ($key->getSubKeys() as $subKey) {
                 $expiration = $subKey->getExpirationDate();
-                if ($expiration != 0 && $currentTimestamp > $expiration) {
+                if ($this->isSubKeyExpired($expiration, $currentTimestamp)) {
                     $sortedKeys['expired']++;
                     continue;
                 }
@@ -121,6 +121,31 @@ class EncryptionKeysTable extends AppTable
             $result[2] = $e->getMessage();
         }
         return $result;
+    }
+
+
+    /**
+     * Checks whether a GPG subkey expiration value is in the past.
+     *
+     * Crypt_GPG returns expiration dates as DateTimeInterface instances, but
+     * older or mocked implementations may still use Unix timestamps. Normalize
+     * both formats before comparing them to the current timestamp.
+     *
+     * @param \DateTimeInterface|int|string|null $expiration Expiration date from Crypt_GPG.
+     * @param int $currentTimestamp Current Unix timestamp.
+     * @return bool
+     */
+    private function isSubKeyExpired($expiration, int $currentTimestamp): bool
+    {
+        if (empty($expiration)) {
+            return false;
+        }
+
+        if ($expiration instanceof \DateTimeInterface) {
+            $expiration = $expiration->getTimestamp();
+        }
+
+        return is_numeric($expiration) && $currentTimestamp > (int)$expiration;
     }
 
 
