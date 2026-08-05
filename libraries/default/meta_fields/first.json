@@ -2,7 +2,7 @@
     "name": "FIRST Directory",
     "namespace": "first",
     "description": "Template based on the output of the FIRST Directory API",
-    "version": 1,
+    "version": 2,
     "scope": "organisation",
     "uuid": "a89c80d0-7019-422a-b45b-fe59532886c7",
     "source": "FIRST.org API",
@@ -38,7 +38,7 @@
         {
             "field": "website",
             "type": "text",
-            "multiple": 1
+            "multiple": true
         },
         {
             "field": "email",
@@ -47,13 +47,13 @@
         {
             "field": "phone",
             "type": "text",
-            "regex": "/^\\+[0-9\\-]*$/",
-            "multiple": 1
+            "regex": "\\+[0-9\\-]*",
+            "multiple": true
         },
         {
             "field": "phone-emergency",
             "type": "text",
-            "regex": "/^\\+[0-9\\-]*$/"
+            "regex": "\\+[0-9\\-]*"
         },
         {
             "field": "timezone",
