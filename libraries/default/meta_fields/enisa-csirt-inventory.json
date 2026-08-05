@@ -4,7 +4,7 @@
         {
             "field": "ISO 3166-1 Code",
             "type": "text",
-            "regex": "[a-z]{2,3}"
+            "regex": "[A-Za-z]{2,3}"
         },
         {
             "field": "website",
@@ -74,5 +74,5 @@
     "scope": "organisation",
     "source": "enisa.europa.eu/topics/csirts-in-europe/csirt-inventory/certs-by-country-interactive-map",
     "uuid": "089c68c7-d97e-4f21-a798-159cd10f7864",
-    "version": 3
+    "version": 4
 }
