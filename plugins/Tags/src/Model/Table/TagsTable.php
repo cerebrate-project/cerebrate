@@ -16,6 +16,12 @@ class TagsTable extends AppTable
         $this->setTable('tags_tags');
         $this->setDisplayField('name'); // Change to name?
         $this->addBehavior('Timestamp');
+        $this->hasMany('Tagged', [
+            'className' => 'Tags.Tagged',
+            'foreignKey' => 'tag_id',
+            'dependent' => true,
+            'cascadeCallbacks' => true,
+        ]);
     }
 
     public function validationDefault(Validator $validator): Validator
