@@ -1324,6 +1324,17 @@ class MetaTemplatesTable extends AppTable
         $updateStatus['new'] = false;
         $updateStatus['automatically-updateable'] = false;
         $updateStatus['conflicts'] = [];
+        /*
+            Removability depends on whether the template holds any values, not on how
+            its version compares to the one on disk. Computed up front so it survives
+            the early returns below: previously a template with no meta-fields at all
+            could not be deleted whenever the stored and on-disk versions matched,
+            which is the ordinary state of an unmodified template.
+        */
+        $updateStatus['meta_field_amount'] = $this->MetaTemplateFields->MetaFields->find()
+            ->where(['meta_template_id' => $metaTemplate->id])
+            ->count();
+        $updateStatus['can-be-removed'] = empty($updateStatus['meta_field_amount']) && empty($updateStatus['to-existing']);
         if (empty($template)) {
             $updateStatus['up-to-date'] = false;
             $updateStatus['automatically-updateable'] = false;
@@ -1353,8 +1364,6 @@ class MetaTemplatesTable extends AppTable
         } else {
             $updateStatus['automatically-updateable'] = true;
         }
-        $updateStatus['meta_field_amount'] = $this->MetaTemplateFields->MetaFields->find()->where(['meta_template_id' => $metaTemplate->id])->count();
-        $updateStatus['can-be-removed'] = empty($updateStatus['meta_field_amount']) && empty($updateStatus['to-existing']);
         return $updateStatus;
     }
 
