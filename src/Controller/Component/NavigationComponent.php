@@ -206,7 +206,9 @@ class BreadcrumbFactory
 
     public function defaultCRUD(string $controller, string $action, array $overrides = []): array
     {
-        $table = TableRegistry::getTableLocator()->get($controller);
+        // `Tags` is served by the Tags plugin: an unqualified alias resolves to a
+        // `tags` table that no migration creates.
+        $table = TableRegistry::getTableLocator()->get($controller === 'Tags' ? 'Tags.Tags' : $controller);
         $item = [];
         if ($action === 'index') {
             $item = $this->genRouteConfig($controller, $action, [
