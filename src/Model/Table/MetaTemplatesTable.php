@@ -1155,6 +1155,7 @@ class MetaTemplatesTable extends AppTable
 
         if (
             (!empty($templateField['regex']) && $templateField['regex'] != $metaTemplateField->regex) ||
+            (!empty($templateField['type']) && $templateField['type'] != $metaTemplateField->type) ||
             !empty($templateField['values_list'])
         ) {
             $entities = $this->getEntitiesForMetaTemplateField($scope, $metaTemplateField->id, true);
