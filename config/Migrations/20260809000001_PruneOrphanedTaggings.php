@@ -18,6 +18,13 @@ final class PruneOrphanedTaggings extends AbstractMigration
 {
     public function up(): void
     {
+        // App migrations run before the Tags plugin's (see INSTALL.md and
+        // docker/entrypoint.sh), so on a fresh install this table does not exist
+        // yet. Nothing can be orphaned before it is created.
+        if (!$this->hasTable('tags_tagged')) {
+            return;
+        }
+
         $orphans = $this->fetchRow(
             'SELECT COUNT(*) AS c FROM tags_tagged tg
              WHERE NOT EXISTS (SELECT 1 FROM tags_tags t WHERE t.id = tg.tag_id)'
