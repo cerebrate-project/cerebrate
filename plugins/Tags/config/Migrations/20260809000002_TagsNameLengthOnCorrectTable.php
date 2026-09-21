@@ -19,6 +19,11 @@ use Migrations\AbstractMigration;
  * This cannot be fixed by editing the original, which has already run on every
  * deployment and will not run again.
  *
+ * It lives in the Tags plugin's migration set rather than the app's because
+ * INSTALL.md and docker/entrypoint.sh run the app set first, before tags_tags
+ * exists. Guarding on the table instead would leave a fresh install on
+ * varchar(191) while an upgraded one moved to 255.
+ *
  * Note the index on tags_tags.name is UNIQUE -- TagSystem creates it with
  * ['unique' => true], and getExistingTag() plus every "create tag if absent"
  * path depends on that. The original migration re-added the index without
