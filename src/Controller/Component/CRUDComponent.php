@@ -862,6 +862,17 @@ class CRUDComponent extends Component
                 }
             }
             if (!$break) {
+                // The entity is always loaded by the URL `$id`, and Table::_update() derives the
+                // UPDATE's WHERE clause verbatim from the entity's primary key. A PK that drifted
+                // between load and save - bad input, or a beforeSave callback - would either write
+                // to the wrong row, or (for 0/null) write to no row at all while save() still
+                // returns the entity and we report success. Refuse loudly instead of guessing.
+                $primaryKey = $this->Table->getPrimaryKey();
+                if (is_string($primaryKey) && (string)$data->get($primaryKey) !== (string)$id) {
+                    throw new BadRequestException(
+                        __('Could not save {0}: the primary key of the entity to be saved does not match the requested one.', $this->ObjectAlias)
+                    );
+                }
                 $savedData = $this->Table->save($data);
                 if ($savedData !== false) {
                     if ($metaFieldsEnabled && !empty($metaFieldsToDelete)) {
