@@ -45,6 +45,7 @@ class ImporterCommand extends Command
     private $noMetaTemplate = false;
     private $autoYes = false;
     private $updateOnly = false;
+    private $skipValidation = false;
 
     protected function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {
@@ -80,6 +81,11 @@ class ImporterCommand extends Command
             'default' => false,
             'boolean' => true
         ]);
+        $parser->addOption('skip-validation', [
+            'help' => 'Report meta-field validation failures as warnings and import them anyway, instead of aborting. Values imported this way may not be migratable to a later version of their meta-template.',
+            'default' => false,
+            'boolean' => true
+        ]);
         return $parser;
     }
 
@@ -95,6 +101,7 @@ class ImporterCommand extends Command
         }
         $this->autoYes = $args->getOption('yes');
         $this->updateOnly = $args->getOption('update-only');
+        $this->skipValidation = $args->getOption('skip-validation');
         if ($this->updateOnly && is_null($primary_key)) {
             $io->error('A `primary_key` must be supplied when using `--update-only` mode.');
             die(1);
@@ -155,16 +162,24 @@ class ImporterCommand extends Command
             }
         }
         $hasErrors = false;
+        $hasMetaFieldErrors = false;
         if (!$this->noMetaTemplate) {
             $metaTemplate = $this->MetaTemplates->find()
                 ->where(['uuid' => $config['metaTemplateUUID']])
                 ->order(['version' => 'DESC'])
                 ->first();
             if (!is_null($metaTemplate)) {
-                $metaTemplateFieldsMapping = $this->MetaTemplates->MetaTemplateFields->find('list', [
-                    'keyField' => 'field',
-                    'valueField' => 'id'
-                ])->where(['meta_template_id' => $metaTemplate->id])->toArray();
+                $metaTemplateFields = $this->MetaTemplates->MetaTemplateFields->find()
+                    ->where(['meta_template_id' => $metaTemplate->id])
+                    ->all()
+                    ->indexBy('field')
+                    ->toArray();
+                $metaTemplateFieldsMapping = array_map(
+                    function ($metaTemplateField) {
+                        return $metaTemplateField->id;
+                    },
+                    $metaTemplateFields
+                );
             } else {
                 $this->io->error("Unknown template for UUID {$config['metaTemplateUUID']}");
                 die(1);
@@ -204,6 +219,28 @@ class ImporterCommand extends Command
                         }
                         if ($this->canBeOverriden($metaEntity)) {
                             $metaEntity->value = $fieldValue;
+                            if (!is_null($metaEntity->value) && $metaEntity->value !== '' && isset($metaTemplateFields[$fieldName])) {
+                                $validationResult = $this->MetaFields->isValidMetaFieldForMetaTemplateField(
+                                    $metaEntity->value,
+                                    $metaTemplateFields[$fieldName]
+                                );
+                                if ($validationResult !== true) {
+                                    $message = is_string($validationResult)
+                                        ? $validationResult
+                                        : __(
+                                            'Metafield value `{0}` for `{1}` is not one of the permitted values.',
+                                            $metaEntity->value,
+                                            $fieldName
+                                        );
+                                    if ($this->skipValidation) {
+                                        $this->io->warning($message);
+                                    } else {
+                                        $hasErrors = true;
+                                        $hasMetaFieldErrors = true;
+                                        $this->io->error($message);
+                                    }
+                                }
+                            }
                         }
                         $metaFields[] = $metaEntity;
                     }
@@ -215,6 +252,9 @@ class ImporterCommand extends Command
             $this->io->verbose('No validation errors');
         } else {
             $this->io->error('Validation errors, please fix before importing');
+            if ($hasMetaFieldErrors) {
+                $this->io->error('Pass --skip-validation to import anyway. Note that values which fail validation cannot be migrated to a later version of their meta-template.');
+            }
             die(1);
         }
         return $entities;

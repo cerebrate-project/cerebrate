@@ -9,9 +9,13 @@ use Cake\Validation\Validator;
 use MetaFieldsTypes\TextType;
 use MetaFieldsTypes\IPv4Type;
 use MetaFieldsTypes\IPv6Type;
+use MetaFieldsTypes\BooleanType;
+use MetaFieldsTypes\DateType;
 require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'TextType.php');
 require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'IPv4Type.php');
 require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'IPv6Type.php');
+require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'BooleanType.php');
+require_once(APP . 'Lib' . DS . 'default' . DS . 'meta_fields_types' . DS . 'DateType.php');
 
 class MetaTemplateFieldsTable extends AppTable
 {
@@ -76,6 +80,8 @@ class MetaTemplateFieldsTable extends AppTable
                 new TextType(),
                 new IPv4Type(),
                 new IPv6Type(),
+                new BooleanType(),
+                new DateType(),
             ];
             foreach ($typeHandlers as $handler) {
                 $this->typeHandlers[$handler::TYPE] = $handler;

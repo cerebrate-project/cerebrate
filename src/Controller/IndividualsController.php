@@ -133,7 +133,6 @@ class IndividualsController extends AppController
         $currentUser = $this->ACL->getUser();
         $this->CRUD->edit($id, [
             'beforeSave' => function($data) use ($currentUser) {
-                $data['id'] = intval($id);
                 if (!$currentUser['role']['perm_community_admin'] && isset($data['uuid'])) {
                     unset($data['uuid']);
                 }
