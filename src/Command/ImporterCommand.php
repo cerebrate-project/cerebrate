@@ -162,6 +162,7 @@ class ImporterCommand extends Command
             }
         }
         $hasErrors = false;
+        $hasMetaFieldErrors = false;
         if (!$this->noMetaTemplate) {
             $metaTemplate = $this->MetaTemplates->find()
                 ->where(['uuid' => $config['metaTemplateUUID']])
@@ -218,7 +219,7 @@ class ImporterCommand extends Command
                         }
                         if ($this->canBeOverriden($metaEntity)) {
                             $metaEntity->value = $fieldValue;
-                            if (!is_null($metaEntity->value) && isset($metaTemplateFields[$fieldName])) {
+                            if (!is_null($metaEntity->value) && $metaEntity->value !== '' && isset($metaTemplateFields[$fieldName])) {
                                 $validationResult = $this->MetaFields->isValidMetaFieldForMetaTemplateField(
                                     $metaEntity->value,
                                     $metaTemplateFields[$fieldName]
@@ -235,6 +236,7 @@ class ImporterCommand extends Command
                                         $this->io->warning($message);
                                     } else {
                                         $hasErrors = true;
+                                        $hasMetaFieldErrors = true;
                                         $this->io->error($message);
                                     }
                                 }
@@ -250,7 +252,9 @@ class ImporterCommand extends Command
             $this->io->verbose('No validation errors');
         } else {
             $this->io->error('Validation errors, please fix before importing');
-            $this->io->error('Pass --skip-validation to import anyway. Note that values which fail validation cannot be migrated to a later version of their meta-template.');
+            if ($hasMetaFieldErrors) {
+                $this->io->error('Pass --skip-validation to import anyway. Note that values which fail validation cannot be migrated to a later version of their meta-template.');
+            }
             die(1);
         }
         return $entities;
