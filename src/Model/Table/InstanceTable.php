@@ -193,30 +193,122 @@ class InstanceTable extends AppTable
         ];
     }
 
-    public function migrate($version=null) {
+    /**
+     * Runs pending migrations of the app and of every active plugin, in that
+     * order (the order INSTALL.md and docker/entrypoint.sh use).
+     *
+     * With a version, only the migration set containing it is migrated to it.
+     */
+    public function migrate($version = null)
+    {
         $migrations = new Migrations();
-        if (is_null($version)) {
-            $migrationResult = $migrations->migrate();
-        } else {
-            $migrationResult = $migrations->migrate(['target' => $version]);
+        try {
+            if (is_null($version)) {
+                foreach ($this->getMigrationSetOptions() as $options) {
+                    $migrations->migrate($options);
+                }
+            } else {
+                $options = $this->findMigrationSetOptions($migrations, $version);
+                if ($options === null) {
+                    return $this->migrationFailure(__('Unknown migration version `{0}`', $version));
+                }
+                $migrations->migrate($options + ['target' => $version]);
+            }
+        } catch (\Throwable $e) {
+            return $this->migrationFailure($e->getMessage());
+        } finally {
+            $this->clearSchemaCache();
         }
-        $command = ROOT . '/bin/cake schema_cache clear';
-        $output = shell_exec($command);
         return [
             'success' => true
         ];
     }
 
-    public function rollback($version=null) {
+    /**
+     * Without a version, rolls back only the most recently applied migration
+     * across the app and the active plugins. Calling rollback() on every set
+     * would also undo each plugin's last migration, e.g. drop the Tags tables.
+     *
+     * With a version, the migration set containing it is rolled back to it.
+     */
+    public function rollback($version = null)
+    {
         $migrations = new Migrations();
-        if (is_null($version)) {
-            $migrationResult = $migrations->rollback();
-        } else {
-            $migrationResult = $migrations->rollback(['target' => $version]);
+        try {
+            if (is_null($version)) {
+                $options = $this->findLatestAppliedMigrationSetOptions($migrations);
+                if ($options === null) {
+                    return $this->migrationFailure(__('No migration to roll back'));
+                }
+                $migrations->rollback($options);
+            } else {
+                $options = $this->findMigrationSetOptions($migrations, $version);
+                if ($options === null) {
+                    return $this->migrationFailure(__('Unknown migration version `{0}`', $version));
+                }
+                $migrations->rollback($options + ['target' => $version]);
+            }
+        } catch (\Throwable $e) {
+            return $this->migrationFailure($e->getMessage());
+        } finally {
+            $this->clearSchemaCache();
         }
         return [
             'success' => true
         ];
+    }
+
+    /**
+     * @return array Migrations options for the app set followed by each active plugin's set
+     */
+    private function getMigrationSetOptions(): array
+    {
+        $sets = [[]];
+        foreach ($this->activePlugins as $pluginName) {
+            $sets[] = ['plugin' => $pluginName];
+        }
+        return $sets;
+    }
+
+    private function findMigrationSetOptions(Migrations $migrations, $version): ?array
+    {
+        foreach ($this->getMigrationSetOptions() as $options) {
+            foreach ($migrations->status($options) as $entry) {
+                if ((string)$entry['id'] === (string)$version) {
+                    return $options;
+                }
+            }
+        }
+        return null;
+    }
+
+    private function findLatestAppliedMigrationSetOptions(Migrations $migrations): ?array
+    {
+        $latest = null;
+        $latestOptions = null;
+        foreach ($this->getMigrationSetOptions() as $options) {
+            foreach ($migrations->status($options) as $entry) {
+                if ($entry['status'] === 'up' && ($latest === null || strcmp((string)$entry['id'], $latest) > 0)) {
+                    $latest = (string)$entry['id'];
+                    $latestOptions = $options;
+                }
+            }
+        }
+        return $latestOptions;
+    }
+
+    private function migrationFailure(string $error): array
+    {
+        return [
+            'success' => false,
+            'error' => $error,
+        ];
+    }
+
+    private function clearSchemaCache(): void
+    {
+        $command = ROOT . '/bin/cake schema_cache clear';
+        shell_exec($command);
     }
 
     public function getAvailableThemes()

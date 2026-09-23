@@ -84,11 +84,7 @@ class InstanceController extends AppController
 
     public function migrate($version=null) {
         if ($this->request->is('post')) {
-            if (is_null($version)) {
-                $migrateResult = $this->Instance->migrate();
-            } else {
-                $migrateResult = $this->Instance->migrate(['target' => $version]);
-            }
+            $migrateResult = $this->Instance->migrate($version);
             if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
                 if ($migrateResult['success']) {
                     return $this->RestResponse->saveSuccessResponse('instance', 'migrate', false, false, __('Migration sucessful'));
@@ -100,7 +96,7 @@ class InstanceController extends AppController
                     $this->Flash->success(__('Migration sucessful'));
                     $this->redirect(['action' => 'migrationIndex']);
                 } else {
-                    $this->Flash->error(__('Migration fail'));
+                    $this->Flash->error(__('Migration fail: {0}', $migrateResult['error']));
                     $this->redirect(['action' => 'migrationIndex']);
                 }
             }
@@ -115,11 +111,7 @@ class InstanceController extends AppController
 
     public function rollback($version=null) {
         if ($this->request->is('post')) {
-            if (is_null($version)) {
-                $migrateResult = $this->Instance->rollback();
-            } else {
-                $migrateResult = $this->Instance->rollback(['target' => $version]);
-            }
+            $migrateResult = $this->Instance->rollback($version);
             if ($this->ParamHandler->isRest() || $this->ParamHandler->isAjax()) {
                 if ($migrateResult['success']) {
                     return $this->RestResponse->saveSuccessResponse('instance', 'rollback', false, false, __('Rollback sucessful'));
@@ -131,7 +123,7 @@ class InstanceController extends AppController
                     $this->Flash->success(__('Rollback sucessful'));
                     $this->redirect(['action' => 'migrationIndex']);
                 } else {
-                    $this->Flash->error(__('Rollback fail'));
+                    $this->Flash->error(__('Rollback fail: {0}', $migrateResult['error']));
                     $this->redirect(['action' => 'migrationIndex']);
                 }
             }
