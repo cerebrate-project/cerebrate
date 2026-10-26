@@ -1502,7 +1502,7 @@ class CRUDComponent extends Component
 
             if ($this->metaFieldsSupported() && !empty($options['quickFilterForMetaField']['enabled'])) {
                 $searchValue = !empty($options['quickFilterForMetaField']['wildcard_search']) ? "%{$params['quickFilter']}%" : $params['quickFilter'];
-                $metaFieldConditions = $this->Table->buildMetaFieldQuerySnippetForMatchingParent(['value' => $searchValue]);
+                $metaFieldConditions = $this->Table->buildMetaFieldQuerySnippetForMatchingParent([['value' => $searchValue]]);
                 $queryConditions[] = $metaFieldConditions;
             }
 
