@@ -216,8 +216,11 @@ class CRUDComponent extends Component
             if ($this->metaFieldsSupported()) {
                 $data = $data->toArray();
                 $metaTemplates = $this->getMetaTemplates()->toArray();
-                foreach ($data as $i => $row) {
-                    $data[$i] = $this->attachMetaTemplatesIfNeeded($row, $metaTemplates);
+                // Only the meta-field columns enabled in the table settings read per-row meta-fields
+                if ($this->Controller->viewBuilder()->hasVar('requestedMetaFields')) {
+                    foreach ($data as $i => $row) {
+                        $data[$i] = $this->attachRequestedMetaFields($row);
+                    }
                 }
                 $this->Controller->set('meta_templates', $metaTemplates);
                 $this->Controller->set(
@@ -1026,6 +1029,21 @@ class CRUDComponent extends Component
             $metaTemplates[$metaTemplate->id]['meta_template_fields'] = $metaTemplates[$metaTemplate->id]['meta_template_fields'];
         }
         $metaTemplates = $metaTemplates;
+        $data['MetaTemplates'] = $metaTemplates;
+        return $data;
+    }
+
+    /**
+     * Lightweight alternative to attachMetaTemplates() for index tables: rather than attaching a copy of every
+     * meta-template to each row and querying its meta-fields, expose the meta-fields already contained by
+     * includeRequestedMetaFields() under the path read by the meta-field columns
+     */
+    protected function attachRequestedMetaFields($data)
+    {
+        $metaTemplates = [];
+        foreach ($data['meta_fields'] ?? [] as $metaField) {
+            $metaTemplates[$metaField->meta_template_id]['meta_template_fields'][$metaField->meta_template_field_id]['metaFields'][$metaField->id] = $metaField;
+        }
         $data['MetaTemplates'] = $metaTemplates;
         return $data;
     }
