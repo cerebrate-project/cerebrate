@@ -53,8 +53,8 @@ class ErrorController extends AppController
      */
     public function beforeRender(EventInterface $event)
     {
-        parent::beforeRender($event);
-
+        // Don't call AppController::beforeRender(): it uses components loaded by AppController::initialize(),
+        // which this controller skips, and the error layout doesn't use the breadcrumb or notifications it sets
         $this->viewBuilder()->setTemplatePath('Error');
     }
 
