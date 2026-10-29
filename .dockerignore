@@ -1,0 +1,9 @@
+# Dependencies are resolved inside the image; a host composer.lock or vendor/
+# would pin the image to whatever the build host last installed
+composer.lock
+vendor/
+# Replaced by docker/etc/app_local.php and config.example.json during the build
+config/app_local.php
+config/config.json
+# Runtime volumes of the docker-compose stack (database, logs)
+docker/run/
