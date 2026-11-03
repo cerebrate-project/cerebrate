@@ -12,6 +12,14 @@ If you need to use a proxy, you can pass them to the command like this:
 https_proxy=http://proxy.local:8080 sudo -Eu www-data git -C /var/www/cerebrate/ pull origin main
 ```
 
+Then update the PHP dependencies. Use `composer update`, not `composer install`:
+`composer.lock` is not shipped with Cerebrate, so `install` would keep the
+versions from your existing local lock file.
+
+```bash
+sudo -H -u www-data composer --working-dir=/var/www/cerebrate update --no-interaction
+```
+
 To upgrade the database, login to the webinterface as administrator and call
 http://cerebrate.local:8000/instance/migrationIndex
 Also available from the menu in the interface as "Database migration".
